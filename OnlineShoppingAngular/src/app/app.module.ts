@@ -3,16 +3,23 @@ import { BrowserModule, provideClientHydration, withEventReplay } from '@angular
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { TestComponent } from './test/test.component';
+import { FormsModule } from '@angular/forms';
+import { LoginComponent } from './features/customer/auth/login/login.component';
+import { RegisterComponent } from './features/customer/auth/register/register.component';
+import { ResetPasswordComponent } from './features/customer/auth/reset-password/reset-password.component';
+import { OtpVerifyComponent } from './features/customer/auth/otp-verify/otp-verify.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    TestComponent
+    LoginComponent,
+    RegisterComponent,
+    ResetPasswordComponent,
+    OtpVerifyComponent
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
   ],
   providers: [
     provideClientHydration(withEventReplay())
