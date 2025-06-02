@@ -1,0 +1,113 @@
+<app-admin-header></app-admin-header>
+
+<div id="layoutSidenav">
+  <app-admin-sidebar></app-admin-sidebar>
+  <div id="layoutSidenav_content">
+    <main class="p-4">
+      <div class="container-fluid px-4">
+        <h1 class="mt-2">Dashboard</h1>
+        <ol class="breadcrumb mb-4">
+          <li class="breadcrumb-item active">Overview</li>
+        </ol>
+        <div class="row mb-4">
+          <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats shadow h-100">
+              <div class="card-body">
+                <div class="d-flex align-items-center">
+                  <div class="mr-3">
+                    <i class="fas fa-shopping-bag fa-2x text-gold"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs font-weight-bold text-uppercase mb-1">Orders</div>
+                    <div class="h5 mb-0 font-weight-bold text-white">1,245</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats shadow h-100">
+              <div class="card-body">
+                <div class="d-flex align-items-center">
+                  <div class="mr-3">
+                    <i class="fas fa-box-open fa-2x text-gold"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs font-weight-bold text-uppercase mb-1">Products</div>
+                    <div class="h5 mb-0 font-weight-bold text-white">320</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats shadow h-100">
+              <div class="card-body">
+                <div class="d-flex align-items-center">
+                  <div class="mr-3">
+                    <i class="fas fa-users fa-2x text-gold"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs font-weight-bold text-uppercase mb-1">Customers</div>
+                    <div class="h5 mb-0 font-weight-bold text-white">2,100</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats shadow h-100">
+              <div class="card-body">
+                <div class="d-flex align-items-center">
+                  <div class="mr-3">
+                    <i class="fas fa-dollar-sign fa-2x text-gold"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs font-weight-bold text-uppercase mb-1">Revenue</div>
+                    <div class="h5 mb-0 font-weight-bold text-white">$58,400</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card mb-4">
+          <div class="card-header">
+            <i class="fas fa-shopping-bag me-1"></i>
+            Recent Orders
+          </div>
+          <div class="card-body">
+            <table class="table table-dark table-hover table-bordered">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Customer</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>#1001</td>
+                  <td>Jane Doe</td>
+                  <td>2024-06-01</td>
+                  <td><span class="badge bg-success">Completed</span></td>
+                  <td>$1,200</td>
+                </tr>
+                <tr>
+                  <td>#1002</td>
+                  <td>John Smith</td>
+                  <td>2024-06-02</td>
+                  <td><span class="badge bg-warning text-dark">Pending</span></td>
+                  <td>$850</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+    <app-admin-footer></app-admin-footer>
+  </div>
+</div>

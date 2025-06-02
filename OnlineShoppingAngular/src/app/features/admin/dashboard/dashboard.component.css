@@ -1,0 +1,25 @@
+/* Main Layout */
+#layoutSidenav {
+  display: flex;
+  min-height: 100vh;
+}
+
+#layoutSidenav_content {
+  flex: 1;
+  margin-left: 260px;
+  min-height: 100vh;
+  background-color: var(--color-background);
+}
+
+/* Main Content */
+main {
+  padding: 2rem;
+  min-height: calc(100vh - 120px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  #layoutSidenav_content {
+    margin-left: 0;
+  }
+}

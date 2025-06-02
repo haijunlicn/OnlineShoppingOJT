@@ -1,0 +1,150 @@
+/* Simple Dark Background */
+.admin-login-bg {
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 50% 30%, rgba(40, 32, 24, 0.85) 0%, transparent 80%),
+    linear-gradient(135deg, #13100e 0%, #181410 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+}
+
+.login-container {
+  max-width: 400px;
+  width: 100%;
+}
+
+/* Simple Logo */
+.logo-section {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.logo-section h2 {
+  font-family: "Cinzel", serif;
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+.admin-text {
+  color: var(--color-highlight, #c9b87c);
+  font-family: "Cinzel", serif;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+/* Clean Form Card */
+.form-card {
+  background: rgba(24, 20, 16, 0.98);
+  border-radius: 12px;
+  padding: 2.2rem 2rem 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.85);
+  border: 1.5px solid rgba(201, 184, 124, 0.08);
+}
+
+.form-card h3 {
+  color: var(--color-highlight, #c9b87c);
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+/* Form Styling */
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  color: #fff;
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.form-control {
+  background: rgba(30, 26, 22, 0.98);
+  border: 1.5px solid rgba(201, 184, 124, 0.13);
+  color: #fff;
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  font-size: 1rem;
+  border-radius: 6px;
+  padding: 0.85rem;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.form-control:focus {
+  border-color: var(--color-highlight, #c9b87c);
+  background: rgba(40, 32, 24, 1);
+}
+
+.form-control::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Button */
+.btn-primary {
+  background-color: var(--color-highlight, #c9b87c);
+  border-color: var(--color-highlight, #c9b87c);
+  color: #181410;
+  font-weight: 700;
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  padding: 0.85rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #b8a66f;
+  border-color: #b8a66f;
+  cursor: pointer;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed !important;
+}
+
+/* Customer Link */
+.customer-link {
+  text-align: center;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.customer-link a {
+  color: var(--color-highlight, #c9b87c);
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+}
+
+.customer-link a:hover {
+  color: #fff;
+}
+
+/* Footer */
+.admin-footer {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.85rem;
+  text-align: center;
+  margin-top: 1.5rem;
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .form-card {
+    padding: 1.5rem;
+  }
+}

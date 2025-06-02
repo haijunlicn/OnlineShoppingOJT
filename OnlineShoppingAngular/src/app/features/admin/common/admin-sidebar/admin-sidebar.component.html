@@ -1,0 +1,105 @@
+<div id="layoutSidenav_nav">
+  <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+    <div class="sb-sidenav-menu">
+      <div class="nav">
+        <!-- Product Management -->
+        <ng-container *ngIf="role === 'SUPER_ADMIN'">
+          <div class="sb-sidenav-menu-heading">Product Management</div>
+          <a class="nav-link" routerLink="/admin/bookings" routerLinkActive="active">
+            <div class="sb-nav-link-icon"><i class="fas fa-calendar-check"></i></div>
+            Product List
+          </a>
+          <a class="nav-link" routerLink="/admin/payments" routerLinkActive="active">
+            <div class="sb-nav-link-icon"><i class="fas fa-credit-card"></i></div>
+            Payment Methods
+          </a>
+        </ng-container>
+
+        <!-- CINEMA_ADMIN Profile -->
+        <ng-container *ngIf="role === 'CINEMA_ADMIN'">
+          <div class="sb-sidenav-menu-heading">Account</div>
+          <a class="nav-link" routerLink="/admin/cinemaAdmin/profile" routerLinkActive="active">
+            <div class="sb-nav-link-icon"><i class="fas fa-user-circle"></i></div>
+            Profile
+          </a>
+
+          <ng-container *ngIf="accountInfo.assignedCinemaName">
+            <a class="nav-link" [routerLink]="['/admin/cinema/details', accountInfo.assignedCinemaId]" routerLinkActive="active">
+              <div class="sb-nav-link-icon"><i class="fas fa-building"></i></div>
+              {{ accountInfo.assignedCinemaName }}
+            </a>
+            <a class="nav-link" routerLink="/admin/bookings" routerLinkActive="active">
+              <div class="sb-nav-link-icon"><i class="fas fa-calendar-check"></i></div>
+              Bookings
+            </a>
+          </ng-container>
+        </ng-container>
+
+        <!-- Cinema Management -->
+        <div class="sb-sidenav-menu-heading">Cinema Management</div>
+        <a class="nav-link" routerLink="/admin/cinemas" routerLinkActive="active">
+          <div class="sb-nav-link-icon"><i class="fas fa-theater-masks"></i></div>
+          Cinemas
+        </a>
+        <a class="nav-link" routerLink="/admin/features" routerLinkActive="active">
+          <div class="sb-nav-link-icon"><i class="fas fa-star"></i></div>
+          Features
+        </a>
+        <a class="nav-link" routerLink="/admin/showtimes" routerLinkActive="active">
+          <div class="sb-nav-link-icon"><i class="fas fa-calendar-alt"></i></div>
+          Showtimes
+        </a>
+        <a class="nav-link" routerLink="/admin/seat-types" routerLinkActive="active">
+          <div class="sb-nav-link-icon"><i class="fas fa-chair"></i></div>
+          Seat Types
+        </a>
+
+        <!-- Movie Management -->
+        <div class="sb-sidenav-menu-heading">Movie Management</div>
+        <a class="nav-link" routerLink="/admin/movies" routerLinkActive="active">
+          <div class="sb-nav-link-icon"><i class="fas fa-film"></i></div>
+          Movies
+        </a>
+
+        <ng-container *ngIf="role === 'SUPER_ADMIN'">
+          <a class="nav-link" routerLink="/admin/categories" routerLinkActive="active">
+            <div class="sb-nav-link-icon"><i class="fas fa-tags"></i></div>
+            Categories
+          </a>
+          <a class="nav-link" routerLink="/admin/casts" routerLinkActive="active">
+            <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
+            Casts
+          </a>
+        </ng-container>
+
+        <!-- Account Management & Others -->
+        <ng-container *ngIf="role === 'SUPER_ADMIN'">
+          <div class="sb-sidenav-menu-heading">Account Management</div>
+          <a class="nav-link" routerLink="/admin/cinema-admins" routerLinkActive="active">
+            <div class="sb-nav-link-icon"><i class="fas fa-user-tie"></i></div>
+            Cinema Admins
+          </a>
+          <a class="nav-link" routerLink="/admin/customers" routerLinkActive="active">
+            <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
+            Customers
+          </a>
+
+          <div class="sb-sidenav-menu-heading">Others</div>
+          <a class="nav-link" routerLink="/admin/states" routerLinkActive="active">
+            <div class="sb-nav-link-icon"><i class="fas fa-map-marker-alt"></i></div>
+            States
+          </a>
+          <a class="nav-link" routerLink="/admin/townships" routerLinkActive="active">
+            <div class="sb-nav-link-icon"><i class="fas fa-city"></i></div>
+            Townships
+          </a>
+        </ng-container>
+      </div>
+    </div>
+    
+    <div class="sb-sidenav-footer">
+      <div class="small">Logged in as:</div>
+      {{ accountInfo.name || 'Admin User' }}
+    </div>
+  </nav>
+</div>
