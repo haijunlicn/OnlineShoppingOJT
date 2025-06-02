@@ -1,40 +1,84 @@
-<!-- Primary Button -->
-<button class="btn" style="background-color: var(--color-primary); color: white;">
-  Shop Now
-</button>
 
-<!-- Card Example -->
-<div class="card" style="border-color: var(--color-border); background-color: white;">
-  <div class="card-body">
-    <h5 class="card-title" style="color: var(--color-primary);">Black Handbag</h5>
-    <p class="card-text" style="color: var(--color-accent);">MMK 285,000</p>
+<app-header></app-header>
+
+<main class="main-content">
+  <div class="container">
+    <!-- Hero Section -->
+    <section class="hero text-center mb-5">
+      <div class="hero-content">
+        <h1 class="hero-title mb-3">Elevate Your Style</h1>
+        <p class="hero-subtitle mb-4">Discover the finest in premium fashion and accessories.</p>
+        <button class="btn hero-btn position-relative overflow-hidden" (click)="onShopNow()">
+          <span>Shop Now</span>
+          <div class="btn-shine"></div>
+        </button>
+      </div>
+    </section>
+
+    <!-- Featured Product -->
+    <section class="featured-product mb-5">
+      <div class="row align-items-center justify-content-center">
+        <div class="col-auto">
+          <div class="product-image position-relative">
+            <div class="image-placeholder d-flex align-items-center justify-content-center">
+              <span class="product-emoji">👜</span>
+            </div>
+            <button class="btn wishlist-btn position-absolute" (click)="onWishlist()">
+              <i class="fas fa-heart"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="product-info">
+            <!-- Product Rating -->
+            <div class="product-rating d-flex align-items-center mb-2">
+              <span *ngFor="let filled of getRatingStars(); let i = index" 
+                    class="star me-1" 
+                    [class.star-filled]="filled" 
+                    [class.star-empty]="!filled">
+                <i class="fas fa-star"></i>
+              </span>
+              <span class="rating-text ms-2">(4.8)</span>
+            </div>
+            
+            <h2 class="product-title mb-2">Black Handbag</h2>
+            <p class="product-price mb-2">MMK 285,000</p>
+            <p class="product-description mb-3">Elegant simplicity in every piece</p>
+            
+            <button class="btn add-to-cart-btn d-flex align-items-center" (click)="onAddToCart()">
+              <i class="fas fa-shopping-bag me-2"></i>
+              <span>Add to Cart</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Grid -->
+    <section class="features-grid">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="feature-card text-center h-100">
+            <div class="feature-icon mb-3">🚚</div>
+            <h3 class="mb-2">Free Shipping</h3>
+            <p class="mb-0">On orders over MMK 500,000</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="feature-card text-center h-100">
+            <div class="feature-icon mb-3">🔒</div>
+            <h3 class="mb-2">Secure Payment</h3>
+            <p class="mb-0">100% secure transactions</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="feature-card text-center h-100">
+            <div class="feature-icon mb-3">↩️</div>
+            <h3 class="mb-2">Easy Returns</h3>
+            <p class="mb-0">30-day return policy</p>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
-</div>
-
-
-<button class="btn btn-primary">Checkout</button>
-<p class="text-primary">Elegant simplicity in every piece</p>
-
-
-<!-- Primary Button (Jet Black) -->
-<button class="btn" style="background-color: #1A1A1A; color: white;">
-  Shop Now
-</button>
-
-<!-- Card Example (White background, black title, dark green price) -->
-<div class="card" style="border-color: #E0E0E0; background-color: white;">
-  <div class="card-body">
-    <h5 class="card-title" style="color: #1A1A1A;">Black Handbag</h5>
-    <p class="card-text" style="color: #2E4A3F;">MMK 285,000</p>
-  </div>
-</div>
-
-<!-- Bootstrap Button with Jet Black color -->
-<button class="btn" style="background-color: #1A1A1A; color: white;">
-  Checkout
-</button>
-
-<!-- Paragraph with Primary Text (Charcoal) -->
-<p style="color: #333333;">
-  Elegant simplicity in every piece
-</p>
+</main>

@@ -1,0 +1,73 @@
+<header class="modern-header">
+  <div class="container-fluid">
+    <div class="row align-items-center">
+      <!-- Logo -->
+      <div class="col-auto">
+        <div class="logo">
+          <span class="logo-main">BRITIUM</span>
+          <span class="logo-sub">Gallery</span>
+        </div>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <div class="col d-none d-lg-block">
+        <nav class="main-nav">
+          <a href="#" class="nav-item">Home</a>
+          <a href="#" class="nav-item">Shop</a>
+          <a href="#" class="nav-item">About</a>
+          <a href="#" class="nav-item">Contact</a>
+        </nav>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="col-auto">
+        <div class="header-actions">
+          <!-- Icon Buttons -->
+          <button class="action-btn" (click)="onSearch()">
+            <i class="fas fa-search"></i>
+          </button>
+
+          <button class="action-btn" (click)="onWishlist()">
+            <i class="fas fa-heart"></i>
+          </button>
+
+          <button class="action-btn cart-btn" (click)="onCart()">
+            <i class="fas fa-shopping-bag"></i>
+            <span class="cart-count" *ngIf="cartItemCount > 0">{{ cartItemCount }}</span>
+          </button>
+
+          <!-- Auth Buttons -->
+          <button class="auth-btn auth-btn-outline d-none d-md-inline-block" (click)="onRegister()">
+            Register
+          </button>
+
+          <button class="auth-btn auth-btn-filled d-none d-md-inline-block" (click)="onSignIn()">
+            Sign In
+          </button>
+
+          <!-- Mobile Menu -->
+          <button class="mobile-toggle d-lg-none" (click)="toggleMenu()">
+            <span class="menu-line" [class.active]="isMenuOpen"></span>
+            <span class="menu-line" [class.active]="isMenuOpen"></span>
+            <span class="menu-line" [class.active]="isMenuOpen"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <div class="mobile-menu" [class.open]="isMenuOpen">
+      <nav class="mobile-nav">
+        <a href="#" class="mobile-nav-item">Home</a>
+        <a href="#" class="mobile-nav-item">Shop</a>
+        <a href="#" class="mobile-nav-item">About</a>
+        <a href="#" class="mobile-nav-item">Contact</a>
+      </nav>
+      
+      <div class="mobile-auth">
+        <button class="mobile-auth-btn outline" (click)="onRegister()">Register</button>
+        <button class="mobile-auth-btn filled" (click)="onSignIn()">Sign In</button>
+      </div>
+    </div>
+  </div>
+</header>

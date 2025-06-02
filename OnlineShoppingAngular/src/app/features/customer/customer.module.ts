@@ -7,6 +7,7 @@ import { RegisterComponent } from './auth/register/register.component';
 import { OtpVeficationComponent } from './auth/otp-vefication/otp-vefication.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { HomeComponent } from './general/home/home.component';
+import { HeaderComponent } from './common/header/header.component';
 
 
 @NgModule({
@@ -15,7 +16,8 @@ import { HomeComponent } from './general/home/home.component';
     RegisterComponent,
     OtpVeficationComponent,
     ResetPasswordComponent,
-    HomeComponent
+    HomeComponent,
+    HeaderComponent
   ],
   imports: [
     CommonModule,

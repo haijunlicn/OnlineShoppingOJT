@@ -10,19 +10,21 @@
 }
 
 body {
-  /* background-color: var(--color-background); */
-   background-color: red;
+  background-color: var(--color-background);
   color: var(--color-text);
   font-family: "Helvetica Neue", Arial, sans-serif;
+  /* padding-top: 10px; */
 }
 
-.text-primary {
-  color: var(--color-primary) !important;
+/* Bootstrap overrides */
+.container-fluid {
+  padding-left: 2rem;
+  padding-right: 2rem;
 }
-.bg-primary {
-  background-color: var(--color-primary) !important;
-}
-.btn-primary {
-  background-color: var(--color-primary) !important;
-  border-color: var(--color-primary) !important;
+
+@media (max-width: 768px) {
+  .container-fluid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
 }
