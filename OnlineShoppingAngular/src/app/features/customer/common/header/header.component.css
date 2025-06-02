@@ -1,18 +1,13 @@
 /* Modern Clean Header */
 .modern-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 1030; /* Above most elements */
-  background: rgba(249, 248, 246, 0.85); /* slightly more transparent */
-  backdrop-filter: blur(18px); /* more blur for glass effect */
-  -webkit-backdrop-filter: blur(18px);
-  border-bottom: 1.5px solid rgba(201, 184, 124, 0.13);
-  box-shadow: 0 8px 32px rgba(26,26,26,0.07), 0 1.5px 0 0 rgba(201,184,124,0.10);
-  border-radius: 0 0 18px 18px; /* soft bottom corners */
-  padding: 1.25rem 0 1.1rem 0; /* more vertical space */
-  transition: background 0.3s, box-shadow 0.3s, border-radius 0.3s;
+  background: rgba(249, 248, 246, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1.5px solid rgba(201, 184, 124, 0.13); /* subtle gold line */
+  box-shadow: 0 6px 24px 0 rgba(26,26,26,0.08); /* soft shadow for depth */
+  padding: 1rem 0;
+  position: relative;
+  z-index: 100;
 }
 
 /* Logo Styling */
@@ -61,8 +56,7 @@
 }
 
 .nav-item:hover {
-  color: var(--color-highlight);
-  text-shadow: 0 0 6px rgba(201,184,124,0.18);
+  color: var(--color-accent);
 }
 
 .nav-item::after {
@@ -72,7 +66,7 @@
   left: 0;
   width: 0;
   height: 1px;
-  background-color: rgba(201, 184, 124, 0.5);
+  background-color: var(--color-highlight);
   transition: width 0.3s ease;
 }
 
@@ -103,8 +97,8 @@
 }
 
 .action-btn:hover {
-  box-shadow: 0 2px 12px 0 rgba(201,184,124,0.18);
-  transition: box-shadow 0.2s;
+  background-color: rgba(26, 26, 26, 0.05);
+  color: var(--color-accent);
 }
 
 .cart-count {
@@ -196,7 +190,7 @@
   overflow: hidden;
   transition: max-height 0.3s ease;
   background: var(--color-background);
-  border-top: 1px solid var(--color-border);
+  /* border-top: 1px solid var(--color-border); */
 }
 
 .mobile-menu.open {
@@ -281,9 +275,4 @@
     padding-left: 1rem;
     padding-right: 1rem;
   }
-}
-
-/* Make sure main content is pushed down */
-.main-content, main, .container {
-  margin-top: 5.5rem; /* adjust if header height changes */
 }
