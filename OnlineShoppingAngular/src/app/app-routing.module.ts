@@ -3,16 +3,25 @@ import { RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
   {
-    path: 'auth',
+    path: 'customer',
     loadChildren: () =>
-      import('./features/customer/auth/customer-auth/customer-auth.module').then(m => m.CustomerAuthModule),
+      import('./features/customer/customer.module').then(m => m.CustomerModule),
   },
   {
-    path: 'admin-auth',
+    path: 'admin',
     loadChildren: () =>
-      import('./features/admin/admin-auth/admin-auth.module').then(m => m.AdminAuthModule),
+      import('./features/admin/admin.module').then(m => m.AdminModule),
   },
-  // other routes ...
+  {
+    path: '',
+    redirectTo: 'customer/home',
+    pathMatch: 'full',
+  },
+  {
+    path: '**',
+    redirectTo: 'customer/home',
+  }
+
 ];
 
 

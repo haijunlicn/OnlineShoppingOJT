@@ -1,1 +1,28 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --color-primary: #1A1A1A;
+  --color-accent: #2E4A3F;
+  --color-secondary: #5A4632;
+  --color-highlight: #C9B87C;
+  --color-background: #F9F8F6;
+  --color-text: #333333;
+  --color-text-muted: #777777;
+  --color-border: #E0E0E0;
+}
+
+body {
+  /* background-color: var(--color-background); */
+   background-color: red;
+  color: var(--color-text);
+  font-family: "Helvetica Neue", Arial, sans-serif;
+}
+
+.text-primary {
+  color: var(--color-primary) !important;
+}
+.bg-primary {
+  background-color: var(--color-primary) !important;
+}
+.btn-primary {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
