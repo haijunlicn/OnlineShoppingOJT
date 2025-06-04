@@ -5,12 +5,12 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.maven.OnlineShoppingSB.entity.User;
+import com.maven.OnlineShoppingSB.entity.UserEntity;
 
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Integer> {
+public interface UserRepository extends JpaRepository<UserEntity, Integer> {
     boolean existsByEmail(String email);
-    Optional<User> findByEmail(String email);
-    Optional<User> findById(Long id); // for OTP verification/resend
+    Optional<UserEntity> findByEmail(String email);
+    Optional<UserEntity> findById(Long id); // for OTP verification/resend
 }

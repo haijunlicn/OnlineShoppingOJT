@@ -18,7 +18,7 @@ public class Otp {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private UserEntity user;
 
     @Column(name = "otp_code")
     private String otpCode;

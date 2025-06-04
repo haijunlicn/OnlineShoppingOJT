@@ -1,25 +1,31 @@
-/* Main Layout */
-#layoutSidenav {
-  display: flex;
+/* app-admin-sidebar {
+  min-width: 220px;
+  max-width: 240px;
+  background: #fff;
+  border-right: 1px solid #e5e7eb;
   min-height: 100vh;
 }
 
-#layoutSidenav_content {
-  flex: 1;
-  margin-left: 260px;
-  min-height: 100vh;
-  background-color: var(--color-background);
-}
-
-/* Main Content */
 main {
-  padding: 2rem;
-  min-height: calc(100vh - 120px);
+  min-height: 100vh;
+  background: #f6f8fa;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  #layoutSidenav_content {
-    margin-left: 0;
-  }
+.card {
+  background: #fff;
+  border: none;
 }
+
+.table thead th {
+  font-weight: 600;
+  color: #6c757d;
+  background: #f9fafb;
+}
+
+.table tbody tr {
+  transition: background 0.2s;
+}
+
+.table tbody tr:hover {
+  background: #f1f3f6;
+} */

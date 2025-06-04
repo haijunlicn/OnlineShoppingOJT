@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
+import com.maven.OnlineShoppingSB.entity.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.maven.OnlineShoppingSB.dto.otpDTO;
 import com.maven.OnlineShoppingSB.entity.Otp;
-import com.maven.OnlineShoppingSB.entity.User;
 import com.maven.OnlineShoppingSB.repository.OtpRepository;
 import com.maven.OnlineShoppingSB.repository.UserRepository;
 import com.maven.OnlineShoppingSB.service.AuthService;
@@ -37,7 +37,7 @@ public class authController {
     @Autowired private EmailService emailService;
     
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody User user) {
+    public ResponseEntity<String> register(@RequestBody UserEntity user) {
     	String result = userService.registerUser(user);
 
         if (result.startsWith("email sending success")) {
@@ -63,13 +63,13 @@ public class authController {
     		System.out.println(request.getPurpose());
     		System.out.println(request.getId());
     		
-        Optional<User> userOpt = userRepo.findById(request.getUserId());
+        Optional<UserEntity> userOpt = userRepo.findById(request.getUserId());
         if (userOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("message", "Invalid user."));
         }
         
-        User user = userOpt.get();
+        UserEntity user = userOpt.get();
 
         Optional<Otp> otpOpt = otpRepo.findTopByUserIdAndOtpCodeOrderByCreatedDateDesc(
         	    request.getUserId(),           // userId from frontend
@@ -94,6 +94,7 @@ public class authController {
             // Step 3: Mark OTP as used and user as verified
             otpEntity.setIsUsed(true);
             otpEntity.setPurpose(request.getPurpose());
+            System.out.println("purpose test : " + request.getPurpose()); // it was null before
             otpRepo.save(otpEntity);
            
             user.setIsVerified(true);
@@ -108,12 +109,12 @@ public class authController {
     
     @GetMapping("/resend")
     public ResponseEntity<?> resendOtp(@RequestParam("userId") Long userId) {
-        Optional<User> userOpt = userRepo.findById(userId);
+        Optional<UserEntity> userOpt = userRepo.findById(userId);
         if (userOpt.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Invalid user."));
         }
 
-        User user = userOpt.get();
+        UserEntity user = userOpt.get();
 
         // Generate random 6-digit OTP
         String newOtp = String.format("%06d", (int)(Math.random() * 1_000_000));

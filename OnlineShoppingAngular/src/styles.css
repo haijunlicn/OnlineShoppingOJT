@@ -49,3 +49,36 @@ body {
 }
 
 }
+
+/* Main Layout */
+#layoutSidenav {
+  display: flex;
+  min-height: 100vh;
+  margin-top: 70px;
+}
+
+#layoutSidenav_content {
+  flex: 1;
+  margin-left: 260px;
+  min-height: 100vh;
+  background-color: var(--color-background);
+}
+
+/* Main Content */
+/* main {
+  padding: 180rem;
+  min-height: calc(100vh - 120px);
+} */
+
+/* Responsive */
+@media (max-width: 768px) {
+  #layoutSidenav_content {
+    margin-left: 0;
+  }
+}
+
+/* Margin left so table container not under sidebar */
+main.flex-grow-1 {
+  margin-left: 220px; /* adjust this width to your sidebar width */
+  transition: margin-left 0.3s ease;
+}

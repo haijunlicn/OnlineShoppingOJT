@@ -27,6 +27,6 @@ public class Role {
     private LocalDateTime createdDate;
 
     @OneToMany(mappedBy = "role")
-    private List<User> users;
+    private List<UserEntity> users;
 
 }

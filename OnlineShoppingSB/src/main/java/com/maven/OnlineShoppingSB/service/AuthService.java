@@ -4,12 +4,12 @@ package com.maven.OnlineShoppingSB.service;
 import java.time.LocalDateTime;
 import java.util.Random;
 
+import com.maven.OnlineShoppingSB.entity.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.maven.OnlineShoppingSB.entity.Otp;
 import com.maven.OnlineShoppingSB.entity.Role;
-import com.maven.OnlineShoppingSB.entity.User;
 import com.maven.OnlineShoppingSB.repository.OtpRepository;
 import com.maven.OnlineShoppingSB.repository.RoleRepository;
 import com.maven.OnlineShoppingSB.repository.UserRepository;
@@ -22,7 +22,7 @@ public class AuthService {
 	    @Autowired private OtpRepository otpRepo;
 	    @Autowired private EmailService emailService;
 
-	    public String registerUser(User userInput) {
+	    public String registerUser(UserEntity userInput) {
 	        // 1. Check duplicate email
 	        if (userRepo.existsByEmail(userInput.getEmail())) {
 	            return "email already exists";
@@ -43,7 +43,7 @@ public class AuthService {
 	        userInput.setUpdatedDate(LocalDateTime.now());
 
 	        // 4. Save user to get id
-	        User savedUser = userRepo.save(userInput);
+	        UserEntity savedUser = userRepo.save(userInput);
 	        Long userId = savedUser.getId();
 
 	        // 5. Generate OTP (6 digit numeric)
@@ -56,7 +56,8 @@ public class AuthService {
 	        Otp otp = new Otp();
 	        otp.setUser(savedUser);
 	        otp.setOtpCode(otpCode);
-	        otp.setIsUsed(false);///////////
+			// otp.setPurpose("EMAIL_VERIFICATION");
+	        otp.setIsUsed(false);
 	        otp.setCreatedDate(now);
 	        otp.setExpiryTime(expiryTime);
 	        otpRepo.save(otp);

@@ -44,10 +44,8 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/auth/register","/auth/verify-otp", "/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/public/**").permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 .exceptionHandling(ex -> ex
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
@@ -66,8 +64,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-
-
 @Bean
 public CorsConfigurationSource corsConfigurationSource() {
     System.out.println("CORS config loaded ");
@@ -82,9 +78,6 @@ public CorsConfigurationSource corsConfigurationSource() {
     source.registerCorsConfiguration("/**", config);
     return source;
 }
-
-
-
     @Bean
     public AuthenticationProvider daoAuthProvider() {
         DaoAuthenticationProvider auth = new DaoAuthenticationProvider();

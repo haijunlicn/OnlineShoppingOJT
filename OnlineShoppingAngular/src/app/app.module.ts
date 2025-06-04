@@ -9,39 +9,39 @@ import { AppComponent } from './app.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { VerifyComponent } from './features/customer/auth/verify/verify.component';
-
-
-
+import { TableModule } from 'primeng/table';
 
 
 @NgModule({
   declarations: [
-   AppComponent,
+    AppComponent,
     VerifyComponent,
-  
 
-  
+
+
   ],
   imports: [
-   BrowserModule,
+    BrowserModule,
     AppRoutingModule,
+    HttpClientModule,
     RouterModule,
     FormsModule,
     // ReactiveFormsModule,
-      BrowserAnimationsModule, // required animations module
-     
-   ToastrModule.forRoot({
-    
-  positionClass: 'toast-bottom-right', // 👈 ညာဘက်အောက်
-  toastClass: 'ngx-toastr toast-custom', // 👈 custom class များသုံးဖို့
- // ✅ Custom class
+    BrowserAnimationsModule, // required animations module
+
+    ToastrModule.forRoot({
+
+      positionClass: 'toast-bottom-right', // 👈 ညာဘက်အောက်
+      toastClass: 'ngx-toastr toast-custom', // 👈 custom class များသုံးဖို့
+      // ✅ Custom class
       timeOut: 3000,                         // Optional: 3 seconds
       closeButton: true,
       progressBar: true,
     }),
     FormsModule,
     ReactiveFormsModule,
-    HttpClientModule
+    HttpClientModule,
+    TableModule
   ],
   providers: [
     provideClientHydration(withEventReplay())

@@ -79,3 +79,6 @@
 .nav-link:hover {
   color: #c9b87c !important;
 }
+
+.navbar { min-height: 64px; }
+.avatar { font-weight: bold; }

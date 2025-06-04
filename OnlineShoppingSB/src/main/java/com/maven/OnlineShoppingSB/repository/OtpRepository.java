@@ -1,13 +1,11 @@
 package com.maven.OnlineShoppingSB.repository;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.maven.OnlineShoppingSB.entity.Otp;
-import com.maven.OnlineShoppingSB.entity.User;
 
 @Repository
 public interface OtpRepository extends JpaRepository<Otp, Long> {

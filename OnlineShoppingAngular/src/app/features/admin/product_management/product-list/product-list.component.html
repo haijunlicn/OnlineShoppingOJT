@@ -1,0 +1,138 @@
+<app-admin-header></app-admin-header>
+<div class="d-flex" style="min-height: 100vh;">
+  <app-admin-sidebar></app-admin-sidebar>
+  <main class="flex-grow-1 bg-light py-4 px-3">
+    <div class="main-content container-fluid">
+      <div class="card shadow-sm rounded-3 border-0  mt-2">
+        <!-- Table -->
+        <div class="card-body p-0">
+
+          <div class="d-flex justify-content-between align-items-center mb-3 px-3">
+            <h4 class="mb-0 fw-bold">Products</h4>
+            <button pButton type="button" routerLink="/admin/productCreate" class="p-button p-button-success" icon="pi pi-plus"
+              label="Add Product"></button>
+          </div>
+
+
+          <p-table #dt [value]="products" [paginator]="true" [rows]="5" [showCurrentPageReport]="true"
+            [rowsPerPageOptions]="[5, 10, 25]" [globalFilterFields]="['name', 'price', 'category']"
+            styleClass="p-datatable-products"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
+            [tableStyle]="{ 'min-width': '100%' }" [sortField]="'name'" [sortOrder]="1">
+            <ng-template pTemplate="header">
+              <tr>
+                <th pSortableColumn="name" style="min-width: 200px">
+                  Product <p-sortIcon field="name"></p-sortIcon>
+                </th>
+                <th pSortableColumn="category" style="min-width: 150px">
+                  Category <p-sortIcon field="category"></p-sortIcon>
+                </th>
+                <th pSortableColumn="price" style="min-width: 150px">
+                  Price <p-sortIcon field="price"></p-sortIcon>
+                </th>
+                <th pSortableColumn="status" style="min-width: 120px">
+                  Status <p-sortIcon field="status"></p-sortIcon>
+                </th>
+                <th style="min-width: 100px">Actions</th>
+              </tr>
+              <tr *ngIf="showFilters">
+                <th>
+                  <input #searchInput type="text" pInputText placeholder="Search products..." class="form-control ps-5"
+                    style="min-width: 250px" (input)="dt.filterGlobal(searchInput.value, 'contains')" />
+
+                </th>
+                <th>
+                  <p-dropdown [options]="categories" placeholder="All Categories"
+                    (onChange)="dt.filter($event.value, 'category', 'equals')" styleClass="w-100"
+                    [showClear]="true"></p-dropdown>
+                </th>
+                <th>
+                  <p-slider [range]="true" [min]="0" [max]="maxPrice" (onSlideEnd)="onPriceChange($event)"
+                    styleClass="w-100"></p-slider>
+                  <div class="price-range-labels d-flex justify-content-between mt-1">
+                    <small>{{ priceRange[0] | currency }}</small>
+                    <small>{{ priceRange[1] | currency }}</small>
+                  </div>
+                </th>
+                <th>
+                  <p-dropdown [options]="statuses" placeholder="All Statuses"
+                    (onChange)="dt.filter($event.value, 'status', 'equals')" styleClass="w-100"
+                    [showClear]="true"></p-dropdown>
+                </th>
+                <th></th>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-product>
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="product-image me-3">
+                      <img [src]="
+                          product.image ||
+                          'https://via.placeholder.com/60x60/C9B87C/FFFFFF?text=' +
+                            product.name.charAt(0)
+                        " [alt]="product.name" class="product-img" />
+                    </div>
+                    <div>
+                      <h6 class="mb-0 product-name">{{ product.name }}</h6>
+                      <small class="text-muted">SKU: {{ product.sku }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="category-badge">{{
+                    product.category || 'Luxury Handbag'
+                    }}</span>
+                </td>
+                <td>
+                  <span class="price-amount">{{ product.price | currency }}</span>
+                </td>
+                <td>
+                  <span class="status-badge" [ngClass]="product.status ? 'status-active' : 'status-inactive'">
+                    {{ product.status ? 'In Stock' : 'Out of Stock' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="d-flex gap-2">
+                    <button pButton pRipple icon="pi pi-eye" class="p-button-rounded p-button-text p-button-info"
+                      pTooltip="View Details" tooltipPosition="top"></button>
+                    <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-warning"
+                      pTooltip="Edit" tooltipPosition="top"></button>
+                    <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger"
+                      pTooltip="Delete" tooltipPosition="top"></button>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td colspan="5" class="text-center p-5">
+                  <div class="d-flex flex-column align-items-center">
+                    <i class="pi pi-shopping-bag mb-3" style="font-size: 3rem; opacity: 0.3"></i>
+                    <h5>No products found</h5>
+                    <p class="text-muted">Try adjusting your search or filter criteria</p>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="paginatorleft">
+              <button pButton type="button" icon="pi pi-refresh" class="p-button-text"></button>
+            </ng-template>
+
+            <ng-template pTemplate="paginatorright">
+              <span class="text-muted me-3">Export:</span>
+              <button pButton type="button" icon="pi pi-file-excel" class="p-button-text p-button-success me-2"
+                pTooltip="XLS"></button>
+              <button pButton type="button" icon="pi pi-file-pdf" class="p-button-text p-button-danger"
+                pTooltip="PDF"></button>
+            </ng-template>
+          </p-table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<app-admin-footer></app-admin-footer>
