@@ -3,25 +3,29 @@ import { CommonModule } from '@angular/common';
 
 import { CustomerRoutingModule } from './customer-routing.module';
 import { LoginComponent } from './auth/login/login.component';
-import { RegisterComponent } from './auth/register/register.component';
-import { OtpVeficationComponent } from './auth/otp-vefication/otp-vefication.component';
-import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
+
+
 import { HomeComponent } from './general/home/home.component';
 import { HeaderComponent } from './common/header/header.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { RegisterComponent } from './auth/register/register.component';
+
 
 
 @NgModule({
   declarations: [
     LoginComponent,
-    RegisterComponent,
-    OtpVeficationComponent,
-    ResetPasswordComponent,
+   RegisterComponent,
     HomeComponent,
-    HeaderComponent
+    HeaderComponent,
+   
   ],
   imports: [
     CommonModule,
-    CustomerRoutingModule
+    CustomerRoutingModule,
+    FormsModule,
+    ReactiveFormsModule, 
+    
   ]
 })
 export class CustomerModule { }

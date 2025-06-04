@@ -1,20 +1,47 @@
+
+import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { BrowserModule, provideClientHydration, withEventReplay } from '@angular/platform-browser';
-
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ToastrModule } from 'ngx-toastr';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { VerifyComponent } from './features/customer/auth/verify/verify.component';
+
+
+
+
 
 @NgModule({
   declarations: [
-    AppComponent
+   AppComponent,
+    VerifyComponent,
+  
+
+  
   ],
   imports: [
-    BrowserModule,
+   BrowserModule,
     AppRoutingModule,
     RouterModule,
-    FormsModule
+    FormsModule,
+    // ReactiveFormsModule,
+      BrowserAnimationsModule, // required animations module
+     
+   ToastrModule.forRoot({
+    
+  positionClass: 'toast-bottom-right', // 👈 ညာဘက်အောက်
+  toastClass: 'ngx-toastr toast-custom', // 👈 custom class များသုံးဖို့
+ // ✅ Custom class
+      timeOut: 3000,                         // Optional: 3 seconds
+      closeButton: true,
+      progressBar: true,
+    }),
+    FormsModule,
+    ReactiveFormsModule,
+    HttpClientModule
   ],
   providers: [
     provideClientHydration(withEventReplay())
@@ -22,3 +49,4 @@ import { RouterModule } from '@angular/router';
   bootstrap: [AppComponent]
 })
 export class AppModule { }
+

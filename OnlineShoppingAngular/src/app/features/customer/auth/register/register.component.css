@@ -1,0 +1,19 @@
+/* Brown background for all toastr */
+.toast-custom {
+  background-color: #5B3A29 !important;
+  color: #fff !important;
+}
+
+/* Optional: change icons or padding */
+.toast-custom .toast-message {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.toast-custom .toast-title {
+  font-weight: bold;
+}
+
+.toast-custom .toast-close-button {
+  color: #fff !important;
+}

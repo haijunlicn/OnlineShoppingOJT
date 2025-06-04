@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
+
 const routes: Routes = [
   {
     path: 'customer',
@@ -17,10 +18,14 @@ const routes: Routes = [
     redirectTo: 'customer/home',
     pathMatch: 'full',
   },
-  {
-    path: '**',
-    redirectTo: 'customer/home',
-  }
+  // {
+  //   path: '',
+  //   component: HelloComponent,
+  // },
+  // {
+  //   path: '**',
+  //   redirectTo: 'customer/home',
+  // }
 
 ];
 
