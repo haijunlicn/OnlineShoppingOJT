@@ -7,10 +7,13 @@ import { LoginComponent } from './auth/login/login.component';
 
 const routes: Routes = [  
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   {
     path: 'home',
     component: HomeComponent,
 =======
+=======
+>>>>>>> Stashed changes
   { path: 'home', component: HomeComponent },
   { path: 'auth/verify/:id', component: VerifyComponent },
 
@@ -21,6 +24,9 @@ const routes: Routes = [
   {
     path: 'auth/login',
     component: LoginComponent
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   },
 ];
