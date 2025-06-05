@@ -79,7 +79,7 @@ public class UserEntity {
 
     @ManyToOne
     @JoinColumn(name = "role_id")
-    private Role role;
+    private RoleEntity role;
 
     private Boolean isVerified;
     private Boolean delFg;
@@ -88,6 +88,6 @@ public class UserEntity {
     private LocalDateTime updatedDate;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<Otp> otps;
+    private List<OtpEntity> otps;
 
 }

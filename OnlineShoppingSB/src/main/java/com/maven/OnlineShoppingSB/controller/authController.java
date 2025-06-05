@@ -16,13 +16,25 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.maven.OnlineShoppingSB.config.JwtService;
+import com.maven.OnlineShoppingSB.dto.LoginRequest;
+import com.maven.OnlineShoppingSB.dto.ResetPasswordRequest;
 import com.maven.OnlineShoppingSB.dto.otpDTO;
-import com.maven.OnlineShoppingSB.entity.Otp;
+import com.maven.OnlineShoppingSB.entity.OtpEntity;
 import com.maven.OnlineShoppingSB.repository.OtpRepository;
 import com.maven.OnlineShoppingSB.repository.UserRepository;
 import com.maven.OnlineShoppingSB.service.AuthService;
 import com.maven.OnlineShoppingSB.service.EmailService;
 
+
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 
 @CrossOrigin(origins="http://localhost:4200")
@@ -35,6 +47,23 @@ public class authController {
     @Autowired private UserRepository userRepo;
     @Autowired private OtpRepository otpRepo;
     @Autowired private EmailService emailService;
+    
+    @Autowired
+    private AuthenticationManager authManager;
+    
+
+    
+    @Autowired
+    private JwtService jwtService;
+  
+
+ 
+
+   // private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+
+    
+    
     
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody UserEntity user) {
@@ -71,12 +100,12 @@ public class authController {
         
         UserEntity user = userOpt.get();
 
-        Optional<Otp> otpOpt = otpRepo.findTopByUserIdAndOtpCodeOrderByCreatedDateDesc(
+        Optional<OtpEntity> otpOpt = otpRepo.findTopByUserIdAndOtpCodeOrderByCreatedDateDesc(
         	    request.getUserId(),           // userId from frontend
         	    request.getOtpCode()       // OTP code entered by user
         	);
         if (otpOpt.isPresent()) {
-            Otp otpEntity = otpOpt.get();
+            OtpEntity otpEntity = otpOpt.get();
 
             // Step 1: Check if OTP code matches and not used yet
             if (!otpEntity.getOtpCode().equals(request.getOtpCode()) || otpEntity.getIsUsed()) {
@@ -119,7 +148,7 @@ public class authController {
         // Generate random 6-digit OTP
         String newOtp = String.format("%06d", (int)(Math.random() * 1_000_000));
 
-        Otp otp = new Otp();
+        OtpEntity otp = new OtpEntity();
         otp.setUser(user);
         otp.setOtpCode(newOtp);
         otp.setIsUsed(false);
@@ -141,6 +170,54 @@ public class authController {
                 .body(Map.of("message", "Failed to send OTP email."));
         }
     } 
+    
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        try {
+            Authentication auth = authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                    loginRequest.getEmail(), 
+                    loginRequest.getPassword()
+                )
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(auth);
+
+            UserEntity user = userRepo.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+            String token = jwtService.generateTokenWithUserDetails(user);
+
+            return ResponseEntity.ok(Map.of("token", token));
+
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message","Invalid "+ e.getMessage()));
+
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "user Invalid "+e.getMessage()));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "An error occurred: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        userService.sendResetLink(email);
+        return ResponseEntity.ok("Reset link sent.");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest req) {
+    	userService.resetPassword(req.getToken(), req.getPassword());
+        return ResponseEntity.ok("Password reset successful.");
+    }
+
+   
 
 
 

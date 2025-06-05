@@ -18,7 +18,6 @@ import { TableModule } from 'primeng/table';
     VerifyComponent,
 
 
-
   ],
   imports: [
     BrowserModule,
