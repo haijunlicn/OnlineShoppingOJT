@@ -14,8 +14,7 @@ import com.maven.OnlineShoppingSB.entity.UserEntity;
 
 >>>>>>> Stashed changes
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+
 
 @Service
 public class JwtService {
@@ -24,17 +23,13 @@ public class JwtService {
 
 
     public String generateTokenWithUserDetails(UserEntity u) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("id", u.getId());
-        claims.put("email", u.getEmail());
-        claims.put("username", u.getName());
-
+        // 7 days in milliseconds: 7 * 24 * 60 * 60 * 1000
+        long expirationTime = 7 * 24 * 60 * 60 * 1000L;
 
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(u.getEmail())
+                .setSubject(u.getEmail()) // Subject only
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 day
+                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()))
                 .compact();
     }

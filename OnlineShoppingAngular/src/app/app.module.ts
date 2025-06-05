@@ -23,7 +23,6 @@ import { HttpClientModule } from '@angular/common/http';
     VerifyComponent,
 
 
-
   ],
   imports: [
     BrowserModule,
