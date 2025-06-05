@@ -1,26 +1,12 @@
 package com.maven.OnlineShoppingSB.service;
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 import com.maven.OnlineShoppingSB.entity.UserEntity;
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-import com.maven.OnlineShoppingSB.entity.UserEntity;
->>>>>>> Stashed changes
-=======
-import com.maven.OnlineShoppingSB.entity.UserEntity;
->>>>>>> Stashed changes
 import com.maven.OnlineShoppingSB.repository.UserRepository;
 
 import java.util.ArrayList;
@@ -42,13 +28,5 @@ public class CustomUserDetailsService implements UserDetailsService {
                 new ArrayList<>()  // authorities (e.g. ROLE_USER) – empty for now
         );
     }
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 }
 
-=======
-}
->>>>>>> Stashed changes
-=======
-}
->>>>>>> Stashed changes

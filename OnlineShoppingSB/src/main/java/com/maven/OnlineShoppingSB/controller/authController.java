@@ -47,77 +47,77 @@ public class authController {
     @Autowired private UserRepository userRepo;
     @Autowired private OtpRepository otpRepo;
     @Autowired private EmailService emailService;
-    
+
     @Autowired
     private AuthenticationManager authManager;
-    
 
-    
+
+
     @Autowired
     private JwtService jwtService;
-  
-
- 
-
-   // private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
 
-    
-    
-    
+
+
+    // private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+
+
+
+
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody UserEntity user) {
-    	String result = userService.registerUser(user);
+        String result = userService.registerUser(user);
 
         if (result.startsWith("email sending success")) {
             String id = result.substring("email sending success".length());
-            
+
             return ResponseEntity.ok("Email sent successfully. User ID: " + id);
         } else if ("email already exists".equals(result)) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .body("email already exists");
-            }
-        	
-        	else {
-        		System.out.println(result);
+        }
+
+        else {
+            System.out.println(result);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
         }
     }
     @PostMapping("/verify-otp")
     public ResponseEntity<?> verifyOtp(@RequestBody otpDTO request) {
         // Find user by userId from request DTO
-    		System.out.println(request.getUserId());
-    		System.out.println(request.getOtpCode());
-    		System.out.println(request.getPurpose());
-    		System.out.println(request.getId());
-    		
+        System.out.println(request.getUserId());
+        System.out.println(request.getOtpCode());
+        System.out.println(request.getPurpose());
+        System.out.println(request.getId());
+
         Optional<UserEntity> userOpt = userRepo.findById(request.getUserId());
         if (userOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("message", "Invalid user."));
+                    .body(Map.of("message", "Invalid user."));
         }
-        
+
         UserEntity user = userOpt.get();
 
         Optional<OtpEntity> otpOpt = otpRepo.findTopByUserIdAndOtpCodeOrderByCreatedDateDesc(
-        	    request.getUserId(),           // userId from frontend
-        	    request.getOtpCode()       // OTP code entered by user
-        	);
+                request.getUserId(),           // userId from frontend
+                request.getOtpCode()       // OTP code entered by user
+        );
         if (otpOpt.isPresent()) {
             OtpEntity otpEntity = otpOpt.get();
 
             // Step 1: Check if OTP code matches and not used yet
             if (!otpEntity.getOtpCode().equals(request.getOtpCode()) || otpEntity.getIsUsed()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("message", "Invalid OTP code. Please try again."));
+                        .body(Map.of("message", "Invalid OTP code. Please try again."));
             }
 
             // Step 2: Check expiry time (within 2 minutes)
             LocalDateTime now = LocalDateTime.now();
             if (otpEntity.getExpiryTime().isBefore(now)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("message", "OTP expired. Please request a new one."));
+                        .body(Map.of("message", "OTP expired. Please request a new one."));
             }
 
             // Step 3: Mark OTP as used and user as verified
@@ -125,7 +125,7 @@ public class authController {
             otpEntity.setPurpose(request.getPurpose());
             System.out.println("purpose test : " + request.getPurpose()); // it was null before
             otpRepo.save(otpEntity);
-           
+
             user.setIsVerified(true);
             userRepo.save(user);
 
@@ -133,9 +133,9 @@ public class authController {
         }
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(Map.of("message", "Invalid otp varification"));
+                .body(Map.of("message", "Invalid otp varification"));
     }
-    
+
     @GetMapping("/resend")
     public ResponseEntity<?> resendOtp(@RequestParam("userId") Long userId) {
         Optional<UserEntity> userOpt = userRepo.findById(userId);
@@ -159,32 +159,32 @@ public class authController {
         otpRepo.save(otp);
 
         boolean sent = emailService.sendOtpEmail(user.getEmail(), newOtp);
-       
+
         if (sent) {
             return ResponseEntity.ok(Map.of(
-                "message", "OTP resent to your email.",
-                "userId", userId // return userId as separate field
+                    "message", "OTP resent to your email.",
+                    "userId", userId // return userId as separate field
             ));
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "Failed to send OTP email."));
+                    .body(Map.of("message", "Failed to send OTP email."));
         }
-    } 
-    
+    }
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
             Authentication auth = authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                    loginRequest.getEmail(), 
-                    loginRequest.getPassword()
-                )
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getEmail(),
+                            loginRequest.getPassword()
+                    )
             );
 
             SecurityContextHolder.getContext().setAuthentication(auth);
 
             UserEntity user = userRepo.findByEmail(loginRequest.getEmail())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
             String token = jwtService.generateTokenWithUserDetails(user);
 
@@ -213,11 +213,11 @@ public class authController {
 
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest req) {
-    	userService.resetPassword(req.getToken(), req.getPassword());
+        userService.resetPassword(req.getToken(), req.getPassword());
         return ResponseEntity.ok("Password reset successful.");
     }
 
-   
+
 
 
 

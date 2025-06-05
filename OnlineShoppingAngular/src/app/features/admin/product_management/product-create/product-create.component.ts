@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-<<<<<<< Updated upstream
 import { FormBuilder, FormGroup, FormArray, Validators, FormControl } from '@angular/forms';
 import { BrandDTO, CreateProductRequestDTO, ProductOptionDTO, ProductVariantDTO } from '../../../../core/models/product.model';
 import { CategoryDTO, CategoryNode } from '../../../../core/models/category-dto';
@@ -9,15 +8,6 @@ import { CategoryService } from '../../../../core/services/category.service';
 import { OptionTypeDTO, OptionValueDTO } from '../../../../core/models/option.model';
 import { ProductService } from '../../../../core/services/product.service';
 import { VariantGeneratorService } from '../../../../core/services/variant-generator.service';
-=======
-import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
-import { BrandDTO, CreateProductRequestDTO, OptionTypeDTO, ProductVariantDTO } from '../../../../core/models/product.model';
-import { CategoryDTO, CategoryNode } from '../../../../core/models/category-dto';
-import { OptionTypeService } from '../../../../core/services/option-type.service';
-import { BrandService } from '../../../../core/services/brand.service';
-import { CategoryService } from '../../../../core/services/category.service';
-import { log } from 'console';
->>>>>>> Stashed changes
 
 @Component({
   selector: 'app-product-create',
@@ -31,7 +21,6 @@ export class ProductCreateComponent implements OnInit {
   bulkStockValue: number = 10;
   selectedCategory: CategoryDTO | null = null;
   flatCategories: CategoryDTO[] = [];
-<<<<<<< Updated upstream
   brands: BrandDTO[] = [];
   categories: CategoryDTO[] = [];
   optionTypes: OptionTypeDTO[] = [];
@@ -54,50 +43,10 @@ export class ProductCreateComponent implements OnInit {
         console.error('Failed to fetch categories', err);
         this.loading.categories = false;
       }
-=======
-
-  brands: BrandDTO[] = [];
-  categories: CategoryDTO[] = [];
-  optionTypes: OptionTypeDTO[] = [];
-
-  fetchCategories(): void {
-    this.categoryService.getAllCategories().subscribe({
-      next: (res) => {
-        const map = new Map<number, CategoryNode>();
-
-        // Build map
-        res.forEach(cat => {
-          map.set(cat.id!, { ...cat, children: [] });
-        });
-
-        // Assign children to parents
-        const roots: CategoryNode[] = [];
-        map.forEach(cat => {
-          if (cat.parentCategoryId) {
-            const parent = map.get(cat.parentCategoryId);
-            if (parent) {
-              parent.children?.push(cat);
-            }
-          } else {
-            roots.push(cat);
-          }
-        });
-
-        this.categories = roots;
-
-        // THIS IS THE MISSING LINE - Call flattenCategories after building the tree
-        this.flattenCategories();
-
-        console.log('Categories tree:', this.categories);
-        console.log('Flattened categories:', this.flatCategories);
-      },
-      error: (err) => console.error('Failed to fetch categories', err)
->>>>>>> Stashed changes
     });
   }
 
   fetchBrands(): void {
-<<<<<<< Updated upstream
     this.loading.brands = true;
     this.brandService.getAllBrands().subscribe({
       next: (data) => {
@@ -108,16 +57,10 @@ export class ProductCreateComponent implements OnInit {
         console.error('Failed to fetch brands', err);
         this.loading.brands = false;
       }
-=======
-    this.brandService.getAllBrands().subscribe({
-      next: (data) => this.brands = data,
-      error: (err) => console.error('Failed to fetch brands', err)
->>>>>>> Stashed changes
     });
   }
 
   fetchOptionTypes(): void {
-<<<<<<< Updated upstream
     this.loading.optionTypes = true;
     this.optionService.getAllOptionTypes().subscribe({
       next: (data) => {
@@ -129,36 +72,13 @@ export class ProductCreateComponent implements OnInit {
         console.error('Failed to fetch option types', err);
         this.loading.optionTypes = false;
       }
-=======
-    this.optionTypeService.getAllOptionTypes().subscribe({
-      next: (data) => this.optionTypes = data,
-      error: (err) => console.error('Failed to fetch option types', err)
->>>>>>> Stashed changes
     });
   }
 
   // Flatten the hierarchical categories into a single array
   flattenCategories(): void {
     this.flatCategories = [];
-<<<<<<< Updated upstream
     this.categoryService.flattenCategoriesRecursive(this.categories, this.flatCategories);
-=======
-    this.flattenCategoriesRecursive(this.categories);
-  }
-
-  private flattenCategoriesRecursive(categories: CategoryDTO[], level: number = 0): void {
-    categories.forEach(category => {
-      // Add level property if it doesn't exist
-      (category as any).level = level;
-
-      this.flatCategories.push(category);
-      if (category.children && category.children.length > 0) {
-        this.flattenCategoriesRecursive(category.children, level + 1);
-      }
-    });
-
-    console.log('Flattened categories:', this.flatCategories);
->>>>>>> Stashed changes
   }
 
   // Category selection methods
@@ -206,23 +126,15 @@ export class ProductCreateComponent implements OnInit {
 
   // Get indentation class based on category level
   getCategoryIndentClass(level: number): string {
-<<<<<<< Updated upstream
     return `category-level-${Math.min(level, 4)}`;
-=======
-    return `category-level-${level}`;
->>>>>>> Stashed changes
   }
 
   constructor(private fb: FormBuilder,
     private categoryService: CategoryService,
     private brandService: BrandService,
-<<<<<<< Updated upstream
     private optionService: OptionService,
     private productService: ProductService,
     private variantGeneratorService: VariantGeneratorService) {
-=======
-    private optionTypeService: OptionTypeService) {
->>>>>>> Stashed changes
 
     this.productForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
@@ -251,7 +163,6 @@ export class ProductCreateComponent implements OnInit {
     return this.productForm.get('variants') as FormArray;
   }
 
-<<<<<<< Updated upstream
   // addOption(): void {
   //   const optionGroup = this.fb.group({
   //     id: ['', Validators.required],
@@ -261,21 +172,11 @@ export class ProductCreateComponent implements OnInit {
 
   //   this.options.push(optionGroup);
   // }
-=======
-  addOption(): void {
-    const optionGroup = this.fb.group({
-      type: ['', Validators.required],
-      values: [[], Validators.required]
-    });
-    this.options.push(optionGroup);
-  }
->>>>>>> Stashed changes
 
   removeOption(index: number): void {
     this.options.removeAt(index);
   }
 
-<<<<<<< Updated upstream
   // getOptionValues(optionId: string | number | null | undefined): OptionValueDTO[] {
   //   if (!optionId) {
   //     return [];
@@ -425,21 +326,6 @@ export class ProductCreateComponent implements OnInit {
     while (this.variants.length !== 0) {
       this.variants.removeAt(0);
     }
-=======
-  getOptionValues(optionType: string): string[] {
-    const option = this.optionTypes.find(opt => opt.id === optionType);
-    return option ? option.values : [];
-  }
-
-  getOptionTypeName(optionTypeId: string): string {
-    const option = this.optionTypes.find(opt => opt.id === optionTypeId);
-    return option ? option.name : optionTypeId;
-  }
-
-  onOptionTypeChange(index: number): void {
-    // Reset values when option type changes
-    this.options.at(index).get('values')?.setValue([]);
->>>>>>> Stashed changes
   }
 
   toggleOptionValue(optionIndex: number, value: string): void {
@@ -479,7 +365,6 @@ export class ProductCreateComponent implements OnInit {
     }
     this.productVariants = [];
 
-<<<<<<< Updated upstream
     const optionsWithValues: {
       optionId: number;
       optionName: string;
@@ -519,25 +404,11 @@ export class ProductCreateComponent implements OnInit {
             console.log("Added option with values:", optionsWithValues[optionsWithValues.length - 1]);
           }
         }
-=======
-    // Get all options with their values
-    const optionsWithValues: { type: string, typeName: string, values: string[] }[] = [];
-
-    for (let i = 0; i < this.options.length; i++) {
-      const option = this.options.at(i).value;
-      if (option.type && option.values && option.values.length > 0) {
-        optionsWithValues.push({
-          type: option.type,
-          typeName: this.getOptionTypeName(option.type),
-          values: option.values
-        });
->>>>>>> Stashed changes
       }
     }
 
     // If no options with values, return
     if (optionsWithValues.length === 0) {
-<<<<<<< Updated upstream
       console.log("No valid options with values found");
       return;
     }
@@ -547,13 +418,6 @@ export class ProductCreateComponent implements OnInit {
     // Generate all combinations
     this.productVariants = this.variantGeneratorService.generateCombinations(optionsWithValues);
     console.log("Generated variants:", this.productVariants);
-=======
-      return;
-    }
-
-    // Generate all combinations
-    this.productVariants = this.generateCombinations(optionsWithValues);
->>>>>>> Stashed changes
 
     // Create form controls for each variant
     const basePrice = this.productForm.get('basePrice')?.value || 0;
@@ -567,51 +431,9 @@ export class ProductCreateComponent implements OnInit {
     });
   }
 
-<<<<<<< Updated upstream
   getOptionTypeName(optionTypeId: string): string {
     const option = this.optionTypes.find(opt => opt.id === optionTypeId);
     return option ? option.name : optionTypeId;
-=======
-  // Generate all possible combinations of options
-  generateCombinations(options: { type: string, typeName: string, values: string[] }[]): ProductVariantDTO[] {
-    // Start with an empty array containing one empty combination
-    let combinations: ProductVariantDTO[] = [{ options: [], price: 0, stock: 0, sku: '' }];
-
-    // For each option
-    options.forEach(option => {
-      // Create a new list of combinations
-      const newCombinations: ProductVariantDTO[] = [];
-
-      // For each existing combination
-      combinations.forEach(combination => {
-        // For each value of the current option
-        option.values.forEach(value => {
-          // Create a new combination by adding the current value
-          const newCombination = {
-            options: [
-              ...combination.options,
-              {
-                type: option.type,
-                typeName: option.typeName,
-                value
-              }
-            ],
-            price: combination.price,
-            stock: combination.stock,
-            sku: combination.sku
-          };
-
-          // Add the new combination to our list
-          newCombinations.push(newCombination);
-        });
-      });
-
-      // Replace the old combinations with the new ones
-      combinations = newCombinations;
-    });
-
-    return combinations;
->>>>>>> Stashed changes
   }
 
   // Apply base price to all variants
@@ -625,12 +447,7 @@ export class ProductCreateComponent implements OnInit {
 
   // Apply stock value to all variants
   applyBulkStock(): void {
-<<<<<<< Updated upstream
     const stockValue = this.bulkStockValue;
-=======
-    // In a real app, you might want to show a dialog to input the stock value
-    const stockValue = 10; // Default value or from dialog
->>>>>>> Stashed changes
 
     for (let i = 0; i < this.variants.length; i++) {
       this.variants.at(i).get('stock')?.setValue(stockValue);
@@ -638,7 +455,6 @@ export class ProductCreateComponent implements OnInit {
   }
 
   // Generate SKU for a variant
-<<<<<<< Updated upstream
   getSkuForVariant(i: number): string {
     const productName = this.productForm.get('name')?.value || '';
     return this.productService.generateSku(productName, this.productVariants[i]);
@@ -708,69 +524,11 @@ export class ProductCreateComponent implements OnInit {
   //   this.productVariants = [];
   //   this.selectedCategory = null;
   // }
-=======
-  generateSku(variant: ProductVariantDTO): string {
-    const productName = this.productForm.get('name')?.value || '';
-    const skuBase = productName.substring(0, 3).toUpperCase();
-
-    let skuOptions = '';
-    variant.options.forEach(option => {
-      skuOptions += `-${option.value.substring(0, 2).toUpperCase()}`;
-    });
-
-    return `${skuBase}${skuOptions}`;
-  }
-
-  onSubmit(): void {
-    if (this.productForm.valid) {
-      // Generate SKUs for variants that don't have one
-      for (let i = 0; i < this.variants.length; i++) {
-        const sku = this.variants.at(i).get('sku')?.value;
-        if (!sku) {
-          const generatedSku = this.generateSku(this.productVariants[i]);
-          this.variants.at(i).get('sku')?.setValue(generatedSku);
-        }
-      }
-
-      const formValue = this.productForm.value;
-
-      const requestDto: CreateProductRequestDTO = {
-        product: {
-          name: formValue.name,
-          description: formValue.description,
-          brandId: formValue.brand,
-          categoryId: formValue.category,
-          basePrice: formValue.basePrice
-        },
-        options: formValue.options.map((opt: any) => ({
-          type: opt.type,
-          values: opt.values
-        })),
-        variants: formValue.variants.map((variant: any, index: number) => ({
-          options: this.productVariants[index].options,
-          price: variant.price,
-          stock: variant.stock,
-          sku: variant.sku
-        }))
-      };
-
-      console.log('CreateProductRequestDTO:', requestDto);
-
-      // TODO: Send requestDto to your backend via a service
-      alert('Product created successfully! (Check console for data)');
-    } else {
-      console.log('Form is invalid');
-      this.markFormGroupTouched();
-    }
-  }
-
->>>>>>> Stashed changes
 
   private markFormGroupTouched(): void {
     Object.keys(this.productForm.controls).forEach(key => {
       const control = this.productForm.get(key);
       control?.markAsTouched();
-<<<<<<< Updated upstream
 
       if (key === 'options' && control instanceof FormArray) {
         control.controls.forEach(group => {
@@ -781,8 +539,6 @@ export class ProductCreateComponent implements OnInit {
           }
         });
       }
-=======
->>>>>>> Stashed changes
     });
   }
 

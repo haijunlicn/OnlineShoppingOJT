@@ -25,7 +25,7 @@
     <!-- Remember Me + Forgot Password -->
     <div class="options">
       <label><input type="checkbox" formControlName="rememberMe" /> Remember me</label>
-      <a class="forgot-password" href="#">Forgot Password?</a>
+      <a class="forgot-password" [routerLink]="['/customer/auth/forgetPass']">Forgot Password?</a>
     </div>
 
     <!-- Submit Button -->
@@ -33,7 +33,7 @@
 
     <!-- Register Link -->
     <div class="register-link">
-      Don't have an account? <a routerLink="/register">Register</a>
+      Don't have an account? <a routerLink="/customer/auth/register">Register</a>
     </div>
   </form>
 </div>

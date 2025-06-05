@@ -9,23 +9,32 @@ import { HomeComponent } from './general/home/home.component';
 import { HeaderComponent } from './common/header/header.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RegisterComponent } from './auth/register/register.component';
+import { RouterModule } from '@angular/router';
+import { ForgetPasswordComponent } from './auth/forget-password/forget-password.component';
+import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
+import { VerifyComponent } from './auth/verify/verify.component';
 
 
 
 @NgModule({
   declarations: [
     LoginComponent,
-   RegisterComponent,
+    RegisterComponent,
     HomeComponent,
     HeaderComponent,
-   
+    ForgetPasswordComponent,
+    ResetPasswordComponent,
+    VerifyComponent
+
+
   ],
   imports: [
     CommonModule,
     CustomerRoutingModule,
     FormsModule,
-    ReactiveFormsModule, 
-    
+    ReactiveFormsModule,
+
+
   ]
 })
 export class CustomerModule { }

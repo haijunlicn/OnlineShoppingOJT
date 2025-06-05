@@ -148,20 +148,14 @@
                                         <div class="row g-2">
                                             <!-- Option Type -->
                                             <div class="col-5">
-<<<<<<< Updated upstream
                                                 <select class="form-select form-select-sm" formControlName="id"
                                                     (change)="onOptionTypeChange(i)"
                                                     [class.is-invalid]="option.get('id')?.invalid && option.get('id')?.touched">
-=======
-                                                <select class="form-select form-select-sm" formControlName="type"
-                                                    (change)="onOptionTypeChange(i)">
->>>>>>> Stashed changes
                                                     <option value="">Select Type</option>
                                                     <option *ngFor="let type of optionTypes" [value]="type.id">
                                                         {{ type.name }}
                                                     </option>
                                                 </select>
-<<<<<<< Updated upstream
                                                 <!-- Debug info - remove this after testing -->
                                                 <small class="text-muted">
                                                     {{ option.value | json }}
@@ -178,23 +172,12 @@
 
                                             <div class="col-7">
                                                 <div *ngIf="option.get('id')?.value; else noTypeSelected"
-=======
-                                            </div>
-
-                                            <!-- Option Values Dropdown -->
-                                            <div class="col-7">
-                                                <div *ngIf="option.get('type')?.value; else noTypeSelected"
->>>>>>> Stashed changes
                                                     class="dropdown">
                                                     <button
                                                         class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-start d-flex justify-content-between align-items-center"
                                                         type="button" [id]="'optionDropdown' + i"
-<<<<<<< Updated upstream
                                                         data-bs-toggle="dropdown" aria-expanded="false"
                                                         [class.is-invalid]="option.get('values')?.invalid && option.get('values')?.touched">
-=======
-                                                        data-bs-toggle="dropdown" aria-expanded="false">
->>>>>>> Stashed changes
                                                         <span class="dropdown-text">
                                                             <span *ngIf="getSelectedValuesCount(i) === 0"
                                                                 class="text-muted">
@@ -206,7 +189,6 @@
                                                             </span>
                                                         </span>
                                                     </button>
-<<<<<<< Updated upstream
 
                                                     <ul class="dropdown-menu w-100"
                                                         [attr.aria-labelledby]="'optionDropdown' + i">
@@ -221,36 +203,16 @@
                                                                     <label class="form-check-label small"
                                                                         [for]="'option_' + i + '_' + value.id">
                                                                         {{ value.value }}
-=======
-                                                    <ul class="dropdown-menu w-100"
-                                                        [attr.aria-labelledby]="'optionDropdown' + i">
-                                                        <li
-                                                            *ngFor="let value of getOptionValues(option.get('type')?.value)">
-                                                            <div class="dropdown-item-check px-3 py-1">
-                                                                <div class="form-check">
-                                                                    <input class="form-check-input" type="checkbox"
-                                                                        [id]="'option_' + i + '_' + value"
-                                                                        [checked]="isValueSelected(i, value)"
-                                                                        (change)="toggleOptionValue(i, value)">
-                                                                    <label class="form-check-label small"
-                                                                        [for]="'option_' + i + '_' + value">
-                                                                        {{ value }}
->>>>>>> Stashed changes
                                                                     </label>
                                                                 </div>
                                                             </div>
                                                         </li>
                                                         <li
-<<<<<<< Updated upstream
                                                             *ngIf="getOptionValues(option.get('id')?.value)?.length === 0">
-=======
-                                                            *ngIf="getOptionValues(option.get('type')?.value).length === 0">
->>>>>>> Stashed changes
                                                             <span class="dropdown-item-text small text-muted">No values
                                                                 available</span>
                                                         </li>
                                                     </ul>
-<<<<<<< Updated upstream
 
                                                     <div class="invalid-feedback small"
                                                         *ngIf="option.get('values')?.invalid && option.get('values')?.touched">
@@ -258,9 +220,6 @@
                                                     </div>
                                                 </div>
 
-=======
-                                                </div>
->>>>>>> Stashed changes
                                                 <ng-template #noTypeSelected>
                                                     <button class="btn btn-outline-secondary btn-sm w-100 text-start"
                                                         type="button" disabled>
@@ -280,11 +239,8 @@
                                                     </span>
                                                 </div>
                                             </div>
-<<<<<<< Updated upstream
 
 
-=======
->>>>>>> Stashed changes
                                         </div>
                                     </div>
 
@@ -336,25 +292,15 @@
                                                         <td>
                                                             <span *ngFor="let option of productVariants[i].options"
                                                                 class="me-2">
-<<<<<<< Updated upstream
                                                                 <span class="fw-semibold small">{{ option.optionName
                                                                     }}:</span>
                                                                 <span class="small">{{ option.valueName }}</span>
-=======
-                                                                <span class="fw-semibold small">{{ option.type
-                                                                    }}:</span>
-                                                                <span class="small">{{ option.value }}</span>
->>>>>>> Stashed changes
                                                             </span>
                                                         </td>
 
                                                         <!-- Auto-generated SKU -->
                                                         <td class="small text-muted">
-<<<<<<< Updated upstream
                                                             {{ getSkuForVariant(i) }}
-=======
-                                                            {{ generateSku(productVariants[i]) }}
->>>>>>> Stashed changes
                                                         </td>
 
                                                         <!-- Price -->
@@ -385,13 +331,8 @@
                                     <button type="button" class="btn btn-outline-secondary btn-sm me-2">
                                         Cancel
                                     </button>
-<<<<<<< Updated upstream
                                     <button [disabled]="productForm.invalid" type="submit"
                                         class="btn btn-primary btn-sm">
-=======
-                                    <button type="submit" class="btn btn-primary btn-sm"
-                                        [disabled]="productForm.invalid">
->>>>>>> Stashed changes
                                         Create Product
                                     </button>
                                 </div>

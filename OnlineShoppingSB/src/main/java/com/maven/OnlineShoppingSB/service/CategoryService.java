@@ -57,11 +57,7 @@ public class CategoryService {
     }
 
 
-<<<<<<< Updated upstream
     public CategoryDTO getById(Long id) {
-=======
-    public CategoryDTO getById(Integer id) {
->>>>>>> Stashed changes
         CategoryEntity entity = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("No category found with id: " + id));
 
@@ -104,11 +100,7 @@ public class CategoryService {
 
         return updatedDto;
     }
-<<<<<<< Updated upstream
     public void deleteCategory(Long id) {
-=======
-    public void deleteCategory(Integer id) {
->>>>>>> Stashed changes
         CategoryEntity existing = repo.findById(id)
             .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
 

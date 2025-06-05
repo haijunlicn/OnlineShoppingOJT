@@ -18,7 +18,6 @@ const routes: Routes = [
     redirectTo: 'customer/home',
     pathMatch: 'full',
   },
-  
   // {
   //   path: '',
   //   component: HelloComponent,
@@ -33,6 +32,7 @@ const routes: Routes = [
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
+  
   exports: [RouterModule]
 })
 export class AppRoutingModule { }

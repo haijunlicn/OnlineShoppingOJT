@@ -54,8 +54,8 @@ export class VerifyComponent implements OnInit{
       return;
     }
  this.isVerifying = true; // disable button
-    console.log("code : " + this.otpCode)
-    console.log("userId : " + this.userId)
+    console.log(this.otpCode)
+    console.log(this.userId)
     this.otpService.verifyOtp(this.otpCode, this.userId).subscribe({
     next: (res: any) => {
       if (res.message.startsWith('Welcome')) {

@@ -42,6 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         token = authHeader.substring(7);
+        System.out.println("JWT Token from request: " + token);
         email = jwtService.extractEmail(token);
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -58,13 +59,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 }
 
-=======
-}
->>>>>>> Stashed changes
-=======
-}
->>>>>>> Stashed changes

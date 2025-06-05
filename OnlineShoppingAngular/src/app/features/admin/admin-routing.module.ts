@@ -5,23 +5,24 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { AdminDashboardComponent } from './layout/admin-dashboard/admin-dashboard.component';
 import { ProductListComponent } from './product_management/product-list/product-list.component';
 import { ProductCreateComponent } from './product_management/product-create/product-create.component';
+import { NoAuthGuard } from '../../core/guards/no-auth.guard';
 
 const routes: Routes = [
   {
     path: 'login',
-    component: AdminLoginComponent,
+    component: AdminLoginComponent, canActivate: [NoAuthGuard],
   },
   {
     path: 'dashboard',
-    component: DashboardComponent,
+    component: DashboardComponent, canActivate: [NoAuthGuard],
   },
   {
     path: 'productList',
-    component: ProductListComponent,
+    component: ProductListComponent,canActivate: [NoAuthGuard],
   },
   {
     path: 'productCreate',
-    component: ProductCreateComponent,
+    component: ProductCreateComponent,canActivate: [NoAuthGuard],
   },
 ];
 
