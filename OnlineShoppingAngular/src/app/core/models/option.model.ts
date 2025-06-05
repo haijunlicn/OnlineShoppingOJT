@@ -7,6 +7,7 @@ export interface OptionDTO {
 export interface OptionTypeDTO {
   id: string;
   name: string;
+<<<<<<< Updated upstream
   optionValues: OptionValueDTO[];
 }
 
@@ -17,3 +18,7 @@ export interface OptionValueDTO {
   deleted?: boolean;
   
 }
+=======
+  values: string[];
+}
+>>>>>>> Stashed changes

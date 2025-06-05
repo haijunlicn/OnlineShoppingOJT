@@ -30,7 +30,11 @@ public class CategoryController {
     }
 
     @GetMapping("/getbyid/{id}")
+<<<<<<< Updated upstream
     public ResponseEntity<CategoryDTO> getById(@PathVariable Long id) {
+=======
+    public ResponseEntity<CategoryDTO> getById(@PathVariable Integer id) {
+>>>>>>> Stashed changes
         CategoryDTO dto = cateService.getById(id);
         return ResponseEntity.ok(dto);
     }
@@ -41,7 +45,11 @@ public class CategoryController {
         return ResponseEntity.ok("Category updated successfully!");
     }
     @DeleteMapping("/delete/{id}")
+<<<<<<< Updated upstream
     public ResponseEntity<String> deleteCategory(@PathVariable Long id) {
+=======
+    public ResponseEntity<String> deleteCategory(@PathVariable Integer id) {
+>>>>>>> Stashed changes
         cateService.deleteCategory(id);
         return ResponseEntity.ok("Category deleted successfully!");
     }

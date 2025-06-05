@@ -45,12 +45,18 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                         .requestMatchers("/auth/register","/auth/verify-otp", "/auth/login").permitAll()
 =======
+=======
+>>>>>>> Stashed changes
                         .requestMatchers(HttpMethod.OPTIONS, "/").permitAll()
                         .requestMatchers("/auth/register","/auth/verify-otp", "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/public/").permitAll()
                         // .anyRequest().authenticated()
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                         .anyRequest().permitAll()
                 )
@@ -72,6 +78,7 @@ public class SecurityConfig {
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 @Bean
 public CorsConfigurationSource corsConfigurationSource() {
     System.out.println("CORS config loaded ");
@@ -87,6 +94,8 @@ public CorsConfigurationSource corsConfigurationSource() {
     return source;
 }
 =======
+=======
+>>>>>>> Stashed changes
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         System.out.println("CORS config loaded ");
@@ -101,6 +110,9 @@ public CorsConfigurationSource corsConfigurationSource() {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     @Bean
     public AuthenticationProvider daoAuthProvider() {

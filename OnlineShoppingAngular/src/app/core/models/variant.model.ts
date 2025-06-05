@@ -1,4 +1,5 @@
 export interface VariantOptionDTO {
+<<<<<<< Updated upstream
   // type: string;
   // typeName: string;
   // value: string;
@@ -7,6 +8,11 @@ export interface VariantOptionDTO {
   optionValueId: number;
   optionName?: string;   // optional for display/debug
   valueName?: string;
+=======
+  type: string;
+  typeName: string;
+  value: string;
+>>>>>>> Stashed changes
 }
 
 export interface ProductVariantDTO {
@@ -14,6 +20,7 @@ export interface ProductVariantDTO {
   price: number;
   stock: number;
   sku: string;
+<<<<<<< Updated upstream
   priceHistory?: VariantPriceDTO[];
 }
 
@@ -23,3 +30,6 @@ export interface VariantPriceDTO {
   startDate: string;
   endDate?: string | null;
 }
+=======
+}
+>>>>>>> Stashed changes

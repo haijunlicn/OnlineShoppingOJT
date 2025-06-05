@@ -28,7 +28,10 @@
     "chart.js": "^4.4.9",
     "express": "^4.18.2",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     "ngx-toastr": "^19.0.0",
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     "primeicons": "^7.0.0",

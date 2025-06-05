@@ -1,7 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+<<<<<<< Updated upstream
 import { map, Observable } from 'rxjs';
 import { CategoryDTO, CategoryNode } from '../models/category-dto';
+=======
+import { Observable } from 'rxjs';
+import { CategoryDTO } from '../models/category-dto';
+>>>>>>> Stashed changes
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +16,11 @@ export class CategoryService {
   baseUrl = "http://localhost:8080/category"
 
   constructor(private http: HttpClient) { }
+<<<<<<< Updated upstream
 
+=======
+  
+>>>>>>> Stashed changes
   createCategory(category: CategoryDTO): Observable<CategoryDTO> {
     return this.http.post<CategoryDTO>(`${this.baseUrl}/create`, category, { responseType: 'text' as 'json' });
   }
@@ -30,6 +39,7 @@ export class CategoryService {
     return this.http.delete(`${this.baseUrl}/delete/${id}`, { responseType: 'text' });
   }
 
+<<<<<<< Updated upstream
   getCategoryTree(): Observable<CategoryNode[]> {
     return this.getAllCategories().pipe(
       map(res => {
@@ -67,5 +77,7 @@ export class CategoryService {
       }
     });
   }
+=======
+>>>>>>> Stashed changes
 
 }

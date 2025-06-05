@@ -9,9 +9,14 @@ import { AppComponent } from './app.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import { VerifyComponent } from './features/customer/auth/verify/verify.component';
 import { TableModule } from 'primeng/table';
 
+=======
+import { TableModule } from 'primeng/table';
+import { HttpClientModule } from '@angular/common/http';
+>>>>>>> Stashed changes
 =======
 import { TableModule } from 'primeng/table';
 import { HttpClientModule } from '@angular/common/http';
@@ -31,6 +36,7 @@ import { HttpClientModule } from '@angular/common/http';
     RouterModule,
     FormsModule,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     // ReactiveFormsModule,
     BrowserAnimationsModule, // required animations module
 
@@ -46,6 +52,8 @@ import { HttpClientModule } from '@angular/common/http';
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     TableModule

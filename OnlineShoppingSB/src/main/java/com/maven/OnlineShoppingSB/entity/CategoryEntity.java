@@ -24,8 +24,12 @@ public class CategoryEntity {
 
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+<<<<<<< Updated upstream
     @Column(columnDefinition = "INT(11)")
     private Long id;
+=======
+    private Integer id;
+>>>>>>> Stashed changes
 
     @Column(length = 100, nullable = false, unique = true)
     private String name;
