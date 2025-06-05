@@ -148,23 +148,36 @@
                                         <div class="row g-2">
                                             <!-- Option Type -->
                                             <div class="col-5">
-                                                <select class="form-select form-select-sm" formControlName="type"
-                                                    (change)="onOptionTypeChange(i)">
+                                                <select class="form-select form-select-sm" formControlName="id"
+                                                    (change)="onOptionTypeChange(i)"
+                                                    [class.is-invalid]="option.get('id')?.invalid && option.get('id')?.touched">
                                                     <option value="">Select Type</option>
                                                     <option *ngFor="let type of optionTypes" [value]="type.id">
                                                         {{ type.name }}
                                                     </option>
                                                 </select>
+                                                <!-- Debug info - remove this after testing -->
+                                                <small class="text-muted">
+                                                    {{ option.value | json }}
+                                                    Selected: {{ option.get('id')?.value }} | Name: {{
+                                                    option.get('name')?.value }}
+                                                </small>
+                                                <div class="invalid-feedback small"
+                                                    *ngIf="option.get('id')?.invalid && option.get('id')?.touched">
+                                                    Option type is required
+                                                </div>
                                             </div>
 
                                             <!-- Option Values Dropdown -->
+
                                             <div class="col-7">
-                                                <div *ngIf="option.get('type')?.value; else noTypeSelected"
+                                                <div *ngIf="option.get('id')?.value; else noTypeSelected"
                                                     class="dropdown">
                                                     <button
                                                         class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-start d-flex justify-content-between align-items-center"
                                                         type="button" [id]="'optionDropdown' + i"
-                                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                                        data-bs-toggle="dropdown" aria-expanded="false"
+                                                        [class.is-invalid]="option.get('values')?.invalid && option.get('values')?.touched">
                                                         <span class="dropdown-text">
                                                             <span *ngIf="getSelectedValuesCount(i) === 0"
                                                                 class="text-muted">
@@ -176,30 +189,37 @@
                                                             </span>
                                                         </span>
                                                     </button>
+
                                                     <ul class="dropdown-menu w-100"
                                                         [attr.aria-labelledby]="'optionDropdown' + i">
                                                         <li
-                                                            *ngFor="let value of getOptionValues(option.get('type')?.value)">
+                                                            *ngFor="let value of getOptionValues(option.get('id')?.value)">
                                                             <div class="dropdown-item-check px-3 py-1">
                                                                 <div class="form-check">
                                                                     <input class="form-check-input" type="checkbox"
-                                                                        [id]="'option_' + i + '_' + value"
-                                                                        [checked]="isValueSelected(i, value)"
-                                                                        (change)="toggleOptionValue(i, value)">
+                                                                        [id]="'option_' + i + '_' + value.id"
+                                                                        [checked]="isValueSelected(i, value.value)"
+                                                                        (change)="toggleOptionValue(i, value.value)" />
                                                                     <label class="form-check-label small"
-                                                                        [for]="'option_' + i + '_' + value">
-                                                                        {{ value }}
+                                                                        [for]="'option_' + i + '_' + value.id">
+                                                                        {{ value.value }}
                                                                     </label>
                                                                 </div>
                                                             </div>
                                                         </li>
                                                         <li
-                                                            *ngIf="getOptionValues(option.get('type')?.value).length === 0">
+                                                            *ngIf="getOptionValues(option.get('id')?.value)?.length === 0">
                                                             <span class="dropdown-item-text small text-muted">No values
                                                                 available</span>
                                                         </li>
                                                     </ul>
+
+                                                    <div class="invalid-feedback small"
+                                                        *ngIf="option.get('values')?.invalid && option.get('values')?.touched">
+                                                        Please select at least one value
+                                                    </div>
                                                 </div>
+
                                                 <ng-template #noTypeSelected>
                                                     <button class="btn btn-outline-secondary btn-sm w-100 text-start"
                                                         type="button" disabled>
@@ -219,6 +239,8 @@
                                                     </span>
                                                 </div>
                                             </div>
+
+
                                         </div>
                                     </div>
 
@@ -270,15 +292,15 @@
                                                         <td>
                                                             <span *ngFor="let option of productVariants[i].options"
                                                                 class="me-2">
-                                                                <span class="fw-semibold small">{{ option.type
+                                                                <span class="fw-semibold small">{{ option.optionName
                                                                     }}:</span>
-                                                                <span class="small">{{ option.value }}</span>
+                                                                <span class="small">{{ option.valueName }}</span>
                                                             </span>
                                                         </td>
 
                                                         <!-- Auto-generated SKU -->
                                                         <td class="small text-muted">
-                                                            {{ generateSku(productVariants[i]) }}
+                                                            {{ getSkuForVariant(i) }}
                                                         </td>
 
                                                         <!-- Price -->
@@ -309,8 +331,8 @@
                                     <button type="button" class="btn btn-outline-secondary btn-sm me-2">
                                         Cancel
                                     </button>
-                                    <button type="submit" class="btn btn-primary btn-sm"
-                                        [disabled]="productForm.invalid">
+                                    <button [disabled]="productForm.invalid" type="submit"
+                                        class="btn btn-primary btn-sm">
                                         Create Product
                                     </button>
                                 </div>

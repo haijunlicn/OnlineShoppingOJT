@@ -30,7 +30,7 @@ public class CategoryController {
     }
 
     @GetMapping("/getbyid/{id}")
-    public ResponseEntity<CategoryDTO> getById(@PathVariable Integer id) {
+    public ResponseEntity<CategoryDTO> getById(@PathVariable Long id) {
         CategoryDTO dto = cateService.getById(id);
         return ResponseEntity.ok(dto);
     }
@@ -41,7 +41,7 @@ public class CategoryController {
         return ResponseEntity.ok("Category updated successfully!");
     }
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteCategory(@PathVariable Integer id) {
+    public ResponseEntity<String> deleteCategory(@PathVariable Long id) {
         cateService.deleteCategory(id);
         return ResponseEntity.ok("Category deleted successfully!");
     }

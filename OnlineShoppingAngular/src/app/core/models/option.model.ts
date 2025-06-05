@@ -7,5 +7,13 @@ export interface OptionDTO {
 export interface OptionTypeDTO {
   id: string;
   name: string;
-  values: string[];
+  optionValues: OptionValueDTO[];
+}
+
+export interface OptionValueDTO {
+  id?: number;
+  optionId: number;
+  value: string;
+  deleted?: boolean;
+  
 }

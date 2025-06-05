@@ -1,10 +1,18 @@
 package com.maven.OnlineShoppingSB.config;
 
+<<<<<<< Updated upstream
 import com.maven.OnlineShoppingSB.entity.UserEntity;
+=======
+>>>>>>> Stashed changes
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
 
+<<<<<<< Updated upstream
+=======
+import com.maven.OnlineShoppingSB.entity.UserEntity;
+
+>>>>>>> Stashed changes
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;

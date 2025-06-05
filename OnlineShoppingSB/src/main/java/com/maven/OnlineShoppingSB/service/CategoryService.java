@@ -57,7 +57,7 @@ public class CategoryService {
     }
 
 
-    public CategoryDTO getById(Integer id) {
+    public CategoryDTO getById(Long id) {
         CategoryEntity entity = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("No category found with id: " + id));
 
@@ -100,7 +100,7 @@ public class CategoryService {
 
         return updatedDto;
     }
-    public void deleteCategory(Integer id) {
+    public void deleteCategory(Long id) {
         CategoryEntity existing = repo.findById(id)
             .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
 

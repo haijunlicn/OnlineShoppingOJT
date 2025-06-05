@@ -1,26 +1,18 @@
+import { OptionDTO, OptionTypeDTO, OptionValueDTO } from "./option.model";
+import { VariantOptionDTO } from "./variant.model";
 
-export interface OptionDTO {
-  type: string;
-  values: string[];
-}
-
-export interface OptionTypeDTO {
-  id: string;
-  name: string;
-  values: string[];
-}
-
-export interface VariantOptionDTO {
-  type: string;
-  typeName: string;
-  value: string;
-}
 
 export interface ProductVariantDTO {
   options: VariantOptionDTO[];
   price: number;
   stock: number;
   sku: string;
+}
+
+export interface ProductOptionDTO {
+  id: number;
+  name: string;
+  optionValues: OptionValueDTO[];
 }
 
 export interface ProductDTO {
@@ -38,6 +30,6 @@ export interface BrandDTO {
 
 export interface CreateProductRequestDTO {
   product: ProductDTO;
-  options: OptionDTO[];
+  options: OptionTypeDTO[];
   variants: ProductVariantDTO[];
 }

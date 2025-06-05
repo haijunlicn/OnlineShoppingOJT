@@ -34,6 +34,7 @@ body {
   color: #fff !important;
 }
 
+<<<<<<< Updated upstream
 /* Optional: change icons or padding */
 .toast-custom .toast-message {
   font-weight: 500;
@@ -50,6 +51,8 @@ body {
 
 }
 
+=======
+>>>>>>> Stashed changes
 /* Main Layout */
 #layoutSidenav {
   display: flex;

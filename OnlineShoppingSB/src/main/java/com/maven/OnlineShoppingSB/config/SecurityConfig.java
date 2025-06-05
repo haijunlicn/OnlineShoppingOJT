@@ -44,7 +44,14 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+<<<<<<< Updated upstream
                         .requestMatchers("/auth/register","/auth/verify-otp", "/auth/login").permitAll()
+=======
+                        .requestMatchers(HttpMethod.OPTIONS, "/").permitAll()
+                        .requestMatchers("/auth/register","/auth/verify-otp", "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/public/").permitAll()
+                        // .anyRequest().authenticated()
+>>>>>>> Stashed changes
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(ex -> ex
@@ -64,6 +71,7 @@ public class SecurityConfig {
         return http.build();
     }
 
+<<<<<<< Updated upstream
 @Bean
 public CorsConfigurationSource corsConfigurationSource() {
     System.out.println("CORS config loaded ");
@@ -78,6 +86,22 @@ public CorsConfigurationSource corsConfigurationSource() {
     source.registerCorsConfiguration("/**", config);
     return source;
 }
+=======
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        System.out.println("CORS config loaded ");
+
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:4200"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+>>>>>>> Stashed changes
     @Bean
     public AuthenticationProvider daoAuthProvider() {
         DaoAuthenticationProvider auth = new DaoAuthenticationProvider();

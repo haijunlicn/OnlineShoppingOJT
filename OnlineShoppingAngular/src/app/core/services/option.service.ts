@@ -1,14 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { OptionTypeDTO } from '../models/product.model';
 import { Observable } from 'rxjs';
+import { OptionTypeDTO } from '../models/option.model';
 
 @Injectable({
   providedIn: 'root'
 })
-export class OptionTypeService {
+export class OptionService {
 
-  baseUrl = "http://localhost:8080/optionType";
+  baseUrl = "http://localhost:8080/option";
 
   constructor(private http: HttpClient) {}
 

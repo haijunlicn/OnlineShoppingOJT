@@ -8,9 +8,14 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+<<<<<<< Updated upstream
 import { VerifyComponent } from './features/customer/auth/verify/verify.component';
 import { TableModule } from 'primeng/table';
 
+=======
+import { TableModule } from 'primeng/table';
+import { HttpClientModule } from '@angular/common/http';
+>>>>>>> Stashed changes
 
 @NgModule({
   declarations: [
@@ -26,6 +31,7 @@ import { TableModule } from 'primeng/table';
     HttpClientModule,
     RouterModule,
     FormsModule,
+<<<<<<< Updated upstream
     // ReactiveFormsModule,
     BrowserAnimationsModule, // required animations module
 
@@ -41,6 +47,8 @@ import { TableModule } from 'primeng/table';
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
+=======
+>>>>>>> Stashed changes
     TableModule
   ],
   providers: [
