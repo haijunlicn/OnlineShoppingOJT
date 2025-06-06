@@ -2,7 +2,10 @@ package com.maven.OnlineShoppingSB.service;
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import com.maven.OnlineShoppingSB.entity.UserEntity;
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -15,6 +18,10 @@ import org.springframework.stereotype.Service;
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+import com.maven.OnlineShoppingSB.entity.UserEntity;
+>>>>>>> Stashed changes
 =======
 import com.maven.OnlineShoppingSB.entity.UserEntity;
 >>>>>>> Stashed changes
@@ -44,8 +51,12 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 }
 
+=======
+}
+>>>>>>> Stashed changes
 =======
 }
 >>>>>>> Stashed changes

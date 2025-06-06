@@ -7,9 +7,12 @@ import org.springframework.stereotype.Service;
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import java.security.Key;
 import java.util.Date;
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -17,6 +20,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -24,6 +30,7 @@ import java.util.Map;
 @Service
 public class JwtService {
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
     private final String SECRET_KEY = "maycustomsecretmaycustomsecretmaycustomsecret"; // must be 32+ chars
@@ -43,6 +50,8 @@ public class JwtService {
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     private final String SECRET_KEY = "maycustomsecretmaycustomsecretmaycustomsecret"; // use 256-bit key (min 32 char)
 
 
@@ -60,6 +69,9 @@ public class JwtService {
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 day
                 .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()))
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -67,6 +79,7 @@ public class JwtService {
     }
 
     public String extractEmail(String token) {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
         try {
@@ -88,10 +101,15 @@ public class JwtService {
         return Jwts.parserBuilder().setSigningKey(SECRET_KEY.getBytes()).build()
                 .parseClaimsJws(token).getBody().getSubject();
 >>>>>>> Stashed changes
+=======
+        return Jwts.parserBuilder().setSigningKey(SECRET_KEY.getBytes()).build()
+                .parseClaimsJws(token).getBody().getSubject();
+>>>>>>> Stashed changes
     }
 
     public boolean isTokenValid(String token) {
         try {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
             Jwts.parserBuilder()
@@ -108,6 +126,8 @@ public class JwtService {
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             Jwts.parserBuilder().setSigningKey(SECRET_KEY.getBytes()).build().parseClaimsJws(token);
             return true;
         } catch (JwtException e) {
@@ -115,6 +135,10 @@ public class JwtService {
         }
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+}
+>>>>>>> Stashed changes
+=======
 }
 >>>>>>> Stashed changes
 =======

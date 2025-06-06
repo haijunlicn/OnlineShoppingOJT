@@ -46,9 +46,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                         .requestMatchers("/auth/register","/auth/verify-otp", "/auth/login").permitAll()
                         .anyRequest().permitAll()
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                         .requestMatchers(HttpMethod.OPTIONS, "/").permitAll()
@@ -56,6 +59,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/public/").permitAll()
                         .anyRequest().authenticated()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -79,6 +85,11 @@ public class SecurityConfig {
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+
+
+>>>>>>> Stashed changes
 =======
 
 

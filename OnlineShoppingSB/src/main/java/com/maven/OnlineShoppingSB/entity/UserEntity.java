@@ -1,6 +1,9 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 /*
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -38,9 +41,15 @@ public class UserEntity {
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
+=======
+//    @ManyToOne
+//    @JoinColumn(name = "role_id")
+//    private Role role;
+>>>>>>> Stashed changes
 =======
 //    @ManyToOne
 //    @JoinColumn(name = "role_id")
@@ -58,6 +67,7 @@ public class UserEntity {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
@@ -111,6 +121,12 @@ public class UserEntity {
     private List<OtpEntity> otps;
 
 }
+=======
+//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+//    private List<Otp> otps;
+
+}
+>>>>>>> Stashed changes
 =======
 //    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 //    private List<Otp> otps;

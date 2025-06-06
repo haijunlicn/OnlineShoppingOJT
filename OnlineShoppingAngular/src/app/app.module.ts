@@ -10,10 +10,16 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import { VerifyComponent } from './features/customer/auth/verify/verify.component';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { ForgetPasswordComponent } from './features/customer/auth/forget-password/forget-password.component';
 import { ResetPasswordComponent } from './features/customer/auth/reset-password/reset-password.component';
+=======
+import { HttpClientModule } from '@angular/common/http';
+import { GoogleMapsModule } from '@angular/google-maps';
+
+>>>>>>> Stashed changes
 =======
 import { HttpClientModule } from '@angular/common/http';
 import { GoogleMapsModule } from '@angular/google-maps';
@@ -38,6 +44,7 @@ import { GoogleMapsModule } from '@angular/google-maps';
     FormsModule,
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     // ReactiveFormsModule,
       BrowserAnimationsModule, // required animations module
     ReactiveFormsModule,
@@ -53,6 +60,10 @@ import { GoogleMapsModule } from '@angular/google-maps';
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule
+=======
+    HttpClientModule,
+    GoogleMapsModule,
+>>>>>>> Stashed changes
 =======
     HttpClientModule,
     GoogleMapsModule,
