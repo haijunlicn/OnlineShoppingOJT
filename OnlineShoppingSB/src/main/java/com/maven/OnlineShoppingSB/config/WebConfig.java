@@ -10,9 +10,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
     @Bean
-    public ModelMapper mapper() {
-        ModelMapper modelMapper = new ModelMapper();
-        return modelMapper;
+    public ModelMapper modelMapper() {
+        return new ModelMapper();
     }
 
     @Override

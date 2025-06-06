@@ -1,12 +1,12 @@
 package com.maven.OnlineShoppingSB.service;
 
-import com.maven.OnlineShoppingSB.entity.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.maven.OnlineShoppingSB.entity.UserEntity;
 import com.maven.OnlineShoppingSB.repository.UserRepository;
 
 import java.util.ArrayList;
@@ -29,4 +29,3 @@ public class CustomUserDetailsService implements UserDetailsService {
         );
     }
 }
-

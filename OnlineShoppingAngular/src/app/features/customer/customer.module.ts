@@ -13,8 +13,8 @@ import { RouterModule } from '@angular/router';
 import { ForgetPasswordComponent } from './auth/forget-password/forget-password.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { VerifyComponent } from './auth/verify/verify.component';
-
-
+import { LocationCreateComponent } from './account/location-create/location-create.component';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -24,8 +24,8 @@ import { VerifyComponent } from './auth/verify/verify.component';
     HeaderComponent,
     ForgetPasswordComponent,
     ResetPasswordComponent,
-    VerifyComponent
-
+    VerifyComponent,
+    LocationCreateComponent,
 
   ],
   imports: [
@@ -33,8 +33,9 @@ import { VerifyComponent } from './auth/verify/verify.component';
     CustomerRoutingModule,
     FormsModule,
     ReactiveFormsModule,
-
-
+    ReactiveFormsModule,
+    FormsModule,
+   HttpClientModule
   ]
 })
 export class CustomerModule { }

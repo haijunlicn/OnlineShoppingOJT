@@ -1,0 +1,143 @@
+<div class="container">
+  <div class="content-wrapper">
+    <div class="left-section">
+      <h1 class="title">Address Auto Locate</h1>
+      <p class="subtitle">
+        Offer users the convenience of auto-detecting their current location to populate 
+        address fields with a single click.
+      </p>
+    </div>
+    
+    <div class="right-section">
+      <div class="address-card">
+        <h2 class="card-title">Enter your address</h2>
+
+        <!-- Search Box -->
+        <div class="search-box">
+          <input 
+            type="text" 
+            [formControl]="searchControl"
+            placeholder="Search location and press Enter"
+            class="form-input search-input"
+            (keyup.enter)="onSearch()"
+            [disabled]="isLoading"
+          />
+          <button 
+            type="button" 
+            (click)="onSearch()" 
+            [disabled]="isLoading"
+            class="search-btn"
+            title="Search location"
+          >
+            🔍
+          </button>
+        </div>
+
+        <form [formGroup]="addressForm" class="address-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Address</label>
+              <div class="input-wrapper">
+                <input 
+                  type="text" 
+                  formControlName="address"
+                  placeholder="Street address"
+                  class="form-input"
+                />
+                <button 
+                  type="button" 
+                  class="locate-btn" 
+                  (click)="autoLocate()"
+                  [disabled]="isLoading"
+                  title="Auto locate">
+                  <svg *ngIf="!isLoading" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 8C14.21 8 16 9.79 16 12C16 14.21 14.21 16 12 16C9.79 16 8 14.21 8 12C8 9.79 9.79 8 12 8ZM20.94 11C20.48 6.83 17.17 3.52 13 3.06V1H11V3.06C6.83 3.52 3.52 6.83 3.06 11H1V13H3.06C3.52 17.17 6.83 20.48 11 20.94V23H13V20.94C17.17 20.48 20.48 17.17 20.94 13H23V11H20.94ZM12 19C8.13 19 5 15.87 5 12C5 8.13 8.13 5 12 5C15.87 5 19 8.13 19 12C19 15.87 15.87 19 12 19Z" fill="currentColor"/>
+                  </svg>
+                  <div *ngIf="isLoading" class="loading-spinner"></div>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Township</label>
+              <input
+                type="text"
+                formControlName="township"
+                placeholder="Township"
+                class="form-input"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>City</label>
+              <input 
+                type="text" 
+                formControlName="city"
+                placeholder="City"
+                class="form-input"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Zip Code</label>
+              <input 
+                type="text" 
+                formControlName="zipCode"
+                placeholder="Zip code"
+                class="form-input"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Country</label>
+              <input 
+                type="text" 
+                formControlName="country"
+                placeholder="Country"
+                class="form-input"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Latitude</label>
+              <input
+                type="number"
+                formControlName="lat"
+                placeholder="Latitude"
+                class="form-input"
+                step="any"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Longitude</label>
+              <input
+                type="number"
+                formControlName="lng"
+                placeholder="Longitude"
+                class="form-input"
+                step="any"
+              />
+            </div>
+          </div>
+        </form>
+
+        <div class="map-container">
+          <div id="map"></div>
+        </div>
+
+        <button 
+          type="button" 
+          class="save-btn" 
+          (click)="saveLocation()"
+          [disabled]="!currentLatLng">
+          Save Location
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

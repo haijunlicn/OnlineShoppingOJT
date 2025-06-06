@@ -12,6 +12,7 @@ import { VerifyComponent } from './features/customer/auth/verify/verify.componen
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { ForgetPasswordComponent } from './features/customer/auth/forget-password/forget-password.component';
 import { ResetPasswordComponent } from './features/customer/auth/reset-password/reset-password.component';
+import { GoogleMapsModule } from '@angular/google-maps';
 
 
 @NgModule({
@@ -28,7 +29,6 @@ import { ResetPasswordComponent } from './features/customer/auth/reset-password/
     BrowserAnimationsModule, // required animations module
     ReactiveFormsModule,
     ToastrModule.forRoot({
-
       positionClass: 'toast-bottom-right', // 👈 ညာဘက်အောက်
       toastClass: 'ngx-toastr toast-custom', // 👈 custom class များသုံးဖို့
       // ✅ Custom class
@@ -36,10 +36,8 @@ import { ResetPasswordComponent } from './features/customer/auth/reset-password/
       closeButton: true,
       progressBar: true,
     }),
-    FormsModule,
-    ReactiveFormsModule,
-    HttpClientModule
-
+    HttpClientModule,
+    GoogleMapsModule,
   ],
   providers: [
     provideClientHydration(withEventReplay()),
