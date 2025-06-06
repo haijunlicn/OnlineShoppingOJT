@@ -8,6 +8,7 @@ import { CategoryService } from '../../../../core/services/category.service';
 import { OptionTypeDTO, OptionValueDTO } from '../../../../core/models/option.model';
 import { ProductService } from '../../../../core/services/product.service';
 import { VariantGeneratorService } from '../../../../core/services/variant-generator.service';
+import { ProductFormService } from '../../../../core/services/product-form.service';
 
 @Component({
   selector: 'app-product-create',
@@ -79,6 +80,7 @@ export class ProductCreateComponent implements OnInit {
   flattenCategories(): void {
     this.flatCategories = [];
     this.categoryService.flattenCategoriesRecursive(this.categories, this.flatCategories);
+    console.log("Flattened categories:", this.flatCategories);
   }
 
   // Category selection methods
@@ -87,9 +89,25 @@ export class ProductCreateComponent implements OnInit {
     event.stopPropagation();
 
     this.selectedCategory = category;
-    this.productForm.get('category')?.setValue(category.id);
+    this.productForm.get('categoryId')?.setValue(category.id);
 
-    // Close the dropdown
+    // Reset existing options
+    this.options.clear();
+
+    // Add option form groups from selected category
+    if (category.optionTypes && category.optionTypes.length > 0) {
+      for (const optionType of category.optionTypes) {
+        const optionGroup = this.productFormService.createOptionGroup();
+        optionGroup.patchValue({
+          id: optionType.id,
+          name: optionType.name,
+          values: []
+        });
+        this.options.push(optionGroup);
+      }
+    }
+
+    // Close dropdown logic...
     const dropdown = document.getElementById('categoryDropdown');
     if (dropdown) {
       const bsDropdown = (window as any).bootstrap?.Dropdown?.getInstance(dropdown);
@@ -120,7 +138,6 @@ export class ProductCreateComponent implements OnInit {
         break;
       }
     }
-
     return path.join(' > ');
   }
 
@@ -129,23 +146,17 @@ export class ProductCreateComponent implements OnInit {
     return `category-level-${Math.min(level, 4)}`;
   }
 
-  constructor(private fb: FormBuilder,
+  constructor(
+    // private fb: FormBuilder,
     private categoryService: CategoryService,
     private brandService: BrandService,
     private optionService: OptionService,
     private productService: ProductService,
-    private variantGeneratorService: VariantGeneratorService) {
+    private variantGeneratorService: VariantGeneratorService,
+    public productFormService: ProductFormService,
+  ) {
 
-    this.productForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
-      description: ['', [Validators.required, Validators.minLength(10)]],
-      brand: ['', Validators.required],
-      category: ['', Validators.required],
-      basePrice: [0, [Validators.required, Validators.min(0)]],
-      options: this.fb.array([]),
-      variants: this.fb.array([])
-    });
-
+    this.productForm = this.productFormService.createProductForm();
     this.options.valueChanges.subscribe(() => this.generateProductVariants());
   }
 
@@ -163,33 +174,9 @@ export class ProductCreateComponent implements OnInit {
     return this.productForm.get('variants') as FormArray;
   }
 
-  // addOption(): void {
-  //   const optionGroup = this.fb.group({
-  //     id: ['', Validators.required],
-  //     name: [''],
-  //     values: [[], Validators.required]
-  //   });
-
-  //   this.options.push(optionGroup);
-  // }
-
   removeOption(index: number): void {
     this.options.removeAt(index);
   }
-
-  // getOptionValues(optionId: string | number | null | undefined): OptionValueDTO[] {
-  //   if (!optionId) {
-  //     return [];
-  //   }
-
-  //   const option = this.optionTypes.find(opt => opt.id.toString() === optionId.toString());
-  //   if (!option) {
-  //     return [];
-  //   }
-
-  //   // Return full OptionValueDTO objects (filtering out deleted)
-  //   return option.optionValues?.filter(ov => !ov.deleted) || [];
-  // }
 
   onOptionTypeChange(index: number): void {
     console.log(`Option type changed for index ${index}`);
@@ -209,7 +196,6 @@ export class ProductCreateComponent implements OnInit {
     }
 
     // Find the option type object
-    // const selectedOptionType = this.optionTypes.find(ot => ot.id === selectedTypeId);
     const selectedOptionType = this.optionTypes.find(ot => ot.id.toString() === selectedTypeId);
 
     console.log("Found option type:", selectedOptionType);
@@ -229,15 +215,9 @@ export class ProductCreateComponent implements OnInit {
 
   // Also update your addOption method to ensure proper form structure
   addOption(): void {
-    const optionGroup = this.fb.group({
-      id: ['', Validators.required],
-      name: [''], // This will be set automatically when type is selected
-      values: [[], Validators.required]
-    });
-
-    this.options.push(optionGroup);
-    console.log("Added new option group:", optionGroup.value);
+    this.productFormService.addOption(this.productForm);
   }
+
 
   // Update getOptionValues to use the id field
   getOptionValues(optionTypeId: string | number | null | undefined): OptionValueDTO[] {
@@ -278,8 +258,8 @@ export class ProductCreateComponent implements OnInit {
         product: {
           name: formValue.name,
           description: formValue.description,
-          brandId: formValue.brand,
-          categoryId: formValue.category,
+          brandId: formValue.brandId,
+          categoryId: formValue.categoryId,
           basePrice: formValue.basePrice
         },
         // Use the form values directly - no additional mapping needed
@@ -360,8 +340,9 @@ export class ProductCreateComponent implements OnInit {
   // Generate all possible combinations of product variants
   generateProductVariants(): void {
     // Clear existing variants
-    while (this.variants.length) {
-      this.variants.removeAt(0);
+    const variantsArray = this.productFormService.getVariantsArray(this.productForm);
+    while (variantsArray.length) {
+      variantsArray.removeAt(0);
     }
     this.productVariants = [];
 
@@ -415,21 +396,25 @@ export class ProductCreateComponent implements OnInit {
 
     console.log("Final optionsWithValues:", optionsWithValues);
 
-    // Generate all combinations
     this.productVariants = this.variantGeneratorService.generateCombinations(optionsWithValues);
-    console.log("Generated variants:", this.productVariants);
 
-    // Create form controls for each variant
     const basePrice = this.productForm.get('basePrice')?.value || 0;
 
     this.productVariants.forEach(variant => {
-      this.variants.push(this.fb.group({
-        price: [basePrice, [Validators.required, Validators.min(0)]],
-        stock: [0, [Validators.required, Validators.min(0)]],
-        sku: ['']
-      }));
+      // Create a variant FormGroup using your service method
+      const variantGroup = this.productFormService.createVariantGroup();
+
+      // Patch default values (price, stock, sku)
+      variantGroup.patchValue({
+        price: basePrice,
+        stock: 0,
+        sku: ''
+      });
+
+      variantsArray.push(variantGroup);
     });
   }
+
 
   getOptionTypeName(optionTypeId: string): string {
     const option = this.optionTypes.find(opt => opt.id === optionTypeId);
@@ -437,13 +422,14 @@ export class ProductCreateComponent implements OnInit {
   }
 
   // Apply base price to all variants
-  applyBulkPrice(): void {
-    const basePrice = this.productForm.get('basePrice')?.value || 0;
+  // applyBulkPrice(): void {
+  //   const basePrice = this.productForm.get('price')?.value || 0;
+  //   const variantsArray = this.productFormService.getVariantsArray(this.productForm);
 
-    for (let i = 0; i < this.variants.length; i++) {
-      this.variants.at(i).get('price')?.setValue(basePrice);
-    }
-  }
+  //   for (let i = 0; i < variantsArray.length; i++) {
+  //     variantsArray.at(i).get('price')?.setValue(basePrice);
+  //   }
+  // }
 
   // Apply stock value to all variants
   applyBulkStock(): void {
@@ -459,71 +445,6 @@ export class ProductCreateComponent implements OnInit {
     const productName = this.productForm.get('name')?.value || '';
     return this.productService.generateSku(productName, this.productVariants[i]);
   }
-
-  // onSubmit(): void {
-  //   if (this.productForm.invalid) {
-  //     console.log('Form is invalid');
-  //     this.markFormGroupTouched();
-  //     return;
-  //   }
-
-  //   this.loading.submission = true;
-  //   const formValue = this.productForm.value;
-  //   console.log("Form value:", formValue);
-
-  //   const requestDto: CreateProductRequestDTO = {
-  //     product: {
-  //       name: formValue.name,
-  //       description: formValue.description,
-  //       brandId: formValue.brand,
-  //       categoryId: formValue.category,
-  //       basePrice: formValue.basePrice
-  //     },
-  //     options: formValue.options,
-  //     variants: formValue.variants.map((variant: any, index: number) => ({
-  //       options: this.productVariants[index].options,
-  //       price: variant.price,
-  //       stock: variant.stock,
-  //       sku: this.getSkuForVariant(index)
-  //     }))
-  //   };
-
-  //   console.log('Creating product with request:', requestDto);
-  //   this.productService.createProduct(requestDto).subscribe({
-  //     next: (response) => {
-  //       console.log('Product created successfully:', response);
-  //       alert('Product created successfully!');
-  //       this.loading.submission = false;
-  //       this.resetForm();
-  //     },
-  //     error: (err) => {
-  //       console.error('Failed to create product:', err);
-  //       alert('Failed to create product. Check console for error.');
-  //       this.loading.submission = false;
-  //     }
-  //   });
-  // }
-
-  // resetForm(): void {
-  //   this.productForm.reset({
-  //     name: '',
-  //     description: '',
-  //     brand: '',
-  //     category: '',
-  //     basePrice: 0
-  //   });
-
-  //   while (this.options.length) {
-  //     this.options.removeAt(0);
-  //   }
-
-  //   while (this.variants.length) {
-  //     this.variants.removeAt(0);
-  //   }
-
-  //   this.productVariants = [];
-  //   this.selectedCategory = null;
-  // }
 
   private markFormGroupTouched(): void {
     Object.keys(this.productForm.controls).forEach(key => {

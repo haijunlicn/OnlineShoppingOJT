@@ -13,25 +13,25 @@ import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { ForgetPasswordComponent } from './features/customer/auth/forget-password/forget-password.component';
 import { ResetPasswordComponent } from './features/customer/auth/reset-password/reset-password.component';
 
+
 @NgModule({
   declarations: [
-   AppComponent,
-   
-  
+    AppComponent,
+
   ],
   imports: [
-   BrowserModule,
+    BrowserModule,
     AppRoutingModule,
     RouterModule,
     FormsModule,
     // ReactiveFormsModule,
-      BrowserAnimationsModule, // required animations module
+    BrowserAnimationsModule, // required animations module
     ReactiveFormsModule,
-   ToastrModule.forRoot({
-    
-  positionClass: 'toast-bottom-right', // 👈 ညာဘက်အောက်
-  toastClass: 'ngx-toastr toast-custom', // 👈 custom class များသုံးဖို့
- // ✅ Custom class
+    ToastrModule.forRoot({
+
+      positionClass: 'toast-bottom-right', // 👈 ညာဘက်အောက်
+      toastClass: 'ngx-toastr toast-custom', // 👈 custom class များသုံးဖို့
+      // ✅ Custom class
       timeOut: 3000,                         // Optional: 3 seconds
       closeButton: true,
       progressBar: true,
@@ -39,11 +39,11 @@ import { ResetPasswordComponent } from './features/customer/auth/reset-password/
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule
-    
+
   ],
   providers: [
     provideClientHydration(withEventReplay()),
-     {
+    {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
       multi: true

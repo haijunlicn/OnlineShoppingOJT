@@ -3,6 +3,10 @@ package com.maven.OnlineShoppingSB.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.maven.OnlineShoppingSB.dto.OptionDTO;
+import com.maven.OnlineShoppingSB.entity.CategoryOptionEntity;
+import com.maven.OnlineShoppingSB.entity.OptionEntity;
+import com.maven.OnlineShoppingSB.repository.CategoryOptionRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +20,9 @@ public class CategoryService {
 
     @Autowired
     private CategoryRepository repo;
+
+    @Autowired
+    private CategoryOptionRepository cateOptionRepo;
 
     @Autowired
     private ModelMapper mapper;
@@ -42,6 +49,7 @@ public class CategoryService {
 
         return resultDto;
     }
+
     public List<CategoryDTO> getAllCategories() {
         List<CategoryEntity> cateList = repo.findByDelFg(1);
         return cateList.stream()
@@ -51,6 +59,41 @@ public class CategoryService {
                     dto.setName(entity.getName());
                     dto.setParentCategoryId(entity.getParentCategory() != null ? entity.getParentCategory().getId() : null);
                     dto.setParentCategoryName(entity.getParentCategory() != null ? entity.getParentCategory().getName() : null);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<CategoryDTO> getAllCategoriesWithOptions() {
+        List<CategoryEntity> categories = repo.findByDelFg(1);
+
+        return categories.stream()
+                .map(category -> {
+                    CategoryDTO dto = new CategoryDTO();
+                    dto.setId(category.getId());
+                    dto.setName(category.getName());
+                    dto.setParentCategoryId(category.getParentCategory() != null ? category.getParentCategory().getId() : null);
+                    dto.setParentCategoryName(category.getParentCategory() != null ? category.getParentCategory().getName() : null);
+
+                    // Set optionTypes
+                    List<CategoryOptionEntity> categoryOptions = cateOptionRepo.findByCategoryIdAndDelFg(category.getId(), 1);
+                    List<OptionDTO> optionDTOs = categoryOptions.stream()
+                            .map(catOpt -> mapper.map(catOpt.getOption(), OptionDTO.class))
+                            .collect(Collectors.toList());
+
+//                    List<OptionDTO> optionDTOs = categoryOptions.stream()
+//                            .map(catOpt -> {
+//                                OptionEntity opt = catOpt.getOption();
+//                                OptionDTO optDTO = new OptionDTO();
+//                                optDTO.setId(opt.getId());
+//                                optDTO.setName(opt.getName());
+//                                // Optional: fetch and set option values
+//                                // optDTO.setOptionValues(...);
+//                                return optDTO;
+//                            })
+//                            .collect(Collectors.toList());
+
+                    dto.setOptionTypes(optionDTOs);
                     return dto;
                 })
                 .collect(Collectors.toList());

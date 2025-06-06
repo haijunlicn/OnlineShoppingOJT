@@ -34,7 +34,7 @@
                                             Brand <span class="text-danger">*</span>
                                         </label>
                                         <select id="brand" class="form-select form-select-sm"
-                                            [class.is-invalid]="hasError('brand')" formControlName="brand">
+                                            [class.is-invalid]="hasError('brandId')" formControlName="brandId">
                                             <option value="">Select Brand</option>
                                             <option *ngFor="let brand of brands" [value]="brand.id">
                                                 {{ brand.name }}
@@ -261,7 +261,7 @@
                                             <h6 class="mb-0">Product Variants ({{ productVariants.length }})</h6>
                                             <div>
                                                 <button type="button" class="btn btn-outline-secondary btn-sm me-2"
-                                                    (click)="applyBulkPrice()">
+                                                    (click)="productFormService.applyBulkPrice(productForm)">
                                                     Apply Base Price to All
                                                 </button>
                                                 <button type="button" class="btn btn-outline-secondary btn-sm"

@@ -1,11 +1,15 @@
 package com.maven.OnlineShoppingSB.dto;
 
 import jakarta.validation.constraints.NotEmpty;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
+@Data
 public class CategoryDTO {
 
     private Long id;
@@ -19,4 +23,6 @@ public class CategoryDTO {
 
     private String createdDate;
     private String updatedDate;
+
+    private List<OptionDTO> optionTypes;
 }

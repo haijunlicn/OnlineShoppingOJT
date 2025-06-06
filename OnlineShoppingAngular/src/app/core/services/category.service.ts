@@ -15,9 +15,15 @@ export class CategoryService {
   createCategory(category: CategoryDTO): Observable<CategoryDTO> {
     return this.http.post<CategoryDTO>(`${this.baseUrl}/create`, category, { responseType: 'text' as 'json' });
   }
+
   getAllCategories(): Observable<CategoryDTO[]> {
     return this.http.get<CategoryDTO[]>(`${this.baseUrl}/list`);
   }
+
+  getAllCategoriesWithOptions(): Observable<CategoryDTO[]> {
+    return this.http.get<CategoryDTO[]>(`${this.baseUrl}/list-with-options`);
+  }
+
   getCategoryById(id: number): Observable<CategoryDTO> {
     return this.http.get<CategoryDTO>(`${this.baseUrl}/getbyid/${id}`);
   }
@@ -31,7 +37,7 @@ export class CategoryService {
   }
 
   getCategoryTree(): Observable<CategoryNode[]> {
-    return this.getAllCategories().pipe(
+    return this.getAllCategoriesWithOptions().pipe(
       map(res => {
         const map = new Map<number, CategoryNode>();
 
