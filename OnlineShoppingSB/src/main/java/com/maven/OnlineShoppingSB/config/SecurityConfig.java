@@ -44,8 +44,15 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+<<<<<<< Updated upstream
                         .requestMatchers("/auth/register","/auth/verify-otp", "/auth/login").permitAll()
                         .anyRequest().permitAll()
+=======
+                        .requestMatchers(HttpMethod.OPTIONS, "/").permitAll()
+                        .requestMatchers("/auth/register","/auth/verify-otp", "/auth/login", "/locations/save").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/public/").permitAll()
+                        .anyRequest().authenticated()
+>>>>>>> Stashed changes
                 )
                 .exceptionHandling(ex -> ex
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
@@ -64,6 +71,11 @@ public class SecurityConfig {
         return http.build();
     }
 
+<<<<<<< Updated upstream
+=======
+
+
+>>>>>>> Stashed changes
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         System.out.println("CORS config loaded ");

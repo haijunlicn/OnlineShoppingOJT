@@ -10,11 +10,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
     @Bean
-    public ModelMapper mapper() {
-        ModelMapper modelMapper = new ModelMapper();
-        return modelMapper;
+    public ModelMapper modelMapper() {
+        return new ModelMapper();
     }
 
+<<<<<<< Updated upstream
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**").allowedOrigins("http://localhost:4200") // Allow frontend to access backend
@@ -22,5 +22,15 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedHeaders("*") // Allow all headers
                 .allowCredentials(true); // Allow credentials (cookies, etc.)
     }
+=======
+//    @Override
+//    public void addCorsMappings(CorsRegistry registry) {
+//        registry.addMapping("/**")  // allow all endpoints
+//                .allowedOrigins("http://localhost:4200")  // Angular origi
+//                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+//                .allowedHeaders("*")
+//                .allowCredentials(true);  // if you use cookies or authorization
+//    }
+>>>>>>> Stashed changes
 
 }

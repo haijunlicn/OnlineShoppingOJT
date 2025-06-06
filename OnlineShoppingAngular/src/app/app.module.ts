@@ -8,10 +8,16 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+<<<<<<< Updated upstream
 import { VerifyComponent } from './features/customer/auth/verify/verify.component';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { ForgetPasswordComponent } from './features/customer/auth/forget-password/forget-password.component';
 import { ResetPasswordComponent } from './features/customer/auth/reset-password/reset-password.component';
+=======
+import { HttpClientModule } from '@angular/common/http';
+import { GoogleMapsModule } from '@angular/google-maps';
+
+>>>>>>> Stashed changes
 
 @NgModule({
   declarations: [
@@ -24,6 +30,7 @@ import { ResetPasswordComponent } from './features/customer/auth/reset-password/
     AppRoutingModule,
     RouterModule,
     FormsModule,
+<<<<<<< Updated upstream
     // ReactiveFormsModule,
       BrowserAnimationsModule, // required animations module
     ReactiveFormsModule,
@@ -39,6 +46,10 @@ import { ResetPasswordComponent } from './features/customer/auth/reset-password/
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule
+=======
+    HttpClientModule,
+    GoogleMapsModule,
+>>>>>>> Stashed changes
     
   ],
   providers: [
