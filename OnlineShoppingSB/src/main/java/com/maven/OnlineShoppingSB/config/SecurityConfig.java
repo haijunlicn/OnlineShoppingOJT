@@ -44,27 +44,8 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
                         .requestMatchers("/auth/register","/auth/verify-otp", "/auth/login").permitAll()
                         .anyRequest().permitAll()
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-                        .requestMatchers(HttpMethod.OPTIONS, "/").permitAll()
-                        .requestMatchers("/auth/register","/auth/verify-otp", "/auth/login", "/locations/save").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/public/").permitAll()
-                        .anyRequest().authenticated()
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
                 )
                 .exceptionHandling(ex -> ex
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
@@ -83,21 +64,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-
-
->>>>>>> Stashed changes
-=======
-
-
->>>>>>> Stashed changes
-=======
-
-
->>>>>>> Stashed changes
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         System.out.println("CORS config loaded ");
@@ -119,7 +85,6 @@ public class SecurityConfig {
         auth.setPasswordEncoder(passwordEncoder());
         return auth;
     }
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

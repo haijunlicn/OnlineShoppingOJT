@@ -8,7 +8,7 @@ import { isPlatformBrowser } from '@angular/common';
   providedIn: 'root'
 })
 export class LocationService {
-  private apiUrl = 'http://localhost:8081/locations';
+  private apiUrl = 'http://localhost:8080/locations';
 
   constructor(private http: HttpClient, @Inject(PLATFORM_ID) private platformId: Object) {}
 
