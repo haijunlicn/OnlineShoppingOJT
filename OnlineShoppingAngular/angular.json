@@ -41,7 +41,11 @@
               "node_modules/bootstrap-icons/font/bootstrap-icons.css",
               "node_modules/@fortawesome/fontawesome-free/css/all.css",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
               "node_modules/primeicons/primeicons.css",
+=======
+              "node_modules/leaflet/dist/leaflet.css",
+>>>>>>> Stashed changes
 =======
               "node_modules/leaflet/dist/leaflet.css",
 >>>>>>> Stashed changes
@@ -117,6 +121,7 @@
               "node_modules/bootstrap-icons/font/bootstrap-icons.css",
               "node_modules/@fortawesome/fontawesome-free/css/all.css",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
               "node_modules/primeicons/primeicons.css",
               "src/styles.css"
             ],
@@ -130,6 +135,11 @@
               "node_modules/leaflet/dist/leaflet.css",
               "src/styles.css"
             ],
+=======
+              "node_modules/leaflet/dist/leaflet.css",
+              "src/styles.css"
+            ],
+>>>>>>> Stashed changes
           
             "scripts": []
 >>>>>>> Stashed changes

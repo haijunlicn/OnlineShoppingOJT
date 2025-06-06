@@ -45,13 +45,19 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                         .requestMatchers("/auth/register","/auth/verify-otp", "/auth/login").permitAll()
                         .anyRequest().permitAll()
 =======
+=======
+>>>>>>> Stashed changes
                         .requestMatchers(HttpMethod.OPTIONS, "/").permitAll()
                         .requestMatchers("/auth/register","/auth/verify-otp", "/auth/login", "/locations/save").permitAll()
                         .requestMatchers(HttpMethod.GET, "/public/").permitAll()
                         .anyRequest().authenticated()
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 )
                 .exceptionHandling(ex -> ex
@@ -72,6 +78,11 @@ public class SecurityConfig {
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+
+
+>>>>>>> Stashed changes
 =======
 
 

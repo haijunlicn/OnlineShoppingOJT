@@ -28,7 +28,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Register နဲ့ Login ကို JWT token စစ်မစမ်းဘဲ လွတ်ခွင့်ပြုမယ်
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         if (path.equals("/user/register") || path.equals("/user/login")) {
+=======
+        if (path.equals("/user/register") || path.equals("/user/login") || path.equals("/locations/save")) {
+>>>>>>> Stashed changes
 =======
         if (path.equals("/user/register") || path.equals("/user/login") || path.equals("/locations/save")) {
 >>>>>>> Stashed changes
@@ -47,7 +51,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         token = authHeader.substring(7);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         System.out.println("JWT Token from request: " + token);
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         email = jwtService.extractEmail(token);
@@ -67,8 +74,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 }
 
+=======
+}
+>>>>>>> Stashed changes
 =======
 }
 >>>>>>> Stashed changes

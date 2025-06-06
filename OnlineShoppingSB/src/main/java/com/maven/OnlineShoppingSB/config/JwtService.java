@@ -6,18 +6,25 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import java.security.Key;
 import java.util.Date;
 =======
+=======
+>>>>>>> Stashed changes
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 @Service
 public class JwtService {
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
     private final String SECRET_KEY = "maycustomsecretmaycustomsecretmaycustomsecret"; // must be 32+ chars
 
@@ -34,6 +41,8 @@ public class JwtService {
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(getSignInKey()) // ✅ consistent
 =======
+=======
+>>>>>>> Stashed changes
     private final String SECRET_KEY = "maycustomsecretmaycustomsecretmaycustomsecret"; // use 256-bit key (min 32 char)
 
 
@@ -50,11 +59,15 @@ public class JwtService {
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 day
                 .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()))
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 .compact();
     }
 
     public String extractEmail(String token) {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
         try {
             return Jwts.parserBuilder()
@@ -71,10 +84,15 @@ public class JwtService {
         return Jwts.parserBuilder().setSigningKey(SECRET_KEY.getBytes()).build()
                 .parseClaimsJws(token).getBody().getSubject();
 >>>>>>> Stashed changes
+=======
+        return Jwts.parserBuilder().setSigningKey(SECRET_KEY.getBytes()).build()
+                .parseClaimsJws(token).getBody().getSubject();
+>>>>>>> Stashed changes
     }
 
     public boolean isTokenValid(String token) {
         try {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
             Jwts.parserBuilder()
                     .setSigningKey(getSignInKey()) // ✅ consistent
@@ -88,11 +106,17 @@ public class JwtService {
     }
 }
 =======
+=======
+>>>>>>> Stashed changes
             Jwts.parserBuilder().setSigningKey(SECRET_KEY.getBytes()).build().parseClaimsJws(token);
             return true;
         } catch (JwtException e) {
             return false;
         }
     }
+<<<<<<< Updated upstream
+}
+>>>>>>> Stashed changes
+=======
 }
 >>>>>>> Stashed changes

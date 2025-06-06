@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './general/home/home.component';
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import { VerifyComponent } from './auth/verify/verify.component';
 import { RegisterComponent } from './auth/register/register.component';
 import { LoginComponent } from './auth/login/login.component';
@@ -9,6 +10,10 @@ import { AuthGuard } from '../../core/guards/auth.guard';
 import { NoAuthGuard } from '../../core/guards/no-auth.guard';
 import { ForgetPasswordComponent } from './auth/forget-password/forget-password.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
+=======
+import { LocationCreateComponent } from './account/location-create/location-create.component';
+
+>>>>>>> Stashed changes
 =======
 import { LocationCreateComponent } from './account/location-create/location-create.component';
 
@@ -25,6 +30,7 @@ const routes: Routes = [
     component: RegisterComponent,canActivate: [NoAuthGuard],
   },
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   {
     path: 'auth/login',
     component: LoginComponent,canActivate: [NoAuthGuard],
@@ -40,6 +46,9 @@ const routes: Routes = [
   component: ResetPasswordComponent
 }
 
+=======
+  {path:'location',component:LocationCreateComponent}
+>>>>>>> Stashed changes
 =======
   {path:'location',component:LocationCreateComponent}
 >>>>>>> Stashed changes
