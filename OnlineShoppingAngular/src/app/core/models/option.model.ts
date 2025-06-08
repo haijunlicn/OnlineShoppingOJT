@@ -15,5 +15,4 @@ export interface OptionValueDTO {
   optionId: number;
   value: string;
   deleted?: boolean;
-  
 }

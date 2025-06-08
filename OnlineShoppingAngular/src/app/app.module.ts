@@ -45,7 +45,8 @@ import { GoogleMapsModule } from '@angular/google-maps';
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
       multi: true
-    }
+    },
+
   ],
   bootstrap: [AppComponent]
 })

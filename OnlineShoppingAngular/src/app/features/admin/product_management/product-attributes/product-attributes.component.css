@@ -167,26 +167,20 @@
   color: var(--primary-color);
 }
 
-
 /* Button Styling */
 :host ::ng-deep .p-button {
-  border-radius: 5px;
-  font-weight: 600;
-  font-size: 0.92rem;
-  padding: 0.3em 0.8em;
-}
-:host ::ng-deep .p-button.p-button-success {
-  background: #2e4a3f;
-  color: #fff;
-  border: none;
   border-radius: 6px;
-  padding: 0.35em 0.9em;
-  font-size: 0.92rem;
-  transition: background 0.2s;
+  font-weight: 600;
 }
-:host ::ng-deep .p-button.p-button-success:hover {
-  background: #c9b87c;
-  color: #1a1a1a;
+
+:host ::ng-deep .p-button.p-button-outlined {
+  border-color: var(--border-color);
+  color: var(--primary-color);
+}
+
+:host ::ng-deep .p-button.p-button-outlined:hover {
+  background: rgba(201, 184, 124, 0.1);
+  border-color: var(--highlight-color);
 }
 
 /* Empty Message */
@@ -385,6 +379,27 @@ p-table td:last-child {
 :host ::ng-deep .p-dropdown:focus {
   border-color: #c9b87c;
   box-shadow: 0 0 0 2px rgba(201, 184, 124, 0.13);
+}
+
+/* Button Styling */
+:host ::ng-deep .p-button {
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 0.92rem;
+  padding: 0.3em 0.8em;
+}
+:host ::ng-deep .p-button.p-button-success {
+  background: #2e4a3f;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.35em 0.9em;
+  font-size: 0.92rem;
+  transition: background 0.2s;
+}
+:host ::ng-deep .p-button.p-button-success:hover {
+  background: #c9b87c;
+  color: #1a1a1a;
 }
 
 /* Card and Main Layout */

@@ -7,6 +7,11 @@ export interface CategoryDTO {
   parentCategoryName?: string;
   children?: CategoryDTO[];
   optionTypes?: OptionTypeDTO[];
+  imagePath?: string;
+}
+
+export interface CategoryFlatDTO extends CategoryDTO {
+  level: number;
 }
 
 export interface CategoryNode extends CategoryDTO {

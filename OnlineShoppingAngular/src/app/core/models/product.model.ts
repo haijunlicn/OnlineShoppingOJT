@@ -1,3 +1,4 @@
+import { CategoryDTO } from "./category-dto";
 import { OptionDTO, OptionTypeDTO, OptionValueDTO } from "./option.model";
 import { VariantOptionDTO } from "./variant.model";
 
@@ -21,6 +22,7 @@ export interface ProductDTO {
   brandId: string;
   categoryId: string;
   basePrice: number;
+  createdDate?: string;
 }
 
 export interface BrandDTO {
@@ -32,4 +34,12 @@ export interface CreateProductRequestDTO {
   product: ProductDTO;
   options: OptionTypeDTO[];
   variants: ProductVariantDTO[];
+}
+
+export interface ProductListItemDTO {
+  product: ProductDTO;
+  brand: BrandDTO; // i think i should remove this line and category since they're already in productdto?
+  category: CategoryDTO;
+  variants: ProductVariantDTO[];
+  options: ProductOptionDTO[];
 }

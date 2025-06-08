@@ -6,6 +6,7 @@ import com.maven.OnlineShoppingSB.repository.*;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,6 +30,12 @@ public class ProductService {
 
     @Autowired
     private OptionValueRepository optionValueRepo;
+
+    @Autowired
+    private  ProductOptionRepository productOptionRepo;
+
+    @Autowired
+    private ProductVariantRepository variantRepo;
 
     @Autowired
     private ModelMapper mapper;
@@ -97,8 +104,36 @@ public class ProductService {
 
             product.getVariants().add(variant);
         }
-
         return product;
+    }
+
+    public List<ProductListItemDTO> getAllProducts() {
+        // List<ProductEntity> products = productRepo.findAll();
+
+        List<ProductEntity> products = productRepo.findAll(Sort.by(Sort.Direction.DESC, "createdDate"));
+        return products.stream().map(product -> {
+            ProductDTO productDTO = mapper.map(product, ProductDTO.class);
+
+            BrandDTO brandDTO = mapper.map(product.getBrand(), BrandDTO.class);
+            CategoryDTO categoryDTO = mapper.map(product.getCategory(), CategoryDTO.class);
+
+            List<ProductVariantDTO> variants = variantRepo.findByProductId(product.getId()).stream()
+                    .map(variant -> mapper.map(variant, ProductVariantDTO.class))
+                    .collect(Collectors.toList());
+
+            List<ProductOptionDTO> options = productOptionRepo.findByProduct(product).stream()
+                    .map(productOptionEntity -> mapper.map(productOptionEntity.getOption(), ProductOptionDTO.class))
+                    .collect(Collectors.toList());
+
+            ProductListItemDTO item = new ProductListItemDTO();
+            item.setProduct(productDTO);
+            item.setBrand(brandDTO);
+            item.setCategory(categoryDTO);
+            item.setVariants(variants);
+            item.setOptions(options);
+
+            return item;
+        }).collect(Collectors.toList());
     }
 
 }

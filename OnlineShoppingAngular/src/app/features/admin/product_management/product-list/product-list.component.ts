@@ -1,20 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Table } from 'primeng/table';
-
-interface Product {
-  id: number;
-  name: string;
-  sku: string;
-  category: string;
-  price: number;
-  status: boolean;
-  image?: string;
-}
-
-interface DropdownOption {
-  label: string;
-  value: string | boolean;
-}
+import { ProductListItemDTO } from '../../../../core/models/product.model';
+import { ProductService } from '../../../../core/services/product.service';
 
 @Component({
   selector: 'app-premium-products',
@@ -25,122 +12,43 @@ interface DropdownOption {
 export class ProductListComponent implements OnInit {
   @ViewChild('dt') dt!: Table;
 
-  products: Product[] = [];
-  categories: DropdownOption[] = [];
-  statuses: DropdownOption[] = [];
-
-  maxPrice = 1000;
-  priceRange: [number, number] = [0, this.maxPrice];
-
+  products: any[] = [];
+  categories: any[] = [];
+  brands: any[] = [];
+  statuses: any[] = [
+    { label: 'In Stock', value: 'In Stock' },
+    { label: 'Out of Stock', value: 'Out of Stock' }
+  ];
+  priceRange: number[] = [0, 1000];
+  maxPrice: number = 1000;
+  filters: any = {};
   showFilters = false;
+
+  constructor(private productService: ProductService) { }
 
   ngOnInit() {
     this.loadProducts();
     this.loadCategories();
     this.loadStatuses();
+
+    this.filters = {
+      'product.basePrice': { value: this.priceRange, matchMode: 'between' }
+    };
   }
 
   loadProducts() {
-    this.products = [
-      {
-        id: 1,
-        name: 'Luxury Handbag Classic',
-        sku: 'LH-001',
-        category: 'Luxury Handbag',
-        price: 499,
-        status: true,
-        image: 'https://via.placeholder.com/60x60?text=LH1',
-      },
-      {
-        id: 2,
-        name: 'Elegant Watch 2025',
-        sku: 'W-2025',
-        category: 'Watches',
-        price: 799,
-        status: false,
-        image: 'https://via.placeholder.com/60x60?text=W2',
-      },
-      {
-        id: 3,
-        name: 'Designer Bag Premium',
-        sku: 'DB-003',
-        category: 'Luxury Handbag',
-        price: 650,
-        status: true,
-      },
-      {
-        id: 4,
-        name: 'Classic Watch Silver',
-        sku: 'W-004',
-        category: 'Watches',
-        price: 299,
-        status: true,
-      },
-      {
-        id: 5,
-        name: 'Luxury Bag Limited',
-        sku: 'LB-005',
-        category: 'Luxury Handbag',
-        price: 1200,
-        status: false,
-      },
-      {
-        id: 6,
-        name: 'Luxury Handbag Classic',
-        sku: 'LH-001',
-        category: 'Luxury Handbag',
-        price: 499,
-        status: true,
-        image: 'https://via.placeholder.com/60x60?text=LH1',
-      },
-      {
-        id: 7,
-        name: 'Elegant Watch 2025',
-        sku: 'W-2025',
-        category: 'Watches',
-        price: 799,
-        status: false,
-        image: 'https://via.placeholder.com/60x60?text=W2',
-      },
-      {
-        id: 8,
-        name: 'Designer Bag Premium',
-        sku: 'DB-003',
-        category: 'Luxury Handbag',
-        price: 650,
-        status: true,
-      },
-      {
-        id: 9,
-        name: 'Luxury Handbag Classic',
-        sku: 'LH-001',
-        category: 'Luxury Handbag',
-        price: 499,
-        status: true,
-        image: 'https://via.placeholder.com/60x60?text=LH1',
-      },
-      {
-        id: 10,
-        name: 'Elegant Watch 2025',
-        sku: 'W-2025',
-        category: 'Watches',
-        price: 799,
-        status: false,
-        image: 'https://via.placeholder.com/60x60?text=W2',
-      },
-      {
-        id: 11,
-        name: 'Designer Bag Premium',
-        sku: 'DB-003',
-        category: 'Luxury Handbag',
-        price: 650,
-        status: true,
-      },
-    ];
+    this.productService.getProductList().subscribe({
+      next: (products) => {
+        console.log("product list : ", products);
 
-    // Update maxPrice based on products
-    this.maxPrice = Math.max(...this.products.map((p) => p.price)) + 50;
-    this.priceRange = [0, this.maxPrice];
+        this.products = products;
+        this.maxPrice = Math.max(...products.map(p => p.product.basePrice));
+        this.priceRange = [0, this.maxPrice];
+      },
+      error: (err) => {
+        console.error('Failed to load products', err);
+      }
+    });
   }
 
   loadCategories() {
@@ -160,7 +68,6 @@ export class ProductListComponent implements OnInit {
 
   toggleFilters() {
     this.showFilters = !this.showFilters;
-
     if (!this.showFilters) {
       // Reset all filters on hide
       this.dt.clear();
@@ -168,8 +75,50 @@ export class ProductListComponent implements OnInit {
     }
   }
 
-  onPriceChange(event: any) {
-    this.priceRange = event.values;
-    this.dt.filter(this.priceRange, 'price', 'between');
+  getStockStatus(product: ProductListItemDTO): string {
+    return product.variants.some(v => v.stock > 0) ? 'In Stock' : 'Out of Stock';
   }
+
+  onFilterInput(event: Event, field: string) {
+    const input = event.target as HTMLInputElement;  // Cast target here
+    this.dt.filter(input.value, field, 'contains');
+  }
+
+  onPriceChange(event: any) {
+    this.filters['product.basePrice'] = { value: this.priceRange, matchMode: 'between' };
+  }
+
+  onGlobalFilter(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.dt.filterGlobal(input.value, 'contains');
+  }
+
+  // Add these methods to your component class if they don't exist already
+
+  viewProduct(product: any): void {
+    // Implement view product details logic
+    console.log('View product details:', product);
+    // You could navigate to a details page or open a modal
+    // this.router.navigate(['/admin/products', product.id]);
+  }
+
+  editProduct(product: any): void {
+    // Implement edit product logic
+    console.log('Edit product:', product);
+    // You could navigate to an edit page
+    // this.router.navigate(['/admin/productEdit', product.id]);
+  }
+
+  deleteProduct(product: any): void {
+    // Implement delete product logic with confirmation
+    // You could use PrimeNG's ConfirmDialog here
+    if (confirm('Are you sure you want to delete this product?')) {
+      console.log('Delete product:', product);
+      // this.productService.deleteProduct(product.id).subscribe(() => {
+      //   this.products = this.products.filter(p => p.id !== product.id);
+      //   this.messageService.add({severity:'success', summary: 'Success', detail: 'Product deleted'});
+      // });
+    }
+  }
+
 }

@@ -14,7 +14,6 @@ import { EditLocationComponent } from './account/edit-location/edit-location.com
 
 const routes: Routes = [  
 
-     
   { path: 'home', component: HomeComponent },
   { path: 'auth/verify/:id', component: VerifyComponent ,canActivate: [NoAuthGuard]},
 

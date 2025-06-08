@@ -1,0 +1,201 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="input-group" style="max-width: 300px;">
+    <span class="input-group-text bg-white border-end-0">
+      <i class="pi pi-search text-muted"></i>
+    </span>
+    <input type="text" class="form-control border-start-0" placeholder="Search categories..."
+      [(ngModel)]="categoryFilter" (ngModelChange)="updateFilters()">
+  </div>
+  <button pButton type="button" label="Add Category" icon="pi pi-plus" class="p-button-success p-button-sm"
+    (click)="openCategoryDialog()"></button>
+</div>
+
+<!-- Compact Accordion-Style Categories with Image Support -->
+<div class="categories-compact-view">
+  <div *ngFor="let rootCategory of getRootCategories()" class="category-accordion">
+
+    <!-- Root Category Header with Image -->
+    <div class="category-header" [class.expanded]="isExpanded(rootCategory.id!)"
+      (click)="toggleExpanded(rootCategory.id!)">
+      <div class="category-header-content">
+        <div class="category-info">
+          <div class="category-image-container">
+            <img [src]="getCategoryImage(rootCategory)" alt="" class="category-image">
+          </div>
+          <i class="pi pi-chevron-right expand-icon" [class.expanded]="isExpanded(rootCategory.id!)"
+            *ngIf="hasSubcategories(rootCategory.id!)"></i>
+          <span class="category-name">{{ rootCategory.name }}</span>
+          <span class="subcategory-count" *ngIf="getTotalSubcategoryCount(rootCategory.id!) > 0">
+            {{ getTotalSubcategoryCount(rootCategory.id!) }}
+          </span>
+        </div>
+        <div class="category-actions" (click)="$event.stopPropagation()">
+          <button class="btn btn-sm btn-outline-success me-1" (click)="addSubcategory(rootCategory)"
+            pTooltip="Add Subcategory" tooltipPosition="top" tooltipStyleClass="custom-tooltip">
+            <i class="pi pi-plus"></i>
+          </button>
+
+          <button class="btn btn-sm btn-outline-secondary" (click)="showCategoryMenu($event, rootCategory)"
+            pTooltip="More Actions" tooltipPosition="top" tooltipStyleClass="custom-tooltip">
+            <i class="pi pi-ellipsis-v"></i>
+          </button>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Expandable Subcategories -->
+    <div class="category-content" [class.expanded]="isExpanded(rootCategory.id!)"
+      *ngIf="hasSubcategories(rootCategory.id!)">
+      <div class="subcategories-list">
+        <ng-container *ngTemplateOutlet="subcategoryTemplate; context: { 
+          categories: getDirectSubcategories(rootCategory.id!), 
+          level: 1 
+        }"></ng-container>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="getRootCategories().length === 0" class="text-center p-5">
+    <i class="pi pi-sitemap mb-3" style="font-size: 3rem; opacity: 0.3"></i>
+    <h5 class="mb-2">No categories found</h5>
+    <p class="text-muted mb-3">Create your first category to organize products</p>
+    <button pButton type="button" label="Add Category" icon="pi pi-plus" class="p-button-success"
+      (click)="openCategoryDialog()"></button>
+  </div>
+</div>
+
+<!-- Recursive Subcategory Template with Image Support -->
+<ng-template #subcategoryTemplate let-categories="categories" let-level="level">
+  <div *ngFor="let category of categories" class="subcategory-item" [style.margin-left.rem]="level * 0.75">
+
+    <!-- Subcategory Row with Image -->
+    <div class="subcategory-row">
+      <div class="subcategory-info">
+        <div class="subcategory-image-container">
+          <img [src]="getCategoryImage(category)" alt="" class="subcategory-image">
+        </div>
+        <i class="pi pi-chevron-right expand-icon mini" [class.expanded]="isExpanded(category.id!)"
+          *ngIf="hasSubcategories(category.id!)" (click)="toggleExpanded(category.id!)"></i>
+        <span class="subcategory-name">{{ category.name }}</span>
+        <span class="subcategory-count mini" *ngIf="getTotalSubcategoryCount(category.id!) > 0">
+          {{ getTotalSubcategoryCount(category.id!) }}
+        </span>
+      </div>
+      <div class="subcategory-actions">
+        <button class="btn btn-xs btn-outline-success me-1" (click)="addSubcategory(category)"
+          pTooltip="Add Subcategory" tooltipPosition="top" tooltipStyleClass="custom-tooltip">
+          <i class="pi pi-plus"></i>
+        </button>
+
+        <button class="btn btn-xs btn-outline-secondary" (click)="showCategoryMenu($event, category)"
+          pTooltip="More Actions" tooltipPosition="top" tooltipStyleClass="custom-tooltip">
+          <i class="pi pi-ellipsis-v"></i>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Nested Subcategories (Recursive) -->
+    <div class="nested-subcategories" [class.expanded]="isExpanded(category.id!)"
+      *ngIf="hasSubcategories(category.id!) && isExpanded(category.id!)">
+      <ng-container *ngTemplateOutlet="subcategoryTemplate; context: { 
+        categories: getDirectSubcategories(category.id!), 
+        level: level + 1 
+      }"></ng-container>
+    </div>
+  </div>
+</ng-template>
+
+<!-- Category Dialog with Image Support -->
+<p-dialog [(visible)]="categoryDialogVisible" [style]="{width: '450px'}"
+  [header]="editingCategory ? 'Edit Category' : 'Add Category'" [modal]="true" styleClass="p-fluid">
+
+  <form [formGroup]="categoryForm" (ngSubmit)="saveCategory()">
+    <div class="field mb-3" *ngIf="!editingCategory">
+      <label for="parentCategory" class="form-label">Parent Category (Optional)</label>
+
+      <!-- Bootstrap Dropdown Replacement -->
+      <div *ngIf="isAddingSubcategory && parentCategoryForNew" class="form-control parent-selected">
+        <span>{{ parentCategoryForNew.name }}</span>
+        <input type="hidden" formControlName="parentCategoryId">
+      </div>
+
+      <div *ngIf="!isAddingSubcategory" class="dropdown bootstrap-dropdown">
+        <button class="form-control d-flex justify-content-between align-items-center dropdown-toggle" type="button"
+          id="parentCategoryDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+          <span *ngIf="getSelectedCategoryName(); else placeholderTemplate">
+            {{ getSelectedCategoryName() }}
+          </span>
+          <ng-template #placeholderTemplate>
+            <span class="text-muted">Select Parent Category</span>
+          </ng-template>
+        </button>
+        <ul class="dropdown-menu w-100" aria-labelledby="parentCategoryDropdown">
+          <li>
+            <a class="dropdown-item" href="javascript:void(0)" (click)="selectParentCategory(null)">
+              <i class="pi pi-times-circle me-2 text-muted"></i>None (Root Category)
+            </a>
+          </li>
+          <li *ngIf="categoryDropdown.length > 0">
+            <hr class="dropdown-divider">
+          </li>
+          <li *ngFor="let category of categoryDropdown">
+            <a class="dropdown-item" href="javascript:void(0)" (click)="selectParentCategory(category.value)">
+              <i class="pi pi-folder me-2"></i>{{ category.label }}
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Info below if subcategory is being added -->
+      <div *ngIf="isAddingSubcategory && parentCategoryForNew" class="mt-2">
+        <small class="text-muted">
+          <i class="pi pi-info-circle me-1"></i>
+          Adding subcategory under: <strong>{{ parentCategoryForNew.name }}</strong>
+        </small>
+      </div>
+    </div>
+
+    <div class="field mb-3">
+      <label for="categoryName" class="form-label">Category Name</label>
+      <input type="text" pInputText id="categoryName" formControlName="name" placeholder="e.g. Electronics, Clothing"
+        class="form-control" required />
+      <small *ngIf="categoryForm.get('name')?.invalid && categoryForm.get('name')?.touched"
+        class="text-danger d-block mt-1">
+        Category name is required
+      </small>
+    </div>
+
+    <!-- Category Image Upload (For Future) -->
+    <div class="field mb-3">
+      <label class="form-label">Category Image</label>
+      <div class="image-upload-preview mb-2" *ngIf="categoryImagePreview">
+        <img [src]="categoryImagePreview" alt="Category preview" class="img-preview">
+        <button type="button" class="btn btn-sm btn-outline-danger remove-image" (click)="removeCategoryImage()">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+      <div class="image-upload-area">
+        <label for="categoryImage" class="image-upload-label">
+          <i class="pi pi-cloud-upload me-1"></i>
+          Upload Image
+        </label>
+        <input type="file" id="categoryImage" class="image-upload-input" (change)="onImageSelected($event)"
+          accept="image/*">
+        <small class="text-muted d-block mt-1">Recommended size: 100x100px. Max 2MB.</small>
+      </div>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button pButton pRipple type="button" label="Cancel" icon="pi pi-times" class="p-button-text p-button-sm"
+      (click)="categoryDialogVisible = false"></button>
+    <button pButton pRipple type="button" label="Save" icon="pi pi-check" class="p-button-success p-button-sm"
+      (click)="saveCategory()" [disabled]="categoryForm.invalid"></button>
+  </ng-template>
+</p-dialog>
+
+<!-- Context Menu -->
+<p-menu #categoryMenu [model]="categoryMenuItems" [popup]="true" appendTo="body"></p-menu>

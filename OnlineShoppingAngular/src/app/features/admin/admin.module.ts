@@ -21,10 +21,22 @@ import { DropdownModule } from 'primeng/dropdown';
 import { SliderModule } from 'primeng/slider';
 import { TooltipModule } from 'primeng/tooltip';
 import { RippleModule } from 'primeng/ripple';
+import { TabViewModule } from 'primeng/tabview';
+import { DialogModule } from 'primeng/dialog';
+import { TagModule } from 'primeng/tag';
+import { CheckboxModule } from 'primeng/checkbox';
+import { ColorPickerModule } from 'primeng/colorpicker';
+import { TreeModule } from 'primeng/tree';
+import { MenuModule } from 'primeng/menu';
+
 import { ProductListComponent } from './product_management/product-list/product-list.component';
 import { ProductCreateComponent } from './product_management/product-create/product-create.component';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-
+import { ProductAttributesComponent } from './product_management/product-attributes/product-attributes.component';
+import { AttributeManagementComponent } from './product_management/attribute-management/attribute-management.component';
+import { CategoryManagementComponent } from './product_management/category-management/category-management.component';
+import { OptionManagementComponent } from './product_management/option-management/option-management.component';
+import { BrandManagementComponent } from './product_management/brand-management/brand-management.component';
 @NgModule({
   declarations: [
     ProductEditComponent,
@@ -38,7 +50,12 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
     SidebarComponent,
     AdminDashboardComponent,
     ProductListComponent,
-    ProductCreateComponent
+    ProductCreateComponent,
+    ProductAttributesComponent,
+    AttributeManagementComponent,
+    CategoryManagementComponent,
+    OptionManagementComponent,
+    BrandManagementComponent,
   ],
   imports: [
     CommonModule,
@@ -52,7 +69,14 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
     DropdownModule,
     SliderModule,
     TooltipModule,
-    RippleModule
+    RippleModule,
+    TabViewModule,
+    DialogModule,
+    TagModule,
+    CheckboxModule,
+    ColorPickerModule,
+    TreeModule,
+    MenuModule,
   ]
 })
 export class AdminModule { }

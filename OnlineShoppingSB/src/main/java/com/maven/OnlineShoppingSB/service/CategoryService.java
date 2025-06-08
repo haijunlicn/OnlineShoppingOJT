@@ -1,6 +1,7 @@
 package com.maven.OnlineShoppingSB.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.maven.OnlineShoppingSB.dto.OptionDTO;
@@ -27,15 +28,61 @@ public class CategoryService {
     @Autowired
     private ModelMapper mapper;
 
-    public CategoryDTO insertCategory(CategoryDTO dto) {
-        CategoryEntity entity = new CategoryEntity();
-        entity.setName(dto.getName());
-        // entity.setDelFg(false);
+//    public CategoryDTO insertCategory(CategoryDTO dto) {
+//        CategoryEntity entity = new CategoryEntity();
+//        entity.setName(dto.getName());
+//        // entity.setDelFg(false);
+//
+//        if (dto.getParentCategoryId() != null) {
+//            CategoryEntity parent = repo.findById(dto.getParentCategoryId())
+//                    .orElseThrow(() -> new RuntimeException("Parent category not found"));
+//            entity.setParentCategory(parent);
+//        }
+//
+//        CategoryEntity saved = repo.save(entity);
+//
+//        CategoryDTO resultDto = new CategoryDTO();
+//        resultDto.setId(saved.getId());
+//        resultDto.setName(saved.getName());
+//        resultDto.setParentCategoryId(
+//            saved.getParentCategory() != null ? saved.getParentCategory().getId() : null
+//        );
+//
+//        return resultDto;
+//    }
 
+    public CategoryDTO insertCategory(CategoryDTO dto) {
+        CategoryEntity parent = null;
         if (dto.getParentCategoryId() != null) {
-            CategoryEntity parent = repo.findById(dto.getParentCategoryId())
+            parent = repo.findById(dto.getParentCategoryId())
                     .orElseThrow(() -> new RuntimeException("Parent category not found"));
+        }
+
+        // Check if ACTIVE category with same name + parent exists
+        boolean activeExists = repo.existsByNameAndParentCategoryIdAndDelFg(
+                dto.getName(), dto.getParentCategoryId(), 1);
+        if (activeExists) {
+            throw new RuntimeException("Active category with the same name already exists under this parent.");
+        }
+
+        // Check if SOFT-DELETED category exists to reuse
+        Optional<CategoryEntity> softDeletedOpt = repo.findByNameAndParentCategoryIdAndDelFg(
+                dto.getName(), dto.getParentCategoryId(), 0);
+
+        CategoryEntity entity;
+        if (softDeletedOpt.isPresent()) {
+            // Reactivate soft-deleted category
+            entity = softDeletedOpt.get();
+            entity.setDelFg(1);
+            // Update name or any other fields if needed
+            entity.setName(dto.getName());
             entity.setParentCategory(parent);
+        } else {
+            // Create new category entity
+            entity = new CategoryEntity();
+            entity.setName(dto.getName());
+            entity.setParentCategory(parent);
+            entity.setDelFg(1);
         }
 
         CategoryEntity saved = repo.save(entity);
@@ -44,11 +91,12 @@ public class CategoryService {
         resultDto.setId(saved.getId());
         resultDto.setName(saved.getName());
         resultDto.setParentCategoryId(
-            saved.getParentCategory() != null ? saved.getParentCategory().getId() : null
+                saved.getParentCategory() != null ? saved.getParentCategory().getId() : null
         );
 
         return resultDto;
     }
+
 
     public List<CategoryDTO> getAllCategories() {
         List<CategoryEntity> cateList = repo.findByDelFg(1);
@@ -120,13 +168,13 @@ public class CategoryService {
         }
 
         CategoryEntity existing = repo.findById(dto.getId())
-            .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new RuntimeException("Category not found"));
 
         existing.setName(dto.getName());
 
         if (dto.getParentCategoryId() != null) {
             CategoryEntity parent = repo.findById(dto.getParentCategoryId())
-                .orElseThrow(() -> new RuntimeException("Parent category not found"));
+                    .orElseThrow(() -> new RuntimeException("Parent category not found"));
             existing.setParentCategory(parent);
         } else {
             existing.setParentCategory(null);
@@ -138,18 +186,19 @@ public class CategoryService {
         updatedDto.setId(updated.getId());
         updatedDto.setName(updated.getName());
         updatedDto.setParentCategoryId(
-            updated.getParentCategory() != null ? updated.getParentCategory().getId() : null
+                updated.getParentCategory() != null ? updated.getParentCategory().getId() : null
         );
 
         return updatedDto;
     }
+
     public void deleteCategory(Long id) {
         CategoryEntity existing = repo.findById(id)
-            .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
 
         existing.setDelFg(0);
         repo.save(existing);
     }
 
-    
+
 }

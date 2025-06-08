@@ -36,7 +36,6 @@ public class CategoryController {
         return ResponseEntity.ok(dtoList);
     }
 
-
     @GetMapping("/getbyid/{id}")
     public ResponseEntity<CategoryDTO> getById(@PathVariable Long id) {
         CategoryDTO dto = cateService.getById(id);

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators, FormControl } from '@angular/forms';
 import { BrandDTO, CreateProductRequestDTO, ProductOptionDTO, ProductVariantDTO } from '../../../../core/models/product.model';
-import { CategoryDTO, CategoryNode } from '../../../../core/models/category-dto';
+import { CategoryDTO, CategoryFlatDTO, CategoryNode } from '../../../../core/models/category-dto';
 import { OptionService } from '../../../../core/services/option.service';
 import { BrandService } from '../../../../core/services/brand.service';
 import { CategoryService } from '../../../../core/services/category.service';
@@ -9,6 +9,7 @@ import { OptionTypeDTO, OptionValueDTO } from '../../../../core/models/option.mo
 import { ProductService } from '../../../../core/services/product.service';
 import { VariantGeneratorService } from '../../../../core/services/variant-generator.service';
 import { ProductFormService } from '../../../../core/services/product-form.service';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-product-create',
@@ -154,6 +155,8 @@ export class ProductCreateComponent implements OnInit {
     private productService: ProductService,
     private variantGeneratorService: VariantGeneratorService,
     public productFormService: ProductFormService,
+    private router: Router,
+    private route: ActivatedRoute
   ) {
 
     this.productForm = this.productFormService.createProductForm();
@@ -275,16 +278,30 @@ export class ProductCreateComponent implements OnInit {
       console.log('Creating product with request:', requestDto);
 
       this.productService.createProduct(requestDto).subscribe({
-        next: (response) => {
-          console.log('Product created successfully:', response);
-          alert('Product created successfully!');
-          this.resetForm();
+        next: res => {
+          console.log('Product created', res);
+          this.router.navigate(['/admin/productList']);
+          // handle success message, e.g., show toast
         },
-        error: (err) => {
-          console.error('Failed to create product:', err);
-          alert('Failed to create product. Check console for error.');
+        error: err => {
+          console.error('Error:', err.message);
+          // Show error message to user, e.g., set error variable or show toast
+          // this.errorMessage = err.message;
         }
       });
+
+
+      // this.productService.createProduct(requestDto).subscribe({
+      //   next: (response) => {
+      //     console.log('Product created successfully:', response);
+      //     alert('Product created successfully!');
+      //     this.resetForm();
+      //   },
+      //   error: (err) => {
+      //     console.error('Failed to create product:', err);
+      //     alert('Failed to create product. Check console for error.');
+      //   }
+      // });
     } else {
       console.log('Form is invalid');
       this.markFormGroupTouched();

@@ -37,9 +37,11 @@
               }
             ],
             "styles": [
+              "node_modules/primeicons/primeicons.css",
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "node_modules/bootstrap-icons/font/bootstrap-icons.css",
               "node_modules/@fortawesome/fontawesome-free/css/all.css",
+<<<<<<< Updated upstream
 
               "node_modules/primeicons/primeicons.css",
 
@@ -48,13 +50,16 @@
               "node_modules/leaflet/dist/leaflet.css",
 
               "node_modules/leaflet/dist/leaflet.css",
+=======
+              "node_modules/leaflet/dist/leaflet.css",
+>>>>>>> Stashed changes
               "src/styles.css"
             ],
             "scripts": [
-                "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js",
-                "src/assets/demo/chart-area-demo.js",
-                "src/assets/demo/chart-bar-demo.js",
-                "src/assets/js/datatables-simple-demo.js"
+              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js",
+              "src/assets/demo/chart-area-demo.js",
+              "src/assets/demo/chart-bar-demo.js",
+              "src/assets/js/datatables-simple-demo.js"
             ],
             "server": "src/main.server.ts",
             "outputMode": "server",
@@ -116,21 +121,29 @@
               }
             ],
             "styles": [
+              "node_modules/primeicons/primeicons.css",
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "node_modules/bootstrap-icons/font/bootstrap-icons.css",
               "node_modules/@fortawesome/fontawesome-free/css/all.css",
+<<<<<<< Updated upstream
 
               "node_modules/primeicons/primeicons.css",
+=======
+              "node_modules/leaflet/dist/leaflet.css",
+>>>>>>> Stashed changes
               "src/styles.css"
             ],
             "scripts": [
-                  "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js",
-                  "src/assets/demo/chart-area-demo.js",
-                  "src/assets/demo/chart-bar-demo.js",
-                  "src/assets/js/datatables-simple-demo.js"
+              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js",
+              "src/assets/demo/chart-area-demo.js",
+              "src/assets/demo/chart-bar-demo.js",
+              "src/assets/js/datatables-simple-demo.js"
             ]
+<<<<<<< Updated upstream
 
           
+=======
+>>>>>>> Stashed changes
           }
         }
       }

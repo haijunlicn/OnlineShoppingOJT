@@ -1,0 +1,47 @@
+/* Brands grid */
+.brands-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.brand-card {
+  transition: transform 0.2s ease;
+}
+
+.brand-card:hover {
+  transform: translateY(-3px);
+}
+
+.brand-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  color: white;
+  font-size: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .brands-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}
+
+/* ::ng-deep .p-menu {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  border: 1px solid #e9ecef !important;
+  border-radius: 8px !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+  min-width: 140px !important;
+  padding: 0.5rem 0 !important;
+  background: #ffffff !important;
+  z-index: 9999 !important;
+} */

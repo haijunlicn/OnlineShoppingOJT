@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { CreateProductRequestDTO } from '../models/product.model';
-import { Observable } from 'rxjs';
+import { CreateProductRequestDTO, ProductListItemDTO } from '../models/product.model';
+import { catchError, Observable, throwError } from 'rxjs';
 import { ProductVariantDTO } from '../models/variant.model';
 
 @Injectable({
@@ -12,8 +12,12 @@ export class ProductService {
 
   constructor(private http: HttpClient) { }
 
-  createProduct(request: CreateProductRequestDTO): Observable<any> {
-    return this.http.post(`${this.baseUrl}`, request);
+  createProduct(request: CreateProductRequestDTO): Observable<string> {
+    return this.http.post(`${this.baseUrl}/create`, request, { responseType: 'text' });
+  }
+
+  getProductList(): Observable<ProductListItemDTO[]> {
+    return this.http.get<ProductListItemDTO[]>(`${this.baseUrl}/list`);
   }
 
   generateSku(productName: string, variant: ProductVariantDTO): string {
@@ -27,5 +31,4 @@ export class ProductService {
 
     return `${skuBase}${skuOptions}`;
   }
-
 }
