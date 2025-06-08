@@ -1,0 +1,20 @@
+<div class="edit-location-container">
+  <div class="search-box">
+    <input #searchBox placeholder="Search location..." />
+    <button (click)="searchLocation(searchBox.value)">Search</button>
+  </div>
+
+  <form [formGroup]="editForm" (ngSubmit)="updateLocation()" class="edit-form">
+    <div><label>Address</label><input formControlName="address" /></div>
+    <div><label>Township</label><input formControlName="township" /></div>
+    <div><label>City</label><input formControlName="city" /></div>
+    <div><label>Zip Code</label><input formControlName="zipCode" /></div>
+    <div><label>Country</label><input formControlName="country" /></div>
+    <div><label>Latitude</label><input formControlName="lat" type="number" /></div>
+    <div><label>Longitude</label><input formControlName="lng" type="number" /></div>
+    
+  </form>
+
+  <div id="map" class="map-box"></div>
+  <button (click)="updateLocation()" class="update-btn">Update Location</button>
+</div>

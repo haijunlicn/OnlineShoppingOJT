@@ -9,6 +9,8 @@ import { NoAuthGuard } from '../../core/guards/no-auth.guard';
 import { ForgetPasswordComponent } from './auth/forget-password/forget-password.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { LocationCreateComponent } from './account/location-create/location-create.component';
+import { LocationCardComponent } from './account/location-card/location-card.component';
+import { EditLocationComponent } from './account/edit-location/edit-location.component';
 
 const routes: Routes = [  
 
@@ -34,7 +36,10 @@ const routes: Routes = [
   path: 'auth/reset-password',
   component: ResetPasswordComponent
 },
-  {path:'location',component:LocationCreateComponent}
+  {path:'location',component:LocationCreateComponent},
+  { path: 'editlocation/:id', component: EditLocationComponent },
+  {path:'address',component:LocationCardComponent, canActivate: [NoAuthGuard]},
+  
 ];
 
 @NgModule({

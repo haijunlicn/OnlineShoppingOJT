@@ -15,6 +15,8 @@ import { ResetPasswordComponent } from './auth/reset-password/reset-password.com
 import { VerifyComponent } from './auth/verify/verify.component';
 import { LocationCreateComponent } from './account/location-create/location-create.component';
 import { HttpClientModule } from '@angular/common/http';
+import { LocationCardComponent } from './account/location-card/location-card.component';
+import { EditLocationComponent } from './account/edit-location/edit-location.component';
 
 @NgModule({
   declarations: [
@@ -26,6 +28,8 @@ import { HttpClientModule } from '@angular/common/http';
     ResetPasswordComponent,
     VerifyComponent,
     LocationCreateComponent,
+    LocationCardComponent,
+    EditLocationComponent
 
   ],
   imports: [

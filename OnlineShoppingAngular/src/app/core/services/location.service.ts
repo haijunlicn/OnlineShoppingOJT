@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 import { LocationDto } from '../models/location-dto';
 import { isPlatformBrowser } from '@angular/common';
 
+
+
 @Injectable({
   providedIn: 'root'
 })
@@ -19,6 +21,11 @@ export class LocationService {
   getAllLocations(): Observable<LocationDto[]> {
     return this.http.get<LocationDto[]>(`${this.apiUrl}/all`);
   }
+  getUserLocations(): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/user-locations`);
+}
+
+
 
   getCurrentPosition(): Observable<GeolocationPosition> {
     return new Observable((observer) => {
@@ -52,4 +59,28 @@ export class LocationService {
     const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(query)}`;
     return this.http.get<any[]>(url);
   }
+getLocationById(id: number): Observable<LocationDto> {
+  return this.http.get<LocationDto>(`${this.apiUrl}/${id}`);
+}
+
+updateLocation(location: LocationDto): Observable<any> {
+  return this.http.put(`${this.apiUrl}/update/${location.id}`, location, { responseType: 'text' });
+}
+
+reverseGeocodes(lat: number, lng: number): Observable<any> {
+  return this.http.get(`https://nominatim.openstreetmap.org/reverse`, {
+    params: {
+      lat: lat.toString(),
+      lon: lng.toString(),
+      format: 'json',
+      addressdetails: '1'
+    }
+  });
+}
+searchLocation(query: string): Observable<any> {
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
+  return this.http.get<any[]>(url);
+}
+
+  
 }

@@ -49,7 +49,7 @@ export class LocationCreateComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
-    if (this.isBrowser) {
+    if (this.isBrowser) { 
       this.L = await import('leaflet');
       this.setupCustomMarkerIcon();
       this.initMap();

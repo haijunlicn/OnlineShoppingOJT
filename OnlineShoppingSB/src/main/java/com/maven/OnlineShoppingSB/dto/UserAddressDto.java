@@ -17,6 +17,7 @@ public class UserAddressDto {
     @JsonProperty("lat")
     private Double latitude;
     private String city;
+    private String country;
     @JsonProperty("zipCode")
     private String zipcode;
     private LocalDateTime createdDate;

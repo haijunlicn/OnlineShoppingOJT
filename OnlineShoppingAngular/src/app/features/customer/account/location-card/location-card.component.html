@@ -1,0 +1,37 @@
+<div *ngIf="locations.length > 0; else loading">
+  <div class="location-container">
+    <div
+      class="location-card"
+      *ngFor="let location of locations; let i = index"
+    >
+      <!-- Map -->
+      <div [id]="'map-' + i" class="map-view"></div>
+
+      <!-- Details -->
+      <div class="location-detail">
+        <h3>{{ location.address }}</h3>
+        <p *ngIf="location.township"><strong>Township:</strong> {{ location.township }}</p>
+        <p *ngIf="location.city"><strong>City:</strong> {{ location.city }}</p>
+        <p *ngIf="location.country"><strong>Country:</strong> {{ location.country }}</p>
+        <p *ngIf="location.zipCode"><strong>Zip Code:</strong> {{ location.zipCode }}</p>
+        <p *ngIf="location.lat !== undefined && location.lng !== undefined">
+          <strong>Coordinates:</strong> {{ location.lat }}, {{ location.lng }}
+        </p>
+
+        <!-- Actions -->
+        <div class="actions">
+          <button (click)="onEdit(location)">Edit</button>
+          <button (click)="onDelete(location)">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #loading>
+  <div class="loading">Loading user locations...</div>
+</ng-template>
+
+<div *ngIf="errorMessage" class="error">
+  {{ errorMessage }}
+</div>

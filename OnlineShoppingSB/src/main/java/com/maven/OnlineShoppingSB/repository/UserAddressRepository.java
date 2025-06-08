@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface UserAddressRepository extends JpaRepository<UserAddressEntity, Integer> {
     List<UserAddressEntity> findByUserId(Integer userId);
+    UserAddressEntity findFirstByUserId(Integer userId);
 }
