@@ -42,6 +42,7 @@
               "node_modules/bootstrap-icons/font/bootstrap-icons.css",
               "node_modules/@fortawesome/fontawesome-free/css/all.css",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
               "node_modules/primeicons/primeicons.css",
 
@@ -50,6 +51,9 @@
               "node_modules/leaflet/dist/leaflet.css",
 
               "node_modules/leaflet/dist/leaflet.css",
+=======
+              "node_modules/leaflet/dist/leaflet.css",
+>>>>>>> Stashed changes
 =======
               "node_modules/leaflet/dist/leaflet.css",
 >>>>>>> Stashed changes
@@ -126,8 +130,12 @@
               "node_modules/bootstrap-icons/font/bootstrap-icons.css",
               "node_modules/@fortawesome/fontawesome-free/css/all.css",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
               "node_modules/primeicons/primeicons.css",
+=======
+              "node_modules/leaflet/dist/leaflet.css",
+>>>>>>> Stashed changes
 =======
               "node_modules/leaflet/dist/leaflet.css",
 >>>>>>> Stashed changes
@@ -140,8 +148,11 @@
               "src/assets/js/datatables-simple-demo.js"
             ]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
           
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
           }
