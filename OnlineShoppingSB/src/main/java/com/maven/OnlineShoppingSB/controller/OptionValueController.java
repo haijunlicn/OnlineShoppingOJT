@@ -33,6 +33,12 @@ public class OptionValueController {
         return ResponseEntity.ok(valueService.getOptionValueById(id));
     }
 
+//    @PutMapping("/update/{id}")
+//    public ResponseEntity<String> updateOptionValue(@RequestBody OptionValueDTO dto) {
+//        valueService.updateOptionValue(dto);
+//        return ResponseEntity.ok("Option value updated successfully!");
+//    }
+
     @PutMapping("/update/{id}")
     public ResponseEntity<OptionValueDTO> update(@PathVariable Long id, @RequestBody OptionValueDTO dto) {
         OptionValueDTO updated = valueService.updateOptionValue(dto);

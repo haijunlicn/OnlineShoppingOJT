@@ -34,7 +34,11 @@ const routes: Routes = [
     component: AttributeManagementComponent,
     canActivate: [NoAuthGuard],
     children: [
+<<<<<<< Updated upstream
       { path: '', redirectTo: 'categories', pathMatch: 'full' },
+=======
+      { path: '', redirectTo: 'options', pathMatch: 'full' },
+>>>>>>> Stashed changes
       { path: 'options', component: OptionManagementComponent },
       { path: 'categories', component: CategoryManagementComponent },
       { path: 'brands', component: BrandManagementComponent }
