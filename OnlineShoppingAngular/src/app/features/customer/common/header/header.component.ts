@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { LoginModalService } from '../../../../core/services/LoginModalService';
+import { RegisterModalService } from '../../../../core/services/RegisterModalService';
 
 @Component({
   selector: 'app-header',
@@ -12,6 +14,8 @@ export class HeaderComponent {
   constructor(
    
     private router: Router,
+    private loginModalService: LoginModalService,
+   private registerModalService:RegisterModalService
    
   ) {}
  isMenuOpen = false
@@ -34,11 +38,13 @@ export class HeaderComponent {
   }
 
   onRegister() {
-     this.router.navigate(['/customer/auth/register']);
+    //  this.router.navigate(['/customer/auth/register']);
+    this.registerModalService.show();
      console.log("register click")
   }
 
   onSignIn() {
-    console.log("Sign In clicked")
+
+     this.loginModalService.show();
   }
 }

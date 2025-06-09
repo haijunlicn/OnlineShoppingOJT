@@ -1,6 +1,7 @@
 package com.maven.OnlineShoppingSB.controller;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -57,33 +58,55 @@ public class authController {
     private JwtService jwtService;
 
 
+     private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
 
-    // private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+//    @PostMapping("/register")
+//    public ResponseEntity<String> register(@RequestBody UserEntity user) {
+//            String result = userService.registerUser(user);
+//
+//            if (result.startsWith("Email sent successfully. User ID: ")) {
+//                String id = result.substring("Email sent successfully. User ID: ".length()).trim();
+//                return ResponseEntity.ok("Email sent successfully. User ID: " + id);
+//
+//            } else if ("email already exists".equals(result)) {
+//                return ResponseEntity
+//                        .status(HttpStatus.CONFLICT)
+//                        .body("Email already exists");
+//
+//            } else {
+//                return ResponseEntity
+//                        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                        .body("Something went wrong!Try again");
+//            }
+//
+//    }
+@PostMapping("/register")
+public ResponseEntity<Map<String, Object>> register(@RequestBody UserEntity user) {
+    String result = userService.registerUser(user);
 
+    Map<String, Object> response = new HashMap<>();
 
+    if (result.startsWith("Email sent successfully. User ID: ")) {
+        String id = result.substring("Email sent successfully. User ID: ".length()).trim();
+        response.put("message", "Email sent successfully.");
+        response.put("userId", id);
+        return ResponseEntity.ok(response);
 
+    } else if ("email already exists".equals(result)) {
+        response.put("message", "Email already exists");
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
 
-
-    @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody UserEntity user) {
-        String result = userService.registerUser(user);
-
-        if (result.startsWith("email sending success")) {
-            String id = result.substring("email sending success".length());
-
-            return ResponseEntity.ok("Email sent successfully. User ID: " + id);
-        } else if ("email already exists".equals(result)) {
-            return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .body("email already exists");
-        }
-
-        else {
-            System.out.println(result);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
-        }
+    } else {
+        response.put("message", "Something went wrong! Try again");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
+}
+
+
+
+
+
     @PostMapping("/verify-otp")
     public ResponseEntity<?> verifyOtp(@RequestBody otpDTO request) {
         // Find user by userId from request DTO
@@ -136,6 +159,7 @@ public class authController {
                 .body(Map.of("message", "Invalid otp varification"));
     }
 
+
     @GetMapping("/resend")
     public ResponseEntity<?> resendOtp(@RequestParam("userId") Long userId) {
         Optional<UserEntity> userOpt = userRepo.findById(userId);
@@ -171,41 +195,57 @@ public class authController {
         }
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        try {
-            Authentication auth = authManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            loginRequest.getEmail(),
-                            loginRequest.getPassword()
-                    )
-            );
+  @PostMapping("/login")
+   public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
 
-            SecurityContextHolder.getContext().setAuthentication(auth);
+    try {
+        // Step 1: Fetch user from DB first
+        Optional<UserEntity> optionalUser = userRepo.findByEmail(loginRequest.getEmail());
 
-            UserEntity user = userRepo.findByEmail(loginRequest.getEmail())
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-            String token = jwtService.generateTokenWithUserDetails(user);
-
-            return ResponseEntity.ok(Map.of("token", token));
-
-        } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("message","Invalid "+ e.getMessage()));
-
-        } catch (UsernameNotFoundException e) {
+        if (optionalUser.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("message", "user Invalid "+e.getMessage()));
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "An error occurred: " + e.getMessage()));
+                    .body(Map.of("message", "User not found with this email."));
         }
+
+        UserEntity user = optionalUser.get();
+
+
+        if (Boolean.FALSE.equals(user.getIsVerified())) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Email is not verified.");
+            response.put("id", user.getId()); // Include the user ID
+            System.out.println("id" +  user.getId());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+
+        // Step 3: Authenticate
+        Authentication auth = authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.getEmail(),
+                        loginRequest.getPassword()
+                )
+        );
+
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        // Step 4: Generate token
+        String token = jwtService.generateTokenWithUserDetails(user);
+
+        return ResponseEntity.ok(Map.of("token", token));
+
+    } catch (BadCredentialsException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("message", "Invalid credentials."));
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("message", "An error occurred: " + e.getMessage()));
     }
+}
+
 
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@RequestBody Map<String, String> body) {
+        System.out.println("I'm forget Password");
         String email = body.get("email");
         userService.sendResetLink(email);
         return ResponseEntity.ok("Reset link sent.");

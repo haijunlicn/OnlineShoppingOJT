@@ -15,7 +15,7 @@ const routes: Routes = [
      
   { path: 'home', component: HomeComponent },
   { path: 'auth/verify/:id', component: VerifyComponent ,canActivate: [NoAuthGuard]},
-
+{ path: 'general/home', component: HomeComponent },
   {
     path: 'auth/register',
     component: RegisterComponent,canActivate: [NoAuthGuard],
@@ -30,6 +30,11 @@ const routes: Routes = [
     component: ForgetPasswordComponent,canActivate: [NoAuthGuard],
 
   },
+  // {
+  //   path: 'customer/auth/verify/:id',
+  //   component: VerifyComponent,canActivate: [NoAuthGuard],
+
+  // },
  {
   path: 'auth/reset-password',
   component: ResetPasswordComponent
