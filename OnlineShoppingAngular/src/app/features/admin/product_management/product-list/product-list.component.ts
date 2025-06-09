@@ -2,17 +2,8 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { Table } from 'primeng/table';
 import { ProductListItemDTO } from '../../../../core/models/product.model';
 import { ProductService } from '../../../../core/services/product.service';
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 import { CategoryService } from '../../../../core/services/category.service';
 import { CategoryDTO } from '../../../../core/models/category-dto';
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 @Component({
   selector: 'app-premium-products',
@@ -23,28 +14,13 @@ import { CategoryDTO } from '../../../../core/models/category-dto';
 export class ProductListComponent implements OnInit {
   @ViewChild('dt') dt!: Table;
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
   products: ProductListItemDTO[] = [];
-=======
-  products: any[] = [];
->>>>>>> Stashed changes
-=======
-  products: any[] = [];
->>>>>>> Stashed changes
-=======
-  products: any[] = [];
->>>>>>> Stashed changes
   categories: any[] = [];
   brands: any[] = [];
   statuses: any[] = [
     { label: 'In Stock', value: 'In Stock' },
     { label: 'Out of Stock', value: 'Out of Stock' }
   ];
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 
   priceRange: number[] = [0, 1000];
   maxPrice: number = 1000;
@@ -61,49 +37,11 @@ export class ProductListComponent implements OnInit {
   constructor(private productService: ProductService,
     private categoryService: CategoryService
   ) { }
-=======
-  priceRange: number[] = [0, 1000];
-  maxPrice: number = 1000;
-  filters: any = {};
-  showFilters = false;
-
-  constructor(private productService: ProductService) { }
->>>>>>> Stashed changes
-=======
-  priceRange: number[] = [0, 1000];
-  maxPrice: number = 1000;
-  filters: any = {};
-  showFilters = false;
-
-  constructor(private productService: ProductService) { }
->>>>>>> Stashed changes
-=======
-  priceRange: number[] = [0, 1000];
-  maxPrice: number = 1000;
-  filters: any = {};
-  showFilters = false;
-
-  constructor(private productService: ProductService) { }
->>>>>>> Stashed changes
 
   ngOnInit() {
     this.loadCategories();
-<<<<<<< Updated upstream
     this.loadBrands();
     this.loadProducts();
-=======
-    this.loadStatuses();
-
-    this.filters = {
-      'product.basePrice': { value: this.priceRange, matchMode: 'between' }
-    };
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
   }
 
   loadProducts() {
@@ -111,9 +49,6 @@ export class ProductListComponent implements OnInit {
       next: (products) => {
         console.log("product list : ", products);
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
         this.products = products.map(product => ({
           ...product,
           status: this.getStockStatus(product)
@@ -125,21 +60,6 @@ export class ProductListComponent implements OnInit {
           this.maxPrice = Math.max(...prices);
           this.priceRange = [this.minPrice, this.maxPrice];
         }
-=======
-        this.products = products;
-        this.maxPrice = Math.max(...products.map(p => p.product.basePrice));
-        this.priceRange = [0, this.maxPrice];
->>>>>>> Stashed changes
-=======
-        this.products = products;
-        this.maxPrice = Math.max(...products.map(p => p.product.basePrice));
-        this.priceRange = [0, this.maxPrice];
->>>>>>> Stashed changes
-=======
-        this.products = products;
-        this.maxPrice = Math.max(...products.map(p => p.product.basePrice));
-        this.priceRange = [0, this.maxPrice];
->>>>>>> Stashed changes
       },
       error: (err) => {
         console.error('Failed to load products', err);
@@ -182,9 +102,6 @@ export class ProductListComponent implements OnInit {
     }
   }
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
   clearAllFilters() {
     this.dt.clear();
     this.selectedCategory = null;
@@ -262,64 +179,5 @@ export class ProductListComponent implements OnInit {
   setPresetRange(min: number, max: number) {
     this.priceRange = [min, max];
     this.onPriceChange();
-=======
-  getStockStatus(product: ProductListItemDTO): string {
-    return product.variants.some(v => v.stock > 0) ? 'In Stock' : 'Out of Stock';
->>>>>>> Stashed changes
   }
-
-=======
-  getStockStatus(product: ProductListItemDTO): string {
-    return product.variants.some(v => v.stock > 0) ? 'In Stock' : 'Out of Stock';
-  }
-
->>>>>>> Stashed changes
-=======
-  getStockStatus(product: ProductListItemDTO): string {
-    return product.variants.some(v => v.stock > 0) ? 'In Stock' : 'Out of Stock';
-  }
-
->>>>>>> Stashed changes
-  onFilterInput(event: Event, field: string) {
-    const input = event.target as HTMLInputElement;  // Cast target here
-    this.dt.filter(input.value, field, 'contains');
-  }
-
-  onPriceChange(event: any) {
-    this.filters['product.basePrice'] = { value: this.priceRange, matchMode: 'between' };
-  }
-
-  onGlobalFilter(event: Event) {
-    const input = event.target as HTMLInputElement;
-    this.dt.filterGlobal(input.value, 'contains');
-  }
-
-  // Add these methods to your component class if they don't exist already
-
-  viewProduct(product: any): void {
-    // Implement view product details logic
-    console.log('View product details:', product);
-    // You could navigate to a details page or open a modal
-    // this.router.navigate(['/admin/products', product.id]);
-  }
-
-  editProduct(product: any): void {
-    // Implement edit product logic
-    console.log('Edit product:', product);
-    // You could navigate to an edit page
-    // this.router.navigate(['/admin/productEdit', product.id]);
-  }
-
-  deleteProduct(product: any): void {
-    // Implement delete product logic with confirmation
-    // You could use PrimeNG's ConfirmDialog here
-    if (confirm('Are you sure you want to delete this product?')) {
-      console.log('Delete product:', product);
-      // this.productService.deleteProduct(product.id).subscribe(() => {
-      //   this.products = this.products.filter(p => p.id !== product.id);
-      //   this.messageService.add({severity:'success', summary: 'Success', detail: 'Product deleted'});
-      // });
-    }
-  }
-
 }

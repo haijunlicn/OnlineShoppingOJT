@@ -9,9 +9,9 @@ import { AuthService } from '../../../../core/services/auth.service';
   templateUrl: './reset-password.component.html',
   styleUrl: './reset-password.component.css'
 })
-export class ResetPasswordComponent implements OnInit{
+export class ResetPasswordComponent implements OnInit {
 
- message = '';
+  message = '';
   token = '';
   resetForm!: FormGroup;
 
@@ -19,7 +19,7 @@ export class ResetPasswordComponent implements OnInit{
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.token = this.route.snapshot.queryParams['token'] || '';

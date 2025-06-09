@@ -12,38 +12,38 @@ import { LocationCreateComponent } from './account/location-create/location-crea
 import { LocationCardComponent } from './account/location-card/location-card.component';
 import { EditLocationComponent } from './account/edit-location/edit-location.component';
 
-const routes: Routes = [  
+const routes: Routes = [
 
   { path: 'home', component: HomeComponent },
-  { path: 'auth/verify/:id', component: VerifyComponent ,canActivate: [NoAuthGuard]},
+  { path: 'auth/verify/:id', component: VerifyComponent, canActivate: [NoAuthGuard] },
 
   {
     path: 'auth/register',
-    component: RegisterComponent,canActivate: [NoAuthGuard],
+    component: RegisterComponent, canActivate: [NoAuthGuard],
   },
   {
     path: 'auth/login',
-    component: LoginComponent,canActivate: [NoAuthGuard],
+    component: LoginComponent, canActivate: [NoAuthGuard],
 
   },
   {
     path: 'auth/forgetPass',
-    component: ForgetPasswordComponent,canActivate: [NoAuthGuard],
+    component: ForgetPasswordComponent, canActivate: [NoAuthGuard],
 
   },
- {
-  path: 'auth/reset-password',
-  component: ResetPasswordComponent
-},
-  {path:'location',component:LocationCreateComponent},
+  {
+    path: 'auth/reset-password',
+    component: ResetPasswordComponent
+  },
+  { path: 'location', component: LocationCreateComponent },
   { path: 'editlocation/:id', component: EditLocationComponent },
-  {path:'address',component:LocationCardComponent, canActivate: [NoAuthGuard]},
-  
+  { path: 'address', component: LocationCardComponent, canActivate: [NoAuthGuard] },
+
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
-  
+
 })
 export class CustomerRoutingModule { }

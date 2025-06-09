@@ -132,46 +132,6 @@
   font-weight: 600;
 }
 
-<<<<<<< Updated upstream
-=======
-/* Input Styling */
-:host ::ng-deep .p-inputtext,
-:host ::ng-deep .p-dropdown {
-  border-radius: 6px;
-  border: 1px solid #e0e0e0;
-  padding: 0.35rem 0.6rem;
-  font-size: 0.95rem;
-  background: #fff;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-:host ::ng-deep .p-inputtext:focus,
-:host ::ng-deep .p-dropdown:focus {
-  border-color: #c9b87c;
-  box-shadow: 0 0 0 2px rgba(201, 184, 124, 0.13);
-}
-
-/* Dropdown Styling */
-:host ::ng-deep .p-dropdown {
-  border-radius: 6px;
-}
-
-:host ::ng-deep .p-dropdown:focus {
-  box-shadow: 0 0 0 2px rgba(201, 184, 124, 0.2);
-}
-
-:host
-  ::ng-deep
-  .p-dropdown-panel
-  .p-dropdown-items
-  .p-dropdown-item.p-highlight {
-  background: rgba(201, 184, 124, 0.2);
-  color: var(--primary-color);
-}
->>>>>>> Stashed changes
-
-
-
 
 /* Button Styling */
 :host ::ng-deep .p-button {
@@ -336,9 +296,6 @@ main {
 
 /* Action buttons styling */
 .action-buttons {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
   display: flex;
   justify-content: center;
   gap: 0.15rem;
@@ -585,97 +542,4 @@ main {
 ::ng-deep .p-datatable-products td {
   min-width: 120px; /* Adjust as needed */
   white-space: nowrap;
-=======
-  display: flex;
-=======
-  display: flex;
->>>>>>> Stashed changes
-=======
-  display: flex;
->>>>>>> Stashed changes
-  justify-content: center;
-  gap: 0.15rem;
-}
-.action-btn {
-  width: 1.5rem !important;
-  height: 1.5rem !important;
-  font-size: 0.72rem !important;
-  padding: 0 !important;
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-}
-.action-btn:hover {
-  background-color: rgba(0, 0, 0, 0.04) !important;
-  transform: translateY(-1px);
-  transition: transform 0.15s ease;
-}
-
-/* Make sure the action column doesn't wrap */
-p-table th:last-child,
-p-table td:last-child {
-  white-space: nowrap;
-}
-
-/* Responsive adjustments for small screens */
-@media (max-width: 768px) {
-  .action-buttons {
-    flex-direction: column;
-    gap: 0.3rem;
-  }
-  .action-btn {
-    width: 1.2rem !important;
-    height: 1.2rem !important;
-    font-size: 0.65rem !important;
-  }
-  :host ::ng-deep .p-datatable-products .p-datatable-thead > tr > th,
-  :host ::ng-deep .p-datatable-products .p-datatable-tbody > tr > td {
-    padding: 0.35rem 0.3rem;
-    font-size: 0.85rem;
-  }
-}
-
-/* Input and Dropdown Styling */
-:host ::ng-deep .p-inputtext,
-:host ::ng-deep .p-dropdown {
-  border-radius: 5px;
-  border: 1px solid #e0e0e0;
-  padding: 0.2rem 0.5rem;
-  font-size: 0.92rem;
-  background: #fff;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-:host ::ng-deep .p-inputtext:focus,
-:host ::ng-deep .p-dropdown:focus {
-  border-color: #c9b87c;
-  box-shadow: 0 0 0 2px rgba(201, 184, 124, 0.13);
-}
-
-/* Card and Main Layout */
-.card {
-  background: #fff;
-  border: none;
-}
-main {
-  min-height: 100vh;
-  background: #f6f8fa;
-}
-
-/* Tooltip styling */
-::ng-deep .tooltip-dark {
-  background-color: #333 !important;
-  color: #fff !important;
-  padding: 5px 8px;
-  border-radius: 4px;
-  font-size: 14px;
-}
-::ng-deep .tooltip-dark .p-tooltip-text {
-  color: #fff !important;
-}
-::ng-deep .tooltip-dark .p-tooltip-arrow {
-  border-top-color: #333 !important;
 }
