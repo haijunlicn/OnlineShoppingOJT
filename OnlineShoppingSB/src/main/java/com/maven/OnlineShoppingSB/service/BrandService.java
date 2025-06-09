@@ -21,15 +21,31 @@ public class BrandService {
     private ModelMapper mapper;
 
     public BrandDTO insertBrand(BrandDTO dto) {
+        // Check if a brand with the same name (case-insensitive) already exists (active or soft-deleted)
+        BrandEntity existing = repo.findByNameIgnoreCase(dto.getName()).orElse(null);
+
+        if (existing != null) {
+            if (existing.getDelFg() == 0) {
+                // Previously deleted — reactivate it
+                existing.setDelFg(1);
+                BrandEntity restored = repo.save(existing);
+
+                return new BrandDTO(restored.getId(), restored.getName());
+            } else {
+                // Already exists and active
+                throw new RuntimeException("Brand with this name already exists.");
+            }
+        }
+
+        // Create new brand
         BrandEntity entity = new BrandEntity();
         entity.setName(dto.getName());
-        BrandEntity saved = repo.save(entity);
+        entity.setDelFg(1);
 
-        BrandDTO resultDto = new BrandDTO();
-        resultDto.setId(saved.getId());
-        resultDto.setName(saved.getName());
-        return resultDto;
+        BrandEntity saved = repo.save(entity);
+        return new BrandDTO(saved.getId(), saved.getName());
     }
+
 
     public List<BrandDTO> getAllBrands() {
         List<BrandEntity> brandList = repo.findByDelFg(1);
@@ -60,25 +76,44 @@ public class BrandService {
         }
 
         BrandEntity existing = repo.findById(dto.getId())
-            .orElseThrow(() -> new RuntimeException("Brand not found"));
+                .orElseThrow(() -> new RuntimeException("Brand not found"));
+
+        // If name is not changed, just return
+        if (existing.getName().equalsIgnoreCase(dto.getName())) {
+            return new BrandDTO(existing.getId(), existing.getName());
+        }
+
+        // Check if the new name belongs to a soft-deleted brand
+        BrandEntity duplicate = repo.findByNameIgnoreCase(dto.getName()).orElse(null);
+
+        if (duplicate != null) {
+            if (duplicate.getDelFg() == 0) {
+                // Restore the soft-deleted brand
+                duplicate.setDelFg(1);
+                BrandEntity restored = repo.save(duplicate);
+
+                // Optionally delete the current brand (or merge)
+                existing.setDelFg(0);
+                repo.save(existing);
+
+                return new BrandDTO(restored.getId(), restored.getName());
+            } else {
+                throw new RuntimeException("A brand with this name already exists.");
+            }
+        }
 
         existing.setName(dto.getName());
-
         BrandEntity updated = repo.save(existing);
-
-        BrandDTO updatedDto = new BrandDTO();
-        updatedDto.setId(updated.getId());
-        updatedDto.setName(updated.getName());
-
-        return updatedDto;
+        return new BrandDTO(updated.getId(), updated.getName());
     }
+
 
     public void deleteBrand(Long id) {
         BrandEntity existing = repo.findById(id)
-            .orElseThrow(() -> new RuntimeException("Brand not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Brand not found with id: " + id));
 
         existing.setDelFg(0);
         repo.save(existing);
     }
-    
+
 }

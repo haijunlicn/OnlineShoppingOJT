@@ -346,21 +346,6 @@ main {
   background: #f6f8fa;
 }
 
-/* Tooltip styling */
-::ng-deep .tooltip-dark {
-  background-color: #333 !important;
-  color: #fff !important;
-  padding: 5px 8px;
-  border-radius: 4px;
-  font-size: 14px;
-}
-::ng-deep .tooltip-dark .p-tooltip-text {
-  color: #fff !important;
-}
-::ng-deep .tooltip-dark .p-tooltip-arrow {
-  border-top-color: #333 !important;
-}
-
 /* Bootstrap Dropdown Styling for Product List */
 .bootstrap-dropdown .dropdown-toggle {
   text-align: left;

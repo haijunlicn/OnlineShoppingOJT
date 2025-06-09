@@ -109,6 +109,8 @@ export class ProductListComponent implements OnInit {
     this.selectedStatus = null;
     this.globalFilterValue = '';
     this.priceRange = [this.minPrice, this.maxPrice];
+    console.log("Cleared all filters");
+    
   }
 
   getStockStatus(product: ProductListItemDTO): string {

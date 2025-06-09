@@ -16,4 +16,12 @@ public class BrandDTO {
     private Integer delFg;
     private String createdDate;
     private String updatedDate;
+
+    public BrandDTO() {}
+
+    public BrandDTO(Long id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
 }

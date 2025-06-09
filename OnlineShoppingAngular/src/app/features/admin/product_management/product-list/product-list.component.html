@@ -141,7 +141,7 @@
                 <th></th>
                 <th>
                   <button pButton type="button" icon="pi pi-times" class="p-button-text p-button-sm"
-                    pTooltip="Clear all filters" (click)="clearAllFilters()">
+                    pTooltip="Clear all filters" tooltipStyleClass="custom-tooltip" (click)="clearAllFilters()">
                   </button>
                 </th>
               </tr>
@@ -165,15 +165,15 @@
                   <div class="action-buttons d-flex gap-1">
                     <button pButton pRipple type="button" icon="pi pi-eye"
                       class="p-button-rounded p-button-text action-btn" style="color: #1976d2" pTooltip="View Details"
-                      tooltipStyleClass="tooltip-dark" tooltipPosition="top" (click)="viewProduct(product)">
+                      tooltipStyleClass="custom-tooltip" tooltipPosition="top" (click)="viewProduct(product)">
                     </button>
                     <button pButton pRipple type="button" icon="pi pi-pencil"
                       class="p-button-rounded p-button-text action-btn" style="color: #f57c00" pTooltip="Edit"
-                      tooltipStyleClass="tooltip-dark" tooltipPosition="top" (click)="editProduct(product)">
+                      tooltipStyleClass="custom-tooltip" tooltipPosition="top" (click)="editProduct(product)">
                     </button>
                     <button pButton pRipple type="button" icon="pi pi-trash"
                       class="p-button-rounded p-button-text action-btn" style="color: #d32f2f" pTooltip="Delete"
-                      tooltipStyleClass="tooltip-dark" tooltipPosition="top" (click)="deleteProduct(product)">
+                      tooltipStyleClass="custom-tooltip" tooltipPosition="top" (click)="deleteProduct(product)">
                     </button>
                   </div>
                 </td>

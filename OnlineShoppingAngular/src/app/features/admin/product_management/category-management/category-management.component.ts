@@ -6,6 +6,7 @@ import { CategoryDTO } from "../../../../core/models/category-dto"
 import { CategoryService } from "../../../../core/services/category.service"
 import { log } from "node:console"
 import { CloudinaryService } from "../../../../core/services/cloudinary.service"
+import { Observable } from "rxjs"
 
 @Component({
   selector: "app-category-management",
@@ -293,7 +294,7 @@ export class CategoryManagementComponent implements OnInit {
     this.isAddingSubcategory = !!parent // Set flag if parent is provided
 
     console.log("img path : ", category?.imgPath);
-    
+
 
     // Set dropdown options for subcategory case
     if (parent) {
@@ -329,69 +330,65 @@ export class CategoryManagementComponent implements OnInit {
   }
 
   saveCategory(): void {
-    if (this.categoryForm.invalid) return
+    if (this.categoryForm.invalid) return;
 
-    const formValue = this.categoryForm.value
+    const formValue = this.categoryForm.value;
 
-    if (this.editingCategory) {
-      // Update existing category
-      const updateData: CategoryDTO = {
-        id: this.editingCategory.id,
-        name: formValue.name,
-        parentCategoryId: formValue.parentCategoryId || undefined,
-        imgPath: formValue.imagePath
-      }
-
-      this.categoryService.updateCategory(updateData).subscribe({
-        next: (updatedCategory) => {
-          const index = this.categories.findIndex((c) => c.id === this.editingCategory!.id)
-          if (index !== -1) {
-            this.categories[index] = updatedCategory
-          }
-          this.buildCategoryTree()
-          this.updateCategoryDropdowns()
-          this.categoryDialogVisible = false
-        },
-        error: (error) => {
-          console.error("Error updating category:", error)
-        },
-      })
-    } else {
-      // Create new category
-      const newCategory: CategoryDTO = {
-        name: formValue.name,
-        parentCategoryId: formValue.parentCategoryId || undefined,
-        imgPath: formValue.imagePath
-      }
-
-      if (this.selectedImage) {
-        this.cloudinaryService.uploadCategoryImage(this.selectedImage).subscribe({
-          next: (imageUrl) => {
-            newCategory.imgPath = imageUrl;
-
-            this.categoryService.createCategory(newCategory).subscribe({
-              next: (createdCategory) => {
-                console.log("Category created with image:", createdCategory);
-                this.categories.push(createdCategory);
-                this.buildCategoryTree();
-                this.updateCategoryDropdowns();
-                this.recomputeSubcategoryCounts();
-                this.categoryDialogVisible = false;
-              },
-              error: (err) => {
-                console.error("Failed to create category", err);
-              }
-            });
-          },
-          error: (err) => {
-            console.error("Failed to upload image", err);
-          }
-        });
+    const handleAfterSave = (savedCategory: CategoryDTO) => {
+      const index = this.categories.findIndex(c => c.id === savedCategory.id);
+      if (index !== -1) {
+        this.categories[index] = savedCategory;
       } else {
-        this.categoryService.createCategory(newCategory).subscribe(/* same logic */);
+        this.categories.push(savedCategory);
       }
 
+      this.buildCategoryTree();
+      this.updateCategoryDropdowns();
+      this.recomputeSubcategoryCounts?.();
+      this.categoryDialogVisible = false;
+      this.selectedImage = null;
+    };
+
+    const saveWithImage = (imageUrl?: string) => {
+      const categoryDTO = this.buildCategoryDTO(formValue, imageUrl);
+
+      const save$ = this.editingCategory
+        ? this.categoryService.updateCategory(categoryDTO)
+        : this.categoryService.createCategory(categoryDTO);
+
+      save$.subscribe({
+        next: (savedCategory) => handleAfterSave(savedCategory),
+        error: (err) =>
+          console.error(
+            this.editingCategory
+              ? "Error updating category:"
+              : "Error creating category:",
+            err
+          ),
+      });
+    };
+
+    if (this.selectedImage) {
+      this.uploadImage(this.selectedImage).subscribe({
+        next: (imageUrl) => saveWithImage(imageUrl),
+        error: (err) => console.error("Image upload failed", err),
+      });
+    } else {
+      saveWithImage(formValue.imagePath);
     }
+  }
+
+  private buildCategoryDTO(formValue: any, imagePath?: string): CategoryDTO {
+    return {
+      id: this.editingCategory?.id,
+      name: formValue.name,
+      parentCategoryId: formValue.parentCategoryId || undefined,
+      imgPath: imagePath || '',
+    };
+  }
+
+  private uploadImage(file: File): Observable<string> {
+    return this.cloudinaryService.uploadCategoryImage(file);
   }
 
   addSubcategory(category: CategoryDTO): void {
