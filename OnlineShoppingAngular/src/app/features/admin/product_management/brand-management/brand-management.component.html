@@ -1,0 +1,71 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="input-group" style="max-width: 300px;">
+    <span class="input-group-text bg-white border-end-0">
+      <i class="pi pi-search text-muted"></i>
+    </span>
+    <input type="text" class="form-control border-start-0" placeholder="Search brands..." [(ngModel)]="brandFilter"
+      (ngModelChange)="updateFilters()">
+  </div>
+  <button pButton type="button" label="Add Brand" icon="pi pi-plus" class="p-button-success"
+    (click)="openBrandDialog()"></button>
+</div>
+
+<!-- Brands Grid -->
+<div class="brands-grid">
+  <div *ngFor="let brand of filteredBrands" class="brand-card">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body text-center">
+        <div class="brand-icon mb-3">
+          <i class="pi pi-bookmark"></i>
+        </div>
+        <h6 class="card-title mb-2">{{ brand.name }}</h6>
+        <div class="d-flex justify-content-center gap-1">
+          <button pButton pRipple type="button" icon="pi pi-pencil"
+            class="p-button-rounded p-button-text p-button-sm p-button-warning" pTooltip="Edit" tooltipPosition="top"
+            tooltipStyleClass="custom-tooltip" (click)="editBrand(brand)">
+          </button>
+
+          <button pButton pRipple type="button" icon="pi pi-trash"
+            class="p-button-rounded p-button-text p-button-sm p-button-danger" pTooltip="Delete" tooltipPosition="top"
+            tooltipStyleClass="custom-tooltip" (click)="deleteBrand(brand)">
+          </button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="filteredBrands.length === 0" class="text-center p-5">
+    <div class="d-flex flex-column align-items-center">
+      <i class="pi pi-bookmark mb-3" style="font-size: 3rem; opacity: 0.3"></i>
+      <h5 class="mb-2">No brands found</h5>
+      <p class="text-muted mb-3">Add brands to organize your products</p>
+      <button pButton type="button" label="Add Brand" icon="pi pi-plus" class="p-button-success"
+        (click)="openBrandDialog()"></button>
+    </div>
+  </div>
+</div>
+
+<!-- Brand Dialog -->
+<p-dialog [(visible)]="brandDialogVisible" [style]="{width: '450px'}"
+  [header]="editingBrand ? 'Edit Brand' : 'Add Brand'" [modal]="true" styleClass="p-fluid">
+
+  <form [formGroup]="brandForm" (ngSubmit)="saveBrand()">
+    <div class="field mb-3">
+      <label for="brandName" class="form-label">Brand Name</label>
+      <input type="text" pInputText id="brandName" formControlName="name" placeholder="e.g. Apple, Nike, Samsung"
+        class="form-control" required />
+      <small *ngIf="brandForm.get('name')?.invalid && brandForm.get('name')?.touched" class="text-danger d-block mt-1">
+        Brand name is required
+      </small>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button pButton pRipple type="button" label="Cancel" icon="pi pi-times" class="p-button-text"
+      (click)="brandDialogVisible = false"></button>
+    <button pButton pRipple type="button" label="Save" icon="pi pi-check" class="p-button-success" (click)="saveBrand()"
+      [disabled]="brandForm.invalid"></button>
+  </ng-template>
+</p-dialog>

@@ -18,6 +18,8 @@ const routes: Routes = [
     redirectTo: 'customer/general/home',
     pathMatch: 'full',
   },
+
+  
   // {
   //   path: '',
   //   component: HelloComponent,

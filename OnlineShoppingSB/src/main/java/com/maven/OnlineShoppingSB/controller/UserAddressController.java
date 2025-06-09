@@ -28,18 +28,47 @@ public class UserAddressController {
         return ResponseEntity.ok(list);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<UserAddressDto> getUserAddressById(@PathVariable Integer id) {
-        UserAddressDto dto = userAddressService.getUserAddressById(id);
-        if (dto == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(dto);
+//    @GetMapping("/{id}")
+//    public ResponseEntity<UserAddressDto> getUserAddressById(@PathVariable Integer id) {
+//        UserAddressDto dto = userAddressService.getUserAddressById(id);
+//        if (dto == null) {
+//            return ResponseEntity.notFound().build();
+//        }
+//        return ResponseEntity.ok(dto);
+//    }
+@GetMapping("/user-locations")
+public ResponseEntity<List<UserAddressDto>> getUserLocations() {
+    List<UserAddressDto> dtos = userAddressService.getUserAddressesByUserId();
+    if (dtos.isEmpty()) {
+        return ResponseEntity.notFound().build();
     }
+    System.out.println("location dtos: " + dtos);
+    return ResponseEntity.ok(dtos);
+}
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUserAddress(@PathVariable Integer id) {
         userAddressService.deleteUserAddress(id);
         return ResponseEntity.noContent().build();
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<UserAddressDto> getAddressById(@PathVariable Integer id) {
+        UserAddressDto dto = userAddressService.getUserAddressById(id);
+        if (dto != null) {
+            return ResponseEntity.ok(dto);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<String> updateAddress(@PathVariable Integer id, @RequestBody UserAddressDto dto) {
+        try {
+            userAddressService.updateUserAddress(id, dto);
+            return ResponseEntity.ok("User address updated successfully.");
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(404).body(ex.getMessage());
+        }
     }
 }

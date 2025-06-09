@@ -1,0 +1,137 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="input-group" style="max-width: 300px;">
+    <span class="input-group-text bg-white border-end-0">
+      <i class="pi pi-search text-muted"></i>
+    </span>
+    <input type="text" class="form-control border-start-0" placeholder="Search options..." [(ngModel)]="optionFilter"
+      (ngModelChange)="updateFilters()">
+  </div>
+  <button pButton type="button" label="Add Option" icon="pi pi-plus" class="p-button p-button-success"
+    (click)="openOptionDialog()"></button>
+</div>
+
+<!-- Options List -->
+<div class="options-container">
+  <div *ngFor="let option of filteredOptions" class="option-card mb-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <div>
+          <h5 class="mb-0">{{ option.name }}</h5>
+          <small class="text-muted">{{ option.optionValues.length }} values</small>
+        </div>
+        <div class="d-flex gap-2">
+          <button pButton pRipple type="button" icon="pi pi-plus"
+            class="p-button-rounded p-button-text" pTooltip="Add Value" tooltipPosition="top"
+            tooltipStyleClass="custom-tooltip" (click)="addValueToOption(option)">
+          </button>
+
+          <button pButton pRipple type="button" icon="pi pi-pencil"
+            class="p-button-rounded p-button-text p-button-warning" pTooltip="Edit Option" tooltipPosition="top"
+            tooltipStyleClass="custom-tooltip" (click)="editOption(option)">
+          </button>
+
+          <button pButton pRipple type="button" icon="pi pi-trash"
+            class="p-button-rounded p-button-text p-button-danger" pTooltip="Delete Option" tooltipPosition="top"
+            tooltipStyleClass="custom-tooltip" (click)="deleteOption(option)">
+          </button>
+
+        </div>
+      </div>
+      <div class="card-body">
+        <!-- Improved Option Values Layout with 3-dot menu -->
+        <div class="option-values-container">
+          <div *ngIf="option.optionValues.length > 0" class="option-values-grid">
+            <div *ngFor="let value of option.optionValues" class="option-value-tag">
+              <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">
+                {{ value.value }}
+              </span>
+              <div class="option-value-menu">
+
+                <button #menuButton pButton type="button" icon="pi pi-ellipsis-v"
+                  class="p-button-rounded p-button-text p-button-sm" (click)="showValueMenu($event, value, option)">
+                </button>
+
+                <p-menu #valueMenu [popup]="true" [model]="valueMenuItems" appendTo="body">
+                </p-menu>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty state for option with no values -->
+          <div *ngIf="option.optionValues.length === 0" class="text-center py-3 text-muted">
+            <i class="pi pi-info-circle me-2"></i>
+            No values added yet
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state when no options exist -->
+  <div *ngIf="filteredOptions.length === 0" class="text-center p-5">
+    <div class="d-flex flex-column align-items-center">
+      <i class="pi pi-list mb-3" style="font-size: 3rem; opacity: 0.3"></i>
+      <h5 class="mb-2">No options found</h5>
+      <p class="text-muted mb-3">Create your first option type to get started</p>
+      <button pButton type="button" label="Add Option" icon="pi pi-plus" class="p-button p-button-success"
+        (click)="openOptionDialog()"></button>
+    </div>
+  </div>
+</div>
+
+<!-- Option Dialog -->
+<p-dialog [(visible)]="optionDialogVisible" [style]="{width: '450px'}"
+  [header]="editingOption ? 'Edit Option' : 'Add Option'" [modal]="true" styleClass="p-fluid">
+
+  <form [formGroup]="optionForm" (ngSubmit)="saveOption()">
+    <div class="field mb-3">
+      <label for="optionName" class="form-label">Option Name</label>
+      <input type="text" pInputText id="optionName" formControlName="name" placeholder="e.g. Color, Size, Material"
+        class="form-control" required />
+      <small *ngIf="optionForm.get('name')?.invalid && optionForm.get('name')?.touched"
+        class="text-danger d-block mt-1">
+        Option name is required
+      </small>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button pButton pRipple type="button" label="Cancel" icon="pi pi-times" class="p-button-text"
+      (click)="optionDialogVisible = false"></button>
+    <button pButton pRipple type="button" label="Save" icon="pi pi-check" class="p-button-success"
+      (click)="saveOption()" [disabled]="optionForm.invalid"></button>
+  </ng-template>
+</p-dialog>
+
+<!-- Option Value Dialog -->
+<p-dialog [(visible)]="optionValueDialogVisible" [style]="{width: '450px'}"
+  [header]="editingOptionValue ? 'Edit Option Value' : 'Add Option Value'" [modal]="true" styleClass="p-fluid">
+
+  <form [formGroup]="optionValueForm" (ngSubmit)="saveOptionValue()">
+    <div class="field mb-3" *ngIf="selectedOption">
+      <label class="form-label">Option Type</label>
+      <input type="text" class="form-control" [value]="selectedOption.name" readonly />
+    </div>
+
+    <div class="field mb-3">
+      <label for="optionValue" class="form-label">Value</label>
+      <input type="text" pInputText id="optionValue" formControlName="value" placeholder="e.g. Red, Large, Cotton"
+        class="form-control" required />
+      <small *ngIf="optionValueForm.get('value')?.invalid && optionValueForm.get('value')?.touched"
+        class="text-danger d-block mt-1">
+        Value is required
+      </small>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button pButton pRipple type="button" label="Cancel" icon="pi pi-times" class="p-button-text"
+      (click)="optionValueDialogVisible = false"></button>
+    <button pButton pRipple type="button" label="Save" icon="pi pi-check" class="p-button-success"
+      (click)="saveOptionValue()" [disabled]="optionValueForm.invalid"></button>
+  </ng-template>
+</p-dialog>
+
+<!-- Context Menu -->
+<p-menu #valueMenu [model]="valueMenuItems" [popup]="true"></p-menu>

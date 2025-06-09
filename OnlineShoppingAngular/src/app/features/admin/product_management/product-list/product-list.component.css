@@ -1,10 +1,10 @@
 /* Premium Table Styling */
 :host ::ng-deep .p-datatable-products {
-  --primary-color: var(--color-primary, #1A1A1A);
-  --accent-color: var(--color-accent, #2E4A3F);
-  --highlight-color: var(--color-highlight, #C9B87C);
-  --background-color: var(--color-background, #F9F8F6);
-  --border-color: var(--color-border, #E0E0E0);
+  --primary-color: var(--color-primary, #1a1a1a);
+  --accent-color: var(--color-accent, #2e4a3f);
+  --highlight-color: var(--color-highlight, #c9b87c);
+  --background-color: var(--color-background, #f9f8f6);
+  --border-color: var(--color-border, #e0e0e0);
 }
 
 /* Table Container */
@@ -12,7 +12,7 @@
   border-radius: 14px;
   overflow: hidden;
   background: #fcfcfd;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
 }
 
 /* Table Header */
@@ -26,14 +26,6 @@
   text-transform: none;
   letter-spacing: 0.2px;
   border-bottom: 2px solid #e5e7eb;
-}
-
-:host ::ng-deep .p-datatable .p-datatable-thead > tr:first-child > th:first-child {
-  border-top-left-radius: 8px;
-}
-
-:host ::ng-deep .p-datatable .p-datatable-thead > tr:first-child > th:last-child {
-  border-top-right-radius: 8px;
 }
 
 /* Filter Row */
@@ -50,37 +42,13 @@
   font-size: 0.8rem;
 }
 
-:host ::ng-deep .p-datatable .p-sortable-column.p-highlight .p-sortable-column-icon,
-:host ::ng-deep .p-datatable .p-sortable-column:hover .p-sortable-column-icon {
-  color: white;
-}
-
-/* Table Body */
-:host ::ng-deep .p-datatable .p-datatable-tbody > tr {
-  background: #fff;
-  border-bottom: 1px solid #f0f1f3;
-  transition: background 0.2s, box-shadow 0.2s;
-}
-
-:host ::ng-deep .p-datatable .p-datatable-tbody > tr:hover {
-  background: #f6f8fa;
-  box-shadow: 0 2px 8px rgba(201,184,124,0.07);
-}
-
-:host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
-  padding: 0.7rem 1rem;
-  border: none;
-  vertical-align: middle;
-  font-size: 0.95rem;
-}
-
 /* Product Image */
 .product-image {
   width: 38px;
   height: 38px;
   border-radius: 50%;
   overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
   background: #f4f4f4;
   display: flex;
   align-items: center;
@@ -164,8 +132,11 @@
   font-weight: 600;
 }
 
+<<<<<<< Updated upstream
+=======
 /* Input Styling */
-:host ::ng-deep .p-inputtext, :host ::ng-deep .p-dropdown {
+:host ::ng-deep .p-inputtext,
+:host ::ng-deep .p-dropdown {
   border-radius: 6px;
   border: 1px solid #e0e0e0;
   padding: 0.35rem 0.6rem;
@@ -174,9 +145,10 @@
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-:host ::ng-deep .p-inputtext:focus, :host ::ng-deep .p-dropdown:focus {
+:host ::ng-deep .p-inputtext:focus,
+:host ::ng-deep .p-dropdown:focus {
   border-color: #c9b87c;
-  box-shadow: 0 0 0 2px rgba(201,184,124,0.13);
+  box-shadow: 0 0 0 2px rgba(201, 184, 124, 0.13);
 }
 
 /* Dropdown Styling */
@@ -188,29 +160,47 @@
   box-shadow: 0 0 0 2px rgba(201, 184, 124, 0.2);
 }
 
-:host ::ng-deep .p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight {
+:host
+  ::ng-deep
+  .p-dropdown-panel
+  .p-dropdown-items
+  .p-dropdown-item.p-highlight {
   background: rgba(201, 184, 124, 0.2);
   color: var(--primary-color);
 }
+>>>>>>> Stashed changes
+
+
+
 
 /* Button Styling */
 :host ::ng-deep .p-button {
-  border-radius: 6px;
+  border-radius: 5px;
   font-weight: 600;
+  font-size: 0.92rem;
+  padding: 0.3em 0.8em;
 }
-
-:host ::ng-deep .p-button.p-button-outlined {
-  border-color: var(--border-color);
-  color: var(--primary-color);
+:host ::ng-deep .p-button.p-button-success {
+  background: #2e4a3f;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.35em 0.9em;
+  font-size: 0.92rem;
+  transition: background 0.2s;
 }
-
-:host ::ng-deep .p-button.p-button-outlined:hover {
-  background: rgba(201, 184, 124, 0.1);
-  border-color: var(--highlight-color);
+:host ::ng-deep .p-button.p-button-success:hover {
+  background: #c9b87c;
+  color: #1a1a1a;
 }
 
 /* Empty Message */
-:host ::ng-deep .p-datatable .p-datatable-tbody > tr.p-datatable-emptymessage > td {
+:host
+  ::ng-deep
+  .p-datatable
+  .p-datatable-tbody
+  > tr.p-datatable-emptymessage
+  > td {
   background: white;
 }
 
@@ -221,23 +211,15 @@
     padding: 0.5rem 0.5rem;
     font-size: 0.9rem;
   }
-  
+
   .product-name {
     font-size: 0.88rem;
   }
-  
+
   .price-amount {
     font-size: 0.9rem;
   }
 }
-
-/* app-admin-sidebar {
-  min-width: 220px;
-  max-width: 240px;
-  background: #fff;
-  border-right: 1px solid #e5e7eb;
-  min-height: 100vh;
-} */
 
 main {
   min-height: 100vh;
@@ -249,173 +231,451 @@ main {
   border: none;
 }
 
-.table thead th {
-  font-weight: 600;
-  color: #6c757d;
-  background: #f9fafb;
-}
-
-.table tbody tr {
-  transition: background 0.2s;
-}
-
-.table tbody tr:hover {
-  background: #f1f3f6;
-}
+/* --- Compact Modern Admin Product List Table --- */
 
 :host ::ng-deep .p-datatable-products {
-  /* your existing variables and styles */
-  --primary-color: var(--color-primary, #1A1A1A);
-  --accent-color: var(--color-accent, #2E4A3F);
-  --highlight-color: var(--color-highlight, #C9B87C);
-  --background-color: var(--color-background, #F9F8F6);
-  --border-color: var(--color-border, #E0E0E0);
-}
-
-/* Add your existing CSS here */
-
-.product-image {
-  width: 50px;
-  height: 50px;
-  border-radius: 8px;
+  --primary-color: var(--color-primary, #1a1a1a);
+  --accent-color: var(--color-accent, #2e4a3f);
+  --highlight-color: var(--color-highlight, #c9b87c);
+  --background-color: var(--color-background, #f9f8f6);
+  --border-color: var(--color-border, #e0e0e0);
+  border-radius: 0.7rem;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+  background: #fff;
 }
 
+:host ::ng-deep .p-datatable-products .p-datatable-thead > tr > th {
+  background: #f8f9fa;
+  color: #343a40;
+  font-weight: 600;
+  border-bottom: 1px solid #e9ecef;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.92rem;
+  text-transform: none;
+}
+
+:host ::ng-deep .p-datatable-products .filter-row > th {
+  background: #f4f6fa;
+  border-bottom: 1px solid #ececec;
+  font-size: 0.91rem;
+  padding: 0.35rem 0.7rem;
+}
+
+:host ::ng-deep .p-datatable-products .p-datatable-tbody > tr > td {
+  border-bottom: 1px solid #f1f3f6;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.92rem;
+  vertical-align: middle;
+}
+
+:host ::ng-deep .p-datatable-products .p-datatable-tbody > tr:hover {
+  background: #eef1f5;
+  box-shadow: inset 0 0 0 1px #d0d7de;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+:host ::ng-deep .p-datatable-products .p-paginator {
+  background: #fff;
+  border: none;
+  padding: 0.5rem 0.2rem;
+}
+
+/* Badges */
+.category-badge {
+  background-color: #e1f5fe;
+  color: #0288d1;
+  border-radius: 4px;
+  padding: 0.13rem 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+.brand-badge {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-radius: 4px;
+  padding: 0.13rem 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+.status-badge {
+  border-radius: 4px;
+  padding: 0.13rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+.status-active {
+  background-color: #d4edda;
+  color: #155724;
+}
+.status-inactive {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Product Image (if used) */
+.product-image {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+  background: #f4f4f4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .product-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-.product-name {
-  font-weight: 600;
-  color: var(--primary-color);
-}
-
-.category-badge {
-  background-color: var(--highlight-color);
-  color: #fff;
-  padding: 0.25em 0.5em;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  text-transform: capitalize;
-}
-/* 
-.price-amount {
-  font-weight: 700;
-  color: var(--accent-color);
-}
-
-.status-badge {
-  padding: 0.3em 0.7em;
-  font-size: 0.85rem;
-  border-radius: 20px;
-  font-weight: 600;
-  color: white;
-  text-align: center;
-  display: inline-block;
-  min-width: 90px;
-}
-
-.status-active {
-  background-color: #48bb78;
-}
-
-.status-inactive {
-  background-color: #f56565;
-} */
-.status-badge {
-  display: inline-block;
-  padding: 0.35em 0.9em;
-  font-size: 0.875rem;
-  font-weight: 600;
-  border-radius: 12px; /* soft rounded corners */
-  color: #fff;
-  min-width: 90px;
-  text-align: center;
-  user-select: none;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* subtle depth */
-  background-clip: padding-box;
-  transition: background-color 0.2s ease;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-}
-
-.status-active {
-  background-color: #2f855a; /* deep green */
-  /* no gradient, flat color for simplicity */
-}
-
-.status-inactive {
-  background-color: #c53030; /* rich red */
-}
-
-/* Optional: subtle hover effect to indicate interactivity */
-.status-badge:hover {
-  filter: brightness(1.05);
-  cursor: default;
-}
-
-
-.price-range-labels small {
-  font-size: 0.8rem;
-  color: var(--primary-color);
-}
-
-::ng-deep .p-tooltip {
-  z-index: 9999; /* Make sure it's above other elements */
-  max-width: 200px;
-  font-size: 12px;
-}
-
-::ng-deep .p-tooltip-text {
-  background-color: #333;
-  color: white;
-  padding: 6px 10px;
-  border-radius: 6px;
-}
-
-/* Table Title and Add Button Row */
-.d-flex.justify-content-between.align-items-center.mb-3 {
-  background: #fff;
-  border-bottom: 1px solid var(--border-color, #E0E0E0);
-  border-radius: 8px 8px 0 0;
-  padding-bottom: 0.5rem;
-}
-
-/* Add Product Button */
-.p-button.p-button-success {
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  background: #2E4A3F;
-  border: none;
-  color: #fff;
-  border-radius: 8px;
-  padding: 0.5em 1.1em;
-  font-size: 0.95rem;
-  transition: background 0.2s;
-}
-.p-button.p-button-success:hover {
-  background: #C9B87C;
-  color: #1A1A1A;
-}
-
-/* Action Buttons - Small, Round, Subtle */
-:host ::ng-deep .p-button.p-button-rounded.p-button-text {
-  width: 28px;
-  height: 28px;
-  min-width: 28px;
-  min-height: 28px;
   border-radius: 50%;
-  padding: 0;
+}
+
+/* Action buttons styling */
+.action-buttons {
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+  display: flex;
+  justify-content: center;
+  gap: 0.15rem;
+}
+.action-btn {
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  font-size: 0.72rem !important;
+  padding: 0 !important;
+}
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+  transform: translateY(-1px);
+  transition: transform 0.15s ease;
+}
+
+/* Make sure the action column doesn't wrap */
+p-table th:last-child,
+p-table td:last-child {
+  white-space: nowrap;
+}
+
+/* Responsive adjustments for small screens */
+@media (max-width: 768px) {
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .action-btn {
+    width: 1.2rem !important;
+    height: 1.2rem !important;
+    font-size: 0.65rem !important;
+  }
+  :host ::ng-deep .p-datatable-products .p-datatable-thead > tr > th,
+  :host ::ng-deep .p-datatable-products .p-datatable-tbody > tr > td {
+    padding: 0.35rem 0.3rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Card and Main Layout */
+.card {
+  background: #fff;
+  border: none;
+}
+main {
+  min-height: 100vh;
+  background: #f6f8fa;
+}
+
+/* Tooltip styling */
+::ng-deep .tooltip-dark {
+  background-color: #333 !important;
+  color: #fff !important;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+::ng-deep .tooltip-dark .p-tooltip-text {
+  color: #fff !important;
+}
+::ng-deep .tooltip-dark .p-tooltip-arrow {
+  border-top-color: #333 !important;
+}
+
+/* Bootstrap Dropdown Styling for Product List */
+.bootstrap-dropdown .dropdown-toggle {
+  text-align: left;
+  background: white;
+  font-size: 0.85rem;
+  min-height: 32px;
+  cursor: pointer;
+  position: relative;
+  padding-right: 2rem;
+  border: 1px solid #ced4da;
+}
+
+.bootstrap-dropdown .dropdown-toggle::after {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.bootstrap-dropdown .dropdown-menu {
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 0;
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid #e9ecef;
+}
+
+.bootstrap-dropdown .dropdown-item {
+  font-size: 0.85rem;
+  padding: 0.6rem 1rem;
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  background: transparent;
-  transition: background 0.15s;
+  transition: all 0.15s ease;
+  color: #495057;
 }
-:host ::ng-deep .p-button.p-button-rounded.p-button-text:hover {
-  background: #f4f6fa;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+
+.bootstrap-dropdown .dropdown-item:hover {
+  background-color: #f0f7ff;
+  transform: translateX(3px);
+  color: #212529;
+}
+
+.bootstrap-dropdown .dropdown-item i {
+  margin-right: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.bootstrap-dropdown .dropdown-divider {
+  margin: 0.25rem 0;
+}
+
+/* Filter row specific styling */
+.filter-row .bootstrap-dropdown .dropdown-toggle {
+  font-size: 0.8rem;
+  min-height: 30px;
+  padding: 0.25rem 2rem 0.25rem 0.5rem;
+}
+
+.filter-row .bootstrap-dropdown .dropdown-toggle::after {
+  right: 0.5rem;
+}
+
+/* Option 1: Inline Range */
+.price-filter-container {
+  min-width: 140px;
+}
+
+.price-range-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.price-label {
+  color: #495057;
+}
+
+.price-separator {
+  color: #6c757d;
+  font-weight: 400;
+}
+
+.price-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.price-inputs input {
+  width: 60px;
+  font-size: 0.75rem;
+}
+
+.input-separator {
+  font-size: 0.75rem;
+  color: #6c757d;
+  white-space: nowrap;
+}
+
+/* Option 2: Compact Row */
+.price-filter-compact {
+  min-width: 200px;
+}
+
+.price-input {
+  width: 50px;
+  font-size: 0.75rem;
+}
+
+.slider-container {
+  margin: 0 0.5rem;
+}
+
+.price-display {
+  font-size: 0.7rem;
+  margin-top: 0.25rem;
+}
+
+/* Option 3: Input Group */
+.price-filter-group {
+  min-width: 160px;
+}
+
+.price-filter-group .input-group-text {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.price-filter-group .form-control {
+  font-size: 0.75rem;
+}
+
+/* Option 4: Dropdown Style */
+.price-filter-dropdown {
+  min-width: 250px;
+}
+
+.price-presets .btn {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+}
+
+/* General slider styling improvements */
+:host ::ng-deep .p-slider {
+  height: 4px;
+}
+
+:host ::ng-deep .p-slider .p-slider-handle {
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border: 2px solid #3b82f6;
+  background: #ffffff;
+  border-radius: 50%;
+}
+
+:host ::ng-deep .p-slider .p-slider-range {
+  background: #3b82f6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .price-filter-container,
+  .price-filter-compact,
+  .price-filter-group {
+    min-width: 120px;
+  }
+  
+  .price-inputs input,
+  .price-input {
+    width: 45px;
+    font-size: 0.7rem;
+  }
+}
+::ng-deep .p-datatable-products th,
+::ng-deep .p-datatable-products td {
+  min-width: 120px; /* Adjust as needed */
+  white-space: nowrap;
+=======
+  display: flex;
+=======
+  display: flex;
+>>>>>>> Stashed changes
+=======
+  display: flex;
+>>>>>>> Stashed changes
+  justify-content: center;
+  gap: 0.15rem;
+}
+.action-btn {
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  font-size: 0.72rem !important;
+  padding: 0 !important;
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+}
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+  transform: translateY(-1px);
+  transition: transform 0.15s ease;
+}
+
+/* Make sure the action column doesn't wrap */
+p-table th:last-child,
+p-table td:last-child {
+  white-space: nowrap;
+}
+
+/* Responsive adjustments for small screens */
+@media (max-width: 768px) {
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .action-btn {
+    width: 1.2rem !important;
+    height: 1.2rem !important;
+    font-size: 0.65rem !important;
+  }
+  :host ::ng-deep .p-datatable-products .p-datatable-thead > tr > th,
+  :host ::ng-deep .p-datatable-products .p-datatable-tbody > tr > td {
+    padding: 0.35rem 0.3rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Input and Dropdown Styling */
+:host ::ng-deep .p-inputtext,
+:host ::ng-deep .p-dropdown {
+  border-radius: 5px;
+  border: 1px solid #e0e0e0;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.92rem;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+:host ::ng-deep .p-inputtext:focus,
+:host ::ng-deep .p-dropdown:focus {
+  border-color: #c9b87c;
+  box-shadow: 0 0 0 2px rgba(201, 184, 124, 0.13);
+}
+
+/* Card and Main Layout */
+.card {
+  background: #fff;
+  border: none;
+}
+main {
+  min-height: 100vh;
+  background: #f6f8fa;
+}
+
+/* Tooltip styling */
+::ng-deep .tooltip-dark {
+  background-color: #333 !important;
+  color: #fff !important;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+::ng-deep .tooltip-dark .p-tooltip-text {
+  color: #fff !important;
+}
+::ng-deep .tooltip-dark .p-tooltip-arrow {
+  border-top-color: #333 !important;
 }

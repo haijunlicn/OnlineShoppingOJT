@@ -36,6 +36,9 @@ public class UserAddressEntity {
     @Column(name = "city", length = 100)
     private String city;
 
+    @Column(name = "country", length = 50)
+    private String country;
+
     @Column(name = "zipcode", length = 20)
     @JsonProperty("zipCode")
     private String zipcode;

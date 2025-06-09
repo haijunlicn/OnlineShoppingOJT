@@ -13,26 +13,31 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Data
 @Entity
-@Table(name="categories")
+@Table(name = "categories")
 public class CategoryEntity {
 
-	@Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(columnDefinition = "INT(11)")
     private Long id;
 
-    @Column(length = 100, nullable = false, unique = true)
+    @Column(length = 100, nullable = false)
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_category_id")
     private CategoryEntity parentCategory;
+
+    @Column(name = "img_path", columnDefinition = "TEXT")
+    private String imgPath;
 
     @Column(name = "del_fg", nullable = false)
     private Integer delFg = 1;

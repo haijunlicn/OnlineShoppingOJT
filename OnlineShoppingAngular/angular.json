@@ -37,6 +37,7 @@
               }
             ],
             "styles": [
+              "node_modules/primeicons/primeicons.css",
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "node_modules/bootstrap-icons/font/bootstrap-icons.css",
               "node_modules/@fortawesome/fontawesome-free/css/all.css",
@@ -45,21 +46,19 @@
 <<<<<<< Updated upstream
               "node_modules/primeicons/primeicons.css",
 =======
-              "node_modules/leaflet/dist/leaflet.css",
 >>>>>>> Stashed changes
 =======
-              "node_modules/leaflet/dist/leaflet.css",
 >>>>>>> Stashed changes
 =======
-              "node_modules/leaflet/dist/leaflet.css",
 >>>>>>> Stashed changes
+              "node_modules/leaflet/dist/leaflet.css",
               "src/styles.css"
             ],
             "scripts": [
-                "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js",
-                "src/assets/demo/chart-area-demo.js",
-                "src/assets/demo/chart-bar-demo.js",
-                "src/assets/js/datatables-simple-demo.js"
+              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js",
+              "src/assets/demo/chart-area-demo.js",
+              "src/assets/demo/chart-bar-demo.js",
+              "src/assets/js/datatables-simple-demo.js"
             ],
             "server": "src/main.server.ts",
             "outputMode": "server",
@@ -121,6 +120,7 @@
               }
             ],
             "styles": [
+              "node_modules/primeicons/primeicons.css",
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "node_modules/bootstrap-icons/font/bootstrap-icons.css",
               "node_modules/@fortawesome/fontawesome-free/css/all.css",
@@ -128,31 +128,21 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
               "node_modules/primeicons/primeicons.css",
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+              "node_modules/leaflet/dist/leaflet.css",
               "src/styles.css"
             ],
             "scripts": [
-                  "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js",
-                  "src/assets/demo/chart-area-demo.js",
-                  "src/assets/demo/chart-bar-demo.js",
-                  "src/assets/js/datatables-simple-demo.js"
+              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js",
+              "src/assets/demo/chart-area-demo.js",
+              "src/assets/demo/chart-bar-demo.js",
+              "src/assets/js/datatables-simple-demo.js"
             ]
-=======
-              "node_modules/leaflet/dist/leaflet.css",
-              "src/styles.css"
-            ],
-=======
-              "node_modules/leaflet/dist/leaflet.css",
-              "src/styles.css"
-            ],
->>>>>>> Stashed changes
-=======
-              "node_modules/leaflet/dist/leaflet.css",
-              "src/styles.css"
-            ],
->>>>>>> Stashed changes
-          
-            "scripts": []
->>>>>>> Stashed changes
           }
         }
       }

@@ -11,10 +11,22 @@ export class OptionvalueService {
   baseUrl = "http://localhost:8080/option-value";
 
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  createOptionValue(value: OptionValueDTO): Observable<string> {
-    return this.http.post<string>(`${this.baseUrl}/create`, value,{responseType:'text' as 'json'});
+  createOptionValue(value: OptionValueDTO): Observable<OptionValueDTO> {
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+    return this.http.post<OptionValueDTO>(`${this.baseUrl}/create`, value, { responseType: 'text' as 'json' });
+=======
+    return this.http.post<OptionValueDTO>(`${this.baseUrl}/create`, value);
+>>>>>>> Stashed changes
+=======
+    return this.http.post<OptionValueDTO>(`${this.baseUrl}/create`, value);
+>>>>>>> Stashed changes
+=======
+    return this.http.post<OptionValueDTO>(`${this.baseUrl}/create`, value);
+>>>>>>> Stashed changes
   }
 
   getValuesByOptionId(optionId: number): Observable<OptionValueDTO[]> {
@@ -25,10 +37,77 @@ export class OptionvalueService {
     return this.http.get<OptionValueDTO>(`${this.baseUrl}/getbyid/${id}`);
   }
 
-  updateOptionValues(value: OptionValueDTO): Observable<string> {
-    return this.http.put<string>(`${this.baseUrl}/update/${value.id}`, value);
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+  updateOptionValues(value: OptionValueDTO): Observable<OptionValueDTO> {
+    return this.http.put<OptionValueDTO>(`${this.baseUrl}/update/${value.id}`, value, { responseType: 'text' as 'json' });
   }
 
-  deleteOptionValue(id: number): Observable<string> {
-    return this.http.delete<string>(`${this.baseUrl}/delete/${id}`);
-  }}
+  deleteOptionValue(id: number): Observable<OptionValueDTO> {
+    return this.http.delete<OptionValueDTO>(`${this.baseUrl}/delete/${id}`, { responseType: 'text' as 'json' });
+  }
+
+=======
+  // updateOptionValues(value: OptionValueDTO): Observable<OptionValueDTO> {
+  //   return this.http.put<OptionValueDTO>(`${this.baseUrl}/update/${value.id}`, value);
+  // }
+
+  updateOptionValues(value: OptionValueDTO): Observable<OptionValueDTO> {
+    return this.http.put<OptionValueDTO>(`${this.baseUrl}/update/${value.id}`, value);
+  }
+
+=======
+  // updateOptionValues(value: OptionValueDTO): Observable<OptionValueDTO> {
+  //   return this.http.put<OptionValueDTO>(`${this.baseUrl}/update/${value.id}`, value);
+  // }
+
+  updateOptionValues(value: OptionValueDTO): Observable<OptionValueDTO> {
+    return this.http.put<OptionValueDTO>(`${this.baseUrl}/update/${value.id}`, value);
+  }
+
+>>>>>>> Stashed changes
+=======
+  // updateOptionValues(value: OptionValueDTO): Observable<OptionValueDTO> {
+  //   return this.http.put<OptionValueDTO>(`${this.baseUrl}/update/${value.id}`, value);
+  // }
+
+  updateOptionValues(value: OptionValueDTO): Observable<OptionValueDTO> {
+    return this.http.put<OptionValueDTO>(`${this.baseUrl}/update/${value.id}`, value);
+  }
+
+>>>>>>> Stashed changes
+
+  deleteOptionValue(id: number): Observable<OptionValueDTO> {
+    return this.http.delete<OptionValueDTO>(`${this.baseUrl}/delete/${id}`);
+  }
+
+  // createOptionValue(value: OptionValueDTO): Observable<string> {
+  //   return this.http.post<string>(`${this.baseUrl}/create`, value, { responseType: 'text' as 'json' });
+  // }
+
+  // getValuesByOptionId(optionId: number): Observable<OptionValueDTO[]> {
+  //   return this.http.get<OptionValueDTO[]>(`${this.baseUrl}/list/${optionId}`);
+  // }
+
+  // getOptionValueById(id: number): Observable<OptionValueDTO> {
+  //   return this.http.get<OptionValueDTO>(`${this.baseUrl}/getbyid/${id}`);
+  // }
+
+
+  // updateOptionValues(value: OptionValueDTO): Observable<string> {
+  //   return this.http.put<string>(`${this.baseUrl}/update/${value.id}`, value);
+  // }
+
+  // deleteOptionValue(id: number): Observable<string> {
+  //   return this.http.delete<string>(`${this.baseUrl}/delete/${id}`);
+  // }
+
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+}

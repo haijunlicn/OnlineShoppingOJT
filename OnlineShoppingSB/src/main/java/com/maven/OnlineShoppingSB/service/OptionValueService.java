@@ -71,9 +71,16 @@ public class OptionValueService {
     }
 
     public void deleteOptionValue(Long id) {
-        OptionValueEntity entity = valueRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("OptionValue not found"));
-        entity.setDelFg(0);
-        valueRepo.save(entity);
+        if (!valueRepo.existsById(id)) {
+            throw new RuntimeException("OptionValue not found");
+        }
+        valueRepo.deleteById(id);
     }
+
+//    public void deleteOptionValue(Long id) {
+//        OptionValueEntity entity = valueRepo.findById(id)
+//                .orElseThrow(() -> new RuntimeException("OptionValue not found"));
+//        entity.setDelFg(0);
+//        valueRepo.save(entity);
+//    }
 }

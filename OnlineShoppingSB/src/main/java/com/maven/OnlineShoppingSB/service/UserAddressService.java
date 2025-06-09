@@ -20,7 +20,7 @@ public class UserAddressService {
     @Autowired
     private ModelMapper modelMapper;
 
-    private final Integer constantUserId = 1; // ❗ Later replace with authenticated user
+    private final Integer constantUserId = 4; // ❗ Later replace with authenticated user
 
     public UserAddressDto saveUserAddress(UserAddressDto dto) {
         UserAddressEntity entity = modelMapper.map(dto, UserAddressEntity.class);
@@ -52,4 +52,25 @@ public class UserAddressService {
     public void deleteUserAddress(Integer id) {
         userAddressRepository.deleteById(id);
     }
+
+    // New method to get the first address of the constant user
+    public List<UserAddressDto> getUserAddressesByUserId() {
+        System.out.println("Fetching all user addresses for userId = " + constantUserId);
+        List<UserAddressEntity> entities = userAddressRepository.findByUserId(constantUserId);
+        return entities.stream()
+                .map(entity -> modelMapper.map(entity, UserAddressDto.class))
+                .collect(Collectors.toList());
+    }
+    public UserAddressDto updateUserAddress(Integer id, UserAddressDto dto) {
+        UserAddressEntity existing = userAddressRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Address not found with ID: " + id));
+
+        modelMapper.map(dto, existing); // overwrite fields from DTO
+        existing.setUpdatedDate(LocalDateTime.now());
+
+        UserAddressEntity updated = userAddressRepository.save(existing);
+        return modelMapper.map(updated, UserAddressDto.class);
+    }
+
 }
+

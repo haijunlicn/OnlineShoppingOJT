@@ -17,10 +17,10 @@ public class CategoryDTO {
     @NotEmpty(message = "Name is required")
     private String name;
     private Long parentCategoryId;
-
     private String parentCategoryName;
-    private Integer delFg;
+    private String imgPath;
 
+    private Integer delFg;
     private String createdDate;
     private String updatedDate;
 

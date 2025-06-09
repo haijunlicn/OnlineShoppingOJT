@@ -1,0 +1,84 @@
+/* Options styling */
+.options-container {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.option-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.option-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Improved Option Values Layout */
+.option-values-container {
+  min-height: 60px;
+}
+
+.option-values-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.option-value-tag {
+  display: inline-flex;
+  align-items: center;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 4px 8px;
+  transition: all 0.2s ease;
+  gap: 6px;
+}
+
+.option-value-tag:hover {
+  background: #e9ecef;
+  border-color: #dee2e6;
+}
+
+.option-value-tag .badge {
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+/* Custom scrollbar */
+.options-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.options-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.options-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+/* 
+::ng-deep .custom-tooltip {
+  background-color: #343a40;
+  color: #ffffff;
+  font-size: 0.75rem;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  max-width: 200px;
+  word-wrap: break-word;
+  padding: 6px 10px;
+} */
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes

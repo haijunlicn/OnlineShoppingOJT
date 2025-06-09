@@ -13,7 +13,7 @@ export class CategoryService {
   constructor(private http: HttpClient) { }
 
   createCategory(category: CategoryDTO): Observable<CategoryDTO> {
-    return this.http.post<CategoryDTO>(`${this.baseUrl}/create`, category, { responseType: 'text' as 'json' });
+    return this.http.post<CategoryDTO>(`${this.baseUrl}/create`, category);
   }
 
   getAllCategories(): Observable<CategoryDTO[]> {
@@ -29,7 +29,7 @@ export class CategoryService {
   }
 
   updateCategory(category: CategoryDTO): Observable<any> {
-    return this.http.put(`${this.baseUrl}/update/${category.id}`, category, { responseType: 'text' as 'json' });
+    return this.http.put(`${this.baseUrl}/update/${category.id}`, category);
   }
 
   deleteCategory(id: number): Observable<string> {

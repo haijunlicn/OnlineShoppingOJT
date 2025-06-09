@@ -1,0 +1,53 @@
+.location-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.location-card {
+  width: 300px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.map-view {
+  height: 200px;
+  width: 100%;
+}
+
+.location-detail {
+  padding: 10px;
+}
+
+.location-detail h3 {
+  margin-top: 0;
+  font-size: 18px;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.actions button {
+  background: #1976d2;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.actions button:hover {
+  background: #125ea7;
+}
+
+.loading {
+  font-size: 16px;
+  color: gray;
+  padding: 20px;
+}

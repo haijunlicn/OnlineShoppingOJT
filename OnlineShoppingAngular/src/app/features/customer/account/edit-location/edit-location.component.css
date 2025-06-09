@@ -1,0 +1,86 @@
+.edit-location-container {
+  max-width: 600px;
+  margin: 20px auto;
+  font-family: Arial, sans-serif;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.search-box {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.search-box input {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.search-box button {
+  padding: 6px 14px;
+  font-size: 14px;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.search-box button:hover {
+  background-color: #0056b3;
+}
+
+.edit-form {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 8px 12px;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+.edit-form label {
+  padding-top: 6px;
+  font-weight: 600;
+  user-select: none;
+}
+
+.edit-form input {
+  padding: 6px 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.map-box {
+  height: 350px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  border: 1px solid #ddd;
+}
+
+.update-btn {
+  display: block;
+  width: 160px;
+  margin: 0 auto 20px auto;
+  padding: 8px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.2s ease;
+}
+
+.update-btn:hover {
+  background-color: #1e7e34;
+}

@@ -6,6 +6,11 @@ import { AdminDashboardComponent } from './layout/admin-dashboard/admin-dashboar
 import { ProductListComponent } from './product_management/product-list/product-list.component';
 import { ProductCreateComponent } from './product_management/product-create/product-create.component';
 import { NoAuthGuard } from '../../core/guards/no-auth.guard';
+import { ProductAttributesComponent } from './product_management/product-attributes/product-attributes.component';
+import { AttributeManagementComponent } from './product_management/attribute-management/attribute-management.component';
+import { OptionManagementComponent } from './product_management/option-management/option-management.component';
+import { CategoryManagementComponent } from './product_management/category-management/category-management.component';
+import { BrandManagementComponent } from './product_management/brand-management/brand-management.component';
 
 const routes: Routes = [
   {
@@ -18,12 +23,40 @@ const routes: Routes = [
   },
   {
     path: 'productList',
-    component: ProductListComponent,canActivate: [NoAuthGuard],
+    component: ProductListComponent, canActivate: [NoAuthGuard],
   },
   {
     path: 'productCreate',
-    component: ProductCreateComponent,canActivate: [NoAuthGuard],
+    component: ProductCreateComponent, canActivate: [NoAuthGuard],
   },
+  {
+    path: 'productAttributes',
+    component: AttributeManagementComponent,
+    canActivate: [NoAuthGuard],
+    children: [
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+      { path: '', redirectTo: 'categories', pathMatch: 'full' },
+=======
+      { path: '', redirectTo: 'options', pathMatch: 'full' },
+>>>>>>> Stashed changes
+=======
+      { path: '', redirectTo: 'options', pathMatch: 'full' },
+>>>>>>> Stashed changes
+=======
+      { path: '', redirectTo: 'options', pathMatch: 'full' },
+>>>>>>> Stashed changes
+      { path: 'options', component: OptionManagementComponent },
+      { path: 'categories', component: CategoryManagementComponent },
+      { path: 'brands', component: BrandManagementComponent }
+    ]
+  }
+
+  // {
+  //   path: 'productAttributes',
+  //   component: AttributeManagementComponent, canActivate: [NoAuthGuard],
+  // },
 ];
 
 @NgModule({

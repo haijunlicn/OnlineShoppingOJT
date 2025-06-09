@@ -1,12 +1,12 @@
 :root {
-  --color-primary: #1A1A1A;
-  --color-accent: #2E4A3F;
-  --color-secondary: #5A4632;
-  --color-highlight: #C9B87C;
-  --color-background: #F9F8F6;
+  --color-primary: #1a1a1a;
+  --color-accent: #2e4a3f;
+  --color-secondary: #5a4632;
+  --color-highlight: #c9b87c;
+  --color-background: #f9f8f6;
   --color-text: #333333;
   --color-text-muted: #777777;
-  --color-border: #E0E0E0;
+  --color-border: #e0e0e0;
 }
 
 body {
@@ -31,7 +31,7 @@ body {
 
 /* Brown background for all toastr */
 .toast-custom {
-  background-color: #5B3A29 !important;
+  background-color: #5b3a29 !important;
   color: #fff !important;
 }
 
@@ -74,12 +74,30 @@ body {
 main.flex-grow-1 {
   margin-left: 220px; /* adjust this width to your sidebar width */
   transition: margin-left 0.3s ease;
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 }
 
-/* Optional: adjust padding for main content */
-/* 
-main {
-  padding: 180rem;
-  min-height: calc(100vh - 120px);
+/* styles.scss */
+
+.custom-tooltip {
+  background-color: #343a40 !important;
+  color: #ffffff !important;
+  font-size: 0.75rem !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  text-align: center !important;
+  max-width: 200px;
+  word-wrap: break-word;
+  padding: 6px 10px !important;
 }
-*/
+=======
+}
+>>>>>>> Stashed changes
+=======
+}
+>>>>>>> Stashed changes
+=======
+}
+>>>>>>> Stashed changes
