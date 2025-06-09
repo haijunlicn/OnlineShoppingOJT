@@ -34,7 +34,7 @@ const routes: Routes = [
     component: AttributeManagementComponent,
     canActivate: [NoAuthGuard],
     children: [
-      { path: '', redirectTo: 'options', pathMatch: 'full' },
+      { path: '', redirectTo: 'categories', pathMatch: 'full' },
       { path: 'options', component: OptionManagementComponent },
       { path: 'categories', component: CategoryManagementComponent },
       { path: 'brands', component: BrandManagementComponent }

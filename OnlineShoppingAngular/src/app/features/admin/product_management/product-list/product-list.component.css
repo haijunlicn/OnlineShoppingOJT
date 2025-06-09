@@ -132,41 +132,6 @@
   font-weight: 600;
 }
 
-/* Input Styling */
-:host ::ng-deep .p-inputtext,
-:host ::ng-deep .p-dropdown {
-  border-radius: 6px;
-  border: 1px solid #e0e0e0;
-  padding: 0.35rem 0.6rem;
-  font-size: 0.95rem;
-  background: #fff;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-:host ::ng-deep .p-inputtext:focus,
-:host ::ng-deep .p-dropdown:focus {
-  border-color: #c9b87c;
-  box-shadow: 0 0 0 2px rgba(201, 184, 124, 0.13);
-}
-
-/* Dropdown Styling */
-:host ::ng-deep .p-dropdown {
-  border-radius: 6px;
-}
-
-:host ::ng-deep .p-dropdown:focus {
-  box-shadow: 0 0 0 2px rgba(201, 184, 124, 0.2);
-}
-
-:host
-  ::ng-deep
-  .p-dropdown-panel
-  .p-dropdown-items
-  .p-dropdown-item.p-highlight {
-  background: rgba(201, 184, 124, 0.2);
-  color: var(--primary-color);
-}
-
 
 /* Button Styling */
 :host ::ng-deep .p-button {
@@ -371,22 +336,6 @@ p-table td:last-child {
   }
 }
 
-/* Input and Dropdown Styling */
-:host ::ng-deep .p-inputtext,
-:host ::ng-deep .p-dropdown {
-  border-radius: 5px;
-  border: 1px solid #e0e0e0;
-  padding: 0.2rem 0.5rem;
-  font-size: 0.92rem;
-  background: #fff;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-:host ::ng-deep .p-inputtext:focus,
-:host ::ng-deep .p-dropdown:focus {
-  border-color: #c9b87c;
-  box-shadow: 0 0 0 2px rgba(201, 184, 124, 0.13);
-}
-
 /* Card and Main Layout */
 .card {
   background: #fff;
@@ -410,4 +359,187 @@ main {
 }
 ::ng-deep .tooltip-dark .p-tooltip-arrow {
   border-top-color: #333 !important;
+}
+
+/* Bootstrap Dropdown Styling for Product List */
+.bootstrap-dropdown .dropdown-toggle {
+  text-align: left;
+  background: white;
+  font-size: 0.85rem;
+  min-height: 32px;
+  cursor: pointer;
+  position: relative;
+  padding-right: 2rem;
+  border: 1px solid #ced4da;
+}
+
+.bootstrap-dropdown .dropdown-toggle::after {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.bootstrap-dropdown .dropdown-menu {
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 0;
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid #e9ecef;
+}
+
+.bootstrap-dropdown .dropdown-item {
+  font-size: 0.85rem;
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  transition: all 0.15s ease;
+  color: #495057;
+}
+
+.bootstrap-dropdown .dropdown-item:hover {
+  background-color: #f0f7ff;
+  transform: translateX(3px);
+  color: #212529;
+}
+
+.bootstrap-dropdown .dropdown-item i {
+  margin-right: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.bootstrap-dropdown .dropdown-divider {
+  margin: 0.25rem 0;
+}
+
+/* Filter row specific styling */
+.filter-row .bootstrap-dropdown .dropdown-toggle {
+  font-size: 0.8rem;
+  min-height: 30px;
+  padding: 0.25rem 2rem 0.25rem 0.5rem;
+}
+
+.filter-row .bootstrap-dropdown .dropdown-toggle::after {
+  right: 0.5rem;
+}
+
+/* Option 1: Inline Range */
+.price-filter-container {
+  min-width: 140px;
+}
+
+.price-range-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.price-label {
+  color: #495057;
+}
+
+.price-separator {
+  color: #6c757d;
+  font-weight: 400;
+}
+
+.price-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.price-inputs input {
+  width: 60px;
+  font-size: 0.75rem;
+}
+
+.input-separator {
+  font-size: 0.75rem;
+  color: #6c757d;
+  white-space: nowrap;
+}
+
+/* Option 2: Compact Row */
+.price-filter-compact {
+  min-width: 200px;
+}
+
+.price-input {
+  width: 50px;
+  font-size: 0.75rem;
+}
+
+.slider-container {
+  margin: 0 0.5rem;
+}
+
+.price-display {
+  font-size: 0.7rem;
+  margin-top: 0.25rem;
+}
+
+/* Option 3: Input Group */
+.price-filter-group {
+  min-width: 160px;
+}
+
+.price-filter-group .input-group-text {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.price-filter-group .form-control {
+  font-size: 0.75rem;
+}
+
+/* Option 4: Dropdown Style */
+.price-filter-dropdown {
+  min-width: 250px;
+}
+
+.price-presets .btn {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+}
+
+/* General slider styling improvements */
+:host ::ng-deep .p-slider {
+  height: 4px;
+}
+
+:host ::ng-deep .p-slider .p-slider-handle {
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border: 2px solid #3b82f6;
+  background: #ffffff;
+  border-radius: 50%;
+}
+
+:host ::ng-deep .p-slider .p-slider-range {
+  background: #3b82f6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .price-filter-container,
+  .price-filter-compact,
+  .price-filter-group {
+    min-width: 120px;
+  }
+  
+  .price-inputs input,
+  .price-input {
+    width: 45px;
+    font-size: 0.7rem;
+  }
+}
+::ng-deep .p-datatable-products th,
+::ng-deep .p-datatable-products td {
+  min-width: 120px; /* Adjust as needed */
+  white-space: nowrap;
 }

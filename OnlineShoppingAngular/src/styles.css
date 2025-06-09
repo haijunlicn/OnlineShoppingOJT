@@ -75,3 +75,17 @@ main.flex-grow-1 {
   margin-left: 220px; /* adjust this width to your sidebar width */
   transition: margin-left 0.3s ease;
 }
+
+/* styles.scss */
+
+.custom-tooltip {
+  background-color: #343a40 !important;
+  color: #ffffff !important;
+  font-size: 0.75rem !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  text-align: center !important;
+  max-width: 200px;
+  word-wrap: break-word;
+  padding: 6px 10px !important;
+}

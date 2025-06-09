@@ -74,7 +74,7 @@ public class CategoryService {
             // Reactivate soft-deleted category
             entity = softDeletedOpt.get();
             entity.setDelFg(1);
-            // Update name or any other fields if needed
+            entity.setImgPath(dto.getImgPath());
             entity.setName(dto.getName());
             entity.setParentCategory(parent);
         } else {
@@ -82,6 +82,7 @@ public class CategoryService {
             entity = new CategoryEntity();
             entity.setName(dto.getName());
             entity.setParentCategory(parent);
+            entity.setImgPath(dto.getImgPath());
             entity.setDelFg(1);
         }
 
@@ -90,6 +91,7 @@ public class CategoryService {
         CategoryDTO resultDto = new CategoryDTO();
         resultDto.setId(saved.getId());
         resultDto.setName(saved.getName());
+        resultDto.setImgPath(saved.getImgPath());
         resultDto.setParentCategoryId(
                 saved.getParentCategory() != null ? saved.getParentCategory().getId() : null
         );
@@ -100,6 +102,7 @@ public class CategoryService {
 
     public List<CategoryDTO> getAllCategories() {
         List<CategoryEntity> cateList = repo.findByDelFg(1);
+        System.out.println("cate entity list : " + cateList);
         return cateList.stream()
                 .map(entity -> {
                     CategoryDTO dto = new CategoryDTO();
@@ -107,6 +110,7 @@ public class CategoryService {
                     dto.setName(entity.getName());
                     dto.setParentCategoryId(entity.getParentCategory() != null ? entity.getParentCategory().getId() : null);
                     dto.setParentCategoryName(entity.getParentCategory() != null ? entity.getParentCategory().getName() : null);
+                    dto.setImgPath(entity.getImgPath());
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -171,6 +175,7 @@ public class CategoryService {
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
         existing.setName(dto.getName());
+        existing.setImgPath(dto.getImgPath());
 
         if (dto.getParentCategoryId() != null) {
             CategoryEntity parent = repo.findById(dto.getParentCategoryId())
@@ -185,6 +190,7 @@ public class CategoryService {
         CategoryDTO updatedDto = new CategoryDTO();
         updatedDto.setId(updated.getId());
         updatedDto.setName(updated.getName());
+        updatedDto.setImgPath(updated.getImgPath());
         updatedDto.setParentCategoryId(
                 updated.getParentCategory() != null ? updated.getParentCategory().getId() : null
         );
