@@ -76,7 +76,11 @@ public class CategoryService {
             entity.setDelFg(1);
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             entity.setImgPath(dto.getImgPath());
+=======
+            // Update name or any other fields if needed
+>>>>>>> Stashed changes
 =======
             // Update name or any other fields if needed
 >>>>>>> Stashed changes
@@ -92,7 +96,10 @@ public class CategoryService {
             entity.setParentCategory(parent);
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             entity.setImgPath(dto.getImgPath());
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======

@@ -4,8 +4,11 @@ import { ProductListItemDTO } from '../../../../core/models/product.model';
 import { ProductService } from '../../../../core/services/product.service';
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import { CategoryService } from '../../../../core/services/category.service';
 import { CategoryDTO } from '../../../../core/models/category-dto';
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -22,7 +25,11 @@ export class ProductListComponent implements OnInit {
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   products: ProductListItemDTO[] = [];
+=======
+  products: any[] = [];
+>>>>>>> Stashed changes
 =======
   products: any[] = [];
 >>>>>>> Stashed changes
@@ -35,6 +42,7 @@ export class ProductListComponent implements OnInit {
     { label: 'In Stock', value: 'In Stock' },
     { label: 'Out of Stock', value: 'Out of Stock' }
   ];
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 
@@ -69,6 +77,14 @@ export class ProductListComponent implements OnInit {
 
   constructor(private productService: ProductService) { }
 >>>>>>> Stashed changes
+=======
+  priceRange: number[] = [0, 1000];
+  maxPrice: number = 1000;
+  filters: any = {};
+  showFilters = false;
+
+  constructor(private productService: ProductService) { }
+>>>>>>> Stashed changes
 
   ngOnInit() {
     this.loadCategories();
@@ -82,6 +98,9 @@ export class ProductListComponent implements OnInit {
       'product.basePrice': { value: this.priceRange, matchMode: 'between' }
     };
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -92,6 +111,7 @@ export class ProductListComponent implements OnInit {
       next: (products) => {
         console.log("product list : ", products);
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
         this.products = products.map(product => ({
@@ -105,6 +125,11 @@ export class ProductListComponent implements OnInit {
           this.maxPrice = Math.max(...prices);
           this.priceRange = [this.minPrice, this.maxPrice];
         }
+=======
+        this.products = products;
+        this.maxPrice = Math.max(...products.map(p => p.product.basePrice));
+        this.priceRange = [0, this.maxPrice];
+>>>>>>> Stashed changes
 =======
         this.products = products;
         this.maxPrice = Math.max(...products.map(p => p.product.basePrice));
@@ -157,6 +182,7 @@ export class ProductListComponent implements OnInit {
     }
   }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
   clearAllFilters() {
@@ -242,6 +268,12 @@ export class ProductListComponent implements OnInit {
 >>>>>>> Stashed changes
   }
 
+=======
+  getStockStatus(product: ProductListItemDTO): string {
+    return product.variants.some(v => v.stock > 0) ? 'In Stock' : 'Out of Stock';
+  }
+
+>>>>>>> Stashed changes
 =======
   getStockStatus(product: ProductListItemDTO): string {
     return product.variants.some(v => v.stock > 0) ? 'In Stock' : 'Out of Stock';

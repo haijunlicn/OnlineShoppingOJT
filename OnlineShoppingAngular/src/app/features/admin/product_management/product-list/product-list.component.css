@@ -172,6 +172,7 @@
 
 
 
+
 /* Button Styling */
 :host ::ng-deep .p-button {
   border-radius: 5px;
@@ -335,6 +336,7 @@ main {
 
 /* Action buttons styling */
 .action-buttons {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
   display: flex;
@@ -588,6 +590,9 @@ main {
 =======
   display: flex;
 >>>>>>> Stashed changes
+=======
+  display: flex;
+>>>>>>> Stashed changes
   justify-content: center;
   gap: 0.15rem;
 }
@@ -597,6 +602,9 @@ main {
   font-size: 0.72rem !important;
   padding: 0 !important;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

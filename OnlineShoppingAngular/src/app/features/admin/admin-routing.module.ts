@@ -36,7 +36,11 @@ const routes: Routes = [
     children: [
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       { path: '', redirectTo: 'categories', pathMatch: 'full' },
+=======
+      { path: '', redirectTo: 'options', pathMatch: 'full' },
+>>>>>>> Stashed changes
 =======
       { path: '', redirectTo: 'options', pathMatch: 'full' },
 >>>>>>> Stashed changes

@@ -62,6 +62,7 @@ export class OptionManagementComponent implements OnInit {
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   // updateFilters(): void {
   //   this.filteredOptions = this.options.filter((option) =>
   //     option.name.toLowerCase().includes(this.optionFilter.toLowerCase()),
@@ -79,6 +80,8 @@ export class OptionManagementComponent implements OnInit {
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
   updateFilters(): void {
     this.filteredOptions = this.options.filter((option) =>
       option.name.toLowerCase().includes(this.optionFilter.toLowerCase()),
@@ -86,6 +89,9 @@ export class OptionManagementComponent implements OnInit {
   }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -122,11 +128,14 @@ export class OptionManagementComponent implements OnInit {
   saveOption(): void {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     if (this.optionForm.invalid) return;
     const formValue = this.optionForm.value;
 
     if (this.editingOption) {
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     if (this.optionForm.invalid) return
@@ -136,6 +145,9 @@ export class OptionManagementComponent implements OnInit {
     if (this.editingOption) {
       // Update existing option
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -143,6 +155,7 @@ export class OptionManagementComponent implements OnInit {
         id: this.editingOption.id,
         name: formValue.name,
         optionValues: this.editingOption.optionValues,
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
       };
@@ -177,6 +190,8 @@ export class OptionManagementComponent implements OnInit {
 
 
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
       }
@@ -216,6 +231,9 @@ export class OptionManagementComponent implements OnInit {
   }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -260,12 +278,15 @@ export class OptionManagementComponent implements OnInit {
   saveOptionValue(): void {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     if (this.optionValueForm.invalid || !this.selectedOption) return;
 
     const formValue = this.optionValueForm.value;
 
     if (this.editingOptionValue) {
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     if (this.optionValueForm.invalid || !this.selectedOption) return
@@ -275,6 +296,9 @@ export class OptionManagementComponent implements OnInit {
     if (this.editingOptionValue) {
       // Update existing value
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -282,6 +306,7 @@ export class OptionManagementComponent implements OnInit {
         id: this.editingOptionValue.id,
         optionId: formValue.optionId,
         value: formValue.value,
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
       };
@@ -315,6 +340,8 @@ export class OptionManagementComponent implements OnInit {
 
 
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
       }
@@ -359,6 +386,9 @@ export class OptionManagementComponent implements OnInit {
   }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -402,7 +432,11 @@ export class OptionManagementComponent implements OnInit {
     const buttonEl = event.currentTarget as HTMLElement;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
+=======
+    
+>>>>>>> Stashed changes
 =======
     
 >>>>>>> Stashed changes

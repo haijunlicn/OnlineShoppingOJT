@@ -9,7 +9,11 @@ export interface CategoryDTO {
   optionTypes?: OptionTypeDTO[];
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   imgPath?: string;
+=======
+  imagePath?: string;
+>>>>>>> Stashed changes
 =======
   imagePath?: string;
 >>>>>>> Stashed changes
