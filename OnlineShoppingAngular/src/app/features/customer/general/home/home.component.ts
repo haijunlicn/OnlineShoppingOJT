@@ -1,4 +1,7 @@
 import { Component } from '@angular/core';
+import { LoginModalService } from '../../../../core/services/LoginModalService';
+import { RegisterModalService } from '../../../../core/services/RegisterModalService';
+import { ForgotPasswordModalService } from '../../../../core/services/ForgotPasswordModalService';
 
 @Component({
   selector: 'app-home',
@@ -10,6 +13,20 @@ export class HomeComponent {
  productRating = 4
   maxRating = 5
 
+
+   constructor(private loginModalService: LoginModalService,private registerModalService:RegisterModalService,private forgotModalService: ForgotPasswordModalService) {}
+
+  get loginVisible$() {
+    return this.loginModalService.loginVisible$;
+  }
+
+  get registerVisible$() {
+    return this.registerModalService.registerVisible$;
+  }
+
+  get forgotVisible$ () {
+    return this.forgotModalService.forgotVisible$;
+  }
   onShopNow() {
     console.log("Shop Now clicked")
   }

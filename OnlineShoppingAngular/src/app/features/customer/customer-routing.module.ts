@@ -15,8 +15,8 @@ import { EditLocationComponent } from './account/edit-location/edit-location.com
 const routes: Routes = [
 
   { path: 'home', component: HomeComponent },
-  { path: 'auth/verify/:id', component: VerifyComponent, canActivate: [NoAuthGuard] },
-
+  { path: 'auth/verify/:id', component: VerifyComponent ,canActivate: [NoAuthGuard]},
+{ path: 'general/home', component: HomeComponent },
   {
     path: 'auth/register',
     component: RegisterComponent, canActivate: [NoAuthGuard],
@@ -31,11 +31,16 @@ const routes: Routes = [
     component: ForgetPasswordComponent, canActivate: [NoAuthGuard],
 
   },
-  {
-    path: 'auth/reset-password',
-    component: ResetPasswordComponent
-  },
-  { path: 'location', component: LocationCreateComponent },
+  // {
+  //   path: 'customer/auth/verify/:id',
+  //   component: VerifyComponent,canActivate: [NoAuthGuard],
+
+  // },
+ {
+  path: 'auth/reset-password',
+  component: ResetPasswordComponent
+},
+  {path:'location',component:LocationCreateComponent},
   { path: 'editlocation/:id', component: EditLocationComponent },
   { path: 'address', component: LocationCardComponent, canActivate: [NoAuthGuard] },
 

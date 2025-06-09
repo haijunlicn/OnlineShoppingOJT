@@ -45,6 +45,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/register","/auth/verify-otp", "/auth/login").permitAll()
+
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(ex -> ex

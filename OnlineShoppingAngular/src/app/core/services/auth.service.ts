@@ -3,28 +3,34 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { OtpDTO } from '../models/otpDTO';
 import { Router } from '@angular/router';
-
+import { LoginModalService } from './LoginModalService';
+import { RegisterModalService } from './RegisterModalService';
+import { AlertService } from './alert.service';
+import Swal from 'sweetalert2';
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-
-
+ 
+   
   private apiUrl = 'http://localhost:8080/auth';
 
-  constructor(private http: HttpClient, private router: Router) { }
+  constructor(private http: HttpClient,
+    private router: Router, 
+     private loginModalService: LoginModalService,
+      private registerModalService: RegisterModalService,
+      private alertService :AlertService,
+  ) {}
+
+ 
+
+register(userData: any): Observable<any> {
+  console.log("I'm register");
+  return this.http.post<any>('http://localhost:8080/auth/register', userData);
+}
 
 
-  register(userData: any): Observable<string> {
-
-    return this.http.post('http://localhost:8080/auth/register', userData, { responseType: 'text' });
-  }
-
-
-  //  verifyOtp(code: string): Observable<any> {
-  //   return this.http.post(`${this.apiUrl}/verify`, { otp: code });
-  // }
   verifyOtp(otpCode: string, userId: string): Observable<any> {
     const otpDTO: OtpDTO = {
       otpCode: otpCode,
@@ -42,38 +48,83 @@ export class AuthService {
     });
   }
 
-  login(email: string, password: string, rememberMe: boolean) {
-    return this.http.post<{ token: string }>(
-      `http://localhost:8080/auth/login`,
-      { email, password, rememberMe }
-    ).subscribe({
-      next: res => {
-        const token = res.token;
+login(email: string, password: string, rememberMe: boolean) {
+  this.http.post<any>('http://localhost:8080/auth/login', { email, password, rememberMe })
+    .subscribe({
+      next: (res) => {
+        if (res.token) {
+          // ✅ Login Success
+          const token = res.token;
+          if (rememberMe) {
+            localStorage.setItem('token', token);
+          } else {
+            sessionStorage.setItem('token', token);
+          }
 
-        if (rememberMe) {
-          localStorage.setItem('token', token);
-        } else {
-          sessionStorage.setItem('token', token);
+          this.alertService.success("Login Success");
+          this.loginModalService.hide();
+          this.registerModalService.hide();
+          this.router.navigate(['/customer/general/home']);
+        } else if (res.message) {
+          console.error("Server error:", res.message);
+          this.alertService.error(res.message);
         }
-        console.log("login success");
-        this.router.navigate(['/customer/general/home']);
       },
-      error: err => {
-        // backend က status ကိုစစ်
-        if (err.status === 401) {
-          // backend မှာ "message" key ပါလာမယ် map ထဲက
-          console.error('Unauthorized:', err.error.message);
-        } else if (err.status === 404) {
-          console.error('Not Found:', err.error.message);
-        } else if (err.status === 500) {
-          console.error('Not Found:', err.error.message);
-        }
-        else {
-          console.error('Other error:', err.error?.message || err.message || err);
+      error: (err) => {
+        const message = err.error?.message || 'An unknown error occurred.';
+
+        // ✅ Email not verified
+        if (message === 'Email is not verified.') {
+          const id = err.error?.id;
+
+          Swal.fire({
+            icon: 'error',
+            title: 'Email not verified!',
+            text: 'Want to verify your email now?',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, verify now',
+            cancelButtonText: 'No',
+          } 
+        ).then((result) => {
+            console.log("id : " + id + ", isConfirmed : " + result.isConfirmed);
+
+            if (result.isConfirmed && id) {
+              // ⏩ Call resend OTP API
+              this.http.get<any>(`http://localhost:8080/auth/resend?userId=${id}`)
+                .subscribe({
+                  next: (res) => {
+                    Swal.fire({
+                      icon: 'success',
+                      title: 'OTP Sent!',
+                      text: res.message || 'OTP has been resent to your email.',
+                    }).then(() => {
+                      // Navigate after showing confirmation
+                      this.router.navigate(['/customer/auth/verify', id]);
+                    });
+                  },
+                  error: (resendErr) => {
+                    Swal.fire({
+                      icon: 'error',
+                      title: 'Failed to resend OTP',
+                      text: resendErr.error?.message || 'Please try again later.',
+                    });
+                  }
+                });
+            }
+          });
+
+        } else {
+          // 🚫 Other login failure
+          Swal.fire({
+            icon: 'error',
+            title: 'Login Failed',
+            text: message
+          });
         }
       }
     });
-  }
+}
+
 
 
   logout() {
@@ -81,7 +132,6 @@ export class AuthService {
     sessionStorage.removeItem('token');
     this.router.navigate(['/customer/auth/login']);
   }
-
   getToken(): string | null {
     return localStorage.getItem('token') || sessionStorage.getItem('token');
   }
@@ -98,21 +148,22 @@ export class AuthService {
     return payload.exp < now;
   }
 
-  //  requestPasswordReset(email: string) {
-  //   return this.http.post(`${this.apiUrl}/forgot-password` , { email });
-  // }
 
-  requestPasswordReset(email: string) {
-    return this.http.post(
-      `${this.apiUrl}/forgot-password`,
-      { email },
-      { responseType: 'text' as 'json' }  // TypeScript ကထပ်ပြောအောင် 'as' ထည့်တယ်
-    );
-  }
+requestPasswordReset(email: string) {
+ 
+  return this.http.post(
+    `${this.apiUrl}/forgot-password`,
+    { email },
+    { responseType: 'text' as 'json' }  
+  );
+}
 
 
-  resetPassword(token: string, password: string) {
-    return this.http.post('http://localhost:8080/auth/reset-password', { token, password });
-  }
+// resetPassword(token: string, password: string) {
+//   return this.http.post('http://localhost:8080/auth/reset-password', { token, password });
+// }
 
+resetPassword(token: string, password: string) {
+  return this.http.post('http://localhost:8080/auth/reset-password', { token, password },  { responseType: 'text' as 'json' });
+}
 }

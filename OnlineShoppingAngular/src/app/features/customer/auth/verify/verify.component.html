@@ -1,20 +1,27 @@
 <div class="otp-wrapper">
   <div class="otp-card">
-    <!-- <img src="assets/email-key.png" alt="OTP" class="otp-img" /> -->
-    <h2>Verify Your Email Address</h2>
+    <div class="email-icon">
+      <i class="fas fa-envelope-open"></i>
+    </div>
+    <h4>Verify Your Email Address</h4>
     <p>Please enter the 6-digit OTP sent to your email address.</p>
 
     <div class="otp-inputs">
-      <input maxlength="1" [(ngModel)]="otp[0]" (input)="moveFocus($event, 0)" />
-      <input maxlength="1" [(ngModel)]="otp[1]" (input)="moveFocus($event, 1)" />
-      <input maxlength="1" [(ngModel)]="otp[2]" (input)="moveFocus($event, 2)" />
-      <input maxlength="1" [(ngModel)]="otp[3]" (input)="moveFocus($event, 3)" />
-      <input maxlength="1" [(ngModel)]="otp[4]" (input)="moveFocus($event, 4)" />
-      <input maxlength="1" [(ngModel)]="otp[5]" />
+      <input maxlength="1" [(ngModel)]="otp[0]" (input)="moveFocus($event, 0)" (keydown)="handleBackspace($event, 0)" />
+      <input maxlength="1" [(ngModel)]="otp[1]" (input)="moveFocus($event, 1)" (keydown)="handleBackspace($event, 1)" />
+      <input maxlength="1" [(ngModel)]="otp[2]" (input)="moveFocus($event, 2)" (keydown)="handleBackspace($event, 2)" />
+      <input maxlength="1" [(ngModel)]="otp[3]" (input)="moveFocus($event, 3)" (keydown)="handleBackspace($event, 3)" />
+      <input maxlength="1" [(ngModel)]="otp[4]" (input)="moveFocus($event, 4)" (keydown)="handleBackspace($event, 4)" />
+      <input maxlength="1" [(ngModel)]="otp[5]" (keydown)="handleBackspace($event, 5)" />
     </div>
 
-    <button (click)="verifyOtp()" class="btn-verify"  [disabled]="isVerifying">Verify Email</button>
-    <p class="resend">Didn’t get a code? <a (click)="resendOtp()">Resend Code</a></p>
+    <button (click)="verifyOtp()" class="btn-verify" [disabled]="isVerifying">
+      <span *ngIf="!isVerifying">Verify Email</span>
+      <span *ngIf="isVerifying">
+        <i class="fas fa-spinner fa-spin"></i> Verifying...
+      </span>
+    </button>
+
+    <p class="resend">Didn't get a code? <a (click)="resendOtp()">Resend Code</a></p>
   </div>
 </div>
-

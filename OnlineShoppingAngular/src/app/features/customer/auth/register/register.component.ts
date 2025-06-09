@@ -1,100 +1,178 @@
-import { Component } from '@angular/core';
 
-import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { Router } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
-import { AuthService } from '../../../../core/services/auth.service';
+
+import { Component,  OnInit } from "@angular/core"
+import {
+   FormBuilder,
+   FormGroup,
+  Validators,
+   AbstractControl,
+   ValidationErrors,
+} from "@angular/forms"
+import  { AuthService } from "../../../../core/services/auth.service"
+import  { Router } from "@angular/router"
+import  { LoginModalService } from "../../../../core/services/LoginModalService"
+import  { RegisterModalService } from "../../../../core/services/RegisterModalService"
+import  { ForgotPasswordModalService } from "../../../../core/services/ForgotPasswordModalService"
+import Swal from 'sweetalert2';
+import { AlertService } from "../../../../core/services/alert.service"
 
 @Component({
-  selector: 'app-register',
-   standalone: false,
-  templateUrl: './register.component.html',
-  styleUrl: './register.component.css'
+  selector: "app-register",
+  templateUrl: "./register.component.html",
+  standalone: false,
+  styleUrls: ["./register.component.css"],
 })
-export class RegisterComponent {
-  registerForm: FormGroup;
-  showPassword = false;
-  showConfirmPassword = false;
-  passwordStrength = 0;
-  passwordStrengthClass = '';
+export class RegisterComponent implements OnInit {
+  registerForm!: FormGroup
+  isSubmitted = false
+  showPassword = false
+  showConfirmPassword = false
+  passwordStrength = 0
+  passwordStrengthClass = ""
+  isLoading = false
 
   constructor(
     private fb: FormBuilder,
-    private registerService: AuthService,
+    private authService: AuthService,
+    private loginModalService: LoginModalService,
+    private registerModalService: RegisterModalService,
+    private forgotModalService: ForgotPasswordModalService,
     private router: Router,
-    private toastr: ToastrService
-  ) {
-    this.registerForm = this.fb.group({
-      name: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
-      confirmPassword: ['', Validators.required]
-    }, { validators: this.passwordMatchValidator });
+    private sweetalt : AlertService,
+  ) {}
 
-    this.registerForm.get('password')?.valueChanges.subscribe((value) => {
-      this.updatePasswordStrength(value);
-    });
+  ngOnInit(): void {
+    this.registerForm = this.fb.group(
+      {
+        name: ["", Validators.required],
+        email: ["", [Validators.required, Validators.email]],
+        password: ["", Validators.required],
+        confirmPassword: ["", Validators.required],
+      },
+      {
+        validators: [this.passwordMatchValidator],
+      },
+    )
+
+    this.registerForm.get("password")?.valueChanges.subscribe((password) => {
+      this.updatePasswordStrength(password)
+    })
   }
 
-  passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
-    const password = group.get('password')?.value;
-    const confirmPassword = group.get('confirmPassword')?.value;
-    return password === confirmPassword ? null : { passwordMismatch: true };
+  passwordMatchValidator(formGroup: AbstractControl): ValidationErrors | null {
+    const password = formGroup.get("password")?.value
+    const confirmPassword = formGroup.get("confirmPassword")?.value
+    return password === confirmPassword ? null : { passwordMismatch: true }
   }
 
-  togglePassword() {
-    this.showPassword = !this.showPassword;
-  }
+  updatePasswordStrength(password: string): void {
+    let strength = 0
+    if (password.length >= 8) strength += 1
+    if (/[A-Z]/.test(password)) strength += 1
+    if (/[0-9]/.test(password)) strength += 1
+    if (/[^A-Za-z0-9]/.test(password)) strength += 1
 
-  toggleConfirmPassword() {
-    this.showConfirmPassword = !this.showConfirmPassword;
-  }
+    this.passwordStrength = (strength / 4) * 100
 
-  updatePasswordStrength(password: string) {
-    const lengthScore = password.length >= 8 ? 30 : 0;
-    const upperScore = /[A-Z]/.test(password) ? 20 : 0;
-    const lowerScore = /[a-z]/.test(password) ? 20 : 0;
-    const numberScore = /[0-9]/.test(password) ? 15 : 0;
-    const specialScore = /[!@#$%^&*]/.test(password) ? 15 : 0;
-
-    this.passwordStrength = lengthScore + upperScore + lowerScore + numberScore + specialScore;
-
-    if (this.passwordStrength < 40) {
-      this.passwordStrengthClass = 'bg-danger';
-    } else if (this.passwordStrength < 70) {
-      this.passwordStrengthClass = 'bg-warning';
+    if (this.passwordStrength < 50) {
+      this.passwordStrengthClass = "weak"
+    } else if (this.passwordStrength < 75) {
+      this.passwordStrengthClass = "medium"
     } else {
-      this.passwordStrengthClass = 'bg-success';
+      this.passwordStrengthClass = "strong"
     }
   }
 
-  
-  onSubmit() {
+  togglePassword(): void {
+    this.showPassword = !this.showPassword
+  }
+
+  toggleConfirmPassword(): void {
+    this.showConfirmPassword = !this.showConfirmPassword
+  }
+
+  resetForm(): void {
+    this.registerForm.reset()
+    this.isSubmitted = false
+    this.passwordStrength = 0
+    this.passwordStrengthClass = ""
+  }
+
+  onSubmit(): void {
+    this.isSubmitted = true
+
     if (this.registerForm.invalid) {
-      this.registerForm.markAllAsTouched(); // force validation messages to show
-      this.toastr.error('Please fill all required fields correctly.');
-      return;
+      return
     }
 
-   this.registerService.register(this.registerForm.value).subscribe({
+    this.isLoading = true
+    const { name, email, password } = this.registerForm.value
+    const userData = { name, email, password }
+
+  //   this.authService.register(userData).subscribe({
+  //     next: (response: any) => {
+  //       console.log("hi response of register")
+  //       if (typeof response === "string" && response.startsWith("Email sent successfully. User ID:")) {
+  //         const id = response.split("User ID: ")[1].trim()
+  //      this.sweetalt.success("check your email for varification!")
+  //         this.router.navigate(["/customer/auth/verify", id])
+  //       } else {
+  //         console.log("Registration failed:", response)
+  //         this.sweetalt.error("Registration failed")
+  //         this.isLoading = false;
+  //       }
+  //     },
+  //     error: (err) => {
+       
+  //       if (err.status === 500 || err.status===409) {
+  //         // this.toastr.error("This email is already registered.")
+  //       this.sweetalt.error("email already exist!")
+  //         this.isLoading = false;
+  //         console.log(err)
+  //       } else {
+  //         console.log(err)
+  //         this.sweetalt.error("something went wrong!Try again")
+  //         this.isLoading = false;
+  //       }
+  //     },
+  //     complete: () => {
+  //       this.isLoading = false
+  //     },
+  //   })
+  this.authService.register(userData).subscribe({
   next: (response: any) => {
-    if (typeof response === 'string' && response.startsWith('Email sent successfully. User ID:')) {
-      const id = response.split('User ID: ')[1].trim();
-      this.toastr.success('Registration successful! Please check your email for verification.');
-      this.router.navigate(['/customer/auth/verify', id]);
+    console.log("hi response of register");
+
+    if (response?.message === "Email sent successfully.") {
+      const id = response.userId;
+      this.sweetalt.success(response.message);
+      this.router.navigate(["/customer/auth/verify", id]);
     } else {
-      console.log('Registration failed:', response);
+      console.log("Registration failed:", response);
+      this.sweetalt.error(response.message || "Registration failed");
+      this.isLoading = false;
     }
   },
-     error: (err) => {
-  if (err.status === 409) {
-    this.toastr.error('This email is already registered.');
+  error: (err) => {
+    const errorMessage = err.error?.message || err.error || "Something went wrong! Try again";
+
+    this.sweetalt.error(errorMessage);
     console.log(err);
-  } else {
-    console.log(err);
-    this.toastr.error('Something went wrong. Please try again.');
+    this.isLoading = false;
+  },
+  complete: () => {
+    this.isLoading = false;
+  },
+});
+
+   }
+
+  closeModal(): void {
+    this.registerModalService.hide()
   }
-}
-    });
+
+  onSignIn(): void {
+    this.registerModalService.hide()
+    this.loginModalService.show()
   }
 }

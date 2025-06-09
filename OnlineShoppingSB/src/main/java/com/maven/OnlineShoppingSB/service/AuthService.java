@@ -8,9 +8,11 @@ import java.util.Random;
 import java.util.UUID;
 
 import com.maven.OnlineShoppingSB.entity.UserEntity;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -30,91 +32,109 @@ public class AuthService {
 	    @Autowired private JavaMailSender mailSender;
 	    private final Map<String, String> resetTokens = new HashMap<>(); // use Redis or DB in real app
 	    @Autowired private PasswordEncoder passwordEncoder;
-	    
-	    public String registerUser(UserEntity userInput) {
-	        // 1. Check duplicate email
-	        if (userRepo.existsByEmail(userInput.getEmail())) {
-	            return "email already exists";
-	        } else {
 
-	        // 2. Get "customer" role
-	        RoleEntity customerRole = roleRepo.findByName("customer")
-	            .orElseThrow(() -> new RuntimeException("Role not found"));
 
-	        // 3. Set role & defaults
-	        userInput.setName(userInput.getName());
-	        userInput.setEmail( userInput.getEmail());
-	        
-	        String encryptedPassword = passwordEncoder.encode(userInput.getPassword());
-	        userInput.setPassword(encryptedPassword);
-	       
-	        userInput.setRole(customerRole);
-	        userInput.setIsVerified(false);
-	        userInput.setDelFg(false);
-	        userInput.setCreatedDate(LocalDateTime.now());
-	        userInput.setUpdatedDate(LocalDateTime.now());
 
-	        // 4. Save user to get id
-	        UserEntity savedUser = userRepo.save(userInput);
-	        Long userId = savedUser.getId();
+	public String registerUser(UserEntity userInput) {
 
-	        // 5. Generate OTP (6 digit numeric)
-	        String otpCode = String.format("%06d", new Random().nextInt(999999));
 
-	        LocalDateTime now = LocalDateTime.now();
-	        LocalDateTime expiryTime = now.plusMinutes(2);
+			// Step 1: Check duplicate email
+			if (userRepo.existsByEmail(userInput.getEmail())) {
+				return "Email already exists";
+			}
 
-	        // 6. Save OTP entity
-	        OtpEntity otp = new OtpEntity();
-	        otp.setUser(savedUser);
-	        otp.setOtpCode(otpCode);
-			// otp.setPurpose("EMAIL_VERIFICATION");
-	        otp.setIsUsed(false);
-	        otp.setCreatedDate(now);
-	        otp.setExpiryTime(expiryTime);
-	        otpRepo.save(otp);
+			// Step 2: Get customer role
+			RoleEntity customerRole = roleRepo.findByName("customer")
+					.orElseThrow(() -> new RuntimeException("Role not found"));
 
-	        // 7. Send OTP email
-	        boolean emailSent = emailService.sendOtpEmail(savedUser.getEmail(), otpCode);
+			// Step 3: Set role and default values
+			String encryptedPassword = passwordEncoder.encode(userInput.getPassword());
 
-	        if (emailSent) {
-	            return "email sending success" + userId;
-	        } else {
-	        	System.out.println("email sending fail");
-	            return "email sending fail";
-	        }
-	    }
-	    }
-	    
-	    public void sendResetLink(String email) {
-	        try {
-	            UserEntity user = userRepo.findByEmail(email)
-	                .orElseThrow(() -> new RuntimeException("User not found"));
+			userInput.setPassword(encryptedPassword);
+			userInput.setRole(customerRole);
+			userInput.setIsVerified(false);
+			userInput.setDelFg(false);
+			userInput.setCreatedDate(LocalDateTime.now());
+			userInput.setUpdatedDate(LocalDateTime.now());
 
-	            String token = UUID.randomUUID().toString();
-	            resetTokens.put(token, email);
+			// Step 4: Save user
+			UserEntity savedUser = userRepo.save(userInput);
+			Long userId = savedUser.getId();
 
-	            
-	            String resetLink = "http://localhost:4200/customer/auth/reset-password?token=" + token;
+			// Step 5: Generate 6-digit OTP
+			int otpNum = new Random().nextInt(900000) + 100000;
+			String otpCode = String.valueOf(otpNum);
 
-	            // Send email (simplified)
-	            SimpleMailMessage message = new SimpleMailMessage();
-	            message.setTo(email);
-	            message.setSubject("Password Reset");
-	            message.setText("Click to reset your password: " + resetLink);
-	            mailSender.send(message);
-	            
-	        } catch (RuntimeException e) {
-	            // Handle user not found
-	            System.err.println("Error finding user or generating token: " + e.getMessage());
-	            throw new RuntimeException("Unable to process reset request: " + e.getMessage());
-	            
-	        } catch (Exception e) {
-	            // Handle email sending failure or other errors
-	            System.err.println("Error sending reset email: " + e.getMessage());
-	            throw new RuntimeException("Failed to send reset email. Please try again later.");
-	        }
-	    }
+			LocalDateTime now = LocalDateTime.now();
+			LocalDateTime expiryTime = now.plusMinutes(2);
+
+			// Step 6: Save OTP
+			OtpEntity otp = new OtpEntity();
+			otp.setUser(savedUser);
+			otp.setOtpCode(otpCode);
+			otp.setIsUsed(false);
+			otp.setCreatedDate(now);
+			otp.setExpiryTime(expiryTime);
+			otpRepo.save(otp);
+
+			// Step 7: Send OTP email
+			boolean emailSent = emailService.sendOtpEmail(savedUser.getEmail(), otpCode);
+
+			if (emailSent) {
+				return "Email sent successfully. User ID: " + userId;
+			} else {
+				return "Failed to send email.";
+			}
+
+
+	}
+
+
+
+public void sendResetLink(String email) {
+	try {
+		UserEntity user = userRepo.findByEmail(email)
+				.orElseThrow(() -> new RuntimeException("User not found"));
+
+		String token = UUID.randomUUID().toString();
+		resetTokens.put(token, email);
+
+		String resetLink = "http://localhost:4200/customer/auth/reset-password?token=" + token;
+
+		String htmlContent = """
+            <div style="max-width: 600px; margin: auto; padding: 24px; font-family: Arial, sans-serif; border: 1px solid #eee; border-radius: 8px;">
+              <div style="text-align: center; margin-bottom: 24px;">
+                <div style="font-size: 36px;">🔒</div>
+                <h2>Password Reset Request</h2>
+              </div>
+              <p>Hello,</p>
+              <p>We received a request to reset your password. If you didn’t request this, you can safely ignore this email.</p>
+              <p>Otherwise, click the button below to reset your password:</p>
+              <div style="text-align: center; margin: 24px 0;">
+                <a href="%s" style="background-color: #000; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">Reset Password</a>
+              </div>
+              <p>If the button doesn't work, copy and paste the following link into your browser:</p>
+              <p style="font-size: 12px; color: #888;">%s</p>
+              <hr style="margin-top: 32px;">
+              <p style="font-size: 12px; color: #999;">If you didn’t request a password reset, no action is required.</p>
+            </div>
+            """.formatted(resetLink, resetLink);
+
+		MimeMessage mimeMessage = mailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+		helper.setTo(email);
+		helper.setSubject("Password Reset Request");
+		helper.setText(htmlContent, true); // true = isHtml
+
+		mailSender.send(mimeMessage);
+	} catch (RuntimeException e) {
+		System.err.println("User error: " + e.getMessage());
+		throw new RuntimeException("Unable to process reset request.");
+	} catch (Exception e) {
+		System.err.println("Email send error: " + e.getMessage());
+		throw new RuntimeException("Failed to send reset email.");
+	}
+}
 
 
 	    public void resetPassword(String token, String newPassword) {
