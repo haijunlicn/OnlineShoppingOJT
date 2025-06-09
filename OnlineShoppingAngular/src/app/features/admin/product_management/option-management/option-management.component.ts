@@ -61,6 +61,7 @@ export class OptionManagementComponent implements OnInit {
   }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   // updateFilters(): void {
   //   this.filteredOptions = this.options.filter((option) =>
   //     option.name.toLowerCase().includes(this.optionFilter.toLowerCase()),
@@ -76,12 +77,17 @@ export class OptionManagementComponent implements OnInit {
 
 
 =======
+=======
+>>>>>>> Stashed changes
   updateFilters(): void {
     this.filteredOptions = this.options.filter((option) =>
       option.name.toLowerCase().includes(this.optionFilter.toLowerCase()),
     )
   }
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   loadOptions(): void {
     this.loadingOptions = true
@@ -115,22 +121,29 @@ export class OptionManagementComponent implements OnInit {
 
   saveOption(): void {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     if (this.optionForm.invalid) return;
     const formValue = this.optionForm.value;
 
     if (this.editingOption) {
 =======
+=======
+>>>>>>> Stashed changes
     if (this.optionForm.invalid) return
 
     const formValue = this.optionForm.value
 
     if (this.editingOption) {
       // Update existing option
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
       const updateData: OptionTypeDTO = {
         id: this.editingOption.id,
         name: formValue.name,
         optionValues: this.editingOption.optionValues,
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
       };
 
@@ -164,6 +177,8 @@ export class OptionManagementComponent implements OnInit {
 
 
 =======
+=======
+>>>>>>> Stashed changes
       }
 
       this.optionService.updateOptionType(updateData).subscribe({
@@ -200,6 +215,9 @@ export class OptionManagementComponent implements OnInit {
     }
   }
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   editOption(option: OptionTypeDTO): void {
     this.openOptionDialog(option)
@@ -241,23 +259,30 @@ export class OptionManagementComponent implements OnInit {
 
   saveOptionValue(): void {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     if (this.optionValueForm.invalid || !this.selectedOption) return;
 
     const formValue = this.optionValueForm.value;
 
     if (this.editingOptionValue) {
 =======
+=======
+>>>>>>> Stashed changes
     if (this.optionValueForm.invalid || !this.selectedOption) return
 
     const formValue = this.optionValueForm.value
 
     if (this.editingOptionValue) {
       // Update existing value
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
       const updateData: OptionValueDTO = {
         id: this.editingOptionValue.id,
         optionId: formValue.optionId,
         value: formValue.value,
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
       };
 
@@ -290,6 +315,8 @@ export class OptionManagementComponent implements OnInit {
 
 
 =======
+=======
+>>>>>>> Stashed changes
       }
 
       this.optionValueService.updateOptionValues(updateData).subscribe({
@@ -331,6 +358,9 @@ export class OptionManagementComponent implements OnInit {
     }
   }
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   deleteOptionValue(value: OptionValueDTO, option: OptionTypeDTO): void {
     if (confirm(`Are you sure you want to delete the value "${value.value}"?`)) {
@@ -371,7 +401,11 @@ export class OptionManagementComponent implements OnInit {
 
     const buttonEl = event.currentTarget as HTMLElement;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
+=======
+    
+>>>>>>> Stashed changes
 =======
     
 >>>>>>> Stashed changes

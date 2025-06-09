@@ -15,7 +15,11 @@ export class OptionvalueService {
 
   createOptionValue(value: OptionValueDTO): Observable<OptionValueDTO> {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     return this.http.post<OptionValueDTO>(`${this.baseUrl}/create`, value, { responseType: 'text' as 'json' });
+=======
+    return this.http.post<OptionValueDTO>(`${this.baseUrl}/create`, value);
+>>>>>>> Stashed changes
 =======
     return this.http.post<OptionValueDTO>(`${this.baseUrl}/create`, value);
 >>>>>>> Stashed changes
@@ -29,6 +33,7 @@ export class OptionvalueService {
     return this.http.get<OptionValueDTO>(`${this.baseUrl}/getbyid/${id}`);
   }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
   updateOptionValues(value: OptionValueDTO): Observable<OptionValueDTO> {
     return this.http.put<OptionValueDTO>(`${this.baseUrl}/update/${value.id}`, value, { responseType: 'text' as 'json' });
@@ -47,6 +52,16 @@ export class OptionvalueService {
     return this.http.put<OptionValueDTO>(`${this.baseUrl}/update/${value.id}`, value);
   }
 
+=======
+  // updateOptionValues(value: OptionValueDTO): Observable<OptionValueDTO> {
+  //   return this.http.put<OptionValueDTO>(`${this.baseUrl}/update/${value.id}`, value);
+  // }
+
+  updateOptionValues(value: OptionValueDTO): Observable<OptionValueDTO> {
+    return this.http.put<OptionValueDTO>(`${this.baseUrl}/update/${value.id}`, value);
+  }
+
+>>>>>>> Stashed changes
 
   deleteOptionValue(id: number): Observable<OptionValueDTO> {
     return this.http.delete<OptionValueDTO>(`${this.baseUrl}/delete/${id}`);
@@ -73,5 +88,8 @@ export class OptionvalueService {
   //   return this.http.delete<string>(`${this.baseUrl}/delete/${id}`);
   // }
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }

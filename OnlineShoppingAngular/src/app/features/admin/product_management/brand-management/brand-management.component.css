@@ -34,6 +34,7 @@
 }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 /* ::ng-deep .custom-tooltip {
   background-color: #343a40;
   color: #ffffff;
@@ -46,6 +47,8 @@
   padding: 7px 10px;
 } */
 =======
+=======
+>>>>>>> Stashed changes
 /* ::ng-deep .p-menu {
   position: absolute !important;
   top: 0 !important;
@@ -57,5 +60,9 @@
   padding: 0.5rem 0 !important;
   background: #ffffff !important;
   z-index: 9999 !important;
+<<<<<<< Updated upstream
+} */
+>>>>>>> Stashed changes
+=======
 } */
 >>>>>>> Stashed changes

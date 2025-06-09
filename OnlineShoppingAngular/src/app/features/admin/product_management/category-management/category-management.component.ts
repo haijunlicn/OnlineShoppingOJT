@@ -5,8 +5,11 @@ import { Menu } from "primeng/menu"
 import { CategoryDTO } from "../../../../core/models/category-dto"
 import { CategoryService } from "../../../../core/services/category.service"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import { log } from "node:console"
 import { CloudinaryService } from "../../../../core/services/cloudinary.service"
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -53,7 +56,10 @@ export class CategoryManagementComponent implements OnInit {
     private fb: FormBuilder,
     private categoryService: CategoryService,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     private cloudinaryService: CloudinaryService
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
   ) {
@@ -101,6 +107,7 @@ export class CategoryManagementComponent implements OnInit {
 
     // Create tree nodes
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     this.categories.forEach((category, i) => {
       if (!category.id) {
         console.log(`Category at index ${i} is missing an ID:`, category);
@@ -114,6 +121,8 @@ export class CategoryManagementComponent implements OnInit {
     });
 
 =======
+=======
+>>>>>>> Stashed changes
     this.categories.forEach((category) => {
       categoryMap.set(category.id!, {
         key: category.id!.toString(),
@@ -122,6 +131,9 @@ export class CategoryManagementComponent implements OnInit {
         children: [],
       })
     })
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     // Build hierarchy
@@ -151,7 +163,10 @@ export class CategoryManagementComponent implements OnInit {
         this.buildCategoryTree()
         this.updateCategoryDropdowns()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         this.recomputeSubcategoryCounts()
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         this.loadingCategories = false
@@ -215,6 +230,7 @@ export class CategoryManagementComponent implements OnInit {
   }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
   subcategoryCounts: Map<number, number> = new Map();
 
@@ -246,6 +262,8 @@ export class CategoryManagementComponent implements OnInit {
   getTotalSubcategoryCount(categoryId: number): number {
     return this.subcategoryCounts.get(categoryId) || 0;
 =======
+=======
+>>>>>>> Stashed changes
   getTotalSubcategoryCount(categoryId: number): number {
     const directChildren = this.categories.filter((cat) => cat.parentCategoryId === categoryId)
     let total = directChildren.length
@@ -256,6 +274,9 @@ export class CategoryManagementComponent implements OnInit {
     })
 
     return total
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   }
 
@@ -275,7 +296,12 @@ export class CategoryManagementComponent implements OnInit {
   // Get category image (for now returns default, later will use actual image)
   getCategoryImage(category: CategoryDTO): string {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     return category.imgPath || this.defaultCategoryImage
+=======
+    // In the future, this will use category.imagePath if available
+    return this.defaultCategoryImage
+>>>>>>> Stashed changes
 =======
     // In the future, this will use category.imagePath if available
     return this.defaultCategoryImage
@@ -331,9 +357,12 @@ export class CategoryManagementComponent implements OnInit {
     this.isAddingSubcategory = !!parent // Set flag if parent is provided
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     console.log("img path : ", category?.imgPath);
     
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     // Set dropdown options for subcategory case
@@ -353,17 +382,23 @@ export class CategoryManagementComponent implements OnInit {
         name: category.name,
         parentCategoryId: category.parentCategoryId,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         imagePath: category.imgPath || null,
       })
 
       // If category has an image, show its preview (for future implementation)
       if (category.imgPath) {
 =======
+=======
+>>>>>>> Stashed changes
         imagePath: category.imagePath || null,
       })
 
       // If category has an image, show its preview (for future implementation)
       if (category.imagePath) {
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         this.categoryImagePreview = this.getCategoryImage(category)
       }
@@ -389,7 +424,12 @@ export class CategoryManagementComponent implements OnInit {
         name: formValue.name,
         parentCategoryId: formValue.parentCategoryId || undefined,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         imgPath: formValue.imagePath
+=======
+        // In future, add imagePath to updateData
+        // imagePath: formValue.imagePath
+>>>>>>> Stashed changes
 =======
         // In future, add imagePath to updateData
         // imagePath: formValue.imagePath
@@ -415,6 +455,7 @@ export class CategoryManagementComponent implements OnInit {
       const newCategory: CategoryDTO = {
         name: formValue.name,
         parentCategoryId: formValue.parentCategoryId || undefined,
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
         imgPath: formValue.imagePath
       }
@@ -447,6 +488,8 @@ export class CategoryManagementComponent implements OnInit {
       }
 
 =======
+=======
+>>>>>>> Stashed changes
         // In future, add imagePath to newCategory
         // imagePath: formValue.imagePath
       }
@@ -462,6 +505,9 @@ export class CategoryManagementComponent implements OnInit {
           console.error("Error creating category:", error)
         },
       })
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
   }
@@ -521,7 +567,10 @@ export class CategoryManagementComponent implements OnInit {
     this.categoryMenu.toggle(event)
   }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 }

@@ -171,6 +171,7 @@
 >>>>>>> Stashed changes
 
 
+
 /* Button Styling */
 :host ::ng-deep .p-button {
   border-radius: 5px;
@@ -334,6 +335,7 @@ main {
 
 /* Action buttons styling */
 .action-buttons {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
   display: flex;
   justify-content: center;
@@ -583,6 +585,9 @@ main {
   white-space: nowrap;
 =======
   display: flex;
+=======
+  display: flex;
+>>>>>>> Stashed changes
   justify-content: center;
   gap: 0.15rem;
 }
@@ -591,6 +596,9 @@ main {
   height: 1.5rem !important;
   font-size: 0.72rem !important;
   padding: 0 !important;
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }
 .action-btn:hover {
