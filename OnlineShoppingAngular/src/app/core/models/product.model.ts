@@ -1,13 +1,6 @@
-<<<<<<< Updated upstream
 import type { CategoryDTO } from "./category-dto"
 import type { OptionTypeDTO, OptionValueDTO } from "./option.model"
 import type { VariantOptionDTO } from "./variant.model"
-=======
-import { CategoryDTO } from "./category-dto";
-import { OptionDTO, OptionTypeDTO, OptionValueDTO } from "./option.model";
-import { VariantOptionDTO } from "./variant.model";
-
->>>>>>> Stashed changes
 
 export interface ProductVariantDTO {
   options: VariantOptionDTO[]
@@ -26,7 +19,6 @@ export interface ProductOptionDTO {
 }
 
 export interface ProductDTO {
-<<<<<<< Updated upstream
   name: string
   description: string
   brandId: string
@@ -34,14 +26,6 @@ export interface ProductDTO {
   basePrice: number
   createdDate?: string
   productImages?: ProductImageDTO[] // Multiple images for product
-=======
-  name: string;
-  description: string;
-  brandId: string;
-  categoryId: string;
-  basePrice: number;
-  createdDate?: string;
->>>>>>> Stashed changes
 }
 
 export interface BrandDTO {
@@ -50,7 +34,6 @@ export interface BrandDTO {
 }
 
 export interface CreateProductRequestDTO {
-<<<<<<< Updated upstream
   product: ProductDTO
   options: OptionTypeDTO[]
   variants: ProductVariantDTO[]
@@ -103,17 +86,3 @@ export interface ImagePoolItem {
   uploaded?: boolean
   uploadedUrl?: string
 }
-=======
-  product: ProductDTO;
-  options: OptionTypeDTO[];
-  variants: ProductVariantDTO[];
-}
-
-export interface ProductListItemDTO {
-  product: ProductDTO;
-  brand: BrandDTO; // i think i should remove this line and category since they're already in productdto?
-  category: CategoryDTO;
-  variants: ProductVariantDTO[];
-  options: ProductOptionDTO[];
-}
->>>>>>> Stashed changes

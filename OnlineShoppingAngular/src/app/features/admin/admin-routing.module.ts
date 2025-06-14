@@ -10,12 +10,9 @@ import { AttributeManagementComponent } from './product_management/attribute-man
 import { OptionManagementComponent } from './product_management/option-management/option-management.component';
 import { CategoryManagementComponent } from './product_management/category-management/category-management.component';
 import { BrandManagementComponent } from './product_management/brand-management/brand-management.component';
-<<<<<<< Updated upstream
 import { ProductCreateComponent } from './product_management/product-create/product-create.component';
 import { ProductBulkUploadComponent } from './product_management/product-bulk-upload/product-bulk-upload.component';
 
-=======
->>>>>>> Stashed changes
 
 const routes: Routes = [
   {
@@ -39,30 +36,17 @@ const routes: Routes = [
     component: AttributeManagementComponent,
     canActivate: [NoAuthGuard],
     children: [
-<<<<<<< Updated upstream
       { path: '', redirectTo: 'categories', pathMatch: 'full' },
-=======
-      { path: '', redirectTo: 'options', pathMatch: 'full' },
->>>>>>> Stashed changes
       { path: 'options', component: OptionManagementComponent },
       { path: 'categories', component: CategoryManagementComponent },
       { path: 'brands', component: BrandManagementComponent }
     ]
-<<<<<<< Updated upstream
   },
   {
     path: 'bulkUploadProduct',
     component: ProductBulkUploadComponent, canActivate: [NoAuthGuard],
   },
 
-=======
-  }
-
-  // {
-  //   path: 'productAttributes',
-  //   component: AttributeManagementComponent, canActivate: [NoAuthGuard],
-  // },
->>>>>>> Stashed changes
 ];
 
 @NgModule({

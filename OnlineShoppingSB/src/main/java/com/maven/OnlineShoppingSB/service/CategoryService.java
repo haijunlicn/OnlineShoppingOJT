@@ -74,11 +74,7 @@ public class CategoryService {
             // Reactivate soft-deleted category
             entity = softDeletedOpt.get();
             entity.setDelFg(1);
-<<<<<<< Updated upstream
             entity.setImgPath(dto.getImgPath());
-=======
-            // Update name or any other fields if needed
->>>>>>> Stashed changes
             entity.setName(dto.getName());
             entity.setParentCategory(parent);
         } else {
@@ -86,10 +82,7 @@ public class CategoryService {
             entity = new CategoryEntity();
             entity.setName(dto.getName());
             entity.setParentCategory(parent);
-<<<<<<< Updated upstream
             entity.setImgPath(dto.getImgPath());
-=======
->>>>>>> Stashed changes
             entity.setDelFg(1);
         }
 

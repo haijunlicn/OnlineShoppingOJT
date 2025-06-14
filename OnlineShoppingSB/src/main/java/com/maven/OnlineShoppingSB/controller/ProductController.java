@@ -4,7 +4,6 @@ import com.maven.OnlineShoppingSB.dto.CreateProductRequestDTO;
 import com.maven.OnlineShoppingSB.dto.ProductDTO;
 import com.maven.OnlineShoppingSB.dto.ProductListItemDTO;
 import com.maven.OnlineShoppingSB.entity.ProductEntity;
-<<<<<<< Updated upstream
 import com.maven.OnlineShoppingSB.service.ExcelTemplateService;
 import com.maven.OnlineShoppingSB.service.ProductService;
 
@@ -12,12 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-=======
-import com.maven.OnlineShoppingSB.service.ProductService;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
->>>>>>> Stashed changes
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
@@ -28,8 +21,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import java.util.List;
-
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/products")
@@ -38,21 +29,15 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
-<<<<<<< Updated upstream
     @Autowired
     private ExcelTemplateService excelService;
-=======
->>>>>>> Stashed changes
 
     // POST /products - create new product with options and variants
     @PostMapping("/create")
     public ResponseEntity<String> createProduct(@RequestBody CreateProductRequestDTO requestDTO) {
         try {
-<<<<<<< Updated upstream
             System.out.println("request product dto : " + requestDTO);
             System.out.println("product images : " + requestDTO.getProductImages());
-=======
->>>>>>> Stashed changes
             productService.createProduct(requestDTO);
             return ResponseEntity.ok("Product created successfully!");
         } catch (AccessDeniedException ex) {
@@ -73,7 +58,6 @@ public class ProductController {
         List<ProductListItemDTO> dtos = productService.getAllProducts();
         System.out.println("product list : " + dtos);
         return ResponseEntity.ok(dtos);
-<<<<<<< Updated upstream
     }
 
     @GetMapping("/{id}")
@@ -109,8 +93,6 @@ public class ProductController {
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred");
         }
-=======
->>>>>>> Stashed changes
     }
 
 }

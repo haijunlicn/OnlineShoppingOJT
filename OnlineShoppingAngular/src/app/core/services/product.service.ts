@@ -1,13 +1,7 @@
 import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-<<<<<<< Updated upstream
 import { CreateProductRequestDTO, ProductCardItem, ProductListItemDTO, ProductVariantDTO } from '../models/product.model';
 import { catchError, Observable, throwError } from 'rxjs';
-=======
-import { CreateProductRequestDTO, ProductListItemDTO } from '../models/product.model';
-import { catchError, Observable, throwError } from 'rxjs';
-import { ProductVariantDTO } from '../models/variant.model';
->>>>>>> Stashed changes
 
 @Injectable({
   providedIn: 'root'
@@ -23,13 +17,10 @@ export class ProductService {
 
   getProductList(): Observable<ProductListItemDTO[]> {
     return this.http.get<ProductListItemDTO[]>(`${this.baseUrl}/list`);
-<<<<<<< Updated upstream
   }
 
   getProductById(id: number): Observable<ProductCardItem> {
     return this.http.get<ProductCardItem>(`${this.baseUrl}/${id}`);
-=======
->>>>>>> Stashed changes
   }
 
   generateSku(productName: string, variant: ProductVariantDTO): string {
@@ -43,7 +34,6 @@ export class ProductService {
 
     return `${skuBase}${skuOptions}`;
   }
-<<<<<<< Updated upstream
 
   downloadTemplate(): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/bulk-upload-template`, {
@@ -58,6 +48,4 @@ export class ProductService {
       observe: 'events'
     });
   }
-=======
->>>>>>> Stashed changes
 }

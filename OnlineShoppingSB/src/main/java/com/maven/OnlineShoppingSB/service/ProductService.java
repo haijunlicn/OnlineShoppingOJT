@@ -10,11 +10,8 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-<<<<<<< Updated upstream
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamResource;
-=======
->>>>>>> Stashed changes
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,12 +47,6 @@ public class ProductService {
     private ProductOptionRepository productOptionRepo;
     @Autowired
     private ProductVariantRepository variantRepo;
-    @Autowired
-    private  ProductOptionRepository productOptionRepo;
-
-    @Autowired
-    private ProductVariantRepository variantRepo;
-
     @Autowired
     private ModelMapper mapper;
     @Autowired
@@ -152,7 +143,6 @@ public class ProductService {
             variant.getPrices().add(priceEntity);
             product.getVariants().add(variant);
         }
-<<<<<<< Updated upstream
     }
 
     private void addProductImages(ProductEntity product, List<ProductImageDTO> imageDTOs) {
@@ -713,38 +703,4 @@ public class ProductService {
 //        }
 //        return null;
 //    }
-=======
-        return product;
-    }
-
-    public List<ProductListItemDTO> getAllProducts() {
-        // List<ProductEntity> products = productRepo.findAll();
-
-        List<ProductEntity> products = productRepo.findAll(Sort.by(Sort.Direction.DESC, "createdDate"));
-        return products.stream().map(product -> {
-            ProductDTO productDTO = mapper.map(product, ProductDTO.class);
-
-            BrandDTO brandDTO = mapper.map(product.getBrand(), BrandDTO.class);
-            CategoryDTO categoryDTO = mapper.map(product.getCategory(), CategoryDTO.class);
-
-            List<ProductVariantDTO> variants = variantRepo.findByProductId(product.getId()).stream()
-                    .map(variant -> mapper.map(variant, ProductVariantDTO.class))
-                    .collect(Collectors.toList());
-
-            List<ProductOptionDTO> options = productOptionRepo.findByProduct(product).stream()
-                    .map(productOptionEntity -> mapper.map(productOptionEntity.getOption(), ProductOptionDTO.class))
-                    .collect(Collectors.toList());
-
-            ProductListItemDTO item = new ProductListItemDTO();
-            item.setProduct(productDTO);
-            item.setBrand(brandDTO);
-            item.setCategory(categoryDTO);
-            item.setVariants(variants);
-            item.setOptions(options);
-
-            return item;
-        }).collect(Collectors.toList());
-    }
-
->>>>>>> Stashed changes
 }

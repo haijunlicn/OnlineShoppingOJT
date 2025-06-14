@@ -21,8 +21,8 @@
             <!-- Thumbnail Images (Vertical) -->
             <div class="col-2">
               <div class="vertical-thumbnails">
-                <div *ngFor="let image of allImages; let i = index; trackBy: trackByImageUrl"
-                  class="thumbnail-wrapper" [class.active]="currentImageIndex === i" (click)="setActiveImage(i)">
+                <div *ngFor="let image of allImages; let i = index; trackBy: trackByImageUrl" class="thumbnail-wrapper"
+                  [class.active]="currentImageIndex === i" (click)="setActiveImage(i)">
                   <img [src]="image.url" alt="Product thumbnail" />
                 </div>
               </div>
@@ -47,7 +47,8 @@
                   </button>
                 </div>
 
-                <div class="badge bg-primary position-absolute top-0 end-0 m-2" *ngIf="product.status">{{ product.status }}</div>
+                <div class="badge bg-primary position-absolute top-0 end-0 m-2" *ngIf="product.status">{{ product.status
+                  }}</div>
               </div>
             </div>
           </div>

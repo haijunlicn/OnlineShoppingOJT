@@ -7,10 +7,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-<<<<<<< Updated upstream
 import java.util.List;
-=======
->>>>>>> Stashed changes
 
 @Data
 public class ProductDTO {
@@ -19,9 +16,6 @@ public class ProductDTO {
     private Long brandId;
     private Long categoryId;
     private BigDecimal basePrice;
-<<<<<<< Updated upstream
     private List<ProductImageDTO> productImages;
-=======
->>>>>>> Stashed changes
     private LocalDateTime createdDate;
 }

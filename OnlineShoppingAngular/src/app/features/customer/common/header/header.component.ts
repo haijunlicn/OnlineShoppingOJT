@@ -2,12 +2,13 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { LoginModalService } from '../../../../core/services/LoginModalService';
 import { RegisterModalService } from '../../../../core/services/RegisterModalService';
+import { ForgotPasswordModalService } from '../../../../core/services/ForgotPasswordModalService';
 
 @Component({
   selector: 'app-header',
   standalone: false,
   templateUrl: './header.component.html',
-  styleUrl: './header.component.css'
+  styleUrls: ['./header.component.css']  // ✅ Fixed typo
 })
 export class HeaderComponent {
   isMenuOpen = false;
@@ -17,42 +18,57 @@ export class HeaderComponent {
   constructor(
     private router: Router,
     private loginModalService: LoginModalService,
-    private registerModalService: RegisterModalService
+    private registerModalService: RegisterModalService,
+    private forgotModalService: ForgotPasswordModalService
   ) {}
 
-  toggleMenu() {
+  // get loginVisible$() {
+  //   return this.loginModalService.loginVisible$;
+  // }
+
+  // get registerVisible$() {
+  //   return this.registerModalService.registerVisible$;
+  // }
+
+  // get forgotVisible$() {
+  //   return this.forgotModalService.forgotVisible$;
+  // }
+
+  toggleMenu(): void {
     this.isMenuOpen = !this.isMenuOpen;
   }
 
-  toggleMobileSearch() {
+  toggleMobileSearch(): void {
     this.isMobileSearchOpen = !this.isMobileSearchOpen;
     setTimeout(() => {
       if (this.isMobileSearchOpen) {
-        const input = document.querySelector('.mobile-search-bar input') as HTMLInputElement;
-        if (input) input.focus();
+        const input = document.querySelector('.mobile-search-bar input') as HTMLInputElement | null;
+        input?.focus();  // ✅ Optional chaining for safety
       }
     }, 100);
   }
 
-  onSearch(query: string) {
+  onSearch(query: string): void {
     console.log('Searching for:', query);
-    // Implement navigation or search logic here
+    // TODO: Implement navigation or search logic here
   }
 
-  onWishlist() {
+  onWishlist(): void {
     console.log('Wishlist clicked');
+    // TODO: Navigate to wishlist or open modal
   }
 
-  onCart() {
+  onCart(): void {
     console.log('Cart clicked');
+    // TODO: Navigate to cart page
   }
 
-  onRegister() {
+  onRegister(): void {
     this.registerModalService.show();
-    console.log('register click');
+    console.log('Register clicked');
   }
 
-  onSignIn() {
+  onSignIn(): void {
     this.loginModalService.show();
   }
 }

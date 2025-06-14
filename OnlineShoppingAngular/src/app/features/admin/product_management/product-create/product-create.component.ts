@@ -1,10 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators, FormControl } from '@angular/forms';
-<<<<<<< Updated upstream
 import { BrandDTO, CreateProductRequestDTO, ImagePoolItem, ProductImageDTO, ProductVariantDTO } from '../../../../core/models/product.model';
-=======
-import { BrandDTO, CreateProductRequestDTO, ProductOptionDTO, ProductVariantDTO } from '../../../../core/models/product.model';
->>>>>>> Stashed changes
 import { CategoryDTO, CategoryFlatDTO, CategoryNode } from '../../../../core/models/category-dto';
 import { OptionService } from '../../../../core/services/option.service';
 import { BrandService } from '../../../../core/services/brand.service';
@@ -14,10 +10,7 @@ import { ProductService } from '../../../../core/services/product.service';
 import { VariantGeneratorService } from '../../../../core/services/variant-generator.service';
 import { ProductFormService } from '../../../../core/services/product-form.service';
 import { ActivatedRoute, Router } from '@angular/router';
-<<<<<<< Updated upstream
 import { CloudinaryService } from '../../../../core/services/cloudinary.service';
-=======
->>>>>>> Stashed changes
 
 @Component({
   selector: "app-product-create",
@@ -65,14 +58,9 @@ export class ProductCreateComponent implements OnInit {
     private productService: ProductService,
     private variantGeneratorService: VariantGeneratorService,
     public productFormService: ProductFormService,
-<<<<<<< Updated upstream
     private imageUploadService: CloudinaryService,
     private router: Router,
     private route: ActivatedRoute,
-=======
-    private router: Router,
-    private route: ActivatedRoute
->>>>>>> Stashed changes
   ) {
     this.productForm = this.productFormService.createProductForm()
     this.options.valueChanges.subscribe(() => this.generateProductVariants())
@@ -303,7 +291,6 @@ export class ProductCreateComponent implements OnInit {
       console.log("Creating product:", requestDto)
 
       this.productService.createProduct(requestDto).subscribe({
-<<<<<<< Updated upstream
         next: (res) => {
           console.log("Product created successfully", res)
           this.cleanupPreviewUrls()
@@ -321,35 +308,6 @@ export class ProductCreateComponent implements OnInit {
       this.errorMessage = "Image upload failed. Please try again."
       this.loading.submission = false
       this.uploading = false
-=======
-        next: res => {
-          console.log('Product created', res);
-          this.router.navigate(['/admin/productList']);
-          // handle success message, e.g., show toast
-        },
-        error: err => {
-          console.error('Error:', err.message);
-          // Show error message to user, e.g., set error variable or show toast
-          // this.errorMessage = err.message;
-        }
-      });
-
-
-      // this.productService.createProduct(requestDto).subscribe({
-      //   next: (response) => {
-      //     console.log('Product created successfully:', response);
-      //     alert('Product created successfully!');
-      //     this.resetForm();
-      //   },
-      //   error: (err) => {
-      //     console.error('Failed to create product:', err);
-      //     alert('Failed to create product. Check console for error.');
-      //   }
-      // });
-    } else {
-      console.log('Form is invalid');
-      this.markFormGroupTouched();
->>>>>>> Stashed changes
     }
   }
 

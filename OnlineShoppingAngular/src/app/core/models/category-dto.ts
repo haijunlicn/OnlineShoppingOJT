@@ -7,11 +7,7 @@ export interface CategoryDTO {
   parentCategoryName?: string;
   children?: CategoryDTO[];
   optionTypes?: OptionTypeDTO[];
-<<<<<<< Updated upstream
   imgPath?: string;
-=======
-  imagePath?: string;
->>>>>>> Stashed changes
 }
 
 export interface CategoryFlatDTO extends CategoryDTO {

@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 /* Grid View Container */
 .categories-grid-view {
   max-height: 70vh;
@@ -108,147 +107,26 @@
   justify-content: space-between;
   align-items: center;
   background: #f8f9fa;
-=======
-/* Compact Accordion View */
-.categories-compact-view {
-  max-height: 70vh;
-  overflow-y: auto;
-}
-
-.category-accordion {
-  background: white;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  margin-bottom: 0.5rem;
-  overflow: hidden;
-  transition: all 0.2s ease;
-}
-
-.category-accordion:hover {
-  border-color: #3b82f6;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
-}
-
-/* Root Category Header */
-.category-header {
-  background: #f8f9fa;
-  border-bottom: 1px solid #e9ecef;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.category-header:hover {
-  background: #e9ecef;
-}
-
-.category-header.expanded {
-  background: #e3f2fd;
-  border-bottom-color: #bbdefb;
-}
-
-.category-header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 1rem;
-}
-
-.category-info {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* Category & Subcategory Image Styling */
-.category-image-container,
-.subcategory-image-container {
-  width: 32px;
-  height: 32px;
-  overflow: hidden;
-  border-radius: 4px;
-  background-color: #f0f0f0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #e0e0e0;
-  flex-shrink: 0;
-}
-
-.subcategory-image-container {
-  width: 24px;
-  height: 24px;
-  border-radius: 3px;
-}
-
-.category-image,
-.subcategory-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.expand-icon {
-  font-size: 0.75rem;
-  color: #6c757d;
-  transition: transform 0.2s ease;
-  width: 12px;
-}
-
-.expand-icon.expanded {
-  transform: rotate(90deg);
-}
-
-.expand-icon.mini {
-  font-size: 0.6rem;
-  width: 10px;
-}
-
-.category-icon {
-  color: #3b82f6;
-  font-size: 1rem;
-}
-
-.subcategory-icon {
-  color: #6c757d;
-  font-size: 0.8rem;
->>>>>>> Stashed changes
 }
 
 .category-name {
   font-weight: 600;
   color: #212529;
-<<<<<<< Updated upstream
   font-size: 0.95rem;
   margin: 0;
-=======
-  font-size: 0.9rem;
-}
-
-.subcategory-name {
-  font-weight: 500;
-  color: #495057;
-  font-size: 0.85rem;
->>>>>>> Stashed changes
 }
 
 .subcategory-count {
   background: #3b82f6;
   color: white;
   font-size: 0.7rem;
-<<<<<<< Updated upstream
   padding: 0.2rem 0.5rem;
   border-radius: 12px;
   min-width: 20px;
-=======
-  padding: 0.15rem 0.4rem;
-  border-radius: 10px;
-  min-width: 18px;
->>>>>>> Stashed changes
   text-align: center;
   font-weight: 500;
 }
 
-<<<<<<< Updated upstream
 /* Subcategories Grid */
 .subcategories-grid {
   max-height: 0;
@@ -392,84 +270,6 @@
 
 .nested-subcategories-grid.expanded {
   max-height: 400px;
-=======
-.subcategory-count.mini {
-  background: #6c757d;
-  font-size: 0.65rem;
-  padding: 0.1rem 0.3rem;
-  min-width: 16px;
-}
-
-.category-actions {
-  display: flex;
-  gap: 0.25rem;
-  opacity: 0.7;
-  transition: opacity 0.2s ease;
-}
-
-.category-header:hover .category-actions,
-.subcategory-row:hover .subcategory-actions {
-  opacity: 1;
-}
-
-/* Expandable Content */
-.category-content {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease;
-}
-
-.category-content.expanded {
-  max-height: 1000px; /* Large enough to show all content */
-}
-
-.subcategories-list {
-  padding: 0.5rem 0;
-}
-
-/* Subcategory Items */
-.subcategory-item {
-  border-left: 2px solid #f1f3f4;
-  margin-left: 1rem;
-}
-
-.subcategory-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.4rem 0.75rem;
-  transition: background-color 0.2s ease;
-  border-radius: 4px;
-  margin: 0.1rem 0.5rem;
-}
-
-.subcategory-row:hover {
-  background: #f8f9fa;
-}
-
-.subcategory-info {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.subcategory-actions {
-  display: flex;
-  gap: 0.2rem;
-  opacity: 0.6;
-  transition: opacity 0.2s ease;
-}
-
-/* Nested Subcategories */
-.nested-subcategories {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease;
-}
-
-.nested-subcategories.expanded {
-  max-height: 500px;
->>>>>>> Stashed changes
 }
 
 /* Button Styles */
@@ -486,11 +286,7 @@
   line-height: 1.2;
 }
 
-<<<<<<< Updated upstream
 /* Image Upload Styles (UNCHANGED) */
-=======
-/* Image Upload Styles */
->>>>>>> Stashed changes
 .image-upload-preview {
   position: relative;
   width: 100px;
@@ -547,37 +343,21 @@
 }
 
 /* Custom scrollbar */
-<<<<<<< Updated upstream
 .categories-grid-view::-webkit-scrollbar {
   width: 6px;
 }
 
 .categories-grid-view::-webkit-scrollbar-track {
-=======
-.categories-compact-view::-webkit-scrollbar {
-  width: 6px;
-}
-
-.categories-compact-view::-webkit-scrollbar-track {
->>>>>>> Stashed changes
   background: #f1f1f1;
   border-radius: 3px;
 }
 
-<<<<<<< Updated upstream
 .categories-grid-view::-webkit-scrollbar-thumb {
-=======
-.categories-compact-view::-webkit-scrollbar-thumb {
->>>>>>> Stashed changes
   background: #c1c1c1;
   border-radius: 3px;
 }
 
-<<<<<<< Updated upstream
 /* All your existing menu and dialog styles (UNCHANGED) */
-=======
-/* Enhanced Menu styling */
->>>>>>> Stashed changes
 ::ng-deep .p-menu {
   border: 1px solid #e9ecef !important;
   border-radius: 8px !important;
@@ -621,10 +401,6 @@
   color: #495057 !important;
 }
 
-<<<<<<< Updated upstream
-=======
-/* Add separator lines between menu items */
->>>>>>> Stashed changes
 ::ng-deep .p-menu .p-menuitem:not(:last-child)::after {
   content: "";
   display: block;
@@ -633,10 +409,6 @@
   margin: 0.25rem 0.5rem;
 }
 
-<<<<<<< Updated upstream
-=======
-/* Special styling for delete action */
->>>>>>> Stashed changes
 ::ng-deep .p-menu .p-menuitem-link:has(.pi-trash) {
   color: #dc3545 !important;
 }
@@ -651,10 +423,6 @@
   color: #dc3545 !important;
 }
 
-<<<<<<< Updated upstream
-=======
-/* Shared item style */
->>>>>>> Stashed changes
 ::ng-deep .p-menu .menu-item {
   padding: 0.5rem 1rem;
   display: flex;
@@ -666,43 +434,23 @@
   background-color: white;
 }
 
-<<<<<<< Updated upstream
-=======
-/* Hover effect */
->>>>>>> Stashed changes
 ::ng-deep .p-menu .menu-item:hover {
   background-color: #f0f0f0;
 }
 
-<<<<<<< Updated upstream
-=======
-/* Blue icons: editCategory */
->>>>>>> Stashed changes
 ::ng-deep .p-menu .menu-item-editCategory .pi {
   color: #1976d2;
 }
 
-<<<<<<< Updated upstream
-=======
-/* Red icons: deleteCategory */
->>>>>>> Stashed changes
 ::ng-deep .p-menu .menu-item-deleteCategory .pi {
   color: #d32f2f;
 }
 
-<<<<<<< Updated upstream
-=======
-/* Green icon: addSubcategory */
->>>>>>> Stashed changes
 ::ng-deep .p-menu .menu-item-addSubcategory .pi {
   color: #388e3c;
 }
 
-<<<<<<< Updated upstream
 /* Dialog styles (UNCHANGED) */
-=======
-/* Simple Dialog styling with white background */
->>>>>>> Stashed changes
 ::ng-deep .p-dialog {
   background: #ffffff !important;
   border: 1px solid #e9ecef !important;
@@ -739,18 +487,10 @@
   gap: 0.5rem !important;
 }
 
-<<<<<<< Updated upstream
-=======
-/* Dialog overlay */
->>>>>>> Stashed changes
 ::ng-deep .p-dialog-mask {
   background-color: rgba(0, 0, 0, 0.4) !important;
 }
 
-<<<<<<< Updated upstream
-=======
-/* Form controls */
->>>>>>> Stashed changes
 ::ng-deep .p-dialog .p-inputtext,
 ::ng-deep .p-dialog .form-control {
   background: #ffffff !important;
@@ -769,10 +509,6 @@
   outline: 0 !important;
 }
 
-<<<<<<< Updated upstream
-=======
-/* Button styling */
->>>>>>> Stashed changes
 ::ng-deep .p-dialog .p-button {
   padding: 0.45rem 0.875rem !important;
   font-size: 0.8rem !important;
@@ -803,10 +539,6 @@
   color: #495057 !important;
 }
 
-<<<<<<< Updated upstream
-=======
-/* Form labels */
->>>>>>> Stashed changes
 ::ng-deep .p-dialog .form-label {
   font-weight: 500 !important;
   margin-bottom: 0.4rem !important;
@@ -814,20 +546,12 @@
   font-size: 0.85rem !important;
 }
 
-<<<<<<< Updated upstream
-=======
-/* Error messages */
->>>>>>> Stashed changes
 ::ng-deep .p-dialog .text-danger {
   color: #dc3545 !important;
   font-size: 0.7rem !important;
   margin-top: 0.25rem !important;
 }
 
-<<<<<<< Updated upstream
-=======
-/* Bootstrap Dropdown Styling */
->>>>>>> Stashed changes
 .bootstrap-dropdown .dropdown-toggle {
   text-align: left;
   background: white;
@@ -875,10 +599,6 @@
   margin: 0.25rem 0;
 }
 
-<<<<<<< Updated upstream
-=======
-/* Selected parent display when adding subcategory */
->>>>>>> Stashed changes
 .parent-selected {
   background-color: #f8f9fa;
   color: #495057;
@@ -900,7 +620,6 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-<<<<<<< Updated upstream
   .categories-grid-view {
     grid-template-columns: 1fr;
     gap: 1rem;
@@ -923,26 +642,5 @@
 @media (min-width: 1200px) {
   .categories-grid-view {
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-=======
-  .category-header-content,
-  .subcategory-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .category-actions,
-  .subcategory-actions {
-    align-self: flex-end;
-    opacity: 1;
-  }
-
-  .subcategory-item {
-    margin-left: 0.5rem;
-  }
-
-  .image-upload-preview {
-    margin: 0 auto;
->>>>>>> Stashed changes
   }
 }
