@@ -17,6 +17,8 @@ import { LocationCreateComponent } from './account/location-create/location-crea
 import { HttpClientModule } from '@angular/common/http';
 import { LocationCardComponent } from './account/location-card/location-card.component';
 import { EditLocationComponent } from './account/edit-location/edit-location.component';
+import { ProductListComponent } from './product_display/product-list/product-list.component';
+import { ProductDetailComponent } from './product_display/product-detail/product-detail.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +31,9 @@ import { EditLocationComponent } from './account/edit-location/edit-location.com
     VerifyComponent,
     LocationCreateComponent,
     LocationCardComponent,
-    EditLocationComponent
+    EditLocationComponent,
+    ProductListComponent,
+    ProductDetailComponent
 
   ],
   imports: [
@@ -39,7 +43,7 @@ import { EditLocationComponent } from './account/edit-location/edit-location.com
     ReactiveFormsModule,
     ReactiveFormsModule,
     FormsModule,
-   HttpClientModule
+    HttpClientModule,
   ]
 })
 export class CustomerModule { }

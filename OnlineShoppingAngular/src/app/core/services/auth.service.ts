@@ -132,6 +132,7 @@ login(email: string, password: string, rememberMe: boolean) {
     sessionStorage.removeItem('token');
     this.router.navigate(['/customer/auth/login']);
   }
+  
   getToken(): string | null {
     return localStorage.getItem('token') || sessionStorage.getItem('token');
   }

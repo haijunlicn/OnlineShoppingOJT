@@ -11,12 +11,14 @@ import { ResetPasswordComponent } from './auth/reset-password/reset-password.com
 import { LocationCreateComponent } from './account/location-create/location-create.component';
 import { LocationCardComponent } from './account/location-card/location-card.component';
 import { EditLocationComponent } from './account/edit-location/edit-location.component';
+import { ProductListComponent } from './product_display/product-list/product-list.component';
+import { ProductDetailComponent } from './product_display/product-detail/product-detail.component';
 
 const routes: Routes = [
 
   { path: 'home', component: HomeComponent },
-  { path: 'auth/verify/:id', component: VerifyComponent ,canActivate: [NoAuthGuard]},
-{ path: 'general/home', component: HomeComponent },
+  { path: 'auth/verify/:id', component: VerifyComponent, canActivate: [NoAuthGuard] },
+  { path: 'general/home', component: HomeComponent },
   {
     path: 'auth/register',
     component: RegisterComponent, canActivate: [NoAuthGuard],
@@ -31,18 +33,22 @@ const routes: Routes = [
     component: ForgetPasswordComponent, canActivate: [NoAuthGuard],
 
   },
-  // {
-  //   path: 'customer/auth/verify/:id',
-  //   component: VerifyComponent,canActivate: [NoAuthGuard],
-
-  // },
- {
-  path: 'auth/reset-password',
-  component: ResetPasswordComponent
-},
-  {path:'location',component:LocationCreateComponent},
+  {
+    path: 'auth/reset-password',
+    component: ResetPasswordComponent
+  },
+  { path: 'location', component: LocationCreateComponent },
   { path: 'editlocation/:id', component: EditLocationComponent },
   { path: 'address', component: LocationCardComponent, canActivate: [NoAuthGuard] },
+  {
+    path: 'productList',
+    component: ProductListComponent, canActivate: [NoAuthGuard],
+  },
+  {
+    path: 'product/:id',
+    component: ProductDetailComponent,
+    canActivate: [NoAuthGuard]
+  }
 
 ];
 

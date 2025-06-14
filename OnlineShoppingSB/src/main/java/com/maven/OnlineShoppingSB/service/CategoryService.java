@@ -74,7 +74,11 @@ public class CategoryService {
             // Reactivate soft-deleted category
             entity = softDeletedOpt.get();
             entity.setDelFg(1);
+<<<<<<< Updated upstream
             entity.setImgPath(dto.getImgPath());
+=======
+            // Update name or any other fields if needed
+>>>>>>> Stashed changes
             entity.setName(dto.getName());
             entity.setParentCategory(parent);
         } else {
@@ -82,7 +86,10 @@ public class CategoryService {
             entity = new CategoryEntity();
             entity.setName(dto.getName());
             entity.setParentCategory(parent);
+<<<<<<< Updated upstream
             entity.setImgPath(dto.getImgPath());
+=======
+>>>>>>> Stashed changes
             entity.setDelFg(1);
         }
 
@@ -132,19 +139,6 @@ public class CategoryService {
                     List<OptionDTO> optionDTOs = categoryOptions.stream()
                             .map(catOpt -> mapper.map(catOpt.getOption(), OptionDTO.class))
                             .collect(Collectors.toList());
-
-//                    List<OptionDTO> optionDTOs = categoryOptions.stream()
-//                            .map(catOpt -> {
-//                                OptionEntity opt = catOpt.getOption();
-//                                OptionDTO optDTO = new OptionDTO();
-//                                optDTO.setId(opt.getId());
-//                                optDTO.setName(opt.getName());
-//                                // Optional: fetch and set option values
-//                                // optDTO.setOptionValues(...);
-//                                return optDTO;
-//                            })
-//                            .collect(Collectors.toList());
-
                     dto.setOptionTypes(optionDTOs);
                     return dto;
                 })

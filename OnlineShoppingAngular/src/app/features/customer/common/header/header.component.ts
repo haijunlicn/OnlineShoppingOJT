@@ -10,41 +10,49 @@ import { RegisterModalService } from '../../../../core/services/RegisterModalSer
   styleUrl: './header.component.css'
 })
 export class HeaderComponent {
+  isMenuOpen = false;
+  cartItemCount = 2;
+  isMobileSearchOpen = false;
 
   constructor(
-   
     private router: Router,
     private loginModalService: LoginModalService,
-   private registerModalService:RegisterModalService
-   
+    private registerModalService: RegisterModalService
   ) {}
- isMenuOpen = false
-  cartItemCount = 2
 
   toggleMenu() {
-    this.isMenuOpen = !this.isMenuOpen
+    this.isMenuOpen = !this.isMenuOpen;
   }
 
-  onSearch() {
-    console.log("Search clicked")
+  toggleMobileSearch() {
+    this.isMobileSearchOpen = !this.isMobileSearchOpen;
+    setTimeout(() => {
+      if (this.isMobileSearchOpen) {
+        const input = document.querySelector('.mobile-search-bar input') as HTMLInputElement;
+        if (input) input.focus();
+      }
+    }, 100);
+  }
+
+  onSearch(query: string) {
+    console.log('Searching for:', query);
+    // Implement navigation or search logic here
   }
 
   onWishlist() {
-    console.log("Wishlist clicked")
+    console.log('Wishlist clicked');
   }
 
   onCart() {
-    console.log("Cart clicked")
+    console.log('Cart clicked');
   }
 
   onRegister() {
-    //  this.router.navigate(['/customer/auth/register']);
     this.registerModalService.show();
-     console.log("register click")
+    console.log('register click');
   }
 
   onSignIn() {
-
-     this.loginModalService.show();
+    this.loginModalService.show();
   }
 }

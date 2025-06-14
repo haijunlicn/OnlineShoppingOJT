@@ -1,0 +1,232 @@
+<app-header></app-header>
+
+<main class="main-content py-3">
+  <div class="container-fluid py-2">
+    <div class="row" *ngIf="product">
+      <!-- Breadcrumb -->
+      <div class="col-12 mb-2">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb small mb-0">
+            <li class="breadcrumb-item"><a href="/customer/home">Home</a></li>
+            <li class="breadcrumb-item"><a href="/customer/productList">Products</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ product.product.name }}</li>
+          </ol>
+        </nav>
+      </div>
+
+      <!-- Product Images Section -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+          <div class="row g-0">
+            <!-- Thumbnail Images (Vertical) -->
+            <div class="col-2">
+              <div class="vertical-thumbnails">
+                <div *ngFor="let image of allImages; let i = index; trackBy: trackByImageUrl"
+                  class="thumbnail-wrapper" [class.active]="currentImageIndex === i" (click)="setActiveImage(i)">
+                  <img [src]="image.url" alt="Product thumbnail" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Main Image -->
+            <div class="col-10">
+              <div class="main-image-container">
+                <!-- Simple Angular Image Slider -->
+                <div class="image-slider">
+                  <div *ngFor="let image of allImages; let i = index" [class.active]="currentImageIndex === i"
+                    class="slider-image">
+                    <img [src]="image.url" class="img-fluid main-product-image" alt="{{ product.product.name }}" />
+                  </div>
+
+                  <!-- Navigation buttons -->
+                  <button class="slider-nav prev" (click)="prevImage()" *ngIf="allImages.length > 1">
+                    <i class="bi bi-chevron-left"></i>
+                  </button>
+                  <button class="slider-nav next" (click)="nextImage()" *ngIf="allImages.length > 1">
+                    <i class="bi bi-chevron-right"></i>
+                  </button>
+                </div>
+
+                <div class="badge bg-primary position-absolute top-0 end-0 m-2" *ngIf="product.status">{{ product.status }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product Details Section -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm p-3">
+          <h2 class="product-title mb-1">{{ product.product.name }}</h2>
+
+          <div class="d-flex align-items-center mb-1">
+            <span class="badge bg-secondary me-2">{{ product.brand.name }}</span>
+            <span class="badge bg-info">{{ product.category.name }}</span>
+          </div>
+
+          <div class="price-container mb-2">
+            <h3 class="current-price mb-0" *ngIf="selectedVariant">
+              ${{ selectedVariant.price.toFixed(2) }}
+            </h3>
+            <h3 class="current-price mb-0" *ngIf="!selectedVariant">
+              ${{ product.product.basePrice.toFixed(2) }}
+            </h3>
+          </div>
+
+          <div class="stock-status mb-2">
+            <span [class]="getStockClass()">
+              <i class="bi" [ngClass]="{'bi-check-circle-fill': selectedVariant && selectedVariant.stock > 5, 
+                                     'bi-exclamation-circle-fill': selectedVariant && selectedVariant.stock <= 5 && selectedVariant.stock > 0,
+                                     'bi-x-circle-fill': selectedVariant && selectedVariant.stock === 0}"></i>
+              {{ getStockStatus() }}
+            </span>
+          </div>
+
+          <!-- Product Options -->
+          <form [formGroup]="form" class="mb-2">
+            <div *ngFor="let option of product.options; trackBy: trackByOptionId" class="mb-2">
+              <label class="form-label fw-bold mb-1">{{ option.name }}</label>
+              <div class="d-flex flex-wrap">
+                <div *ngFor="let value of option.optionValues; trackBy: trackByOptionValue" class="me-2 mb-1">
+                  <button type="button" class="btn option-btn" [class.btn-primary]="isSelected(option.id, value.id!)"
+                    [class.btn-outline-secondary]="!isSelected(option.id, value.id!)"
+                    (click)="onOptionChange(option.id, value.id!)">
+                    {{ value.value }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+
+          <!-- SKU -->
+          <div class="sku-container small text-muted mb-2" *ngIf="selectedVariant">
+            SKU: <span class="fw-bold">{{ selectedVariant.sku }}</span>
+          </div>
+
+          <!-- Add to Cart -->
+          <div class="d-flex align-items-center">
+            <div class="input-group me-3" style="width: 120px;">
+              <button class="btn btn-outline-secondary" type="button" (click)="decrementQuantity()">-</button>
+              <input type="number" class="form-control text-center" [(ngModel)]="quantity" min="1"
+                [max]="selectedVariant?.stock || 1">
+              <button class="btn btn-outline-secondary" type="button" (click)="incrementQuantity()">+</button>
+            </div>
+
+            <button class="btn btn-primary" (click)="addToCart()"
+              [disabled]="!selectedVariant || selectedVariant.stock === 0">
+              <i class="bi bi-cart-plus me-1"></i> Add to Cart
+            </button>
+
+            <button class="btn btn-outline-secondary ms-2">
+              <i class="bi bi-heart"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Details Tabs -->
+    <div class="row mt-3">
+      <div class="col-12">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white">
+            <ul class="nav nav-tabs card-header-tabs" id="productTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="details-tab" data-bs-toggle="tab" data-bs-target="#details"
+                  type="button" role="tab" aria-controls="details" aria-selected="true">Details</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="specifications-tab" data-bs-toggle="tab" data-bs-target="#specifications"
+                  type="button" role="tab" aria-controls="specifications" aria-selected="false">Specifications</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button"
+                  role="tab" aria-controls="reviews" aria-selected="false">Reviews</button>
+              </li>
+            </ul>
+          </div>
+          <div class="card-body">
+            <div class="tab-content" id="productTabsContent">
+              <div class="tab-pane fade show active" id="details" role="tabpanel" aria-labelledby="details-tab">
+                <div class="p-2">
+                  <h5 class="mb-2">Product Description</h5>
+                  <p>{{ product?.product?.description }}</p>
+                </div>
+              </div>
+              <div class="tab-pane fade" id="specifications" role="tabpanel" aria-labelledby="specifications-tab">
+                <table class="table table-striped">
+                  <tbody>
+                    <tr>
+                      <th scope="row">Brand</th>
+                      <td>{{ product?.brand?.name }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Category</th>
+                      <td>{{ product?.category?.name }}</td>
+                    </tr>
+                    <tr *ngFor="let option of product?.options">
+                      <th scope="row">{{ option.name }}</th>
+                      <td>
+                        <span *ngFor="let value of option.optionValues; let last = last">
+                          {{ value.value }}{{ !last ? ', ' : '' }}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+                <p class="text-center py-3">No reviews yet. Be the first to review this product!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Related Products -->
+    <div class="row mt-3">
+      <div class="col-12">
+        <h4 class="mb-2">Related Products</h4>
+        <div class="row">
+          <div class="col-6 col-md-3 mb-3">
+            <div class="card h-100">
+              <img src="/assets/placeholder.jpg" class="card-img-top" alt="Related product">
+              <div class="card-body">
+                <h5 class="card-title">Related Product</h5>
+                <p class="card-text">$99.99</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3 mb-3">
+            <div class="card h-100">
+              <img src="/assets/placeholder.jpg" class="card-img-top" alt="Related product">
+              <div class="card-body">
+                <h5 class="card-title">Related Product</h5>
+                <p class="card-text">$99.99</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3 mb-3">
+            <div class="card h-100">
+              <img src="/assets/placeholder.jpg" class="card-img-top" alt="Related product">
+              <div class="card-body">
+                <h5 class="card-title">Related Product</h5>
+                <p class="card-text">$99.99</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3 mb-3">
+            <div class="card h-100">
+              <img src="/assets/placeholder.jpg" class="card-img-top" alt="Related product">
+              <div class="card-body">
+                <h5 class="card-title">Related Product</h5>
+                <p class="card-text">$99.99</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

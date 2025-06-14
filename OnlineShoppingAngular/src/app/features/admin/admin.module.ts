@@ -30,13 +30,21 @@ import { TreeModule } from 'primeng/tree';
 import { MenuModule } from 'primeng/menu';
 
 import { ProductListComponent } from './product_management/product-list/product-list.component';
+<<<<<<< Updated upstream
+=======
 import { ProductCreateComponent } from './product_management/product-create/product-create.component';
+>>>>>>> Stashed changes
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { ProductAttributesComponent } from './product_management/product-attributes/product-attributes.component';
 import { AttributeManagementComponent } from './product_management/attribute-management/attribute-management.component';
 import { CategoryManagementComponent } from './product_management/category-management/category-management.component';
 import { OptionManagementComponent } from './product_management/option-management/option-management.component';
 import { BrandManagementComponent } from './product_management/brand-management/brand-management.component';
+<<<<<<< Updated upstream
+import { ProductCreateComponent } from './product_management/product-create/product-create.component';
+import { ProductBulkUploadComponent } from './product_management/product-bulk-upload/product-bulk-upload.component';
+=======
+>>>>>>> Stashed changes
 @NgModule({
   declarations: [
     ProductEditComponent,
@@ -56,6 +64,10 @@ import { BrandManagementComponent } from './product_management/brand-management/
     CategoryManagementComponent,
     OptionManagementComponent,
     BrandManagementComponent,
+<<<<<<< Updated upstream
+    ProductBulkUploadComponent,
+=======
+>>>>>>> Stashed changes
   ],
   imports: [
     CommonModule,

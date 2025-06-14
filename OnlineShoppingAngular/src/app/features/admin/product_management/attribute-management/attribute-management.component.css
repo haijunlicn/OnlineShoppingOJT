@@ -452,6 +452,23 @@
   color: #388e3c;
 }
 
+<<<<<<< Updated upstream
+=======
+
+::ng-deep .custom-tooltip {
+  background-color: #343a40;
+  color: #ffffff;
+  font-size: 0.75rem;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  max-width: 200px;
+  word-wrap: break-word;
+  padding: 7px 10px;
+}
+
+
+>>>>>>> Stashed changes
 /* Button Styling */
 :host ::ng-deep .p-button {
   border-radius: 5px;
