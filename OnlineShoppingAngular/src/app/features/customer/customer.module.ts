@@ -18,6 +18,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { LocationCardComponent } from './account/location-card/location-card.component';
 import { EditLocationComponent } from './account/edit-location/edit-location.component';
 
+
 @NgModule({
   declarations: [
     LoginComponent,
@@ -29,7 +30,8 @@ import { EditLocationComponent } from './account/edit-location/edit-location.com
     VerifyComponent,
     LocationCreateComponent,
     LocationCardComponent,
-    EditLocationComponent
+    EditLocationComponent,
+      
 
   ],
   imports: [

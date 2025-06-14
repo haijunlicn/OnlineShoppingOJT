@@ -11,28 +11,33 @@ import { AttributeManagementComponent } from './product_management/attribute-man
 import { OptionManagementComponent } from './product_management/option-management/option-management.component';
 import { CategoryManagementComponent } from './product_management/category-management/category-management.component';
 import { BrandManagementComponent } from './product_management/brand-management/brand-management.component';
+import { DiscountGroupComponent } from './discount_management/discount-group/discount-group.component';
 
 const routes: Routes = [
   {
     path: 'login',
-    component: AdminLoginComponent, canActivate: [NoAuthGuard],
+    component: AdminLoginComponent, 
   },
   {
     path: 'dashboard',
-    component: DashboardComponent, canActivate: [NoAuthGuard],
+    component: DashboardComponent,
   },
   {
     path: 'productList',
-    component: ProductListComponent, canActivate: [NoAuthGuard],
+    component: ProductListComponent, 
   },
   {
     path: 'productCreate',
-    component: ProductCreateComponent, canActivate: [NoAuthGuard],
+    component: ProductCreateComponent, 
+  },
+   {
+    path: 'group',
+    component: DiscountGroupComponent,
   },
   {
     path: 'productAttributes',
     component: AttributeManagementComponent,
-    canActivate: [NoAuthGuard],
+    
     children: [
       { path: '', redirectTo: 'categories', pathMatch: 'full' },
       { path: 'options', component: OptionManagementComponent },

@@ -13,6 +13,7 @@ import java.util.List;
 @Setter
 
 public class UserEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,12 +21,11 @@ public class UserEntity {
     @Column(length = 255, nullable = false, unique = true)
     private String email;
 
-    @Column(length = 100,nullable = false)
+    @Column(length = 100, nullable = false)
     private String name;
 
     @Column(length = 20)
     private String phone;
-
 
     @Column(length = 255, nullable = false)
     private String password;
@@ -41,6 +41,9 @@ public class UserEntity {
     private LocalDateTime updatedDate;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<OtpEntity> otps;
+    private List<OtpEntity> otp;
 
+    // New relationship: user can join many discount groups
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<DiscountUserGroupMemberEntity> discountUserGroupMembers;
 }

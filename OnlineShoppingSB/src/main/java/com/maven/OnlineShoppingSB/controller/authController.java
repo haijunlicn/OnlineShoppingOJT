@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import com.maven.OnlineShoppingSB.dto.userDTO;
 import com.maven.OnlineShoppingSB.entity.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -61,26 +62,6 @@ public class authController {
      private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
 
-//    @PostMapping("/register")
-//    public ResponseEntity<String> register(@RequestBody UserEntity user) {
-//            String result = userService.registerUser(user);
-//
-//            if (result.startsWith("Email sent successfully. User ID: ")) {
-//                String id = result.substring("Email sent successfully. User ID: ".length()).trim();
-//                return ResponseEntity.ok("Email sent successfully. User ID: " + id);
-//
-//            } else if ("email already exists".equals(result)) {
-//                return ResponseEntity
-//                        .status(HttpStatus.CONFLICT)
-//                        .body("Email already exists");
-//
-//            } else {
-//                return ResponseEntity
-//                        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                        .body("Something went wrong!Try again");
-//            }
-//
-//    }
 @PostMapping("/register")
 public ResponseEntity<Map<String, Object>> register(@RequestBody UserEntity user) {
     String result = userService.registerUser(user);
@@ -98,6 +79,7 @@ public ResponseEntity<Map<String, Object>> register(@RequestBody UserEntity user
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
 
     } else {
+
         response.put("message", "Something went wrong! Try again");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
@@ -241,6 +223,26 @@ public ResponseEntity<Map<String, Object>> register(@RequestBody UserEntity user
                 .body(Map.of("message", "An error occurred: " + e.getMessage()));
     }
 }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(@RequestParam String email) {
+        UserEntity user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        // 👉 Manual mapping to DTO
+        userDTO userDTO = new userDTO();
+        userDTO.setId(user.getId());
+        userDTO.setEmail(user.getEmail());
+        userDTO.setName(user.getName());
+        userDTO.setPhone(user.getPhone());
+        userDTO.setIsVerified(user.getIsVerified());
+        userDTO.setDelFg(user.getDelFg());
+        userDTO.setCreatedDate(user.getCreatedDate());
+        userDTO.setUpdatedDate(user.getUpdatedDate());
+        userDTO.setRoleName(user.getRole() != null ? user.getRole().getName() : null); // Null check for role
+
+        return ResponseEntity.ok(userDTO);
+    }
 
 
     @PostMapping("/forgot-password")

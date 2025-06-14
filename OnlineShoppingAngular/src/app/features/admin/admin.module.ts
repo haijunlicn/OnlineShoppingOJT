@@ -37,6 +37,9 @@ import { AttributeManagementComponent } from './product_management/attribute-man
 import { CategoryManagementComponent } from './product_management/category-management/category-management.component';
 import { OptionManagementComponent } from './product_management/option-management/option-management.component';
 import { BrandManagementComponent } from './product_management/brand-management/brand-management.component';
+import { DiscountGroupComponent } from './discount_management/discount-group/discount-group.component';
+
+
 @NgModule({
   declarations: [
     ProductEditComponent,
@@ -56,6 +59,10 @@ import { BrandManagementComponent } from './product_management/brand-management/
     CategoryManagementComponent,
     OptionManagementComponent,
     BrandManagementComponent,
+    DiscountGroupComponent
+   
+  
+   
   ],
   imports: [
     CommonModule,
@@ -77,6 +84,7 @@ import { BrandManagementComponent } from './product_management/brand-management/
     ColorPickerModule,
     TreeModule,
     MenuModule,
+     FormsModule
   ]
 })
 export class AdminModule { }
