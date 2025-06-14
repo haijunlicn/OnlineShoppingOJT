@@ -49,7 +49,7 @@ const routes: Routes = [
   },
   {
     path: 'bulkUploadProduct',
-    component: ProductBulkUploadComponent, canActivate: [NoAuthGuard],
+    component: ProductBulkUploadComponent,
   },
 
 ];
