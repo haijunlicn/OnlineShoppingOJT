@@ -1,4 +1,4 @@
-/* Compact styling */
+/* Existing styles from your original CSS file */
 .card {
   border-radius: 6px;
 }
@@ -17,7 +17,6 @@
   border-radius: 4px;
 }
 
-/* Option box styling */
 .option-box {
   background-color: #f8f9fa;
   border-radius: 4px;
@@ -28,7 +27,6 @@
   border-style: dashed !important;
 }
 
-/* Dropdown styling */
 .dropdown-toggle {
   min-height: 31px;
 }
@@ -51,13 +49,13 @@
   font-size: 0.875rem;
 }
 
-/* Category dropdown styling - IMPROVED */
+/* Category dropdown styling */
 .category-dropdown {
   max-height: 350px;
   overflow-y: auto;
-  overflow-x: hidden; /* Prevent horizontal overflow */
-  min-width: 250px; /* Ensure minimum width */
-  max-width: 400px; /* Limit maximum width */
+  overflow-x: hidden;
+  min-width: 250px;
+  max-width: 400px;
 }
 
 .dropdown-submenu {
@@ -68,7 +66,6 @@
   position: relative;
 }
 
-/* Multi-level category indentation - IMPROVED */
 .category-level-0 {
   font-weight: 600;
   background-color: #f8f9fa;
@@ -112,21 +109,6 @@
   font-size: 0.75rem;
 }
 
-/* For levels deeper than 4, cap the indentation */
-.category-level-5,
-.category-level-6,
-.category-level-7,
-.category-level-8,
-.category-level-9 {
-  font-weight: 400;
-  background-color: #ffffff;
-  padding-left: 3rem !important; /* Cap at 3rem */
-  padding-right: 0.5rem !important;
-  color: #6c757d;
-  font-size: 0.7rem;
-}
-
-/* Ensure text doesn't overflow */
 .category-dropdown .dropdown-item {
   white-space: nowrap;
   overflow: hidden;
@@ -141,15 +123,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 1;
-  min-width: 0; /* Allow flex item to shrink */
+  min-width: 0;
 }
 
 .category-dropdown .dropdown-item i {
-  flex-shrink: 0; /* Prevent icon from shrinking */
+  flex-shrink: 0;
   margin-left: 0.25rem;
 }
 
-/* Hover effects for different levels */
 .category-level-0:hover {
   background-color: #e9ecef;
 }
@@ -157,12 +138,7 @@
 .category-level-1:hover,
 .category-level-2:hover,
 .category-level-3:hover,
-.category-level-4:hover,
-.category-level-5:hover,
-.category-level-6:hover,
-.category-level-7:hover,
-.category-level-8:hover,
-.category-level-9:hover {
+.category-level-4:hover {
   background-color: #f8f9fa;
 }
 
@@ -173,7 +149,6 @@
   background-color: #fff;
 }
 
-/* Badge styling */
 .badge {
   font-size: 0.7em;
   font-weight: normal;
@@ -187,20 +162,401 @@
   height: 0.8em;
 }
 
-/* Selected values display */
 .selected-values {
   display: flex;
   flex-wrap: wrap;
   min-height: 20px;
 }
 
-/* Table styling */
+/* Enhanced table styling for better width utilization */
+.table-responsive {
+  max-height: none; /* Remove height restriction */
+}
+
 .table {
   font-size: 0.875rem;
+  min-width: 100%; /* Ensure full width usage */
 }
 
 .table > :not(caption) > * > * {
   padding: 0.5rem;
+  vertical-align: middle;
+}
+
+/* Enhanced Image Pool Styling */
+.image-pool-item {
+  transition: all 0.2s ease;
+}
+
+.image-pool-item:hover {
+  transform: scale(1.02);
+}
+
+.reorder-controls {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.image-pool-item:hover .reorder-controls {
+  opacity: 1;
+}
+
+.reorder-controls .btn:disabled {
+  opacity: 0.3;
+}
+
+/* Bulk Assignment Styling */
+.table-primary {
+  background-color: rgba(13, 110, 253, 0.1) !important;
+}
+
+.bulk-assignment-controls {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Product Images Styling */
+.product-images-container {
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 1rem;
+  background: #f8f9fa;
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.75rem;
+}
+
+.image-item {
+  position: relative;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.image-item.main-image {
+  border-color: #ffc107;
+  box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.2);
+}
+
+.image-wrapper {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+}
+
+.uploaded-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+}
+
+.image-item:hover .uploaded-image {
+  transform: scale(1.05);
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.image-item:hover .image-overlay {
+  opacity: 1;
+}
+
+.image-info {
+  padding: 0.5rem;
+  background: #f8f9fa;
+  position: relative;
+}
+
+.main-badge {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  background: #ffc107;
+  color: #000;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+.upload-area {
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  background: #f8f9fa;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-area:hover,
+.upload-area.dragover {
+  border-color: #3b82f6;
+  background: #f0f7ff;
+}
+
+.file-input {
+  display: none;
+}
+
+.upload-content {
+  pointer-events: none;
+}
+
+.upload-icon {
+  font-size: 1.5rem;
+  color: #6c757d;
+  margin-bottom: 0.5rem;
+}
+
+.upload-text {
+  margin: 0.5rem 0 0.25rem 0;
+  color: #495057;
+  font-weight: 500;
+}
+
+.upload-hint {
+  color: #6c757d;
+  font-size: 0.8rem;
+}
+
+.upload-progress {
+  margin-top: 1rem;
+}
+
+.progress {
+  height: 4px;
+  background: #e9ecef;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-bar {
+  height: 100%;
+  background: #3b82f6;
+  transition: width 0.3s ease;
+}
+
+.alert-sm {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+/* Variant Images Styling */
+.variant-image-container {
+  width: 100px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.current-variant-image {
+  position: relative;
+  width: 80px;
+  height: 60px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #dee2e6;
+}
+
+.variant-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.remove-variant-image {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.variant-upload-area {
+  width: 80px;
+  height: 60px;
+  border: 1px dashed #dee2e6;
+  border-radius: 6px;
+  background: #f8f9fa;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.variant-upload-area:hover {
+  border-color: #3b82f6;
+  background: #f0f7ff;
+}
+
+.variant-upload-area .upload-content {
+  text-align: center;
+  pointer-events: none;
+}
+
+.variant-upload-area .pi-image {
+  font-size: 1rem;
+  color: #6c757d;
+  margin-bottom: 0.25rem;
+}
+
+.variant-upload-progress {
+  margin-top: 0.25rem;
+}
+
+.progress-sm {
+  height: 2px;
+  background: #e9ecef;
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.progress-bar-sm {
+  height: 100%;
+  background: #3b82f6;
+  animation: progress-animation 1s infinite;
+}
+
+@keyframes progress-animation {
+  0% {
+    width: 0%;
+  }
+  50% {
+    width: 100%;
+  }
+  100% {
+    width: 0%;
+  }
+}
+
+/* Product List Image Styling */
+.product-image-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-thumbnail {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid #e9ecef;
+  background: #f8f9fa;
+}
+
+/* Variant Options Display */
+.variant-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 200px;
+}
+
+.variant-option {
+  display: block;
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+
+/* Improved image assignment cell styling */
+.variant-image-assignment {
+  min-width: 200px;
+}
+
+.variant-image-preview {
+  border: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+  transition: all 0.2s ease;
+}
+
+.variant-image-preview:hover {
+  border-color: #0d6efd;
+  background-color: #f0f7ff;
+}
+
+/* Loading spinner */
+.spinner-border-sm {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+/* Form check styling in dropdown */
+.form-check {
+  margin-bottom: 0;
+}
+
+.form-check-input {
+  margin-top: 0.125em;
+}
+
+.form-check-label {
+  cursor: pointer;
+}
+
+/* Validation styling for dropdown button */
+.btn.is-invalid {
+  border-color: #dc3545;
+}
+
+.dropdown-text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+/* Bulk mode enhancements */
+.bulk-assignment-controls .row {
+  align-items: center;
+}
+
+.bulk-assignment-controls .col-md-4 {
+  flex: 0 0 auto;
+  width: 25%;
+}
+
+.bulk-assignment-controls .col-md-5 {
+  flex: 0 0 auto;
+  width: 45%;
+}
+
+.bulk-assignment-controls .col-md-3 {
+  flex: 0 0 auto;
+  width: 30%;
 }
 
 /* Responsive adjustments */
@@ -229,7 +585,6 @@
     max-width: 300px;
   }
 
-  /* Reduce indentation on mobile even more */
   .category-level-0 {
     padding-left: 0.5rem !important;
   }
@@ -242,50 +597,71 @@
   .category-level-3 {
     padding-left: 1.25rem !important;
   }
-  .category-level-4,
-  .category-level-5,
-  .category-level-6,
-  .category-level-7,
-  .category-level-8,
-  .category-level-9 {
-    padding-left: 1.5rem !important; /* Cap at 1.5rem on mobile */
+  .category-level-4 {
+    padding-left: 1.5rem !important;
+  }
+
+  .image-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .variant-image-container {
+    width: 80px;
+    height: 60px;
+  }
+
+  .current-variant-image,
+  .variant-upload-area {
+    width: 60px;
+    height: 45px;
+  }
+
+  .upload-area {
+    padding: 1rem;
+    min-height: 80px;
+  }
+
+  .upload-icon {
+    font-size: 1.2rem;
+  }
+
+  .reorder-controls {
+    opacity: 1 !important; /* Always show on mobile */
+  }
+
+  .reorder-controls .btn {
+    width: 16px !important;
+    height: 14px !important;
+  }
+
+  .variant-options {
+    min-width: 150px;
+  }
+
+  .variant-image-assignment {
+    min-width: 120px;
+  }
+
+  .table th:nth-child(3),
+  .table td:nth-child(3) {
+    width: 140px;
   }
 }
 
-/* Form check styling in dropdown */
-.form-check {
-  margin-bottom: 0;
+@media (min-width: 1200px) {
+  .table th:nth-child(3),
+  .table td:nth-child(3) {
+    width: 220px; /* Even wider on large screens */
+  }
 }
 
-.form-check-input {
-  margin-top: 0.125em;
-}
-
-.form-check-label {
-  cursor: pointer;
-}
-
-/* Validation styling for dropdown button */
-.btn.is-invalid {
-  border-color: #dc3545;
-}
-
-/* Additional utility for very deep categories */
-.category-deep {
-  position: relative;
-}
-
-.category-deep::before {
-  content: "└─";
+.file-input-overlay {
   position: absolute;
-  left: 0.5rem;
-  color: #dee2e6;
-  font-size: 0.7rem;
-}
-
-.dropdown-text {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  top: 0;
+  left: 0;
 }

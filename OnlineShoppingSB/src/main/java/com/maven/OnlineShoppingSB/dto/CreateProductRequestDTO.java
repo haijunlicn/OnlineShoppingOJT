@@ -12,5 +12,6 @@ public class CreateProductRequestDTO {
 	private ProductDTO product;
 	private List<OptionDTO> options;
 	private List<ProductVariantDTO> variants;
+	private List<ProductImageDTO> productImages;
 }
 

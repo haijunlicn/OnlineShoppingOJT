@@ -48,4 +48,7 @@ public class ProductVariantEntity {
     @OneToMany(mappedBy = "variant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<VariantPriceEntity> prices = new ArrayList<>();
 
+    @Column(name = "img_path")
+    private String imgPath;
+
 }

@@ -50,7 +50,7 @@
                                         <div class="dropdown">
                                             <button
                                                 class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-start d-flex justify-content-between align-items-center"
-                                                [class.is-invalid]="hasError('category')" type="button"
+                                                [class.is-invalid]="hasError('categoryId')" type="button"
                                                 id="categoryDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                                 <span class="dropdown-text text-truncate w-100">
                                                     <span *ngIf="!selectedCategory" class="text-muted">
@@ -64,23 +64,21 @@
 
                                             <ul class="dropdown-menu w-100 category-dropdown"
                                                 aria-labelledby="categoryDropdown">
-                                                <!-- Recursive Category Template -->
                                                 <ng-container
                                                     *ngTemplateOutlet="categoryTemplate; context: { categories: categories }"></ng-container>
 
-                                                <!-- Recursive Template Definition -->
                                                 <ng-template #categoryTemplate let-categories="categories">
                                                     <li *ngFor="let category of categories" class="dropdown-submenu">
                                                         <div class="category-item">
-                                                            <a class="dropdown-item d-flex justify-content-between align-items-center"
+                                                            <button type="button"
+                                                                class="dropdown-item d-flex justify-content-between align-items-center"
                                                                 [class]="getCategoryIndentClass(category.level || 0)"
-                                                                href="#" (click)="selectCategory(category, $event)">
+                                                                (click)="selectCategory(category, $event)">
                                                                 <span>{{ category.name }}</span>
                                                                 <i *ngIf="category.children?.length"
                                                                     class="fas fa-chevron-right small text-muted"></i>
-                                                            </a>
+                                                            </button>
 
-                                                            <!-- Recursive call for children -->
                                                             <ul *ngIf="category.children?.length" class="submenu">
                                                                 <ng-container
                                                                     *ngTemplateOutlet="categoryTemplate; context: { categories: category.children }"></ng-container>
@@ -90,8 +88,8 @@
                                                 </ng-template>
                                             </ul>
                                         </div>
-                                        <div class="invalid-feedback small" *ngIf="hasError('category')">
-                                            {{ getErrorMessage('category') }}
+                                        <div class="invalid-feedback small" *ngIf="hasError('categoryId')">
+                                            {{ getErrorMessage('categoryId') }}
                                         </div>
                                     </div>
                                 </div>
@@ -110,7 +108,7 @@
                                 </div>
 
                                 <!-- Base Price -->
-                                <div class="mb-2">
+                                <div class="mb-3">
                                     <label for="basePrice" class="form-label small fw-semibold mb-1">
                                         Base Price <span class="text-danger">*</span>
                                     </label>
@@ -119,6 +117,83 @@
                                         <input type="number" id="basePrice" class="form-control form-control-sm"
                                             formControlName="basePrice" placeholder="0.00" min="0" step="0.01">
                                     </div>
+                                </div>
+
+                                <!-- Enhanced Image Pool Section with Display Order Management -->
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <label class="form-label small fw-semibold mb-0">Product Images</label>
+                                        <small class="text-muted">{{ imagePool.length }}/10</small>
+                                    </div>
+
+                                    <!-- Image Pool Grid with Reordering Controls -->
+                                    <div class="row g-2 mb-2" *ngIf="imagePool.length > 0">
+                                        <div class="col-4 col-md-3" *ngFor="let img of imagePool; let i = index">
+                                            <div class="position-relative image-pool-item">
+                                                <img [src]="img.previewUrl" alt="Preview" class="img-thumbnail w-100"
+                                                    style="height: 80px; object-fit: cover;">
+                                                
+                                                <!-- Remove Button -->
+                                                <button type="button"
+                                                    class="btn btn-danger btn-sm position-absolute"
+                                                    style="top: -8px; right: -8px; font-size: 0.7rem; width: 20px; height: 20px; padding: 0;"
+                                                    (click)="removeImageFromPool(img.id)">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                                
+                                                <!-- Main Image Button -->
+                                                <button type="button"
+                                                    class="btn btn-sm position-absolute"
+                                                    style="bottom: -8px; left: -8px; font-size: 0.7rem; width: 24px; height: 20px; padding: 0;"
+                                                    [class.btn-success]="img.isMain"
+                                                    [class.btn-warning]="!img.isMain"
+                                                    (click)="setMainImage(img.id)"
+                                                    title="Set as main image">
+                                                    <i class="fas fa-star"></i>
+                                                </button>
+
+                                                <!-- Reorder Controls -->
+                                                <div class="position-absolute reorder-controls" 
+                                                     style="top: -8px; left: -8px; display: flex; flex-direction: column; gap: 2px;">
+                                                    <button type="button"
+                                                        class="btn btn-secondary btn-sm"
+                                                        style="font-size: 0.6rem; width: 18px; height: 16px; padding: 0;"
+                                                        [disabled]="!canMoveUp(img.id)"
+                                                        (click)="moveImageUp(img.id)"
+                                                        title="Move up">
+                                                        <i class="fas fa-chevron-up"></i>
+                                                    </button>
+                                                    <button type="button"
+                                                        class="btn btn-secondary btn-sm"
+                                                        style="font-size: 0.6rem; width: 18px; height: 16px; padding: 0;"
+                                                        [disabled]="!canMoveDown(img.id)"
+                                                        (click)="moveImageDown(img.id)"
+                                                        title="Move down">
+                                                        <i class="fas fa-chevron-down"></i>
+                                                    </button>
+                                                </div>
+                                                
+                                                <!-- Main Badge -->
+                                                <span *ngIf="img.isMain"
+                                                    class="badge bg-success position-absolute"
+                                                    style="top: 2px; left: 2px; font-size: 0.6rem;">Main</span>
+                                                
+                                                <!-- Display Order Badge -->
+                                                <span class="badge bg-primary position-absolute"
+                                                    style="bottom: 2px; right: 2px; font-size: 0.6rem;">{{ i + 1 }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Upload Button -->
+                                    <button type="button" class="btn btn-outline-primary btn-sm w-100"
+                                        [disabled]="imagePool.length >= 10"
+                                        (click)="triggerImageUpload()">
+                                        <i class="fas fa-plus me-1"></i>
+                                        Add Images ({{ imagePool.length }}/10)
+                                    </button>
+                                    <input type="file" #productFileInput class="d-none"
+                                        (change)="onImagesSelected($event)" accept="image/*" multiple>
                                 </div>
                             </div>
 
@@ -156,12 +231,6 @@
                                                         {{ type.name }}
                                                     </option>
                                                 </select>
-                                                <!-- Debug info - remove this after testing -->
-                                                <small class="text-muted">
-                                                    {{ option.value | json }}
-                                                    Selected: {{ option.get('id')?.value }} | Name: {{
-                                                    option.get('name')?.value }}
-                                                </small>
                                                 <div class="invalid-feedback small"
                                                     *ngIf="option.get('id')?.invalid && option.get('id')?.touched">
                                                     Option type is required
@@ -169,7 +238,6 @@
                                             </div>
 
                                             <!-- Option Values Dropdown -->
-
                                             <div class="col-7">
                                                 <div *ngIf="option.get('id')?.value; else noTypeSelected"
                                                     class="dropdown">
@@ -239,8 +307,6 @@
                                                     </span>
                                                 </div>
                                             </div>
-
-
                                         </div>
                                     </div>
 
@@ -252,22 +318,68 @@
                             </div>
                         </div>
 
-                        <!-- Product Variants Section -->
+                        <!-- Enhanced Variants Section with Bulk Image Assignment -->
                         <div class="row mt-3" *ngIf="productVariants.length > 0">
                             <div class="col-12">
                                 <div class="card border">
                                     <div class="card-header bg-light py-2">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <h6 class="mb-0">Product Variants ({{ productVariants.length }})</h6>
-                                            <div>
-                                                <button type="button" class="btn btn-outline-secondary btn-sm me-2"
+                                            <div class="d-flex gap-2">
+                                                <button type="button" class="btn btn-outline-secondary btn-sm"
                                                     (click)="productFormService.applyBulkPrice(productForm)">
-                                                    Apply Base Price to All
+                                                    Apply Base Price
                                                 </button>
                                                 <button type="button" class="btn btn-outline-secondary btn-sm"
                                                     (click)="applyBulkStock()">
-                                                    Set Stock for All
+                                                    Set Stock
                                                 </button>
+                                                <button type="button" 
+                                                    class="btn btn-sm"
+                                                    [class.btn-primary]="bulkAssignmentMode"
+                                                    [class.btn-outline-primary]="!bulkAssignmentMode"
+                                                    (click)="toggleBulkAssignmentMode()">
+                                                    <i class="fas fa-images me-1"></i>
+                                                    {{ bulkAssignmentMode ? 'Exit Bulk Mode' : 'Bulk Assign Images' }}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Bulk Assignment Controls -->
+                                        <div *ngIf="bulkAssignmentMode" class="mt-2 p-2 bg-light rounded">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-4">
+                                                    <div class="d-flex gap-2">
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm"
+                                                            (click)="selectAllVariants()">
+                                                            Select All
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm"
+                                                            (click)="clearVariantSelection()">
+                                                            Clear
+                                                        </button>
+                                                    </div>
+                                                    <small class="text-muted">{{ getSelectedVariantsCount() }} variants selected</small>
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <select class="form-select form-select-sm" 
+                                                            [(ngModel)]="selectedImageForBulkAssignment"
+                                                            [ngModelOptions]="{standalone: true}">
+                                                        <option value="">Select action</option>
+                                                        <option value="clear">🚫 Remove Images (No Images)</option>
+                                                        <option *ngFor="let img of imagePool; let i = index" [value]="img.id">
+                                                            Image {{ i + 1 }}{{ img.isMain ? ' (Main)' : '' }}
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <button type="button" class="btn btn-success btn-sm w-100"
+                                                        [disabled]="!selectedImageForBulkAssignment || getSelectedVariantsCount() === 0"
+                                                        (click)="applyBulkImageAssignment()">
+                                                        <i class="fas fa-check me-1"></i>
+                                                        {{ selectedImageForBulkAssignment === 'clear' ? 'Remove from Selected' : 'Apply to Selected' }}
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -276,31 +388,84 @@
                                             <table class="table table-sm table-hover mb-0">
                                                 <thead class="table-light">
                                                     <tr>
-                                                        <th scope="col" class="ps-3">#</th>
-                                                        <th scope="col">Variant</th>
+                                                        <th scope="col" class="ps-3" style="width: 50px;">
+                                                            <input *ngIf="bulkAssignmentMode" 
+                                                                   type="checkbox" 
+                                                                   class="form-check-input"
+                                                                   [checked]="getSelectedVariantsCount() === variants.length && variants.length > 0"
+                                                                   (change)="getSelectedVariantsCount() === variants.length ? clearVariantSelection() : selectAllVariants()">
+                                                            <span *ngIf="!bulkAssignmentMode">#</span>
+                                                        </th>
+                                                        <th scope="col" style="width: 250px;">Variant</th>
+                                                        <th scope="col" style="width: 200px;">Image Assignment</th>
+                                                        <th scope="col" style="width: 120px;">Price ($)</th>
+                                                        <th scope="col" style="width: 100px;">Stock</th>
                                                         <th scope="col">SKU</th>
-                                                        <th scope="col" style="width: 150px;">Price ($)</th>
-                                                        <th scope="col" style="width: 120px;">Stock</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody formArrayName="variants">
                                                     <tr *ngFor="let variant of variants.controls; let i = index"
-                                                        [formGroupName]="i">
-                                                        <td class="ps-3">{{ i + 1 }}</td>
+                                                        [formGroupName]="i"
+                                                        [class.table-primary]="bulkAssignmentMode && isVariantSelected(i)">
+                                                        <td class="ps-3">
+                                                            <input *ngIf="bulkAssignmentMode" 
+                                                                   type="checkbox" 
+                                                                   class="form-check-input"
+                                                                   [checked]="isVariantSelected(i)"
+                                                                   (change)="toggleVariantSelection(i)">
+                                                            <span *ngIf="!bulkAssignmentMode">{{ i + 1 }}</span>
+                                                        </td>
 
                                                         <!-- Variant display -->
                                                         <td>
-                                                            <span *ngFor="let option of productVariants[i].options"
-                                                                class="me-2">
-                                                                <span class="fw-semibold small">{{ option.optionName
-                                                                    }}:</span>
-                                                                <span class="small">{{ option.valueName }}</span>
-                                                            </span>
+                                                            <div class="variant-options">
+                                                                <span *ngFor="let option of productVariants[i].options"
+                                                                    class="variant-option me-2">
+                                                                    <span class="fw-semibold small">{{ option.optionName }}:</span>
+                                                                    <span class="small">{{ option.valueName }}</span>
+                                                                </span>
+                                                            </div>
                                                         </td>
 
-                                                        <!-- Auto-generated SKU -->
-                                                        <td class="small text-muted">
-                                                            {{ getSkuForVariant(i) }}
+                                                        <!-- Image Assignment -->
+                                                        <td>
+                                                            <div class="d-flex align-items-center gap-2">
+                                                                <!-- Current Assigned Image Preview -->
+                                                                <div *ngIf="getAssignedImage(i)" class="flex-shrink-0">
+                                                                    <img [src]="getAssignedImage(i)!.previewUrl" 
+                                                                         alt="Assigned image" 
+                                                                         class="img-thumbnail"
+                                                                         style="width: 50px; height: 50px; object-fit: cover;">
+                                                                </div>
+                                                                
+                                                                <!-- No Image Placeholder -->
+                                                                <div *ngIf="!getAssignedImage(i)" class="flex-shrink-0 d-flex align-items-center justify-content-center border rounded"
+                                                                     style="width: 50px; height: 50px; background-color: #f8f9fa;">
+                                                                    <i class="fas fa-image text-muted"></i>
+                                                                </div>
+
+                                                                <!-- Image Selection Dropdown (hidden in bulk mode) -->
+                                                                <div *ngIf="!bulkAssignmentMode" class="flex-grow-1">
+                                                                    <select class="form-select form-select-sm" 
+                                                                            formControlName="assignedImageId">
+                                                                        <option value="">No Image</option>
+                                                                        <option *ngFor="let img of getAvailableImagesForVariant(); let imgIndex = index" 
+                                                                                [value]="img.id">
+                                                                            Image {{ imgIndex + 1 }}{{ img.isMain ? ' (Main)' : '' }}
+                                                                        </option>
+                                                                    </select>
+                                                                </div>
+
+                                                                <!-- Bulk mode indicator -->
+                                                                <div *ngIf="bulkAssignmentMode" class="flex-grow-1">
+                                                                    <span *ngIf="getAssignedImage(i)" class="text-success small">
+                                                                        <i class="fas fa-check-circle me-1"></i>Has Image
+                                                                    </span>
+                                                                    <span *ngIf="!getAssignedImage(i)" class="text-muted small">
+                                                                        <i class="fas fa-circle me-1"></i>No Image
+                                                                    </span>
+                                                                </div>
+                                                            </div>
                                                         </td>
 
                                                         <!-- Price -->
@@ -314,9 +479,13 @@
                                                             <input type="number" class="form-control form-control-sm"
                                                                 formControlName="stock" min="0" step="1">
                                                         </td>
+
+                                                        <!-- Auto-generated SKU -->
+                                                        <td class="small text-muted">
+                                                            {{ getSkuForVariant(i) }}
+                                                        </td>
                                                     </tr>
                                                 </tbody>
-
                                             </table>
                                         </div>
                                     </div>
@@ -328,15 +497,23 @@
                         <div class="row mt-3">
                             <div class="col-12">
                                 <div class="d-flex justify-content-end">
-                                    <button type="button" class="btn btn-outline-secondary btn-sm me-2">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm me-2"
+                                        (click)="resetForm()">
                                         Cancel
                                     </button>
-                                    <button [disabled]="productForm.invalid" type="submit"
+                                    <button [disabled]="productForm.invalid || loading.submission" type="submit"
                                         class="btn btn-primary btn-sm">
-                                        Create Product
+                                        <span *ngIf="loading.submission"
+                                            class="spinner-border spinner-border-sm me-1"></span>
+                                        {{ loading.submission ? 'Creating Product...' : 'Create Product' }}
                                     </button>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Error Messages -->
+                        <div *ngIf="errorMessage" class="alert alert-danger alert-sm mt-2">
+                            {{ errorMessage }}
                         </div>
                     </form>
                 </div>

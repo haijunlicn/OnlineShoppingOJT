@@ -132,19 +132,6 @@ public class CategoryService {
                     List<OptionDTO> optionDTOs = categoryOptions.stream()
                             .map(catOpt -> mapper.map(catOpt.getOption(), OptionDTO.class))
                             .collect(Collectors.toList());
-
-//                    List<OptionDTO> optionDTOs = categoryOptions.stream()
-//                            .map(catOpt -> {
-//                                OptionEntity opt = catOpt.getOption();
-//                                OptionDTO optDTO = new OptionDTO();
-//                                optDTO.setId(opt.getId());
-//                                optDTO.setName(opt.getName());
-//                                // Optional: fetch and set option values
-//                                // optDTO.setOptionValues(...);
-//                                return optDTO;
-//                            })
-//                            .collect(Collectors.toList());
-
                     dto.setOptionTypes(optionDTOs);
                     return dto;
                 })

@@ -3,9 +3,10 @@
     <div class="row align-items-center">
       <!-- Logo -->
       <div class="col-auto">
-        <div class="logo">
-          <span class="logo-main">BRITIUM</span>
-          <span class="logo-sub">Gallery</span>
+        <div class="logo luxury-logo">
+          <span class="logo-icon"><i class="fas fa-shopping-bag"></i></span>
+          <span class="logo-main">Britium</span>
+          <span class="logo-sub">Luxury Bags</span>
         </div>
       </div>
 
@@ -13,39 +14,37 @@
       <div class="col d-none d-lg-block">
         <nav class="main-nav">
           <a href="#" class="nav-item">Home</a>
-          <a href="#" class="nav-item">Shop</a>
+          <a routerLink="/customer/productList" class="nav-item">Shop</a>
           <a href="#" class="nav-item">About</a>
           <a href="#" class="nav-item">Contact</a>
         </nav>
       </div>
 
+      <!-- Search Bar (centered, desktop only) -->
+      <div class="col d-none d-lg-block">
+        <form class="header-search-form" (submit)="$event.preventDefault(); onSearch(searchInput.value)">
+          <input #searchInput type="text" class="header-search-input"
+            placeholder="Search for products, brands, and more..." aria-label="Search">
+          <button type="submit" class="header-search-btn"><i class="fas fa-search"></i></button>
+        </form>
+      </div>
+
       <!-- Action Buttons -->
       <div class="col-auto">
         <div class="header-actions">
-          <!-- Icon Buttons -->
-          <button class="action-btn" (click)="onSearch()">
+          <!-- Search Icon (mobile only) -->
+          <button class="action-btn d-lg-none" (click)="toggleMobileSearch()">
             <i class="fas fa-search"></i>
           </button>
-
           <button class="action-btn" (click)="onWishlist()">
             <i class="fas fa-heart"></i>
           </button>
-
           <button class="action-btn cart-btn" (click)="onCart()">
             <i class="fas fa-shopping-bag"></i>
             <span class="cart-count" *ngIf="cartItemCount > 0">{{ cartItemCount }}</span>
           </button>
-
-          <!-- Auth Buttons -->
-          <button class="auth-btn auth-btn-outline d-none d-md-inline-block" (click)="onRegister()">
-            Register
-          </button>
-
-          <button class="auth-btn auth-btn-filled d-none d-md-inline-block" (click)="onSignIn()">
-            Sign In
-          </button>
-
-          <!-- Mobile Menu -->
+          <button class="auth-btn auth-btn-outline d-none d-md-inline-block" (click)="onRegister()">Register</button>
+          <button class="auth-btn auth-btn-filled d-none d-md-inline-block" (click)="onSignIn()">Sign In</button>
           <button class="mobile-toggle d-lg-none" (click)="toggleMenu()">
             <span class="menu-line" [class.active]="isMenuOpen"></span>
             <span class="menu-line" [class.active]="isMenuOpen"></span>
@@ -53,6 +52,15 @@
           </button>
         </div>
       </div>
+    </div>
+
+    <!-- Mobile Search Bar -->
+    <div class="mobile-search-bar d-lg-none" *ngIf="isMobileSearchOpen">
+      <form class="header-search-form" (submit)="$event.preventDefault(); onSearch(mobileSearchInput.value)">
+        <input #mobileSearchInput type="text" class="header-search-input"
+          placeholder="Search for products, brands, and more..." aria-label="Search">
+        <button type="submit" class="header-search-btn"><i class="fas fa-search"></i></button>
+      </form>
     </div>
 
     <!-- Mobile Navigation -->
@@ -63,7 +71,6 @@
         <a href="#" class="mobile-nav-item">About</a>
         <a href="#" class="mobile-nav-item">Contact</a>
       </nav>
-      
       <div class="mobile-auth">
         <button class="mobile-auth-btn outline" (click)="onRegister()">Register</button>
         <button class="mobile-auth-btn filled" (click)="onSignIn()">Sign In</button>
@@ -71,3 +78,8 @@
     </div>
   </div>
 </header>
+
+<!-- <app-register *ngIf="(registerVisible$ | async)" class="register-modal-overlay"></app-register>
+<app-login *ngIf="(loginVisible$ | async)" class="login-modal-overlay"></app-login>
+<app-forget-password *ngIf="(forgotVisible$ | async)" class="forgot-modal-overlay"> </app-forget-password> -->
+

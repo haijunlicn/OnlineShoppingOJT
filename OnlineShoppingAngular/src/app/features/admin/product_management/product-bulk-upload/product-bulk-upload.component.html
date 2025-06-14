@@ -1,0 +1,17 @@
+<div class="upload-container">
+    <h3>📤 Upload ZIP File (Excel + Images)</h3>
+
+    <button (click)="downloadTemplate()" [disabled]="isLoading">
+        Download Excel Template
+    </button>
+
+    <p>{{ uploadStatus }}</p>
+
+    <input type="file" (change)="onZipFileSelected($event)" accept=".zip" />
+
+
+    <div class="status-message">{{ uploadStatus }}</div>
+    <button (click)="uploadZipFile()" [disabled]="!zipFile || isLoading">
+        {{ isLoading ? 'Uploading...' : 'Upload ZIP' }}
+    </button>
+</div>
