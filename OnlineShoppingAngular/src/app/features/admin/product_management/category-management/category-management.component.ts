@@ -4,6 +4,9 @@ import { MenuItem, TreeNode } from "primeng/api"
 import { Menu } from "primeng/menu"
 import { CategoryDTO } from "../../../../core/models/category-dto"
 import { CategoryService } from "../../../../core/services/category.service"
+import { log } from "node:console"
+import { CloudinaryService } from "../../../../core/services/cloudinary.service"
+import { Observable } from "rxjs"
 
 @Component({
   selector: "app-category-management",
@@ -43,10 +46,12 @@ export class CategoryManagementComponent implements OnInit {
 
   // Form
   categoryForm: FormGroup
+  viewMode: "grid" | "list" = "grid"
 
   constructor(
     private fb: FormBuilder,
     private categoryService: CategoryService,
+    private cloudinaryService: CloudinaryService
   ) {
     this.categoryForm = this.fb.group({
       id: [null],
@@ -91,14 +96,18 @@ export class CategoryManagementComponent implements OnInit {
     const categoryMap = new Map<number, TreeNode>()
 
     // Create tree nodes
-    this.categories.forEach((category) => {
+    this.categories.forEach((category, i) => {
+      if (!category.id) {
+        console.log(`Category at index ${i} is missing an ID:`, category);
+      }
       categoryMap.set(category.id!, {
-        key: category.id!.toString(),
+        key: category.id?.toString(),
         label: category.name!,
         data: category,
         children: [],
-      })
-    })
+      });
+    });
+
 
     // Build hierarchy
     this.categoryTree = []
@@ -126,6 +135,7 @@ export class CategoryManagementComponent implements OnInit {
         this.categories = categories
         this.buildCategoryTree()
         this.updateCategoryDropdowns()
+        this.recomputeSubcategoryCounts()
         this.loadingCategories = false
       },
       error: (error) => {
@@ -186,16 +196,36 @@ export class CategoryManagementComponent implements OnInit {
     return this.categories.some((cat) => cat.parentCategoryId === categoryId)
   }
 
+
+  subcategoryCounts: Map<number, number> = new Map();
+
+  recomputeSubcategoryCounts(): void {
+    this.subcategoryCounts.clear();
+    this.categories.forEach(category => {
+      this.subcategoryCounts.set(category.id!, this.countSubcategories(category.id!));
+    });
+  }
+
+  private countSubcategories(categoryId: number, visited = new Set<number>()): number {
+    if (visited.has(categoryId)) {
+      console.warn(`Cycle detected at category ${categoryId}`)
+      return 0; // or throw error
+    }
+    visited.add(categoryId);
+
+    const directChildren = this.categories.filter(c => c.parentCategoryId === categoryId);
+    let total = directChildren.length;
+
+    for (const child of directChildren) {
+      total += this.countSubcategories(child.id!, visited);
+    }
+
+    visited.delete(categoryId);
+    return total;
+  }
+
   getTotalSubcategoryCount(categoryId: number): number {
-    const directChildren = this.categories.filter((cat) => cat.parentCategoryId === categoryId)
-    let total = directChildren.length
-
-    // Add counts from all descendants
-    directChildren.forEach((child) => {
-      total += this.getTotalSubcategoryCount(child.id!)
-    })
-
-    return total
+    return this.subcategoryCounts.get(categoryId) || 0;
   }
 
   // Expand/Collapse functionality
@@ -213,8 +243,7 @@ export class CategoryManagementComponent implements OnInit {
 
   // Get category image (for now returns default, later will use actual image)
   getCategoryImage(category: CategoryDTO): string {
-    // In the future, this will use category.imagePath if available
-    return this.defaultCategoryImage
+    return category.imgPath || this.defaultCategoryImage
   }
 
   // Image handling for future use
@@ -265,6 +294,9 @@ export class CategoryManagementComponent implements OnInit {
     this.parentCategoryForNew = parent || null
     this.isAddingSubcategory = !!parent // Set flag if parent is provided
 
+    console.log("img path : ", category?.imgPath);
+
+
     // Set dropdown options for subcategory case
     if (parent) {
       this.selectedParentDropdown = [
@@ -281,11 +313,11 @@ export class CategoryManagementComponent implements OnInit {
         id: category.id,
         name: category.name,
         parentCategoryId: category.parentCategoryId,
-        imagePath: category.imagePath || null,
+        imagePath: category.imgPath || null,
       })
 
       // If category has an image, show its preview (for future implementation)
-      if (category.imagePath) {
+      if (category.imgPath) {
         this.categoryImagePreview = this.getCategoryImage(category)
       }
     } else {
@@ -299,55 +331,65 @@ export class CategoryManagementComponent implements OnInit {
   }
 
   saveCategory(): void {
-    if (this.categoryForm.invalid) return
+    if (this.categoryForm.invalid) return;
 
-    const formValue = this.categoryForm.value
+    const formValue = this.categoryForm.value;
 
-    if (this.editingCategory) {
-      // Update existing category
-      const updateData: CategoryDTO = {
-        id: this.editingCategory.id,
-        name: formValue.name,
-        parentCategoryId: formValue.parentCategoryId || undefined,
-        // In future, add imagePath to updateData
-        // imagePath: formValue.imagePath
+    const handleAfterSave = (savedCategory: CategoryDTO) => {
+      const index = this.categories.findIndex(c => c.id === savedCategory.id);
+      if (index !== -1) {
+        this.categories[index] = savedCategory;
+      } else {
+        this.categories.push(savedCategory);
       }
 
-      this.categoryService.updateCategory(updateData).subscribe({
-        next: (updatedCategory) => {
-          const index = this.categories.findIndex((c) => c.id === this.editingCategory!.id)
-          if (index !== -1) {
-            this.categories[index] = updatedCategory
-          }
-          this.buildCategoryTree()
-          this.updateCategoryDropdowns()
-          this.categoryDialogVisible = false
-        },
-        error: (error) => {
-          console.error("Error updating category:", error)
-        },
-      })
+      this.buildCategoryTree();
+      this.updateCategoryDropdowns();
+      this.recomputeSubcategoryCounts?.();
+      this.categoryDialogVisible = false;
+      this.selectedImage = null;
+    };
+
+    const saveWithImage = (imageUrl?: string) => {
+      const categoryDTO = this.buildCategoryDTO(formValue, imageUrl);
+
+      const save$ = this.editingCategory
+        ? this.categoryService.updateCategory(categoryDTO)
+        : this.categoryService.createCategory(categoryDTO);
+
+      save$.subscribe({
+        next: (savedCategory) => handleAfterSave(savedCategory),
+        error: (err) =>
+          console.error(
+            this.editingCategory
+              ? "Error updating category:"
+              : "Error creating category:",
+            err
+          ),
+      });
+    };
+
+    if (this.selectedImage) {
+      this.uploadImage(this.selectedImage).subscribe({
+        next: (imageUrl) => saveWithImage(imageUrl),
+        error: (err) => console.error("Image upload failed", err),
+      });
     } else {
-      // Create new category
-      const newCategory: CategoryDTO = {
-        name: formValue.name,
-        parentCategoryId: formValue.parentCategoryId || undefined,
-        // In future, add imagePath to newCategory
-        // imagePath: formValue.imagePath
-      }
-
-      this.categoryService.createCategory(newCategory).subscribe({
-        next: (createdCategory) => {
-          this.categories.push(createdCategory)
-          this.buildCategoryTree()
-          this.updateCategoryDropdowns()
-          this.categoryDialogVisible = false
-        },
-        error: (error) => {
-          console.error("Error creating category:", error)
-        },
-      })
+      saveWithImage(formValue.imagePath);
     }
+  }
+
+  private buildCategoryDTO(formValue: any, imagePath?: string): CategoryDTO {
+    return {
+      id: this.editingCategory?.id,
+      name: formValue.name,
+      parentCategoryId: formValue.parentCategoryId || undefined,
+      imgPath: imagePath || '',
+    };
+  }
+
+  private uploadImage(file: File): Observable<string> {
+    return this.cloudinaryService.uploadImage(file);
   }
 
   addSubcategory(category: CategoryDTO): void {
@@ -404,4 +446,5 @@ export class CategoryManagementComponent implements OnInit {
     // Pass the event to toggle to position the menu near the clicked button
     this.categoryMenu.toggle(event)
   }
+
 }

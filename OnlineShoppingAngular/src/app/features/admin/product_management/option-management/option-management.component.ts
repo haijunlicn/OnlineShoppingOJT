@@ -60,11 +60,19 @@ export class OptionManagementComponent implements OnInit {
     this.loadOptions()
   }
 
+  // updateFilters(): void {
+  //   this.filteredOptions = this.options.filter((option) =>
+  //     option.name.toLowerCase().includes(this.optionFilter.toLowerCase()),
+  //   )
+  // }
+
   updateFilters(): void {
-    this.filteredOptions = this.options.filter((option) =>
-      option.name.toLowerCase().includes(this.optionFilter.toLowerCase()),
-    )
+    const filterValue = this.optionFilter?.toLowerCase() ?? '';
+    this.filteredOptions = this.options.filter(option =>
+      option?.name?.toLowerCase().includes(filterValue)
+    );
   }
+
 
   loadOptions(): void {
     this.loadingOptions = true
@@ -97,51 +105,44 @@ export class OptionManagementComponent implements OnInit {
   }
 
   saveOption(): void {
-    if (this.optionForm.invalid) return
-
-    const formValue = this.optionForm.value
+    if (this.optionForm.invalid) return;
+    const formValue = this.optionForm.value;
 
     if (this.editingOption) {
-      // Update existing option
       const updateData: OptionTypeDTO = {
         id: this.editingOption.id,
         name: formValue.name,
         optionValues: this.editingOption.optionValues,
-      }
+      };
 
       this.optionService.updateOptionType(updateData).subscribe({
-        next: (updatedOption) => {
-          const index = this.options.findIndex((o) => o.id === this.editingOption!.id)
-          if (index !== -1) {
-            this.options[index] = updatedOption
-          }
-          this.updateFilters()
-          this.optionDialogVisible = false
+        next: () => {
+          this.optionDialogVisible = false;
+          this.loadOptions(); // ✅ reload
         },
         error: (error) => {
-          console.error("Error updating option:", error)
+          console.error("Error updating option:", error);
         },
-      })
+      });
     } else {
-      // Create new option
       const newOption: OptionTypeDTO = {
-        id: "", // Backend will generate
+        id: "",
         name: formValue.name,
         optionValues: [],
-      }
+      };
 
       this.optionService.createOptionType(newOption).subscribe({
-        next: (createdOption) => {
-          this.options.push(createdOption)
-          this.updateFilters()
-          this.optionDialogVisible = false
+        next: () => {
+          this.optionDialogVisible = false;
+          this.loadOptions(); // ✅ reload
         },
         error: (error) => {
-          console.error("Error creating option:", error)
+          console.error("Error creating option:", error);
         },
-      })
+      });
     }
   }
+
 
   editOption(option: OptionTypeDTO): void {
     this.openOptionDialog(option)
@@ -182,56 +183,44 @@ export class OptionManagementComponent implements OnInit {
   }
 
   saveOptionValue(): void {
-    if (this.optionValueForm.invalid || !this.selectedOption) return
+    if (this.optionValueForm.invalid || !this.selectedOption) return;
 
-    const formValue = this.optionValueForm.value
+    const formValue = this.optionValueForm.value;
 
     if (this.editingOptionValue) {
-      // Update existing value
       const updateData: OptionValueDTO = {
         id: this.editingOptionValue.id,
         optionId: formValue.optionId,
         value: formValue.value,
-      }
+      };
 
       this.optionValueService.updateOptionValues(updateData).subscribe({
-        next: (updatedValue) => {
-          const optionIndex = this.options.findIndex((o) => o.id === this.selectedOption!.id)
-          if (optionIndex !== -1) {
-            const valueIndex = this.options[optionIndex].optionValues.findIndex(
-              (v) => v.id === this.editingOptionValue!.id,
-            )
-            if (valueIndex !== -1) {
-              this.options[optionIndex].optionValues[valueIndex] = updatedValue
-            }
-          }
-          this.optionValueDialogVisible = false
+        next: () => {
+          this.optionValueDialogVisible = false;
+          this.loadOptions(); // ✅ reload
         },
         error: (error) => {
-          console.error("Error updating option value:", error)
+          console.error("Error updating option value:", error);
         },
-      })
+      });
     } else {
-      // Create new value
       const newValue: OptionValueDTO = {
         optionId: formValue.optionId,
         value: formValue.value,
-      }
+      };
 
       this.optionValueService.createOptionValue(newValue).subscribe({
-        next: (createdValue) => {
-          const optionIndex = this.options.findIndex((o) => o.id === this.selectedOption!.id)
-          if (optionIndex !== -1) {
-            this.options[optionIndex].optionValues.push(createdValue)
-          }
-          this.optionValueDialogVisible = false
+        next: () => {
+          this.optionValueDialogVisible = false;
+          this.loadOptions(); // ✅ reload
         },
         error: (error) => {
-          console.error("Error creating option value:", error)
+          console.error("Error creating option value:", error);
         },
-      })
+      });
     }
   }
+
 
   deleteOptionValue(value: OptionValueDTO, option: OptionTypeDTO): void {
     if (confirm(`Are you sure you want to delete the value "${value.value}"?`)) {
@@ -271,7 +260,7 @@ export class OptionManagementComponent implements OnInit {
     ];
 
     const buttonEl = event.currentTarget as HTMLElement;
-    
+
     this.valueMenu.toggle(event); // ✅ Use event, not button
   }
 

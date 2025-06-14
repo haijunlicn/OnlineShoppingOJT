@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class ProductDTO {
@@ -16,5 +17,6 @@ public class ProductDTO {
     private Long brandId;
     private Long categoryId;
     private BigDecimal basePrice;
+    private List<ProductImageDTO> productImages;
     private LocalDateTime createdDate;
 }

@@ -1,8 +1,7 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { CreateProductRequestDTO, ProductListItemDTO } from '../models/product.model';
+import { CreateProductRequestDTO, ProductCardItem, ProductListItemDTO, ProductVariantDTO } from '../models/product.model';
 import { catchError, Observable, throwError } from 'rxjs';
-import { ProductVariantDTO } from '../models/variant.model';
 
 @Injectable({
   providedIn: 'root'
@@ -20,6 +19,10 @@ export class ProductService {
     return this.http.get<ProductListItemDTO[]>(`${this.baseUrl}/list`);
   }
 
+  getProductById(id: number): Observable<ProductCardItem> {
+    return this.http.get<ProductCardItem>(`${this.baseUrl}/${id}`);
+  }
+
   generateSku(productName: string, variant: ProductVariantDTO): string {
     const skuBase = productName.substring(0, 3).toUpperCase();
 
@@ -30,5 +33,19 @@ export class ProductService {
     });
 
     return `${skuBase}${skuOptions}`;
+  }
+
+  downloadTemplate(): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/bulk-upload-template`, {
+      responseType: 'blob'  // important for binary file data
+    });
+  }
+
+  // Upload ZIP file (Excel + images)
+  uploadZip(formData: FormData): Observable<HttpEvent<any>> {
+    return this.http.post<any>(`${this.baseUrl}/upload-zip`, formData, {
+      reportProgress: true,
+      observe: 'events'
+    });
   }
 }

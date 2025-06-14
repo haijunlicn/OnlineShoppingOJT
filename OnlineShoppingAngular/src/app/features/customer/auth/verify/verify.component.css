@@ -1,59 +1,232 @@
+/* Full page wrapper */
 .otp-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   display: flex;
-  justify-content: center;
   align-items: center;
-  height: 90vh;
-  background-color: #fdf1e6;
+  justify-content: center;
+  padding: 2rem 1rem;
 }
 
+/* Main card container */
 .otp-card {
-  background-color: white;
-  padding: 2rem;
-  border-radius: 20px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  background: white;
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   text-align: center;
-  width: 400px;
+  max-width: 450px;
+  width: 100%;
+  position: relative;
 }
 
-.otp-img {
+/* Email icon */
+.email-icon {
   width: 100px;
-  margin-bottom: 1rem;
+  height: 100px;
+  background: linear-gradient(135deg, #a36e51 0%, #8d5e45 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 2rem;
+  box-shadow: 0 10px 30px rgba(163, 110, 81, 0.3);
 }
 
+.email-icon i {
+  font-size: 2.5rem;
+  color: white;
+}
+
+/* Typography */
+h2 {
+  color: #2c3e50;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+p {
+  color: #7f8c8d;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+  max-width: 350px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* OTP inputs container */
 .otp-inputs {
   display: flex;
   justify-content: center;
-  gap: 10px;
-  margin: 1rem 0;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
+/* Individual OTP input */
 .otp-inputs input {
-  width: 40px;
-  height: 50px;
-  font-size: 24px;
+  width: 60px;
+  height: 60px;
+  border: 2px solid #e1e8ed;
+  border-radius: 12px;
   text-align: center;
-  border: 2px solid #ffd89e;
-  border-radius: 8px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2c3e50;
+  background: #fff;
+  transition: all 0.3s ease;
+  outline: none;
 }
 
+.otp-inputs input:focus {
+  border-color: #a36e51;
+  box-shadow: 0 0 0 3px rgba(163, 110, 81, 0.1);
+  transform: translateY(-2px);
+}
+
+.otp-inputs input:hover {
+  border-color: #a36e51;
+}
+
+/* Verify button */
 .btn-verify {
-  background-color: #ff9900;
+  background: linear-gradient(135deg, #a36e51 0%, #8d5e45 100%);
   color: white;
   border: none;
-  padding: 0.7rem 2rem;
-  border-radius: 10px;
-  font-weight: bold;
+
+  border-radius: 12px;
+  
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(163, 110, 81, 0.3);
+  margin-bottom: 2rem;
+  min-width: 180px;
+}
+
+.btn-verify:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(163, 110, 81, 0.4);
+}
+
+.btn-verify:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-verify:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Resend section */
+.resend {
+  color: #7f8c8d;
+  font-size: 0.95rem;
+  margin-bottom: 0;
+}
+
+.resend a {
+  color: #a36e51;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.resend a:hover {
+  color: #8d5e45;
+  text-decoration: underline;
+}
+
+/* Loading spinner */
+.fa-spinner {
+  animation: spin 1s linear infinite;
+  margin-right: 0.5rem;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .otp-wrapper {
+    padding: 1rem;
+  }
+
+  .otp-card {
+    padding: 2rem 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.75rem;
+  }
+
+  .email-icon {
+    width: 80px;
+    height: 80px;
+  }
+
+  .email-icon i {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .otp-inputs {
+    gap: 0.5rem;
+  }
+
+  .otp-inputs input {
+    width: 50px;
+    height: 50px;
+    font-size: 1.25rem;
+  }
+
+  .btn-verify {
+    padding: 0.875rem 2rem;
+    font-size: 1rem;
+  }
+
+  .action-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
   margin-top: 1rem;
 }
 
-.resend {
-  margin-top: 1rem;
-  font-size: 14px;
-}
-.resend a {
+.btn {
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
   cursor: pointer;
-  color: #ff6600;
-  font-weight: bold;
-  text-decoration: underline;
+}
+
+.primary-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+}
+
+.secondary-btn {
+  background-color: #f8f9fa;
+  color: #333;
+  border: 1px solid #ccc;
+}
+
+.primary-btn:disabled,
+.secondary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 }

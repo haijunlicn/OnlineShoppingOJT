@@ -30,13 +30,17 @@ import { TreeModule } from 'primeng/tree';
 import { MenuModule } from 'primeng/menu';
 
 import { ProductListComponent } from './product_management/product-list/product-list.component';
-import { ProductCreateComponent } from './product_management/product-create/product-create.component';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { ProductAttributesComponent } from './product_management/product-attributes/product-attributes.component';
 import { AttributeManagementComponent } from './product_management/attribute-management/attribute-management.component';
 import { CategoryManagementComponent } from './product_management/category-management/category-management.component';
 import { OptionManagementComponent } from './product_management/option-management/option-management.component';
 import { BrandManagementComponent } from './product_management/brand-management/brand-management.component';
+import { DiscountGroupComponent } from './discount_management/discount-group/discount-group.component';
+import { ProductCreateComponent } from './product_management/product-create/product-create.component';
+import { ProductBulkUploadComponent } from './product_management/product-bulk-upload/product-bulk-upload.component';
+
+
 @NgModule({
   declarations: [
     ProductEditComponent,
@@ -56,6 +60,8 @@ import { BrandManagementComponent } from './product_management/brand-management/
     CategoryManagementComponent,
     OptionManagementComponent,
     BrandManagementComponent,
+    DiscountGroupComponent,
+    ProductBulkUploadComponent,
   ],
   imports: [
     CommonModule,
@@ -77,6 +83,7 @@ import { BrandManagementComponent } from './product_management/brand-management/
     ColorPickerModule,
     TreeModule,
     MenuModule,
+     FormsModule
   ]
 })
 export class AdminModule { }

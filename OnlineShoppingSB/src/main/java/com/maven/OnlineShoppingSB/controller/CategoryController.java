@@ -3,6 +3,7 @@ package com.maven.OnlineShoppingSB.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,14 +19,15 @@ public class CategoryController {
     private CategoryService cateService;
 
     @PostMapping("/create")
-    public ResponseEntity<String> insertCategory(@RequestBody CategoryDTO dto) {
-        cateService.insertCategory(dto);
-        return ResponseEntity.ok("Category created successfully!");
+    public ResponseEntity<CategoryDTO> insertCategory(@RequestBody CategoryDTO dto) {
+        CategoryDTO created = cateService.insertCategory(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @GetMapping("/list")
     public ResponseEntity<List<CategoryDTO>> getAllCategories() {
         List<CategoryDTO> dtoList = cateService.getAllCategories();
+        System.out.println("category list : " + dtoList);
         return ResponseEntity.ok(dtoList);
     }
 
@@ -43,10 +45,11 @@ public class CategoryController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<String> updateCategory(@RequestBody CategoryDTO dto) {
-        cateService.updateCategory(dto);
-        return ResponseEntity.ok("Category updated successfully!");
+    public ResponseEntity<CategoryDTO> updateCategory(@PathVariable Long id, @RequestBody CategoryDTO dto) {
+        CategoryDTO updated = cateService.updateCategory(dto);
+        return ResponseEntity.ok(updated);
     }
+
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteCategory(@PathVariable Long id) {
         cateService.deleteCategory(id);

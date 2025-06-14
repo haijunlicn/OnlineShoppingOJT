@@ -14,28 +14,33 @@ import { EditLocationComponent } from './account/edit-location/edit-location.com
 import { UserproductListComponent } from './general/userproduct-list/userproduct-list.component';
 import { WishlistComponent } from './general/wishlist/wishlist.component';
 import { CartComponent } from './general/cart/cart.component';
+import { ProductListComponent } from './product_display/product-list/product-list.component';
+import { ProductDetailComponent } from './product_display/product-detail/product-detail.component';
 
-const routes: Routes = [  
+const routes: Routes = [
 
   { path: 'home', component: HomeComponent },
-  { path: 'auth/verify/:id', component: VerifyComponent ,canActivate: [NoAuthGuard]},
-
+  { path: 'auth/verify/:id', component: VerifyComponent ,},
+{ path: 'general/home', component: HomeComponent },
+  { path: 'auth/verify/:id', component: VerifyComponent, canActivate: [NoAuthGuard] },
+  { path: 'general/home', component: HomeComponent },
   {
     path: 'auth/register',
-    component: RegisterComponent,canActivate: [NoAuthGuard],
+    component: RegisterComponent, 
   },
   {
     path: 'auth/login',
-    component: LoginComponent,canActivate: [NoAuthGuard],
+    component: LoginComponent, 
 
   },
   {
     path: 'auth/forgetPass',
-    component: ForgetPasswordComponent,canActivate: [NoAuthGuard],
+    component: ForgetPasswordComponent, 
 
   },
+  
  {
-  path: 'auth/reset-password',
+  path: 'auth/reset-password', 
   component: ResetPasswordComponent
 },
   {path:'location',component:LocationCreateComponent},
@@ -43,13 +48,30 @@ const routes: Routes = [
   {path:'userproduct',component:UserproductListComponent, canActivate: [NoAuthGuard]},
   {path:'address',component:LocationCardComponent, canActivate: [NoAuthGuard]},
   { path: 'general/wishlist', component: WishlistComponent, canActivate: [NoAuthGuard] },
-  {path:'cart',component:CartComponent}
+  {path:'cart',component:CartComponent},
+  { path: 'address', component: LocationCardComponent },
+  {
+    path: 'auth/reset-password',
+    component: ResetPasswordComponent
+  },
+  { path: 'location', component: LocationCreateComponent },
+  { path: 'editlocation/:id', component: EditLocationComponent },
+  { path: 'address', component: LocationCardComponent, canActivate: [NoAuthGuard] },
+  {
+    path: 'productList',
+    component: ProductListComponent, canActivate: [NoAuthGuard],
+  },
+  {
+    path: 'product/:id',
+    component: ProductDetailComponent,
+    canActivate: [NoAuthGuard]
+  }
 
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
-  
+
 })
 export class CustomerRoutingModule { }

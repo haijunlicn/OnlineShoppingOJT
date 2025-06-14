@@ -25,6 +25,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { WishlistComponent } from './general/wishlist/wishlist.component';
 import { CartComponent } from './general/cart/cart.component';
+import { ProductListComponent } from './product_display/product-list/product-list.component';
+import { ProductDetailComponent } from './product_display/product-detail/product-detail.component';
 
 
 @NgModule({
@@ -42,7 +44,10 @@ import { CartComponent } from './general/cart/cart.component';
     WishlistDialogComponent,
     UserproductListComponent,
     WishlistComponent,
-    CartComponent
+    CartComponent,
+      
+    ProductListComponent,
+    ProductDetailComponent
 
   ],
   imports: [
@@ -58,8 +63,9 @@ import { CartComponent } from './general/cart/cart.component';
     MatListModule,
     MatInputModule,
     MatButtonModule,
-    FormsModule
+    FormsModule,
 
+    HttpClientModule,
   ]
 })
 export class CustomerModule { }

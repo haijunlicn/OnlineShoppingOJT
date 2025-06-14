@@ -64,5 +64,7 @@ public class ProductEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductVariantEntity> variants = new ArrayList<>();
 
-    // Getters and Setters...
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductImageEntity> productImages = new ArrayList<>();
+
 }
