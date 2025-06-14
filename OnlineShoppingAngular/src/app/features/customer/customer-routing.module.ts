@@ -11,6 +11,9 @@ import { ResetPasswordComponent } from './auth/reset-password/reset-password.com
 import { LocationCreateComponent } from './account/location-create/location-create.component';
 import { LocationCardComponent } from './account/location-card/location-card.component';
 import { EditLocationComponent } from './account/edit-location/edit-location.component';
+import { UserproductListComponent } from './general/userproduct-list/userproduct-list.component';
+import { WishlistComponent } from './general/wishlist/wishlist.component';
+import { CartComponent } from './general/cart/cart.component';
 
 const routes: Routes = [  
 
@@ -37,8 +40,11 @@ const routes: Routes = [
 },
   {path:'location',component:LocationCreateComponent},
   { path: 'editlocation/:id', component: EditLocationComponent },
+  {path:'userproduct',component:UserproductListComponent, canActivate: [NoAuthGuard]},
   {path:'address',component:LocationCardComponent, canActivate: [NoAuthGuard]},
-  
+  { path: 'general/wishlist', component: WishlistComponent, canActivate: [NoAuthGuard] },
+  {path:'cart',component:CartComponent}
+
 ];
 
 @NgModule({

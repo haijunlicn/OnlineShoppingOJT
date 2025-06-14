@@ -44,6 +44,7 @@ public class ProductController {
 
     @GetMapping("/list")
     public ResponseEntity<List<ProductListItemDTO>> getAllProducts() {
+        System.out.println("hello");
         List<ProductListItemDTO> dtos = productService.getAllProducts();
         System.out.println("product list : " + dtos);
         return ResponseEntity.ok(dtos);

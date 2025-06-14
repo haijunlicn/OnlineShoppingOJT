@@ -101,21 +101,30 @@
   color: var(--color-accent);
 }
 
+/* Make sure the button's container is relative */
+.action-btn.cart-btn {
+  position: relative;
+}
+
+/* Badge styles */
 .cart-count {
   position: absolute;
-  top: -2px;
-  right: -2px;
-  background-color: var(--color-highlight);
-  color: var(--color-primary);
+  top: -6px;
+  right: -6px;
+  background-color: #ff5252; /* or use var(--color-highlight) */
+  color: #fff;               /* or use var(--color-primary) */
   border-radius: 50%;
-  width: 16px;
-  height: 16px;
-  font-size: 0.7rem;
+  width: 18px;
+  height: 18px;
+  font-size: 0.75rem;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 0 0 2px white; /* Optional: adds a border separation */
+  z-index: 2;
 }
+
 
 /* Auth Buttons */
 .auth-btn {

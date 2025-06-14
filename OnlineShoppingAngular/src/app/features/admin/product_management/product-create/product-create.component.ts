@@ -259,6 +259,7 @@ export class ProductCreateComponent implements OnInit {
 
       const requestDto: CreateProductRequestDTO = {
         product: {
+          
           name: formValue.name,
           description: formValue.description,
           brandId: formValue.brandId,

@@ -1,0 +1,61 @@
+<div class="wishlist-dialog-container">
+  <h2 mat-dialog-title class="dialog-title">
+    <span class="icon">📌</span> Add to Wishlist
+  </h2>
+
+  <div mat-dialog-content>
+    <p class="subtitle">Select a wishlist to add this product:</p>
+
+    <mat-selection-list
+      class="wishlist-list"
+      [(ngModel)]="selectedTitleIds"
+      (selectionChange)="logSelectedTitleIds()"
+    >
+      <mat-list-option
+        *ngFor="let title of wishlistTitles"
+        [value]="title.id"
+        class="wishlist-option"
+      >
+        <span class="wishlist-name">{{ title.title }}</span>
+      </mat-list-option>
+    </mat-selection-list>
+
+    <div class="divider"></div>
+
+    <form (ngSubmit)="createNewTitle()" #form="ngForm" class="wishlist-form-column">
+      <mat-form-field class="wishlist-input" appearance="fill">
+        <mat-label>New Wishlist Title</mat-label>
+        <input
+          matInput
+          name="newTitle"
+          [(ngModel)]="newTitle"
+          required
+          placeholder="Enter new title..."
+          autocomplete="off"
+        />
+      </mat-form-field>
+      <button
+        type="submit"
+        [disabled]="form.invalid"
+        class="btn btn-milk"
+      >
+        ➕ Create Wishlist
+      </button>
+    </form>
+  </div>
+
+  <div mat-dialog-actions align="end" class="dialog-actions">
+    <button mat-button mat-dialog-close class="btn btn-brown cancel-btn">
+      Cancel
+    </button>
+    <button
+      mat-flat-button
+      color="accent"
+      (click)="confirmAdd()"
+      [disabled]="!selectedTitleIds"
+      class="btn btn-milk add-btn"
+    >
+      ❤️ Add to Wishlist
+    </button>
+  </div>
+</div>

@@ -23,18 +23,22 @@
       <div class="col-auto">
         <div class="header-actions">
           <!-- Icon Buttons -->
-          <button class="action-btn" (click)="onSearch()">
+          <button class="action-btn" (click)="onSearch()" aria-label="Search">
             <i class="fas fa-search"></i>
           </button>
 
-          <button class="action-btn" (click)="onWishlist()">
+          <button class="action-btn" (click)="onWishlist()" aria-label="Wishlist">
             <i class="fas fa-heart"></i>
           </button>
 
-          <button class="action-btn cart-btn" (click)="onCart()">
-            <i class="fas fa-shopping-bag"></i>
-            <span class="cart-count" *ngIf="cartItemCount > 0">{{ cartItemCount }}</span>
-          </button>
+         <button class="action-btn cart-btn" (click)="onCart()" aria-label="Cart">
+  <i class="fas fa-shopping-bag"></i>
+  <span class="cart-count" *ngIf="cartItemCount > 0">
+    {{ cartItemCount }}
+  </span>
+</button>
+
+
 
           <!-- Auth Buttons -->
           <button class="auth-btn auth-btn-outline d-none d-md-inline-block" (click)="onRegister()">
@@ -45,8 +49,8 @@
             Sign In
           </button>
 
-          <!-- Mobile Menu -->
-          <button class="mobile-toggle d-lg-none" (click)="toggleMenu()">
+          <!-- Mobile Menu Toggle -->
+          <button class="mobile-toggle d-lg-none" (click)="toggleMenu()" aria-label="Toggle Menu">
             <span class="menu-line" [class.active]="isMenuOpen"></span>
             <span class="menu-line" [class.active]="isMenuOpen"></span>
             <span class="menu-line" [class.active]="isMenuOpen"></span>
@@ -63,7 +67,7 @@
         <a href="#" class="mobile-nav-item">About</a>
         <a href="#" class="mobile-nav-item">Contact</a>
       </nav>
-      
+
       <div class="mobile-auth">
         <button class="mobile-auth-btn outline" (click)="onRegister()">Register</button>
         <button class="mobile-auth-btn filled" (click)="onSignIn()">Sign In</button>

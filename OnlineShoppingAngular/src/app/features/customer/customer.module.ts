@@ -17,6 +17,15 @@ import { LocationCreateComponent } from './account/location-create/location-crea
 import { HttpClientModule } from '@angular/common/http';
 import { LocationCardComponent } from './account/location-card/location-card.component';
 import { EditLocationComponent } from './account/edit-location/edit-location.component';
+import { UserproductListComponent } from './general/userproduct-list/userproduct-list.component';
+import { WishlistDialogComponent } from './general/wishlist-dialog/wishlist-dialog.component';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatListModule } from '@angular/material/list';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { WishlistComponent } from './general/wishlist/wishlist.component';
+import { CartComponent } from './general/cart/cart.component';
+
 
 @NgModule({
   declarations: [
@@ -29,7 +38,11 @@ import { EditLocationComponent } from './account/edit-location/edit-location.com
     VerifyComponent,
     LocationCreateComponent,
     LocationCardComponent,
-    EditLocationComponent
+    EditLocationComponent,
+    WishlistDialogComponent,
+    UserproductListComponent,
+    WishlistComponent,
+    CartComponent
 
   ],
   imports: [
@@ -39,7 +52,14 @@ import { EditLocationComponent } from './account/edit-location/edit-location.com
     ReactiveFormsModule,
     ReactiveFormsModule,
     FormsModule,
-   HttpClientModule
+   HttpClientModule,
+   MatDialogModule,
+   MatDialogModule,
+    MatListModule,
+    MatInputModule,
+    MatButtonModule,
+    FormsModule
+
   ]
 })
 export class CustomerModule { }
