@@ -7,8 +7,7 @@
       <p class="meta">{{ item.category.name }} • {{ item.brand.name }}</p>
       <p class="price">{{ item.product.basePrice | currency }}</p>
 
-      <p class="stock-status"
-         [ngClass]="isInStock(item) ? 'in-stock' : 'out-stock'">
+      <p class="stock-status" [ngClass]="isInStock(item) ? 'in-stock' : 'out-stock'">
         {{ isInStock(item) ? '✔ In Stock' : '❌ Out of Stock' }}
       </p>
 
@@ -28,13 +27,9 @@
         {{ isWished(item.product.id!) ? 'Wished' : 'Add to Wishlist' }}
       </button>
 
-      <button
-  class="cart-btn"
-  (click)="addToCart(item)"
-  [disabled]="!isInStock(item)"
->
-  🛒 Add to Cart
-</button>
+      <button class="cart-btn" (click)="addToCart(item)" [disabled]="!isInStock(item)">
+        🛒 Add to Cart
+      </button>
 
     </div>
   </div>

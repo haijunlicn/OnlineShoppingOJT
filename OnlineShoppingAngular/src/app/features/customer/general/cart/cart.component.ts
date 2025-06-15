@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CartService } from '../../../../core/services/cart.service';
+import { CartItem } from '../../../../core/models/cart.model'; // optional if you have strong typing
 
 @Component({
   selector: 'app-cart',
@@ -8,7 +9,7 @@ import { CartService } from '../../../../core/services/cart.service';
   styleUrls: ['./cart.component.css']
 })
 export class CartComponent implements OnInit {
-  cart: any[] = [];
+  cart: CartItem[] = [];
 
   constructor(private cartService: CartService) {}
 
@@ -20,13 +21,13 @@ export class CartComponent implements OnInit {
     this.cart = this.cartService.getCart();
   }
 
-  changeQty(productId: number, change: number): void {
-    this.cartService.updateQuantity(productId, change);
+  changeQty(productId: number, variantId: number, change: number): void {
+    this.cartService.updateQuantity(productId, variantId, change);
     this.loadCart();
   }
 
-  removeItem(productId: number): void {
-    this.cartService.removeFromCart(productId);
+  removeItem(productId: number, variantId: number): void {
+    this.cartService.removeFromCart(productId, variantId);
     this.loadCart();
   }
 

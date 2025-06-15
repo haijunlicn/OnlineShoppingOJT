@@ -14,16 +14,20 @@
     </thead>
     <tbody>
       <tr *ngFor="let item of cart">
-        <td>{{ item.name }}</td>
+        <td>{{ item.productName }}</td>
         <td>${{ item.price }}</td>
         <td>
-          <button class="qty-btn" (click)="changeQty(item.id, -1)">−</button>
+          <button class="qty-btn" (click)="changeQty(item.productId, item.variantId, -1)">−</button>
           <span class="qty-count">{{ item.quantity }}</span>
-          <button class="qty-btn" (click)="changeQty(item.id, 1)" [disabled]="item.quantity >= item.stock">+</button>
+          <button
+            class="qty-btn"
+            (click)="changeQty(item.productId, item.variantId, 1)"
+            [disabled]="item.quantity >= item.stock"
+          >+</button>
         </td>
         <td>${{ item.price * item.quantity }}</td>
         <td>
-          <button class="remove-btn" (click)="removeItem(item.id)">🗑 Remove</button>
+          <button class="remove-btn" (click)="removeItem(item.productId, item.variantId)">🗑 Remove</button>
         </td>
       </tr>
     </tbody>
@@ -39,6 +43,6 @@
   </div>
 
   <button class="back-btn" routerLink="/customer/userproduct" routerLinkActive="active">
-  ⬅ Back to Product List
-</button>
+    ⬅ Back to Product List
+  </button>
 </div>

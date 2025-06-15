@@ -1,5 +1,3 @@
-import { VariantPriceDTO } from "./product.model";
-
 export interface VariantOptionDTO {
   optionId: number;
   optionValueId: number;

@@ -20,35 +20,37 @@ import { ProductDetailComponent } from './product_display/product-detail/product
 const routes: Routes = [
 
   { path: 'home', component: HomeComponent },
-  { path: 'auth/verify/:id', component: VerifyComponent ,},
-{ path: 'general/home', component: HomeComponent },
-  { path: 'auth/verify/:id', component: VerifyComponent, canActivate: [NoAuthGuard] },
+  { path: 'general/home', component: HomeComponent },
+  {
+    path: 'auth/verify/:id',
+    component: VerifyComponent,
+    canActivate: [NoAuthGuard]
+  },
   { path: 'general/home', component: HomeComponent },
   {
     path: 'auth/register',
-    component: RegisterComponent, 
+    component: RegisterComponent,
   },
   {
     path: 'auth/login',
-    component: LoginComponent, 
+    component: LoginComponent,
 
   },
   {
     path: 'auth/forgetPass',
-    component: ForgetPasswordComponent, 
-
+    component: ForgetPasswordComponent,
   },
-  
- {
-  path: 'auth/reset-password', 
-  component: ResetPasswordComponent
-},
-  {path:'location',component:LocationCreateComponent},
+
+  {
+    path: 'auth/reset-password',
+    component: ResetPasswordComponent
+  },
+  { path: 'location', component: LocationCreateComponent },
   { path: 'editlocation/:id', component: EditLocationComponent },
-  {path:'userproduct',component:UserproductListComponent, canActivate: [NoAuthGuard]},
-  {path:'address',component:LocationCardComponent, canActivate: [NoAuthGuard]},
-  { path: 'general/wishlist', component: WishlistComponent, canActivate: [NoAuthGuard] },
-  {path:'cart',component:CartComponent},
+  { path: 'userproduct', component: UserproductListComponent },
+  { path: 'address', component: LocationCardComponent },
+  { path: 'general/wishlist', component: WishlistComponent },
+  { path: 'cart', component: CartComponent },
   { path: 'address', component: LocationCardComponent },
   {
     path: 'auth/reset-password',
@@ -56,15 +58,14 @@ const routes: Routes = [
   },
   { path: 'location', component: LocationCreateComponent },
   { path: 'editlocation/:id', component: EditLocationComponent },
-  { path: 'address', component: LocationCardComponent, canActivate: [NoAuthGuard] },
+  { path: 'address', component: LocationCardComponent },
   {
     path: 'productList',
-    component: ProductListComponent, canActivate: [NoAuthGuard],
+    component: ProductListComponent,
   },
   {
     path: 'product/:id',
-    component: ProductDetailComponent,
-    canActivate: [NoAuthGuard]
+    component: ProductDetailComponent
   }
 
 ];

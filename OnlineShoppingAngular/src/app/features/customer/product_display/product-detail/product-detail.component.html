@@ -105,23 +105,32 @@
           </div>
 
           <!-- Add to Cart -->
+          <!-- Update the cart quantity display section -->
           <div class="d-flex align-items-center">
             <div class="input-group me-3" style="width: 120px;">
               <button class="btn btn-outline-secondary" type="button" (click)="decrementQuantity()">-</button>
               <input type="number" class="form-control text-center" [(ngModel)]="quantity" min="1"
-                [max]="selectedVariant?.stock || 1">
+                [max]="getCurrentVariantRemainingStock()">
               <button class="btn btn-outline-secondary" type="button" (click)="incrementQuantity()">+</button>
             </div>
 
-            <button class="btn btn-primary" (click)="addToCart()"
-              [disabled]="!selectedVariant || selectedVariant.stock === 0">
+            <button class="btn btn-primary" (click)="addToCart(this.product)"
+              [disabled]="!selectedVariant || selectedVariant.stock === 0 || getCurrentVariantRemainingStock() === 0">
               <i class="bi bi-cart-plus me-1"></i> Add to Cart
             </button>
 
-            <button class="btn btn-outline-secondary ms-2">
-              <i class="bi bi-heart"></i>
+            <button class="btn btn-outline-secondary ms-2" (click)="toggleWish(product.product.id!)">
+              <i class="pi" [ngClass]="isWished(product.product.id!) ? 'pi-heart-fill text-danger' : 'pi-heart'"></i>
             </button>
           </div>
+
+          <!-- Show In Cart / Remaining for current variant -->
+          <div class="small mt-2 text-muted" *ngIf="selectedVariant">
+            In Cart: {{ getCurrentVariantCartQuantity() }} |
+            Remaining: {{ getCurrentVariantRemainingStock() }}
+          </div>
+
+
         </div>
       </div>
     </div>

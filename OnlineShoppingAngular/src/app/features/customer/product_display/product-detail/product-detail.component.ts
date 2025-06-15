@@ -4,6 +4,11 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductCardItem, ProductImageDTO, ProductListItemDTO, ProductVariantDTO } from '../../../../core/models/product.model';
 import { ProductService } from '../../../../core/services/product.service';
+import Swal from 'sweetalert2';
+import { WishlistDialogComponent } from '../../general/wishlist-dialog/wishlist-dialog.component';
+import { CartService } from '../../../../core/services/cart.service';
+import { WishlistService } from '../../../../core/services/wishlist.service';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-product-detail',
@@ -20,12 +25,18 @@ export class ProductDetailComponent {
   allImages: Array<{ url: string; variantId?: string }> = []
   quantity = 1
   currentImageIndex = 0
+  wishList = new Set<number>();
+  cartItems: { productId: number; variantId: number; quantity: number }[] = [];
+
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private fb: FormBuilder,
     private productService: ProductService,
+    private cartService: CartService,
+    private wishlistService: WishlistService,
+    private dialog: MatDialog,
   ) { }
 
   ngOnInit(): void {
@@ -168,9 +179,10 @@ export class ProductDetailComponent {
   onOptionChange(optionId: number, valueId: number): void {
     this.form.get(optionId.toString())?.setValue(valueId)
     this.selectedOptions[optionId] = valueId
-    this.quantity = 1;
     this.updateSelectedVariant()
     this.autoSelectVariantImage()
+    this.quantity = 1
+    this.refreshCart()
   }
 
   updateSelectedVariant(): void {
@@ -210,39 +222,6 @@ export class ProductDetailComponent {
     return this.mainImageUrl === imageUrl
   }
 
-  incrementQuantity(): void {
-    if (this.selectedVariant && this.quantity < this.selectedVariant.stock) {
-      this.quantity++
-    }
-  }
-
-  decrementQuantity(): void {
-    if (this.quantity > 1) {
-      this.quantity--
-    }
-  }
-
-  addToCart(): void {
-    if (!this.selectedVariant) {
-      alert("Please select all options.")
-      return
-    }
-
-    if (this.selectedVariant.stock === 0) {
-      alert("This variant is out of stock.")
-      return
-    }
-
-    console.log("Adding to cart:", {
-      productId: this.product.id,
-      variant: this.selectedVariant,
-      selectedOptions: this.selectedOptions,
-      quantity: this.quantity,
-    })
-
-    alert("Product added to cart successfully!")
-  }
-
   getStockStatus(): string {
     if (!this.selectedVariant) return "";
     if (this.selectedVariant.stock === 0) return "Out of Stock";
@@ -256,4 +235,154 @@ export class ProductDetailComponent {
     if (this.selectedVariant.stock <= 5) return "text-warning"
     return "text-success"
   }
+
+  loadWishlist() {
+    const userId = 4; // replace with dynamic user ID
+    this.wishlistService.getWishedProductIds(userId).subscribe({
+      next: (wishedIds) => {
+        this.wishList = new Set<number>(wishedIds);
+        // this.productService.getProductList().subscribe({
+        //   next: (products) => this.products = products,
+        //   error: (err) => console.error('Error loading products:', err)
+        // });
+      },
+      error: (err) => console.error('Failed to load wishlist:', err)
+    });
+  }
+
+  toggleWish(productId: number): void {
+    const userId = 4;
+
+    if (this.isWished(productId)) {
+      this.wishlistService.removeProductFromWishlist(userId, productId).subscribe({
+        next: () => {
+          this.wishList.delete(productId);
+          this.loadWishlist();
+        },
+        error: (err) => {
+          console.error('Failed to remove from wishlist:', err);
+        }
+      });
+    } else {
+      const dialogRef = this.dialog.open(WishlistDialogComponent, {
+        width: '400px',
+        data: { productId }
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        if (result && result.added) {
+          this.wishList.add(productId);
+          this.loadWishlist();
+        }
+      });
+    }
+  }
+
+  isWished(productId: number | string): boolean {
+    const id = typeof productId === 'string' ? +productId : productId;
+    return this.wishList.has(id);
+  }
+
+  private refreshCart(): void {
+    this.cartItems = this.cartService.getCart().map((i) => ({
+      productId: i.productId,
+      variantId: i.variantId,
+      variantSku: i.variantSku,
+      quantity: i.quantity,
+    }));
+  }
+
+  /** Get cart quantity for the currently selected variant */
+  getCurrentVariantCartQuantity(): number {
+    if (!this.selectedVariant) return 0;
+    return this.cartService.getVariantQuantity(this.product.product.id!, this.selectedVariant.id!);
+  }
+
+  /** Get remaining stock for the currently selected variant */
+  getCurrentVariantRemainingStock(): number {
+    if (!this.selectedVariant) return 0;
+    const inCart = this.getCurrentVariantCartQuantity();
+    return this.selectedVariant.stock - inCart;
+  }
+
+  addToCart(item: ProductListItemDTO): void {
+    if (!this.selectedVariant) {
+      alert("Please select all options.");
+      return;
+    }
+
+    const stock = this.selectedVariant.stock;
+    const inCart = this.getCurrentVariantCartQuantity();
+
+    if (stock === 0 || inCart >= stock) {
+      Swal.fire({
+        title: stock === 0 ? "❌ Out of Stock!" : "⚠️ Stock Limit Reached",
+        text: `${item.product.name} (${this.selectedVariant.sku}) is ${stock === 0 ? "currently out of stock." : "out of stock."
+          }`,
+        icon: stock === 0 ? "error" : "warning",
+        toast: true,
+        position: "top",
+        showConfirmButton: false,
+        timer: 2500,
+        background: stock === 0 ? "#ffe6e6" : "#e8d7c3",
+        color: "#333",
+        customClass: { popup: "custom-toast-popup" },
+      });
+      return;
+    }
+
+    // Add the selected quantity (not just 1)
+    const fallbackImage = this.selectedVariant.imgPath
+      ?? item.product.productImages?.[0]?.imgPath
+      ?? undefined;
+
+    for (let i = 0; i < this.quantity; i++) {
+      this.cartService.addToCart({
+        id: item.product.id!,
+        name: item.product.name,
+        variantId: this.selectedVariant.id!,
+        variantSku: this.selectedVariant.sku,
+        stock: this.selectedVariant.stock,
+        price: this.selectedVariant.price,
+        image: fallbackImage,
+      });
+    }
+
+
+    this.refreshCart();
+
+    Swal.fire({
+      title: "🛒 Added to Cart!",
+      text: `${this.quantity} x ${item.product.name} (${this.selectedVariant.sku}) added successfully.`,
+      icon: "success",
+      toast: true,
+      position: "top",
+      showConfirmButton: false,
+      timer: 1500,
+      background: "#f0fff0",
+      color: "#333",
+      customClass: { popup: "custom-toast-popup" },
+    });
+
+    this.quantity = 1;
+  }
+
+  incrementQuantity(): void {
+    const maxAllowed = this.getCurrentVariantRemainingStock();
+    if (this.quantity < maxAllowed) {
+      this.quantity++;
+    }
+  }
+
+  decrementQuantity(): void {
+    if (this.quantity > 1) {
+      this.quantity--;
+    }
+  }
+
+  getCartQuantity(productId: number): number {
+    const entry = this.cartItems.find(i => i.productId === productId);
+    return entry ? entry.quantity : 0;
+  }
+
 }

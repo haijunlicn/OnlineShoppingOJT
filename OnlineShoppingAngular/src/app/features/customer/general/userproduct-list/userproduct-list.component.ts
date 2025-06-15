@@ -23,7 +23,7 @@ export class UserproductListComponent implements OnInit {
     private wishlistService: WishlistService,
     private dialog: MatDialog,
     private cartService: CartService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadProductsWithWishlist();
@@ -82,9 +82,9 @@ export class UserproductListComponent implements OnInit {
   }
 
   private refreshCart(): void {
-    this.cartItems = this.cartService
-      .getCart()
-      .map(i => ({ id: i.id, quantity: i.quantity }));
+    // this.cartItems = this.cartService
+    //   .getCart()
+    //   .map(i => ({ id: i.id, quantity: i.quantity }));
   }
 
   getCartQuantity(productId: number): number {
@@ -93,63 +93,63 @@ export class UserproductListComponent implements OnInit {
   }
 
   addToCart(item: ProductListItemDTO): void {
-    const stock = item.variants?.[0]?.stock ?? 0;
-    const inCart = this.getCartQuantity(item.product.id!);
+    // const stock = item.variants?.[0]?.stock ?? 0;
+    // const inCart = this.getCartQuantity(item.product.id!);
 
-    if (stock === 0) {
-      Swal.fire({
-        title: '❌ Out of Stock!',
-        text: `${item.product.name} သည် လက်ရှိအတွက် မရနိုင်သေးပါ။`,
-        icon: 'error',
-        toast: true,
-        position: 'top',
-        showConfirmButton: false,
-        timer: 2500,
-        background: '#ffe6e6',
-        color: '#a70000',
-        customClass: { popup: 'custom-toast-popup' }
-      });
-      return;
-    }
+    // if (stock === 0) {
+    //   Swal.fire({
+    //     title: '❌ Out of Stock!',
+    //     text: `${item.product.name} သည် လက်ရှိအတွက် မရနိုင်သေးပါ။`,
+    //     icon: 'error',
+    //     toast: true,
+    //     position: 'top',
+    //     showConfirmButton: false,
+    //     timer: 2500,
+    //     background: '#ffe6e6',
+    //     color: '#a70000',
+    //     customClass: { popup: 'custom-toast-popup' }
+    //   });
+    //   return;
+    // }
 
-   if (inCart >= stock) {
-  Swal.fire({
-    title: '⚠️ Stock Limit Reached',
-    text: `${item.product.name} is out of stock.`,
-    icon: 'warning',
-    toast: true,
-    position: 'top',
-    showConfirmButton: false,
-    timer: 2000,
-    background: '#e8d7c3',  // soft warm brown
-    color: '#333',        // deeper brown text
-    customClass: {
-      popup: 'custom-toast-popup'
-    }
-  });
-  return;
-}
+    // if (inCart >= stock) {
+    //   Swal.fire({
+    //     title: '⚠️ Stock Limit Reached',
+    //     text: `${item.product.name} is out of stock.`,
+    //     icon: 'warning',
+    //     toast: true,
+    //     position: 'top',
+    //     showConfirmButton: false,
+    //     timer: 2000,
+    //     background: '#e8d7c3',  // soft warm brown
+    //     color: '#333',        // deeper brown text
+    //     customClass: {
+    //       popup: 'custom-toast-popup'
+    //     }
+    //   });
+    //   return;
+    // }
 
-    this.cartService.addToCart({
-      id: item.product.id,
-      name: item.product.name,
-      price: item.product.basePrice,
-      stock
-    });
+    // this.cartService.addToCart({
+    //   id: item.product.id,
+    //   name: item.product.name,
+    //   price: item.product.basePrice,
+    //   stock
+    // });
 
-    this.refreshCart();
+    // this.refreshCart();
 
-    Swal.fire({
-      title: '🛒 Added to Cart!',
-      text: `${item.product.name} has been added successfully.`,
-      icon: 'success',
-      toast: true,
-      position: 'top',
-      showConfirmButton: false,
-      timer: 1500,
-      background: '#f0fff0',
-      color: '#333',
-      customClass: { popup: 'custom-toast-popup' }
-    });
+    // Swal.fire({
+    //   title: '🛒 Added to Cart!',
+    //   text: `${item.product.name} has been added successfully.`,
+    //   icon: 'success',
+    //   toast: true,
+    //   position: 'top',
+    //   showConfirmButton: false,
+    //   timer: 1500,
+    //   background: '#f0fff0',
+    //   color: '#333',
+    //   customClass: { popup: 'custom-toast-popup' }
+    // });
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { CURRENT_USER_ID } from '../models/user.constant';
+import { CartItem } from '../models/cart.model';
 
 @Injectable({
   providedIn: 'root'
@@ -8,70 +9,102 @@ import { CURRENT_USER_ID } from '../models/user.constant';
 export class CartService {
   private storageKey = `cart_user_${CURRENT_USER_ID}`;
 
-  // — New: a stream of the total item count in cart —
+  // Stream of the total item count in cart
   private cartCountSubject = new BehaviorSubject<number>(this.calcCount());
   cartCount$ = this.cartCountSubject.asObservable();
 
   constructor() {}
 
-  /** Existing: read full cart */
-  getCart(): any[] {
+  /** Read full cart */
+  getCart(): CartItem[] {
     const cart = localStorage.getItem(this.storageKey);
     return cart ? JSON.parse(cart) : [];
   }
 
-  /** Existing: add or bump an item */
-  addToCart(product: any): void {
-    let cart = this.getCart();
-    const index = cart.findIndex(item => item.id === product.id);
+  /** Add or bump a variant (stores product and variant info) */
+  addToCart(product: {
+    id: number;              // productId
+    name: string;            // productName
+    variantId: number;
+    variantSku: string;
+    stock: number;
+    price: number;
+    image?: string;
+  }): void {
+    const cart = this.getCart();
+    const index = cart.findIndex(
+      (item) => item.productId === product.id && item.variantId === product.variantId
+    );
 
     if (index !== -1) {
       if (cart[index].quantity < product.stock) {
         cart[index].quantity += 1;
       } else {
-        alert(`${product.name} out of stock`);
+        alert(`${product.name} (Variant ID ${product.variantId}) is out of stock`);
+        return;
       }
     } else {
-      cart.push({ ...product, quantity: 1 });
+      const cartItem: CartItem = {
+        productId: product.id,
+        productName: product.name,
+        variantId: product.variantId,
+        variantSku: product.variantSku,
+        stock: product.stock,
+        price: product.price,
+        imgPath: product.image || undefined,
+        quantity: 1
+      };
+      cart.push(cartItem);
     }
 
     localStorage.setItem(this.storageKey, JSON.stringify(cart));
-    this.emitCount();              // ← New
+    this.emitCount();
   }
 
-  /** Existing: adjust quantity or remove */
-  updateQuantity(productId: number, change: number): void {
-    let cart = this.getCart();
-    const index = cart.findIndex(item => item.id === productId);
+  /** Update quantity for a specific variant using variantId */
+  updateQuantity(productId: number, variantId: number, change: number): void {
+    const cart = this.getCart();
+    const index = cart.findIndex(
+      (item) => item.productId === productId && item.variantId === variantId
+    );
 
     if (index !== -1) {
       const newQty = cart[index].quantity + change;
       if (newQty >= 1 && newQty <= cart[index].stock) {
         cart[index].quantity = newQty;
       } else if (newQty < 1) {
-        this.removeFromCart(productId);
-        return;                     // removeFromCart will also emit
+        this.removeFromCart(productId, variantId);
+        return; // Already emits
       }
     }
 
     localStorage.setItem(this.storageKey, JSON.stringify(cart));
-    this.emitCount();              // ← New
+    this.emitCount();
   }
 
-  /** Existing: remove an entry */
-  removeFromCart(productId: number): void {
-    const updatedCart = this.getCart().filter(item => item.id !== productId);
+  /** Remove a specific variant from cart using variantId */
+  removeFromCart(productId: number, variantId: number): void {
+    const updatedCart = this.getCart().filter(
+      (item) => !(item.productId === productId && item.variantId === variantId)
+    );
     localStorage.setItem(this.storageKey, JSON.stringify(updatedCart));
-    this.emitCount();              // ← New
+    this.emitCount();
   }
 
-  /** Existing: clear everything */
+  /** Clear everything */
   clearCart(): void {
     localStorage.removeItem(this.storageKey);
-    this.emitCount();              // ← New
+    this.emitCount();
   }
 
-  // — New helpers below —
+  /** Get quantity for a specific variant using variantId */
+  getVariantQuantity(productId: number, variantId: number): number {
+    const cart = this.getCart();
+    const item = cart.find(
+      (item) => item.productId === productId && item.variantId === variantId
+    );
+    return item ? item.quantity : 0;
+  }
 
   /** Calculate the sum of all quantities in storage */
   private calcCount(): number {
@@ -79,7 +112,7 @@ export class CartService {
   }
 
   /** Push the latest total into the BehaviorSubject */
-  private emitCount() {
+  private emitCount(): void {
     this.cartCountSubject.next(this.calcCount());
   }
 }

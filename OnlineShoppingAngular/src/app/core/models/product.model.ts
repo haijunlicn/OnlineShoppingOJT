@@ -3,13 +3,16 @@ import type { OptionTypeDTO, OptionValueDTO } from "./option.model"
 import type { VariantOptionDTO } from "./variant.model"
 
 export interface ProductVariantDTO {
+  id?: number;
   options: VariantOptionDTO[]
   price: number
   stock: number
   sku: string
-  imgPath?: string // Single optional image for variant
-  // imageUrl?: string // For display purposes
+  imgPath?: string
   priceHistory?: VariantPriceDTO[]
+  displayLabel?: string
+  isDefault?: boolean // New: Mark default variants
+  isRemovable?: boolean
 }
 
 export interface ProductOptionDTO {
