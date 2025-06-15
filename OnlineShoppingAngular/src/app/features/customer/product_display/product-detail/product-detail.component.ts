@@ -85,6 +85,8 @@ export class ProductDetailComponent {
   setDefaultSelections(): void {
     // Update selected variant based on default selections
     this.updateSelectedVariant()
+    console.log("default selections : ", this.selectedVariant);
+
   }
 
   buildImagesList(): void {
@@ -176,6 +178,27 @@ export class ProductDetailComponent {
     return image.url
   }
 
+  getValidOptionValues(optionId: number, allValues: any[]): any[] {
+    const selected = { ...this.selectedOptions }
+    delete selected[optionId]
+
+    const validValueIds = new Set<number>()
+
+    for (const variant of this.product.variants) {
+      const matches = variant.options.every(vo => {
+        return selected[vo.optionId] == null || selected[vo.optionId] === vo.optionValueId
+      })
+
+      if (matches) {
+        const match = variant.options.find(vo => vo.optionId === optionId)
+        if (match) validValueIds.add(match.optionValueId)
+      }
+    }
+
+    return allValues.filter(val => validValueIds.has(val.id))
+  }
+
+
   onOptionChange(optionId: number, valueId: number): void {
     this.form.get(optionId.toString())?.setValue(valueId)
     this.selectedOptions[optionId] = valueId
@@ -187,15 +210,21 @@ export class ProductDetailComponent {
 
   updateSelectedVariant(): void {
     this.selectedVariant = this.product.variants.find((variant) => {
-      return (
-        Array.isArray(variant.options) &&
-        variant.options.length > 0 &&
-        variant.options.every(
-          (variantOption) => this.selectedOptions[variantOption.optionId] === variantOption.optionValueId,
-        )
+      const variantOptions = variant.options ?? []
+
+      // CASE 1: No options — treat as default variant
+      if (variantOptions.length === 0 && Object.keys(this.selectedOptions).length === 0) {
+        return true
+      }
+
+      // CASE 2: Match all selected options
+      return variantOptions.every(
+        (variantOption) =>
+          this.selectedOptions[variantOption.optionId] === variantOption.optionValueId
       )
     })
   }
+
 
   autoSelectVariantImage(): void {
     // If selected variant has an image, auto-select it

@@ -88,7 +88,9 @@
             <div *ngFor="let option of product.options; trackBy: trackByOptionId" class="mb-2">
               <label class="form-label fw-bold mb-1">{{ option.name }}</label>
               <div class="d-flex flex-wrap">
-                <div *ngFor="let value of option.optionValues; trackBy: trackByOptionValue" class="me-2 mb-1">
+                <div
+                  *ngFor="let value of getValidOptionValues(option.id, option.optionValues); trackBy: trackByOptionValue"
+                  class="me-2 mb-1">
                   <button type="button" class="btn option-btn" [class.btn-primary]="isSelected(option.id, value.id!)"
                     [class.btn-outline-secondary]="!isSelected(option.id, value.id!)"
                     (click)="onOptionChange(option.id, value.id!)">

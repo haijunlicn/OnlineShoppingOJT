@@ -37,6 +37,10 @@ export class ProductCreateComponent implements OnInit {
   selectedImageForBulkAssignment = ""
   bulkAssignmentMode = false
 
+  // New: Variant management
+  hasOptionsSelected = false
+  removedVariantIndices: Set<number> = new Set()
+
   // Upload states
   uploading = false
   uploadProgress = 0
@@ -63,7 +67,16 @@ export class ProductCreateComponent implements OnInit {
     private route: ActivatedRoute,
   ) {
     this.productForm = this.productFormService.createProductForm()
-    this.options.valueChanges.subscribe(() => this.generateProductVariants())
+
+    // Watch for option changes
+    this.options.valueChanges.subscribe(() => {
+      console.log("option changes");
+
+      this.checkOptionsAndGenerateVariants()
+    })
+
+    // Initialize with default variant
+    this.initializeDefaultVariant()
   }
 
   ngOnInit(): void {
@@ -71,6 +84,200 @@ export class ProductCreateComponent implements OnInit {
     this.fetchBrands()
     this.fetchOptionTypes()
   }
+
+  /**
+   * Initialize with a default variant for products without options
+   */
+  private initializeDefaultVariant(): void {
+    const defaultVariant = this.variantGeneratorService.generateDefaultVariant()
+    this.productVariants = [defaultVariant]
+
+    const variantsArray = this.productFormService.getVariantsArray(this.productForm)
+    const variantGroup = this.productFormService.createVariantGroupWithImageAssignment()
+    variantGroup.patchValue({
+      price: 0,
+      stock: 0,
+      assignedImageId: "",
+      isRemovable: false,
+    })
+    variantsArray.push(variantGroup)
+
+    this.hasOptionsSelected = false
+  }
+
+  /**
+   * Check if options are selected and generate appropriate variants
+   */
+  private checkOptionsAndGenerateVariants(): void {
+    const hasValidOptions = this.hasValidOptionsSelected()
+
+    if (hasValidOptions !== this.hasOptionsSelected) {
+      this.hasOptionsSelected = hasValidOptions
+
+    }
+
+    this.generateProductVariants()
+  }
+
+  /**
+   * Check if any valid options are selected
+   */
+  private hasValidOptionsSelected(): boolean {
+    for (let i = 0; i < this.options.length; i++) {
+      const option = this.options.at(i).value
+      if (option.id && option.values && option.values.length > 0) {
+        return true
+      }
+    }
+    return false
+  }
+
+  /**
+   * Enhanced variant generation with default variant support
+   */
+  generateProductVariants(): void {
+    const variantsArray = this.productFormService.getVariantsArray(this.productForm)
+
+    console.log("variants : ", variantsArray);
+
+
+
+    // Clear existing variants
+    while (variantsArray.length) {
+      variantsArray.removeAt(0)
+    }
+    this.productVariants = []
+    this.removedVariantIndices.clear()
+
+    // Clear variant selections when regenerating
+    this.selectedVariants.clear()
+    this.bulkAssignmentMode = false
+
+    if (!this.hasOptionsSelected) {
+      // No options selected - use default variant
+      this.initializeDefaultVariant()
+      return
+    }
+
+    // Generate variants from options
+    const optionsWithValues = this.buildOptionsWithValues()
+
+    if (optionsWithValues.length === 0) {
+      this.initializeDefaultVariant()
+      return
+    }
+
+    this.productVariants = this.variantGeneratorService.generateCombinations(optionsWithValues)
+
+    console.log("product variants : ", this.productVariants);
+
+
+    const basePrice = this.productForm.get("basePrice")?.value || 0
+
+    this.productVariants.forEach(() => {
+      const variantGroup = this.productFormService.createVariantGroupWithImageAssignment()
+      variantGroup.patchValue({
+        price: basePrice,
+        stock: 0,
+        assignedImageId: "",
+        isRemovable: true,
+      })
+      variantsArray.push(variantGroup)
+    })
+  }
+
+  /**
+   * Build options with values for variant generation
+   */
+  private buildOptionsWithValues(): any[] {
+    const optionsWithValues: any[] = []
+
+    for (let i = 0; i < this.options.length; i++) {
+      const option = this.options.at(i).value as { id: number; name: string; values: string[] }
+
+      if (option.id && option.values && option.values.length > 0) {
+        const optionType = this.optionTypes.find((ot) => ot.id.toString() === option.id.toString())
+
+        if (optionType) {
+          const mappedValues = (option.values as string[])
+            .map((valueString: string) => {
+              const optionValueObj = optionType.optionValues?.find((ov) => ov.value === valueString)
+              if (optionValueObj && optionValueObj.id) {
+                return {
+                  optionValueId: Number(optionValueObj.id),
+                  valueName: valueString,
+                }
+              }
+              return null
+            })
+            .filter((value) => value !== null) as { optionValueId: number; valueName: string }[]
+
+          if (mappedValues.length > 0) {
+            optionsWithValues.push({
+              optionId: Number(option.id),
+              optionName: option.name || this.getOptionTypeName(option.id.toString()),
+              values: mappedValues,
+            })
+          }
+        }
+      }
+    }
+
+    return optionsWithValues
+  }
+
+  /**
+   * Remove a specific variant
+   */
+  removeVariant(variantIndex: number): void {
+    if (!this.productVariants[variantIndex]?.isRemovable) {
+      return // Cannot remove default variant
+    }
+
+    // Remove from form array
+    const variantsArray = this.productFormService.getVariantsArray(this.productForm)
+    variantsArray.removeAt(variantIndex)
+
+    // Remove from product variants
+    this.productVariants.splice(variantIndex, 1)
+
+    // Update selected variants indices
+    const newSelectedVariants = new Set<number>()
+    this.selectedVariants.forEach((index) => {
+      if (index < variantIndex) {
+        newSelectedVariants.add(index)
+      } else if (index > variantIndex) {
+        newSelectedVariants.add(index - 1)
+      }
+      // Skip the removed index
+    })
+    this.selectedVariants = newSelectedVariants
+
+    // Clear any image assignments for removed variant
+    this.clearVariantImageAssignments("")
+  }
+
+  /**
+   * Check if variant can be removed
+   */
+  canRemoveVariant(variantIndex: number): boolean {
+    return this.productVariants[variantIndex]?.isRemovable !== false
+  }
+
+  /**
+   * Get display label for variant
+   */
+  getVariantDisplayLabel(variantIndex: number): string {
+    const variant = this.productVariants[variantIndex]
+    if (!variant) return ""
+
+    if (variant.isDefault) {
+      return "Default Variant"
+    }
+
+    return variant.displayLabel || variant.options.map((opt) => `${opt.optionName}: ${opt.valueName}`).join(", ")
+  }
+
 
   // Image Pool Methods with Display Order Management
   triggerImageUpload(): void {
@@ -268,7 +475,7 @@ export class ProductCreateComponent implements OnInit {
 
       const requestDto: CreateProductRequestDTO = {
         product: {
-          
+
           name: formValue.name,
           description: formValue.description,
           brandId: formValue.brandId,
@@ -346,73 +553,6 @@ export class ProductCreateComponent implements OnInit {
     while (this.variants.length !== 0) {
       this.variants.removeAt(0)
     }
-  }
-
-  // Generate variants with image assignment support
-  generateProductVariants(): void {
-    const variantsArray = this.productFormService.getVariantsArray(this.productForm)
-    while (variantsArray.length) {
-      variantsArray.removeAt(0)
-    }
-    this.productVariants = []
-
-    // Clear variant selections when regenerating
-    this.selectedVariants.clear()
-    this.bulkAssignmentMode = false
-
-    const optionsWithValues: {
-      optionId: number
-      optionName: string
-      values: { optionValueId: number; valueName: string }[]
-    }[] = []
-
-    for (let i = 0; i < this.options.length; i++) {
-      const option = this.options.at(i).value as { id: number; name: string; values: string[] }
-
-      if (option.id && option.values && option.values.length > 0) {
-        const optionType = this.optionTypes.find((ot) => ot.id.toString() === option.id.toString())
-
-        if (optionType) {
-          const mappedValues = (option.values as string[])
-            .map((valueString: string) => {
-              const optionValueObj = optionType.optionValues?.find((ov) => ov.value === valueString)
-              if (optionValueObj && optionValueObj.id) {
-                return {
-                  optionValueId: Number(optionValueObj.id),
-                  valueName: valueString,
-                }
-              }
-              return null
-            })
-            .filter((value) => value !== null) as { optionValueId: number; valueName: string }[]
-
-          if (mappedValues.length > 0) {
-            optionsWithValues.push({
-              optionId: Number(option.id),
-              optionName: option.name || this.getOptionTypeName(option.id.toString()),
-              values: mappedValues,
-            })
-          }
-        }
-      }
-    }
-
-    if (optionsWithValues.length === 0) {
-      return
-    }
-
-    this.productVariants = this.variantGeneratorService.generateCombinations(optionsWithValues)
-    const basePrice = this.productForm.get("basePrice")?.value || 0
-
-    this.productVariants.forEach(() => {
-      const variantGroup = this.productFormService.createVariantGroupWithImageAssignment()
-      variantGroup.patchValue({
-        price: basePrice,
-        stock: 0,
-        assignedImageId: "",
-      })
-      variantsArray.push(variantGroup)
-    })
   }
 
   // Existing methods remain the same...
