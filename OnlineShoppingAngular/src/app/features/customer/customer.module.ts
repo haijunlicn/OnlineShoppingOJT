@@ -17,6 +17,11 @@ import { LocationCreateComponent } from './account/location-create/location-crea
 import { HttpClientModule } from '@angular/common/http';
 import { LocationCardComponent } from './account/location-card/location-card.component';
 import { EditLocationComponent } from './account/edit-location/edit-location.component';
+import { AboutComponent } from './general/about/about.component';
+import { ContactComponent } from './general/contact/contact.component';
+import { PrivacyPolicyComponent } from './policy/privacy-policy/privacy-policy.component';
+import { TermsConditionsComponent } from './policy/terms-conditions/terms-conditions.component';
+import { FaqComponent } from './policy/faq/faq.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +34,12 @@ import { EditLocationComponent } from './account/edit-location/edit-location.com
     VerifyComponent,
     LocationCreateComponent,
     LocationCardComponent,
-    EditLocationComponent
+    EditLocationComponent,
+    AboutComponent,
+    ContactComponent,
+    PrivacyPolicyComponent,
+    TermsConditionsComponent,
+    FaqComponent
 
   ],
   imports: [

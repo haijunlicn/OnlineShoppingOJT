@@ -1,0 +1,17 @@
+<div class="form-container">
+  <h2>Update FAQ</h2>
+  <form [formGroup]="faqForm" (ngSubmit)="onSubmit()">
+
+    <label>Question</label>
+    <input type="text" formControlName="question" required>
+
+    <label>Answer</label>
+    <app-rich-text-editor
+      formControlName="answer"
+      placeholder="Enter answer with formatting...">
+    </app-rich-text-editor>
+
+    <button type="submit">Update</button>
+    <button type="button" class="cancel" routerLink="/admin/policy/faq-list">Cancel</button>
+  </form>
+</div>

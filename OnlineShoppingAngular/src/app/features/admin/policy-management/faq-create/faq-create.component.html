@@ -1,0 +1,24 @@
+<div class="form-container">
+  <h2>Create FAQ</h2>
+  <form [formGroup]="faqForm" (ngSubmit)="onSubmit()">
+    
+    <label>Question</label>
+    <input type="text" formControlName="question" placeholder="Enter FAQ question" />
+    <div *ngIf="question?.invalid && question?.touched" class="error">
+      Question is required.
+    </div>
+
+    <label>Answer</label>
+    <!-- Replace this with your rich-text editor component -->
+    <app-rich-text-editor
+      formControlName="answer"
+      placeholder="Enter FAQ answer with formatting..."
+      class="editor">
+    </app-rich-text-editor>
+    <div *ngIf="answer?.invalid && answer?.touched" class="error">
+      Answer is required.
+    </div>
+
+    <button type="submit" [disabled]="faqForm.invalid">Create</button>
+    <button type="button" class="cancel" routerLink="/admin/policy/faq-list">Cancel</button>
+  </form>

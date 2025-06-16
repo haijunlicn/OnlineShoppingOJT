@@ -37,6 +37,13 @@ import { AttributeManagementComponent } from './product_management/attribute-man
 import { CategoryManagementComponent } from './product_management/category-management/category-management.component';
 import { OptionManagementComponent } from './product_management/option-management/option-management.component';
 import { BrandManagementComponent } from './product_management/brand-management/brand-management.component';
+import { RichTextEditorComponent } from './policy-management/rich-text-editor/rich-text-editor.component';
+import { PolicyCreateComponent } from './policy-management/policy-create/policy-create.component';
+import { PolicyListComponent } from './policy-management/policy-list/policy-list.component';
+import { FaqListComponent } from './policy-management/faq-list/faq-list.component';
+import { FaqCreateComponent } from './policy-management/faq-create/faq-create.component';
+import { FaqUpdateComponent } from './policy-management/faq-update/faq-update.component';
+
 @NgModule({
   declarations: [
     ProductEditComponent,
@@ -56,6 +63,13 @@ import { BrandManagementComponent } from './product_management/brand-management/
     CategoryManagementComponent,
     OptionManagementComponent,
     BrandManagementComponent,
+    RichTextEditorComponent,
+    PolicyCreateComponent,
+    PolicyListComponent,
+    FaqListComponent,
+    FaqCreateComponent,
+    FaqUpdateComponent,
+    
   ],
   imports: [
     CommonModule,
@@ -77,6 +91,8 @@ import { BrandManagementComponent } from './product_management/brand-management/
     ColorPickerModule,
     TreeModule,
     MenuModule,
+    
+    
   ]
 })
 export class AdminModule { }

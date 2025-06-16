@@ -1,0 +1,26 @@
+<div class="faq-list-container">
+  <h2>FAQ List</h2>
+  <button routerLink="/admin/policy/faq-create" class="create-btn">+ Add New FAQ</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Question</th>
+        <th>Answer</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let faq of faqList; let i = index">
+        <td>{{ i + 1 }}</td>
+        <td>{{ faq.question }}</td>
+        <td [innerHTML]="faq.answer"></td>
+        <td>
+          <button (click)="editFaq(faq.id!)" class="edit-btn">Edit</button>
+          <button (click)="deleteFaq(faq.id!)" class="delete-btn">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

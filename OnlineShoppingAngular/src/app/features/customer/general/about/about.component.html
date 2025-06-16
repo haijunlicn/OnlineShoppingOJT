@@ -1,0 +1,118 @@
+<app-header></app-header>
+<div class="about-page">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <div class="hero-text">
+        <h1 class="hero-title">About Us</h1>
+        <h2 class="hero-subtitle">Our Story</h2>
+        <p class="hero-description">
+          From a small idea to your favorite online store — here's how it all began.
+        </p>
+      </div>
+      <div class="hero-image">
+        <img src="/placeholder.svg?height=400&width=600" alt="Our Team" class="hero-img">
+      </div>
+    </div>
+  </section>
+
+  <!-- Our Story Section -->
+  <section class="story-section">
+    <div class="container">
+      <h2 class="section-title">Our Story</h2>
+      <div class="story-content">
+        <div class="story-text">
+          <p class="story-paragraph">
+            In 2021, we started from a small village with the spirit of delivering high-quality products straight to your home.
+          </p>
+          <p class="story-paragraph">
+            With a customer-first mindset, we strive to understand each individual’s needs and provide the best service possible. Your trust and support have been the most important parts of our journey so far.
+          </p>
+
+        </div>
+        <div class="timeline">
+          <div class="timeline-item" *ngFor="let item of timelineData">
+            <div class="timeline-year">{{ item.year }}</div>
+            <div class="timeline-content">{{ item.description }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+<!-- Quotes Layout Style -->
+<section class="team-section">
+  <div class="container">
+    <h2 class="section-title">Meet the Team</h2>
+    <div class="quotes-grid">
+      <div class="quote-card" *ngFor="let quote of teamQuotes">
+        <div class="quote-text">"{{ quote.text }}"</div>
+        <div class="quote-author">
+          <strong>{{ quote.name }}</strong>
+          <span class="quote-role">{{ quote.role }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Timeline Growth Style -->
+<section class="team-section">
+  <div class="container">
+    <h2 class="section-title">How Our Team Grew</h2>
+    <div class="growth-timeline">
+      <div class="growth-item" *ngFor="let item of teamGrowth">
+        <div class="growth-year">{{ item.year }}</div>
+        <div class="growth-content">
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.description }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Simple Text Style -->
+<section class="team-section">
+  <div class="container">
+    <h2 class="section-title">The People Behind Your Orders</h2>
+    <div class="team-story">
+      <p class="team-intro">
+        We're not a big corporation. We're your neighbors in Yangon who decided to start something special. 
+        When you order from us, you're supporting a small team that genuinely cares about every package we send.
+      </p>
+      <div class="team-values">
+        <div class="team-value">
+          <h3>🏠 Family Business</h3>
+          <p>Started in our living room, now grown into a small warehouse - but still feels like family.</p>
+        </div>
+        <div class="team-value">
+          <h3>💝 Personal Touch</h3>
+          <p>Every order is packed by hand, every message answered personally. No bots, just real people.</p>
+        </div>
+        <div class="team-value">
+          <h3>🌟 Local Pride</h3>
+          <p>Proud to serve Myanmar customers with products we'd buy for our own families.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+  <!-- Call to Action Section -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-content">
+        <h2 class="cta-title">Ready to Shop With Us?</h2>
+        <p class="cta-description">Discover our amazing products and experience quality service</p>
+        <div class="cta-buttons">
+          <button class="btn btn-primary" (click)="shopNow()">Shop Now</button>
+          <button class="btn btn-secondary" (click)="contactUs()">Contact Us</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

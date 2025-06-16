@@ -1,0 +1,22 @@
+.form-container {
+  width: 600px;
+  margin: 0 auto;
+}
+
+label {
+  font-weight: bold;
+  display: block;
+  margin-top: 15px;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+}
+
+button {
+  margin-top: 20px;
+  margin-right: 10px;
+  padding: 8px 16px;
+}

@@ -471,3 +471,7 @@ h3 {
     font-size: 12px;
   }
 }
+.small-text {
+  font-size: 0.85rem; /* or 12px / 13px */
+}
+

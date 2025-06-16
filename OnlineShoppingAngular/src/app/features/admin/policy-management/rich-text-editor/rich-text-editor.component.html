@@ -1,0 +1,339 @@
+<div class="rich-text-editor" [class.fullscreen]="isFullScreen" (click)="closeColorPickers()">
+  <!-- Main Toolbar -->
+  <div class="toolbar" (click)="$event.stopPropagation()">
+    <!-- Font Family -->
+    <div class="toolbar-group">
+      <select class="font-select" (change)="onFontFamilyChange($event)">
+        <option *ngFor="let font of fontFamilies" [value]="font.value">
+          {{ font.name }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Font Size -->
+    <div class="toolbar-group">
+      <select class="size-select" (change)="onFontSizeChange($event)">
+        <option *ngFor="let size of fontSizes" [value]="size">
+          {{ size }}px
+        </option>
+      </select>
+    </div>
+
+    <div class="toolbar-separator"></div>
+
+    <!-- Basic Formatting -->
+    <div class="toolbar-group">
+      <button 
+        type="button"
+        class="toolbar-btn"
+        [class.active]="isCommandActive('bold')"
+        (click)="formatText('bold')"
+        title="Bold (Ctrl+B)">
+        <strong>B</strong>
+      </button>
+      
+      <button 
+        type="button"
+        class="toolbar-btn"
+        [class.active]="isCommandActive('italic')"
+        (click)="formatText('italic')"
+        title="Italic (Ctrl+I)">
+        <em>I</em>
+      </button>
+      
+      <button 
+        type="button"
+        class="toolbar-btn"
+        [class.active]="isCommandActive('underline')"
+        (click)="formatText('underline')"
+        title="Underline (Ctrl+U)">
+        <u>U</u>
+      </button>
+
+      <button 
+        type="button"
+        class="toolbar-btn"
+        [class.active]="isCommandActive('strikeThrough')"
+        (click)="formatText('strikeThrough')"
+        title="Strikethrough">
+        <s>S</s>
+      </button>
+    </div>
+
+    <div class="toolbar-separator"></div>
+
+    <!-- Colors -->
+    <div class="toolbar-group">
+      <div class="color-picker-container">
+        <button 
+          type="button"
+          class="toolbar-btn color-btn"
+          (click)="showColorPicker = !showColorPicker; showBgColorPicker = false; $event.stopPropagation()"
+          title="Text Color">
+          A
+          <div class="color-indicator" style="background: #000"></div>
+        </button>
+        
+        <div class="color-palette" *ngIf="showColorPicker" (click)="$event.stopPropagation()">
+          <div class="color-grid">
+            <button 
+              *ngFor="let color of colors"
+              class="color-option"
+              [style.background-color]="color"
+              (click)="changeTextColor(color)"
+              [title]="color">
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="color-picker-container">
+        <button 
+          type="button"
+          class="toolbar-btn color-btn"
+          (click)="showBgColorPicker = !showBgColorPicker; showColorPicker = false; $event.stopPropagation()"
+          title="Background Color">
+          A
+          <div class="color-indicator bg-indicator" style="background: #ffff00"></div>
+        </button>
+        
+        <div class="color-palette" *ngIf="showBgColorPicker" (click)="$event.stopPropagation()">
+          <div class="color-grid">
+            <button 
+              *ngFor="let color of colors"
+              class="color-option"
+              [style.background-color]="color"
+              (click)="changeBackgroundColor(color)"
+              [title]="color">
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar-separator"></div>
+
+    <!-- Text Alignment -->
+    <div class="toolbar-group">
+      <button 
+        type="button"
+        class="toolbar-btn"
+        [class.active]="isCommandActive('justifyLeft')"
+        (click)="alignText('Left')"
+        title="Align Left">
+        ⬅
+      </button>
+      
+      <button 
+        type="button"
+        class="toolbar-btn"
+        [class.active]="isCommandActive('justifyCenter')"
+        (click)="alignText('Center')"
+        title="Align Center">
+        ↔
+      </button>
+      
+      <button 
+        type="button"
+        class="toolbar-btn"
+        [class.active]="isCommandActive('justifyRight')"
+        (click)="alignText('Right')"
+        title="Align Right">
+        ➡
+      </button>
+
+      <button 
+        type="button"
+        class="toolbar-btn"
+        [class.active]="isCommandActive('justifyFull')"
+        (click)="alignText('Full')"
+        title="Justify">
+        ⬌
+      </button>
+    </div>
+
+    <div class="toolbar-separator"></div>
+
+    <!-- Lists -->
+    <div class="toolbar-group">
+      <button 
+        type="button"
+        class="toolbar-btn"
+        [class.active]="isCommandActive('insertUnorderedList')"
+        (click)="insertBulletList()"
+        title="Bulleted List">
+        • List
+      </button>
+      
+      <button 
+        type="button"
+        class="toolbar-btn"
+        [class.active]="isCommandActive('insertOrderedList')"
+        (click)="insertNumberList()"
+        title="Numbered List">
+        1. List
+      </button>
+    </div>
+
+    <div class="toolbar-separator"></div>
+
+    <!-- Advanced Formatting -->
+    <div class="toolbar-group">
+     
+
+      <button 
+        type="button"
+        class="toolbar-btn"
+        (click)="insertBlockquote()"
+        title="Blockquote">
+        ❝
+      </button>
+
+      <button 
+        type="button"
+        class="toolbar-btn"
+        (click)="insertCodeBlock()"
+        title="Code">
+        &lt;/&gt;
+      </button>
+    </div>
+
+    <div class="toolbar-separator"></div>
+
+    <!-- Insert Elements -->
+    <div class="toolbar-group">
+      <button 
+        type="button"
+        class="toolbar-btn"
+        (click)="showInsertLink()"
+        title="Insert Link">
+        🔗
+      </button>
+
+      <button 
+        type="button"
+        class="toolbar-btn"
+        (click)="insertImage()"
+        title="Insert Image">
+        🖼
+      </button>
+
+      <button 
+        type="button"
+        class="toolbar-btn"
+        (click)="insertTable()"
+        title="Insert Table">
+        ⊞
+      </button>
+
+      <button 
+        type="button"
+        class="toolbar-btn"
+        (click)="insertHorizontalRule()"
+        title="Horizontal Rule">
+        ―
+      </button>
+    </div>
+
+    <div class="toolbar-separator"></div>
+
+    <!-- Utility -->
+    <div class="toolbar-group">
+      <button 
+        type="button"
+        class="toolbar-btn"
+        (click)="formatText('undo')"
+        title="Undo (Ctrl+Z)">
+        ↶
+      </button>
+      
+      <button 
+        type="button"
+        class="toolbar-btn"
+        (click)="formatText('redo')"
+        title="Redo (Ctrl+Y)">
+        ↷
+      </button>
+
+      <button 
+        type="button"
+        class="toolbar-btn"
+        (click)="clearFormatting()"
+        title="Clear Formatting">
+        🧹
+      </button>
+
+      <button 
+        type="button"
+        class="toolbar-btn"
+        (click)="printContent()"
+        title="Print">
+        🖨
+      </button>
+
+      <button 
+        type="button"
+        class="toolbar-btn"
+        (click)="toggleFullScreen()"
+        title="Full Screen">
+        {{ isFullScreen ? '⤓' : '⤢' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Editor Content -->
+  <div 
+    #editor
+    class="editor-content"
+    contenteditable="true"
+    [attr.data-placeholder]="placeholder"
+    (input)="onContentChange()"
+    (blur)="onBlur()">
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span>Words: {{ getWordCount() }}</span>
+    <span>Characters: {{ getCharacterCount() }}</span>
+  </div>
+
+  <!-- Hidden file input for images -->
+  <input 
+    #fileInput
+    type="file" 
+    accept="image/*" 
+    style="display: none"
+    (change)="onImageSelected($event)">
+
+  <!-- Link Dialog -->
+  <div class="modal-overlay" *ngIf="showLinkDialog" (click)="closeLinkDialog()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Insert Link</h3>
+        <button type="button" class="close-btn" (click)="closeLinkDialog()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>URL:</label>
+          <input 
+            type="url" 
+            [(ngModel)]="linkUrl" 
+            placeholder="https://example.com"
+            class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Text:</label>
+          <input 
+            type="text" 
+            [(ngModel)]="linkText" 
+            placeholder="Link text"
+            class="form-control">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeLinkDialog()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="insertLink()">Insert</button>
+      </div>
+    </div>
+  </div>
+</div>
