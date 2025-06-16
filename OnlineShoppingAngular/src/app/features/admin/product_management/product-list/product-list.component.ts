@@ -110,7 +110,7 @@ export class ProductListComponent implements OnInit {
     this.globalFilterValue = '';
     this.priceRange = [this.minPrice, this.maxPrice];
     console.log("Cleared all filters");
-    
+
   }
 
   getStockStatus(product: ProductListItemDTO): string {
@@ -181,5 +181,10 @@ export class ProductListComponent implements OnInit {
   setPresetRange(min: number, max: number) {
     this.priceRange = [min, max];
     this.onPriceChange();
+  }
+
+  getMainProductImage(product: ProductListItemDTO): string {
+    const mainImage = product.product.productImages?.find((img) => img.mainImageStatus)
+    return mainImage?.imgPath || "/assets/img/default-product.jfif"
   }
 }

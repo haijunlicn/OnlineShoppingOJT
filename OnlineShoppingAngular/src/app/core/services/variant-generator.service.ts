@@ -1,29 +1,27 @@
 import { Injectable } from '@angular/core';
-import { ProductVariantDTO } from '../models/variant.model';
+import { ProductVariantDTO } from '../models/product.model';
+
 
 @Injectable({
   providedIn: 'root'
 })
 @Injectable({ providedIn: 'root' })
 export class VariantGeneratorService {
-  // generateCombinations(options: { type: string, typeName: string, values: string[] }[]): ProductVariantDTO[] {
-  //   let combinations: ProductVariantDTO[] = [{ options: [], price: 0, stock: 0, sku: '' }];
-  //   options.forEach(option => {
-  //     const newCombinations: ProductVariantDTO[] = [];
-  //     combinations.forEach(combination => {
-  //       option.values.forEach(value => {
-  //         newCombinations.push({
-  //           options: [...combination.options, { type: option.type, typeName: option.typeName, value }],
-  //           price: combination.price,
-  //           stock: combination.stock,
-  //           sku: combination.sku
-  //         });
-  //       });
-  //     });
-  //     combinations = newCombinations;
-  //   });
-  //   return combinations;
-  // }
+
+  /**
+ * Generate default variant for products with no options
+ */
+  generateDefaultVariant(): ProductVariantDTO {
+    return {
+      options: [],
+      price: 0,
+      stock: 0,
+      sku: "DEFAULT",
+      displayLabel: "Default Variant",
+      isDefault: true,
+      isRemovable: false,
+    }
+  }
 
   generateCombinations(options: { optionId: number, optionName: string, values: { optionValueId: number, valueName: string }[] }[]): ProductVariantDTO[] {
     let combinations: ProductVariantDTO[] = [{ options: [], price: 0, stock: 0, sku: '' }];
@@ -44,7 +42,10 @@ export class VariantGeneratorService {
             ],
             price: combination.price,
             stock: combination.stock,
-            sku: combination.sku
+            sku: combination.sku,
+            // displayLabel: this.generateDisplayLabel(combination),
+            isDefault: false,
+            isRemovable: true,
           });
         });
       });
@@ -52,6 +53,33 @@ export class VariantGeneratorService {
     });
 
     return combinations;
+  }
+
+  // private cartesianProduct(optionsWithValues: any[]): any[] {
+  //   return optionsWithValues.reduce(
+  //     (acc, option) => {
+  //       const newAcc: any[] = []
+  //       acc.forEach((existingCombination) => {
+  //         option.values.forEach((value: any) => {
+  //           newAcc.push([
+  //             ...existingCombination,
+  //             {
+  //               optionId: option.optionId,
+  //               optionName: option.optionName,
+  //               optionValueId: value.optionValueId,
+  //               valueName: value.valueName,
+  //             },
+  //           ])
+  //         })
+  //       })
+  //       return newAcc
+  //     },
+  //     [[]],
+  //   )
+  // }
+
+  private generateDisplayLabel(combination: any[]): string {
+    return combination.map((item) => `${item.optionName}: ${item.valueName}`).join(", ")
   }
 
 }

@@ -22,6 +22,17 @@ import { ContactComponent } from './general/contact/contact.component';
 import { PrivacyPolicyComponent } from './policy/privacy-policy/privacy-policy.component';
 import { TermsConditionsComponent } from './policy/terms-conditions/terms-conditions.component';
 import { FaqComponent } from './policy/faq/faq.component';
+import { UserproductListComponent } from './general/userproduct-list/userproduct-list.component';
+import { WishlistDialogComponent } from './general/wishlist-dialog/wishlist-dialog.component';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatListModule } from '@angular/material/list';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { WishlistComponent } from './general/wishlist/wishlist.component';
+import { CartComponent } from './general/cart/cart.component';
+import { ProductListComponent } from './product_display/product-list/product-list.component';
+import { ProductDetailComponent } from './product_display/product-detail/product-detail.component';
+
 
 @NgModule({
   declarations: [
@@ -35,11 +46,17 @@ import { FaqComponent } from './policy/faq/faq.component';
     LocationCreateComponent,
     LocationCardComponent,
     EditLocationComponent,
-    AboutComponent,
+    WishlistDialogComponent,
+    UserproductListComponent,
+    WishlistComponent,
+    CartComponent,
+       AboutComponent,
     ContactComponent,
     PrivacyPolicyComponent,
     TermsConditionsComponent,
-    FaqComponent
+    FaqComponent,
+    ProductListComponent,
+    ProductDetailComponent
 
   ],
   imports: [
@@ -49,7 +66,15 @@ import { FaqComponent } from './policy/faq/faq.component';
     ReactiveFormsModule,
     ReactiveFormsModule,
     FormsModule,
-   HttpClientModule
+   HttpClientModule,
+   MatDialogModule,
+   MatDialogModule,
+    MatListModule,
+    MatInputModule,
+    MatButtonModule,
+    FormsModule,
+
+    HttpClientModule,
   ]
 })
 export class CustomerModule { }

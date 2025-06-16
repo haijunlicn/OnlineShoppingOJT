@@ -528,3 +528,18 @@ main {
   min-width: 120px; /* Adjust as needed */
   white-space: nowrap;
 }
+
+.product-image-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-thumbnail {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid #e9ecef;
+  background: #f8f9fa;
+}

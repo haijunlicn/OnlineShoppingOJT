@@ -1,0 +1,36 @@
+<app-header></app-header>
+
+<div class="product-grid" *ngIf="products.length > 0">
+  <div *ngFor="let item of products" class="product-card">
+    <div class="product-info">
+      <h4 class="product-name">{{ item.product.name }}</h4>
+      <p class="meta">{{ item.category.name }} • {{ item.brand.name }}</p>
+      <p class="price">{{ item.product.basePrice | currency }}</p>
+
+      <p class="stock-status" [ngClass]="isInStock(item) ? 'in-stock' : 'out-stock'">
+        {{ isInStock(item) ? '✔ In Stock' : '❌ Out of Stock' }}
+      </p>
+
+      <!-- Show total / in cart / remaining -->
+      <ng-container *ngIf="item.variants && item.variants[0]">
+        <p class="stock-count">
+          Total: {{ item.variants[0].stock }}
+          &nbsp;|&nbsp;
+          In Cart: {{ getCartQuantity(item.product.id!) }}
+          &nbsp;|&nbsp;
+          Remaining: {{ item.variants[0].stock - getCartQuantity(item.product.id!) }}
+        </p>
+      </ng-container>
+
+      <button class="wish-btn" (click)="toggleWish(item.product.id!)">
+        <i class="pi" [ngClass]="isWished(item.product.id!) ? 'pi-heart-fill' : 'pi-heart'"></i>
+        {{ isWished(item.product.id!) ? 'Wished' : 'Add to Wishlist' }}
+      </button>
+
+      <button class="cart-btn" (click)="addToCart(item)" [disabled]="!isInStock(item)">
+        🛒 Add to Cart
+      </button>
+
+    </div>
+  </div>
+</div>

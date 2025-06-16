@@ -23,18 +23,39 @@
   opacity: 0.8;
 }
 
-.logo-main {
-  font-family: "Cinzel", serif;
-  font-size: 1.75rem;
-  font-weight: 600;
+.luxury-logo {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  letter-spacing: 1px;
+  font-size: 2rem;
   color: var(--color-primary);
+  text-shadow: 0 2px 8px rgba(75,46,25,0.08);
+}
+
+.logo-icon {
+  color: var(--color-accent);
+  font-size: 2.1rem;
+  margin-right: 0.3rem;
+  filter: drop-shadow(0 1px 2px #bfa16a33);
+}
+
+.logo-main {
+  color: var(--color-primary);
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 2rem;
   letter-spacing: 1px;
 }
 
 .logo-sub {
-  font-size: 0.875rem;
-  color: var(--color-secondary);
+  color: var(--color-accent);
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
   font-weight: 400;
+  margin-left: 0.5rem;
   letter-spacing: 0.5px;
 }
 
@@ -101,21 +122,30 @@
   color: var(--color-accent);
 }
 
+/* Make sure the button's container is relative */
+.action-btn.cart-btn {
+  position: relative;
+}
+
+/* Badge styles */
 .cart-count {
   position: absolute;
-  top: -2px;
-  right: -2px;
-  background-color: var(--color-highlight);
-  color: var(--color-primary);
+  top: -6px;
+  right: -6px;
+  background-color: #ff5252; /* or use var(--color-highlight) */
+  color: #fff;               /* or use var(--color-primary) */
   border-radius: 50%;
-  width: 16px;
-  height: 16px;
-  font-size: 0.7rem;
+  width: 18px;
+  height: 18px;
+  font-size: 0.75rem;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 0 0 2px white; /* Optional: adds a border separation */
+  z-index: 2;
 }
+
 
 /* Auth Buttons */
 .auth-btn {
@@ -274,5 +304,66 @@
   .container-fluid {
     padding-left: 1rem;
     padding-right: 1rem;
+  }
+}
+
+/* Header Search Bar */
+.header-search-form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 380px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(26,26,26,0.07);
+  padding: 0.25rem 1rem;
+  transition: box-shadow 0.2s;
+}
+.header-search-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  flex: 1;
+  border-radius: 30px;
+}
+.header-search-btn {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+.header-search-btn:hover {
+  background: var(--color-highlight);
+}
+
+/* Mobile Search Bar */
+.mobile-search-bar {
+  background: white;
+  padding: 1rem;
+  box-shadow: 0 4px 16px rgba(26,26,26,0.10);
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  z-index: 200;
+  border-bottom: 1px solid var(--color-border);
+}
+
+@media (max-width: 991.98px) {
+  .header-search-form {
+    display: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .mobile-search-bar {
+    padding: 0.5rem;
   }
 }

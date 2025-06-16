@@ -4,7 +4,6 @@ import { AdminLoginComponent } from './auth/admin-login/admin-login.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { AdminDashboardComponent } from './layout/admin-dashboard/admin-dashboard.component';
 import { ProductListComponent } from './product_management/product-list/product-list.component';
-import { ProductCreateComponent } from './product_management/product-create/product-create.component';
 import { NoAuthGuard } from '../../core/guards/no-auth.guard';
 import { ProductAttributesComponent } from './product_management/product-attributes/product-attributes.component';
 import { AttributeManagementComponent } from './product_management/attribute-management/attribute-management.component';
@@ -16,23 +15,31 @@ import { PolicyListComponent } from './policy-management/policy-list/policy-list
 import { FaqCreateComponent } from './policy-management/faq-create/faq-create.component';
 import { FaqListComponent } from './policy-management/faq-list/faq-list.component';
 import { FaqUpdateComponent } from './policy-management/faq-update/faq-update.component';
+import { DiscountGroupComponent } from './discount_management/discount-group/discount-group.component';
+import { ProductCreateComponent } from './product_management/product-create/product-create.component';
+import { ProductBulkUploadComponent } from './product_management/product-bulk-upload/product-bulk-upload.component';
+
 
 const routes: Routes = [
   {
     path: 'login',
-    component: AdminLoginComponent, canActivate: [NoAuthGuard],
+    component: AdminLoginComponent, 
   },
   {
     path: 'dashboard',
-    component: DashboardComponent, canActivate: [NoAuthGuard],
+    component: DashboardComponent,
   },
   {
     path: 'productList',
-    component: ProductListComponent, canActivate: [NoAuthGuard],
+    component: ProductListComponent, 
   },
   {
     path: 'productCreate',
-    component: ProductCreateComponent, canActivate: [NoAuthGuard],
+    component: ProductCreateComponent, 
+  },
+   {
+    path: 'group',
+    component: DiscountGroupComponent,
   },
   {
     path: 'policy/policy-create' , component: PolicyCreateComponent, canActivate: [NoAuthGuard]
@@ -52,19 +59,19 @@ const routes: Routes = [
   {
     path: 'productAttributes',
     component: AttributeManagementComponent,
-    canActivate: [NoAuthGuard],
+    
     children: [
       { path: '', redirectTo: 'categories', pathMatch: 'full' },
       { path: 'options', component: OptionManagementComponent },
       { path: 'categories', component: CategoryManagementComponent },
       { path: 'brands', component: BrandManagementComponent }
     ]
-  }
+  },
+  {
+    path: 'bulkUploadProduct',
+    component: ProductBulkUploadComponent,
+  },
 
-  // {
-  //   path: 'productAttributes',
-  //   component: AttributeManagementComponent, canActivate: [NoAuthGuard],
-  // },
 ];
 
 @NgModule({

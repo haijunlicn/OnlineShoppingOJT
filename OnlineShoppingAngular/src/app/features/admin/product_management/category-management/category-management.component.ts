@@ -46,6 +46,7 @@ export class CategoryManagementComponent implements OnInit {
 
   // Form
   categoryForm: FormGroup
+  viewMode: "grid" | "list" = "grid"
 
   constructor(
     private fb: FormBuilder,
@@ -388,7 +389,7 @@ export class CategoryManagementComponent implements OnInit {
   }
 
   private uploadImage(file: File): Observable<string> {
-    return this.cloudinaryService.uploadCategoryImage(file);
+    return this.cloudinaryService.uploadImage(file);
   }
 
   addSubcategory(category: CategoryDTO): void {

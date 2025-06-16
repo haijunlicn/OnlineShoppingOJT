@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class userDTO {
-	  private Integer id;
+	  private Long id;
 
 	    @NotBlank(message  = "Email is required")
 	    @Email(message = "Invalid email format")

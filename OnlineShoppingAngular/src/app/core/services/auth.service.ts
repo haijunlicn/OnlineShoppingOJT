@@ -1,19 +1,24 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { OtpDTO } from '../models/otpDTO';
 import { Router } from '@angular/router';
 import { LoginModalService } from './LoginModalService';
 import { RegisterModalService } from './RegisterModalService';
 import { AlertService } from './alert.service';
 import Swal from 'sweetalert2';
+import { User } from '../models/User';
+import { jwtDecode } from 'jwt-decode';
+import { StorageService } from './StorageService';
+
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
  
-   
+ 
   private apiUrl = 'http://localhost:8080/auth';
 
   constructor(private http: HttpClient,
@@ -21,9 +26,17 @@ export class AuthService {
      private loginModalService: LoginModalService,
       private registerModalService: RegisterModalService,
       private alertService :AlertService,
+      private storageService:StorageService
+      
   ) {}
 
- 
+ // Create BehaviorSubject to hold user object (initially null)
+  private userSubject = new BehaviorSubject<User | null>(null);
+
+  // Expose it as an observable (readonly to outside)
+  public user$: Observable<User | null> = this.userSubject.asObservable();
+
+  
 
 register(userData: any): Observable<any> {
   console.log("I'm register");
@@ -55,16 +68,39 @@ login(email: string, password: string, rememberMe: boolean) {
         if (res.token) {
           // ✅ Login Success
           const token = res.token;
-          if (rememberMe) {
-            localStorage.setItem('token', token);
-          } else {
-            sessionStorage.setItem('token', token);
-          }
+
+
+          // if (rememberMe) {
+          //   localStorage.setItem('token', token);
+          // } else {
+          //   sessionStorage.setItem('token', token);
+          // }
+
+if (rememberMe) {
+  this.storageService.setItem('token', token, 'local'); // localStorage
+} else {
+  this.storageService.setItem('token', token, 'session'); // sessionStorage
+}
+  // const token1 = this.storageService.getItem('token');
+
+
+
+  const decodedToken: any = jwtDecode(token);
+  // decodedToken ကို safely သုံးလို့ရပြီ
+  const userEmail = decodedToken.sub;
+          this.getCurrentUserByEmail(userEmail);
 
           this.alertService.success("Login Success");
           this.loginModalService.hide();
           this.registerModalService.hide();
+          
           this.router.navigate(['/customer/general/home']);
+
+  console.warn('No token found');
+ 
+
+
+           
         } else if (res.message) {
           console.error("Server error:", res.message);
           this.alertService.error(res.message);
@@ -125,19 +161,52 @@ login(email: string, password: string, rememberMe: boolean) {
     });
 }
 
+getCurrentUserByEmail(email: string): void {
+  this.http.get<User>(`http://localhost:8080/auth/me?email=${email}`)
+    .subscribe({
+      next: (res) => {
+         // 👉 Backend response object ထဲကလိုချင်တဲ့ data များသာယူမယ်
+        const user: User = {
+  id: res.id,
+  email: res.email,
+  name: res.name,
+  phone: res.phone,
+  roleName: res.roleName, // 🔥 map roleName to role
+  isVerified: res.isVerified,
+  delFg: res.delFg,
+  createdDate: res.createdDate,
+  updatedDate: res.updatedDate
+};
+      console.log(user.email)
+        // 👉 BehaviorSubject ထဲသို့ထည့်
+        this.userSubject.next(user);
+      },
+      error: () => {
+        this.alertService.error("Failed to load user data.");
+      }
+    });
+}
 
 
   logout() {
-    localStorage.removeItem('token');
-    sessionStorage.removeItem('token');
+    // localStorage.removeItem('token');
+    // sessionStorage.removeItem('token');
+this.storageService.removeItem('token');
+
+    this.userSubject.next(null);
     this.router.navigate(['/customer/auth/login']);
   }
-  getToken(): string | null {
-    return localStorage.getItem('token') || sessionStorage.getItem('token');
+
+
+  // Optional: get current user snapshot
+  getCurrentUser(): User | null {
+    return this.userSubject.getValue();
   }
 
+ 
+
   isLoggedIn(): boolean {
-    const token = this.getToken();
+    const token = this.storageService.getItem('token'); 
     return !!token && !this.isTokenExpired(token);
   }
 
@@ -159,9 +228,6 @@ requestPasswordReset(email: string) {
 }
 
 
-// resetPassword(token: string, password: string) {
-//   return this.http.post('http://localhost:8080/auth/reset-password', { token, password });
-// }
 
 resetPassword(token: string, password: string) {
   return this.http.post('http://localhost:8080/auth/reset-password', { token, password },  { responseType: 'text' as 'json' });

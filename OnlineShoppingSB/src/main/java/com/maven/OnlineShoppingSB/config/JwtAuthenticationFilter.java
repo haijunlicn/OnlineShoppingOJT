@@ -25,19 +25,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getServletPath();
+        String method = request.getMethod();
 
-        // Register နဲ့ Login ကို JWT token စစ်မစမ်းဘဲ လွတ်ခွင့်ပြုမယ်
-        if (path.equals("/user/register") || path.equals("/user/login")) {
+        // ✅ GET method အားလုံးကို JWT token မစစ်ပဲ လွတ်ခွင့်ပြု
+        if (method.equalsIgnoreCase("GET")) {
             chain.doFilter(request, response);
             return;
         }
 
+        // ✅ Auth URLs တွေကို JWT token မစစ်ပဲ လွတ်ခွင့်ပြု
+        if (path.startsWith("/auth/") ) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        // ✅ အခြား POST, PUT, DELETE request တွေ JWT token စစ်မယ်
         final String authHeader = request.getHeader("Authorization");
         final String token;
         final String email;
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            chain.doFilter(request, response);
+            // 👉 Token မပါလို့ 403 ပေးမယ်
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("403 - Forbidden: Missing or invalid token");
             return;
         }
 
@@ -47,16 +57,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
             if (jwtService.isTokenValid(token)) {
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+            } else {
+                // 👉 Token expired or invalid
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("403 - Forbidden: Invalid or expired token");
+                return;
             }
         }
 
         chain.doFilter(request, response);
     }
-
 }

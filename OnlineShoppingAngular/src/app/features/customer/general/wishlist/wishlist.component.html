@@ -1,0 +1,32 @@
+<app-header></app-header>
+
+<div class="wishlist-container">
+  <h2>Your Wishlists</h2>
+
+  <div *ngIf="wishlistTitles.length > 0; else noWishlists">
+    <div *ngFor="let title of wishlistTitles" class="wishlist-title-section">
+      <div class="title-header">
+        <h3>{{ title.title }}</h3>
+        <button class="remove-title-btn" (click)="removeWishlistTitle(title.id!)">🗑 Remove Title</button>
+      </div>
+
+      <ul *ngIf="wishlistProducts[title.id ?? 0] && wishlistProducts[title.id ?? 0].length > 0; else noProducts">
+        <li *ngFor="let product of wishlistProducts[title.id ?? 0]" class="wishlist-item">
+          <span class="product-name">{{ product.productName }}</span>
+          <button class="remove-btn" (click)="removeProductFromWishlistTitle(title.id!, product.productId)">
+  &minus;
+</button>
+
+        </li>
+      </ul>
+
+      <ng-template #noProducts>
+        <p>No products added to this wishlist yet.</p>
+      </ng-template>
+    </div>
+  </div>
+
+  <ng-template #noWishlists>
+    <p>You have no wishlists created yet.</p>
+  </ng-template>
+</div>

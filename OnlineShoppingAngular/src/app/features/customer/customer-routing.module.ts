@@ -16,25 +16,34 @@ import { ContactComponent } from './general/contact/contact.component';
 import { PrivacyPolicyComponent } from './policy/privacy-policy/privacy-policy.component';
 import { TermsConditionsComponent } from './policy/terms-conditions/terms-conditions.component';
 import { FaqComponent } from './policy/faq/faq.component';
+import { UserproductListComponent } from './general/userproduct-list/userproduct-list.component';
+import { WishlistComponent } from './general/wishlist/wishlist.component';
+import { CartComponent } from './general/cart/cart.component';
+import { ProductListComponent } from './product_display/product-list/product-list.component';
+import { ProductDetailComponent } from './product_display/product-detail/product-detail.component';
 
 const routes: Routes = [
 
   { path: 'home', component: HomeComponent },
-  { path: 'auth/verify/:id', component: VerifyComponent ,canActivate: [NoAuthGuard]},
-{ path: 'general/home', component: HomeComponent },
+  { path: 'general/home', component: HomeComponent },
+  {
+    path: 'auth/verify/:id',
+    component: VerifyComponent,
+    canActivate: [NoAuthGuard]
+  },
+  { path: 'general/home', component: HomeComponent },
   {
     path: 'auth/register',
-    component: RegisterComponent, canActivate: [NoAuthGuard],
+    component: RegisterComponent,
   },
   {
     path: 'auth/login',
-    component: LoginComponent, canActivate: [NoAuthGuard],
+    component: LoginComponent,
 
   },
   {
     path: 'auth/forgetPass',
-    component: ForgetPasswordComponent, canActivate: [NoAuthGuard],
-
+    component: ForgetPasswordComponent,
   },
   {path: 'about', component: AboutComponent, canActivate: [NoAuthGuard]},
   {path: 'contact' , component: ContactComponent, canActivate: [NoAuthGuard]},
@@ -45,14 +54,32 @@ const routes: Routes = [
   //   path: 'customer/auth/verify/:id',
   //   component: VerifyComponent,canActivate: [NoAuthGuard],
 
-  // },
- {
-  path: 'auth/reset-password',
-  component: ResetPasswordComponent
-},
-  {path:'location',component:LocationCreateComponent},
+  {
+    path: 'auth/reset-password',
+    component: ResetPasswordComponent
+  },
+  { path: 'location', component: LocationCreateComponent },
   { path: 'editlocation/:id', component: EditLocationComponent },
-  { path: 'address', component: LocationCardComponent, canActivate: [NoAuthGuard] },
+  { path: 'userproduct', component: UserproductListComponent },
+  { path: 'address', component: LocationCardComponent },
+  { path: 'general/wishlist', component: WishlistComponent },
+  { path: 'cart', component: CartComponent },
+  { path: 'address', component: LocationCardComponent },
+  {
+    path: 'auth/reset-password',
+    component: ResetPasswordComponent
+  },
+  { path: 'location', component: LocationCreateComponent },
+  { path: 'editlocation/:id', component: EditLocationComponent },
+  { path: 'address', component: LocationCardComponent },
+  {
+    path: 'productList',
+    component: ProductListComponent,
+  },
+  {
+    path: 'product/:id',
+    component: ProductDetailComponent
+  }
 
 ];
 

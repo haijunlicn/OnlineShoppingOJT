@@ -44,16 +44,19 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/register","/auth/verify-otp", "/auth/login").permitAll()
+                        // 👉 Token မလို GET method အားလုံးကို allow
+                        .requestMatchers(HttpMethod.GET, "/**").permitAll()
 
-                        .anyRequest().permitAll()
+                              .requestMatchers("/auth/**").permitAll()
+
+
+                                // 👉 အခြား request တွေ token လိုအပ်
+                        .anyRequest().authenticated()
+                              //  .anyRequest().permitAll()
                 )
                 .exceptionHandling(ex -> ex
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
-                            System.out.println(" Access Denied Handler Triggered:");
-                            System.out.println("Message: " + accessDeniedException.getMessage());
-                            System.out.println("Requested URI: " + request.getRequestURI());
-                            System.out.println("Auth Type: " + request.getAuthType());
+                            System.out.println("Access Denied Handler Triggered:");
                             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                             response.getWriter().write("403 - Forbidden from Custom Handler");
                         })

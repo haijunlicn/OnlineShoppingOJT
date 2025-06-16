@@ -30,7 +30,6 @@ import { TreeModule } from 'primeng/tree';
 import { MenuModule } from 'primeng/menu';
 
 import { ProductListComponent } from './product_management/product-list/product-list.component';
-import { ProductCreateComponent } from './product_management/product-create/product-create.component';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { ProductAttributesComponent } from './product_management/product-attributes/product-attributes.component';
 import { AttributeManagementComponent } from './product_management/attribute-management/attribute-management.component';
@@ -43,6 +42,10 @@ import { PolicyListComponent } from './policy-management/policy-list/policy-list
 import { FaqListComponent } from './policy-management/faq-list/faq-list.component';
 import { FaqCreateComponent } from './policy-management/faq-create/faq-create.component';
 import { FaqUpdateComponent } from './policy-management/faq-update/faq-update.component';
+import { DiscountGroupComponent } from './discount_management/discount-group/discount-group.component';
+import { ProductCreateComponent } from './product_management/product-create/product-create.component';
+import { ProductBulkUploadComponent } from './product_management/product-bulk-upload/product-bulk-upload.component';
+
 
 @NgModule({
   declarations: [
@@ -70,6 +73,8 @@ import { FaqUpdateComponent } from './policy-management/faq-update/faq-update.co
     FaqCreateComponent,
     FaqUpdateComponent,
     
+    DiscountGroupComponent,
+    ProductBulkUploadComponent,
   ],
   imports: [
     CommonModule,
@@ -93,6 +98,7 @@ import { FaqUpdateComponent } from './policy-management/faq-update/faq-update.co
     MenuModule,
     
     
+     FormsModule
   ]
 })
 export class AdminModule { }

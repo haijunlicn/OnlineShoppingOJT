@@ -59,16 +59,18 @@ public class AuthService {
 
 			// Step 4: Save user
 			UserEntity savedUser = userRepo.save(userInput);
+		System.out.println( "//////////////////////////////////////////////////////////something fuck");
 			Long userId = savedUser.getId();
+		System.out.println( "//////////////////////////////////////////////////////////something fuck"+userId);
 
 			// Step 5: Generate 6-digit OTP
 			int otpNum = new Random().nextInt(900000) + 100000;
 			String otpCode = String.valueOf(otpNum);
-
+		System.out.println(otpNum);
 			LocalDateTime now = LocalDateTime.now();
 			LocalDateTime expiryTime = now.plusMinutes(2);
 
-			// Step 6: Save OTP
+	System.out.println("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH");
 			OtpEntity otp = new OtpEntity();
 			otp.setUser(savedUser);
 			otp.setOtpCode(otpCode);
@@ -76,6 +78,7 @@ public class AuthService {
 			otp.setCreatedDate(now);
 			otp.setExpiryTime(expiryTime);
 			otpRepo.save(otp);
+	System.out.println("Fuck");
 
 			// Step 7: Send OTP email
 			boolean emailSent = emailService.sendOtpEmail(savedUser.getEmail(), otpCode);

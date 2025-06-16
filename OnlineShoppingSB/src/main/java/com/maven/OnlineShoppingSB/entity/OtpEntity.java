@@ -17,7 +17,7 @@ public class OtpEntity {
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "users_id")
     private UserEntity user;
 
     @Column(name = "otp_code")

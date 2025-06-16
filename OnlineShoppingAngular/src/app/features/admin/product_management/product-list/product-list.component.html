@@ -15,6 +15,9 @@
               <button pButton type="button" routerLink="/admin/productCreate" class="p-button p-button-success"
                 icon="pi pi-plus" label="Add Product">
               </button>
+              <button pButton type="button" routerLink="/admin/bulkUploadProduct" class="p-button p-button-primary"
+                icon="pi pi-plus" label="Bulk Upload">
+              </button>
             </div>
           </div>
 
@@ -27,6 +30,7 @@
             <!-- Table header and filters -->
             <ng-template pTemplate="header">
               <tr>
+                <th style="width: 60px">Image</th>
                 <th pSortableColumn="product.name">
                   Name <p-sortIcon field="product.name"></p-sortIcon>
                 </th>
@@ -50,6 +54,7 @@
 
               <!-- Filter Row - Only show when showFilters is true -->
               <tr class="filter-row" *ngIf="showFilters">
+                <th></th>
                 <th>
                   <input type="text" [(ngModel)]="globalFilterValue" (input)="onGlobalFilter($event)"
                     placeholder="Search name..." class="form-control form-control-sm" />
@@ -98,11 +103,6 @@
                       <input type="number" [(ngModel)]="priceRange[1]" (ngModelChange)="onPriceInputChange()"
                         [min]="priceRange[0]" [max]="maxPrice" class="form-control" placeholder="Max">
                     </div>
-
-                    <!-- Slider below -->
-                    <!-- <p-slider [range]="true" [min]="minPrice" [max]="maxPrice" [(ngModel)]="priceRange"
-                      (onSlideEnd)="onPriceChange()" styleClass="w-100">
-                    </p-slider> -->
                   </div>
                 </th>
 
@@ -150,6 +150,12 @@
             <!-- Table body -->
             <ng-template pTemplate="body" let-product>
               <tr>
+                <!-- Product Image -->
+                <td>
+                  <div class="product-image-cell">
+                    <img [src]="getMainProductImage(product)" [alt]="product.product.name" class="product-thumbnail">
+                  </div>
+                </td>
                 <td class="fw-semibold">{{ product.product.name }}</td>
                 <td><span class="category-badge">{{ product.category.name }}</span></td>
                 <td><span class="brand-badge">{{ product.brand.name }}</span></td>
@@ -183,7 +189,7 @@
             <!-- Empty message -->
             <ng-template pTemplate="emptymessage">
               <tr>
-                <td colspan="7" class="text-center p-5">
+                <td colspan="8" class="text-center p-5">
                   <div class="d-flex flex-column align-items-center">
                     <i class="pi pi-shopping-bag mb-3" style="font-size: 3rem; opacity: 0.3"></i>
                     <h5>No products found</h5>

@@ -1,0 +1,124 @@
+/* Container grid */
+.product-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 20px;
+  justify-content: center;
+}
+
+/* Card */
+.product-card {
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  padding: 20px;
+  width: 260px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+/* Card content layout */
+.product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Title, meta, price */
+.product-name {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: #333;
+}
+.meta {
+  font-size: 14px;
+  color: #777;
+}
+.price {
+  font-size: 16px;
+  color: #222;
+  font-weight: bold;
+}
+
+/* Stock status */
+.stock-status {
+  font-size: 14px;
+  font-weight: bold;
+  margin: 0;
+}
+.in-stock {
+  color: green;
+}
+.out-stock {
+  color: red;
+}
+
+/* Exact counts below status */
+.stock-count {
+  font-size: 13px;
+  color: #555;
+  margin: -4px 0 8px; /* pulls it slightly up and adds bottom space */
+}
+
+/* Buttons */
+.wish-btn,
+.cart-btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.wish-btn {
+  background-color: #ffc0cb;
+  color: #c2185b;
+}
+.wish-btn:hover {
+  background-color: #f8bbd0;
+}
+
+.cart-btn {
+  background-color: #1976d2;
+  color: white;
+}
+.cart-btn:hover {
+  background-color: #1565c0;
+}
+.cart-btn:disabled {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+}
+
+/* Heart icons in wishlist button */
+.pi-heart,
+.pi-heart-fill {
+  margin-right: 6px;
+  font-size: 16px;
+}
+.pi-heart-fill {
+  color: #e91e63;
+}
+
+/* SweetAlert2 custom toast styling (global or in component-level styles) */
+.custom-toast-popup {
+  border-radius: 10px;
+  font-size: 14px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+.stock-count {
+  font-size: 13px;
+  color: #3b2ab7;           /* softer dark gray instead of pure black */
+  margin-top: -6px;
+  margin-bottom: 8px;
+}
+

@@ -1,0 +1,240 @@
+/* Main product image */
+.main-image-container {
+  position: relative;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 450px; /* Increased height */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.main-product-image {
+  height: 350px; /* Increased height */
+
+}
+
+/* Vertical thumbnail images */
+.vertical-thumbnails {
+  display: flex;
+  flex-direction: column;
+  height: 400px; /* Match main image height */
+  overflow-y: scroll;
+  padding-top: 1rem;
+  padding-right: 0.5rem;
+  scrollbar-width: thin;
+}
+
+.thumbnail-wrapper {
+  width: 100%;
+  height: 80px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease-in-out;
+}
+
+.thumbnail-wrapper:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.thumbnail-wrapper.active {
+  border-color: #0d6efd;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(13, 110, 253, 0.25);
+}
+
+.thumbnail-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.thumbnail-wrapper:hover img {
+  transform: scale(1.05);
+}
+
+/* Image slider */
+.image-slider {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 450px; /* Increased height */
+}
+
+.slider-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.slider-image.active {
+  display: flex;
+}
+
+.slider-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 2;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.slider-nav:hover {
+  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.slider-nav.prev {
+  left: 15px;
+}
+
+.slider-nav.next {
+  right: 15px;
+}
+
+/* Product details */
+.product-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.current-price {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #212529;
+}
+
+/* Option buttons */
+.option-btn {
+  min-width: 40px;
+  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+}
+
+/* Stock status */
+.text-success {
+  color: #198754 !important;
+}
+
+.text-warning {
+  color: #ffc107 !important;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+  .vertical-thumbnails {
+    flex-direction: row;
+    height: auto;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 0.5rem;
+  }
+
+  .thumbnail-wrapper {
+    width: 70px;
+    height: 70px;
+    margin-right: 0.75rem;
+    margin-bottom: 0;
+  }
+
+  .main-image-container {
+    min-height: 300px;
+  }
+
+  .image-slider {
+    min-height: 300px;
+  }
+
+  .main-product-image {
+    max-height: 300px;
+  }
+
+  .product-title {
+    font-size: 1.25rem;
+  }
+
+  .current-price {
+    font-size: 1.5rem;
+  }
+}
+
+/* Tab content */
+.tab-content {
+  padding: 0.5rem 0;
+}
+
+/* Card styling */
+.card {
+  border-radius: 0.5rem;
+}
+
+.card-header {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.nav-tabs .nav-link {
+  border: none;
+  color: #6c757d;
+  font-weight: 500;
+  padding: 0.5rem 0.75rem;
+}
+
+.nav-tabs .nav-link.active {
+  color: #0d6efd;
+  border-bottom: 2px solid #0d6efd;
+  background-color: transparent;
+}
+
+/* Related products */
+.card-img-top {
+  height: 160px;
+  object-fit: cover;
+}
+
+/* Compact spacing */
+.mb-1 {
+  margin-bottom: 0.25rem !important;
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem !important;
+}
+
+.p-2 {
+  padding: 0.5rem !important;
+}
+
+.py-2 {
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+}
