@@ -2,8 +2,7 @@ package com.maven.OnlineShoppingSB.entity;
 
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,6 +11,7 @@ import java.util.List;
 @Table(name = "roles")
 @Getter
 @Setter
+@Data
 public class RoleEntity {
 
     @Id
@@ -24,9 +24,18 @@ public class RoleEntity {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "type", nullable = false)
+    private Integer type; // 1 = ADMIN, 0 = CUSTOMER
+
     private LocalDateTime createdDate;
 
     @OneToMany(mappedBy = "role")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<UserEntity> users;
 
+    // Add helper method
+    public boolean isAdmin() {
+        return type != null && type == 1;
+    }
 }

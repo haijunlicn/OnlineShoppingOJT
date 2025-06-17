@@ -1,9 +1,11 @@
 package com.maven.OnlineShoppingSB.config;
 
-import com.maven.OnlineShoppingSB.entity.UserEntity;
+
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
+import com.maven.OnlineShoppingSB.entity.UserEntity;
+
 
 import java.security.Key;
 import java.util.Date;
@@ -17,16 +19,29 @@ public class JwtService {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
 
+//    public String generateTokenWithUserDetails(UserEntity u) {
+//        long expirationTime = 7 * 24 * 60 * 60 * 1000L; // 7 days
+//
+//        return Jwts.builder()
+//                .setSubject(u.getEmail())
+//                .setIssuedAt(new Date())
+//                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
+//                .signWith(getSignInKey()) // ✅ consistent
+//                .compact();
+//    }
+
     public String generateTokenWithUserDetails(UserEntity u) {
         long expirationTime = 7 * 24 * 60 * 60 * 1000L; // 7 days
 
         return Jwts.builder()
                 .setSubject(u.getEmail())
+                .claim("roleType", u.getRole().getType()) // ✅ add roleType
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
-                .signWith(getSignInKey()) // ✅ consistent
+                .signWith(getSignInKey())
                 .compact();
     }
+
 
     public String extractEmail(String token) {
         try {
@@ -38,6 +53,21 @@ public class JwtService {
                     .getSubject();
         } catch (JwtException e) {
             System.out.println("❌ JWT parsing failed: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public Integer extractRoleType(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(getSignInKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            return claims.get("roleType", Integer.class); // ✅ typed cast
+        } catch (JwtException e) {
+            System.out.println("❌ Failed to extract roleType: " + e.getMessage());
             return null;
         }
     }

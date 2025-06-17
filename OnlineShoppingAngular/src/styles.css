@@ -87,3 +87,423 @@ main.flex-grow-1 {
   word-wrap: break-word;
   padding: 6px 10px !important;
 }
+
+/* Modern SweetAlert2 Toast Styles */
+.swal2-popup.modern-toast {
+  border-radius: 12px !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12) !important;
+  padding: 1rem 1.5rem !important;
+  min-width: 320px !important;
+  border-left: 6px solid transparent !important;
+  animation: slideIn 0.4s;
+}
+.swal2-popup.modern-toast-success { border-left-color: #28a745 !important; }
+.swal2-popup.modern-toast-error   { border-left-color: #dc3545 !important; }
+.swal2-popup.modern-toast-warning { border-left-color: #ffc107 !important; }
+.swal2-popup.modern-toast-info    { border-left-color: #17a2b8 !important; }
+
+.swal2-title.modern-toast-title {
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  margin: 0 !important;
+  color: inherit !important;
+}
+
+.swal2-icon.modern-toast-icon {
+  margin-right: 0.5rem !important;
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-30px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+/* Add this to your global styles or component CSS */
+/* Luxury Alert Variables */
+:root {
+  --luxury-primary: #1a1a1a;
+  --luxury-accent: #c9b87c;
+  --luxury-gold: #bfa16a;
+  --luxury-success: #2d5a3d;
+  --luxury-error: #8b2635;
+  --luxury-warning: #8b6914;
+  --luxury-info: #1e4a5f;
+  --luxury-bg: #f9f8f6;
+  --luxury-shadow: 0 4px 20px rgba(26, 26, 26, 0.08);
+  --luxury-shadow-lg: 0 16px 48px rgba(26, 26, 26, 0.15);
+}
+
+/* Luxury Alert Dialogs */
+.luxury-alert {
+  border-radius: 16px !important;
+  border: 1px solid rgba(201, 184, 124, 0.2) !important;
+  box-shadow: var(--luxury-shadow-lg) !important;
+  backdrop-filter: blur(12px) !important;
+  background: rgba(249, 248, 246, 0.98) !important;
+  font-family: 'Cinzel', serif !important;
+}
+
+.luxury-alert .swal2-title {
+  color: var(--luxury-primary) !important;
+  font-family: 'Cinzel', serif !important;
+  font-weight: 600 !important;
+  font-size: 1.5rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.luxury-alert .swal2-html-container {
+  color: var(--luxury-primary) !important;
+  font-size: 1rem !important;
+  line-height: 1.6 !important;
+}
+
+/* Luxury Buttons */
+.luxury-btn {
+  padding: 0.75rem 2rem !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  font-size: 0.95rem !important;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  border: 1px solid transparent !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+}
+
+.luxury-btn-primary {
+  background: var(--luxury-primary) !important;
+  color: var(--luxury-bg) !important;
+  border-color: var(--luxury-primary) !important;
+}
+
+.luxury-btn-primary:hover {
+  background: var(--luxury-accent) !important;
+  border-color: var(--luxury-accent) !important;
+  transform: translateY(-1px) !important;
+}
+
+.luxury-btn-outline {
+  background: transparent !important;
+  color: var(--luxury-primary) !important;
+  border-color: rgba(26, 26, 26, 0.2) !important;
+}
+
+.luxury-btn-outline:hover {
+  background: var(--luxury-primary) !important;
+  color: var(--luxury-bg) !important;
+  transform: translateY(-1px) !important;
+}
+
+.luxury-btn-danger {
+  background: var(--luxury-error) !important;
+  color: white !important;
+}
+
+.luxury-btn-warning {
+  background: var(--luxury-warning) !important;
+  color: white !important;
+}
+
+.luxury-btn-info {
+  background: var(--luxury-info) !important;
+  color: white !important;
+}
+
+/* COMPACT Luxury Toast Notifications */
+.luxury-toast {
+  border-radius: 10px !important;
+  border: none !important;
+  box-shadow: var(--luxury-shadow) !important;
+  backdrop-filter: blur(16px) !important;
+  min-width: 300px !important;
+  max-width: 400px !important;
+  padding: 0 !important;
+  margin-top: 1rem !important;
+  min-height: auto !important;
+}
+
+/* COMPACT Content Layout */
+.luxury-toast-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+}
+
+.luxury-toast-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+}
+
+.luxury-toast-message {
+  flex: 1;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* LARGER Content Layout (for email verification) */
+.luxury-toast-content-large {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.luxury-toast-icon-large {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.luxury-toast-message-large {
+  flex: 1;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.luxury-toast-title {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  font-family: 'Cinzel', serif;
+}
+
+.luxury-toast-subtitle {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin-bottom: 0.75rem;
+}
+
+/* Toast Variants - COMPACT */
+.luxury-toast-success {
+  background: linear-gradient(135deg, #f0f9f4 0%, #e8f5e8 100%) !important;
+  border-left: 3px solid var(--luxury-success) !important;
+}
+
+.luxury-toast-success .luxury-toast-icon {
+  color: var(--luxury-success);
+}
+
+.luxury-toast-success .luxury-toast-message {
+  color: var(--luxury-success);
+}
+
+.luxury-toast-error {
+  background: linear-gradient(135deg, #fdf2f2 0%, #fce8e8 100%) !important;
+  border-left: 3px solid var(--luxury-error) !important;
+}
+
+.luxury-toast-error .luxury-toast-icon {
+  color: var(--luxury-error);
+}
+
+.luxury-toast-error .luxury-toast-message {
+  color: var(--luxury-error);
+}
+
+.luxury-toast-warning {
+  background: linear-gradient(135deg, #fffdf0 0%, #fef9e7 100%) !important;
+  border-left: 3px solid var(--luxury-warning) !important;
+}
+
+.luxury-toast-warning .luxury-toast-icon {
+  color: var(--luxury-warning);
+}
+
+.luxury-toast-warning .luxury-toast-message {
+  color: var(--luxury-warning);
+}
+
+.luxury-toast-info {
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%) !important;
+  border-left: 3px solid var(--luxury-info) !important;
+}
+
+.luxury-toast-info .luxury-toast-icon {
+  color: var(--luxury-info);
+}
+
+.luxury-toast-info .luxury-toast-message {
+  color: var(--luxury-info);
+}
+
+/* Email Verification Toast (larger) */
+.luxury-toast-verification {
+  background: linear-gradient(135deg, #fff9e6 0%, #fef5d3 100%) !important;
+  border-left: 4px solid var(--luxury-accent) !important;
+}
+
+.luxury-toast-verification .luxury-toast-icon-large {
+  background: var(--luxury-accent);
+  color: white;
+}
+
+.luxury-toast-verification .luxury-toast-message-large {
+  color: var(--luxury-primary);
+}
+
+/* Toast Button */
+.luxury-toast-btn {
+  background: var(--luxury-accent);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.luxury-toast-btn:hover {
+  background: var(--luxury-gold);
+  transform: translateY(-1px);
+}
+
+/* Progress Bar */
+.luxury-progress-bar {
+  background: var(--luxury-accent) !important;
+  height: 2px !important;
+  border-radius: 0 0 10px 10px !important;
+}
+
+/* Loading Spinner */
+.luxury-loading {
+  border-radius: 16px !important;
+  background: rgba(249, 248, 246, 0.98) !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: var(--luxury-shadow) !important;
+  border: 1px solid rgba(201, 184, 124, 0.2) !important;
+}
+
+.luxury-loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem;
+}
+
+.luxury-spinner {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.luxury-spinner-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 3px solid transparent;
+  border-top: 3px solid var(--luxury-accent);
+  border-radius: 50%;
+  animation: luxurySpinnerRotate 1.2s linear infinite;
+}
+
+.luxury-spinner-ring:nth-child(2) {
+  width: 80%;
+  height: 80%;
+  top: 10%;
+  left: 10%;
+  border-top-color: var(--luxury-gold);
+  animation-duration: 1.5s;
+  animation-direction: reverse;
+}
+
+.luxury-spinner-ring:nth-child(3) {
+  width: 60%;
+  height: 60%;
+  top: 20%;
+  left: 20%;
+  border-top-color: var(--luxury-primary);
+  animation-duration: 0.9s;
+}
+
+.luxury-loading-message {
+  color: var(--luxury-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: 'Cinzel', serif;
+}
+
+/* Animations */
+@keyframes luxurySlideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes luxurySlideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes luxurySpinnerRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Confirmation Dialog */
+.luxury-confirm {
+  max-width: 500px !important;
+}
+
+.luxury-confirm .swal2-actions {
+  gap: 1rem !important;
+  margin-top: 2rem !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .luxury-toast {
+    min-width: 280px !important;
+    max-width: 90vw !important;
+    margin: 0.5rem !important;
+  }
+  
+  .luxury-toast-content {
+    padding: 0.75rem 0.875rem;
+    gap: 0.625rem;
+  }
+  
+  .luxury-toast-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 0.875rem;
+  }
+
+  .luxury-toast-message {
+    font-size: 0.85rem;
+  }
+}

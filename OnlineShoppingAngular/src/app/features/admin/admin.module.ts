@@ -83,7 +83,7 @@ import { ProductBulkUploadComponent } from './product_management/product-bulk-up
     ColorPickerModule,
     TreeModule,
     MenuModule,
-     FormsModule
+    FormsModule
   ]
 })
 export class AdminModule { }

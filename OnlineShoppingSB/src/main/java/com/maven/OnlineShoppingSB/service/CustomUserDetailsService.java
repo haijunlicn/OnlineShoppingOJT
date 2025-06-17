@@ -28,4 +28,14 @@ public class CustomUserDetailsService implements UserDetailsService {
                 new ArrayList<>()  // authorities (e.g. ROLE_USER) – empty for now
         );
     }
+
+    public UserDetails loadUserByUsernameAndRoleType(String email, Integer roleType) throws UsernameNotFoundException {
+        return userRepository.findByEmailAndRoleType(email, roleType)
+                .map(user -> new org.springframework.security.core.userdetails.User(
+                        user.getEmail(),
+                        user.getPassword(),
+                        new ArrayList<>()
+                ))
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email and roleType"));
+    }
 }
