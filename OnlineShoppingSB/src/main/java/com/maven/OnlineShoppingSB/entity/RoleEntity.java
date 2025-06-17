@@ -1,8 +1,7 @@
 package com.maven.OnlineShoppingSB.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Set;
 
@@ -10,6 +9,7 @@ import java.util.Set;
 @Table(name = "roles")
 @Getter
 @Setter
+@Data
 public class RoleEntity {
 
     @Id
@@ -34,6 +34,15 @@ public class RoleEntity {
     )
     private Set<PermissionEntity> permissions;
 
+    
+    private LocalDateTime createdDate;
+
+    @OneToMany(mappedBy = "role")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<UserEntity> users;
+
+    // Add helper method
     public boolean isAdmin() {
         return type != null && type == 1;
     }

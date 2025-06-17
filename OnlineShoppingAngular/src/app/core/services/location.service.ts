@@ -81,6 +81,6 @@ searchLocation(query: string): Observable<any> {
   const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
   return this.http.get<any[]>(url);
 }
-
+  
   
 }

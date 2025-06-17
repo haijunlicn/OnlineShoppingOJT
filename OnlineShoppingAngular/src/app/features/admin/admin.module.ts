@@ -114,9 +114,7 @@ import { PaymentUpdateComponent } from './payment-management/payment-update/paym
     ColorPickerModule,
     TreeModule,
     MenuModule,
-    
-    
-     FormsModule
+    FormsModule
   ]
 })
 export class AdminModule { }

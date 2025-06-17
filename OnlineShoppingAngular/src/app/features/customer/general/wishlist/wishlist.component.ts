@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { WishlistDTO } from '../../../../core/models/wishlist-dto';
 import { WishlistService } from '../../../../core/services/wishlist.service';
 import { WishlistTitleDTO } from '../../../../core/models/wishlist-titleDTO';
+import { ProductCardItem, ProductImageDTO } from '../../../../core/models/product.model';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-wishlist',
@@ -14,10 +16,12 @@ export class WishlistComponent implements OnInit {
   wishlistTitles: WishlistTitleDTO[] = [];
   wishlistProducts: { [titleId: number]: WishlistDTO[] } = {};
 
-  constructor(private wishlistService: WishlistService) {}
+  constructor(private wishlistService: WishlistService,private router:Router) {}
 
   ngOnInit(): void {
     this.loadWishlistTitles();
+    console.log("wished pds : " , this.wishlistProducts);
+    
   }
 
   loadWishlistTitles(): void {
@@ -38,6 +42,7 @@ export class WishlistComponent implements OnInit {
     this.wishlistService.getProductsByWishlistTitle(title.id).subscribe({
       next: (products) => {
         this.wishlistProducts[title.id!] = products;
+         console.log("wished pds : " , products);
       },
       error: (err) => {
         console.error(`Failed to load products for title ${title.title}:`, err);
@@ -76,6 +81,15 @@ removeWishlistTitle(titleId: number): void {
     });
   }
 
+getMainImage(images: ProductImageDTO[] | undefined): string | null {
+    if (!images || images.length === 0) return null;
+    const mainImage = images.find(img => img.mainImageStatus);
+    return mainImage ? mainImage.imgPath! : images[0].imgPath!;
+  }
+goToDetail(product: any): void {
+  // or product: ProductDTO (your actual type)
+  this.router.navigate(['/customer/product', product.id]);
+}
 
 
 }

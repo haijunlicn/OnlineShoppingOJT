@@ -55,6 +55,7 @@ import { ProductDetailComponent } from './product_display/product-detail/product
     PrivacyPolicyComponent,
     TermsConditionsComponent,
     FaqComponent,
+
     ProductListComponent,
     ProductDetailComponent
 
@@ -66,9 +67,9 @@ import { ProductDetailComponent } from './product_display/product-detail/product
     ReactiveFormsModule,
     ReactiveFormsModule,
     FormsModule,
-   HttpClientModule,
-   MatDialogModule,
-   MatDialogModule,
+    HttpClientModule,
+    MatDialogModule,
+    MatDialogModule,
     MatListModule,
     MatInputModule,
     MatButtonModule,

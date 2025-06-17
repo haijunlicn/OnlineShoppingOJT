@@ -11,4 +11,5 @@ public class WishlistDTO {
     private Long productId;
     private Long wishlistTitleId;
     private String productName;
+    private ProductDTO product;
 }
