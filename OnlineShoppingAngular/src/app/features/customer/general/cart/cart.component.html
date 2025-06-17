@@ -14,7 +14,15 @@
     </thead>
     <tbody>
       <tr *ngFor="let item of cart">
-        <td>{{ item.productName }}</td>
+        <td class="product-cell">
+          <div class="product-info">
+            <img *ngIf="item.imgPath" [src]="item.imgPath" alt="{{ item.productName }}" class="product-img" />
+            <div class="product-name">
+              {{ item.productName }}
+              <span class="variant-sku">({{ item.variantSku }})</span>
+            </div>
+          </div>
+        </td>
         <td>${{ item.price }}</td>
         <td>
           <button class="qty-btn" (click)="changeQty(item.productId, item.variantId, -1)">−</button>
@@ -42,7 +50,7 @@
     <button class="clear-btn" (click)="clearCart()">🧹 Clear Cart</button>
   </div>
 
-  <button class="back-btn" routerLink="/customer/userproduct" routerLinkActive="active">
+  <button class="back-btn" routerLink="/customer/productList" routerLinkActive="active">
     ⬅ Back to Product List
   </button>
 </div>

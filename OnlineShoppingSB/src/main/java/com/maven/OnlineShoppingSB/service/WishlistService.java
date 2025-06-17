@@ -1,5 +1,6 @@
 package com.maven.OnlineShoppingSB.service;
 
+import com.maven.OnlineShoppingSB.dto.ProductDTO;
 import com.maven.OnlineShoppingSB.dto.WishlistDTO;
 import com.maven.OnlineShoppingSB.dto.WishlistTitleDTO;
 import com.maven.OnlineShoppingSB.entity.ProductEntity;
@@ -78,6 +79,7 @@ public class WishlistService {
                         wishDto.setWishlistTitleId(wish.getWishlistTitle().getId());
                         wishDto.setProductId(wish.getProduct().getId());
                         wishDto.setProductName(wish.getProduct().getName());
+                        wishDto.setProduct(mapper.map(wish.getProduct(), ProductDTO.class));
                         return wishDto;
                     })
                     .toList();
@@ -115,6 +117,7 @@ public class WishlistService {
             WishlistDTO dto = new WishlistDTO();
             dto.setWishlistTitleId(entity.getWishlistTitle().getId());
             dto.setProductId(entity.getProduct().getId());
+            dto.setProduct(mapper.map(entity.getProduct(), ProductDTO.class));
 
             // Set productName from the product entity
             if (entity.getProduct() != null) {

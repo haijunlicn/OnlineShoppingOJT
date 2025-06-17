@@ -10,14 +10,33 @@
         <button class="remove-title-btn" (click)="removeWishlistTitle(title.id!)">🗑 Remove Title</button>
       </div>
 
-      <ul *ngIf="wishlistProducts[title.id ?? 0] && wishlistProducts[title.id ?? 0].length > 0; else noProducts">
+      <ul *ngIf="wishlistProducts[title.id!] && wishlistProducts[title.id!].length > 0; else noProducts">
         <li *ngFor="let product of wishlistProducts[title.id ?? 0]" class="wishlist-item">
-          <span class="product-name">{{ product.productName }}</span>
-          <button class="remove-btn" (click)="removeProductFromWishlistTitle(title.id!, product.productId)">
-  &minus;
-</button>
+  <div class="product-info" (click)="goToDetail(product.product)" style="cursor: pointer;">
 
-        </li>
+    <img
+      *ngIf="product.product?.productImages?.length"
+      [src]="getMainImage(product.product?.productImages)"
+      [alt]="product.product?.name"
+      class="product-img"
+    />
+
+    <div class="product-details">
+      <div class="product-name">{{ product.product?.name }}</div>
+      <div class="product-price">Price: ${{ product.product?.basePrice }}</div>
+    </div>
+  </div>
+
+  <button
+    class="remove-btn"
+    (click)="removeProductFromWishlistTitle(title.id!, product.productId); $event.stopPropagation()"
+    title="Remove product"
+  >
+    &minus;
+  </button>
+</li>
+
+
       </ul>
 
       <ng-template #noProducts>

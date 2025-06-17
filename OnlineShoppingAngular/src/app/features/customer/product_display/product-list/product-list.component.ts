@@ -28,7 +28,7 @@ export class ProductListComponent {
   ) { }
 
   ngOnInit() {
-    this.loadWishlist
+    this.loadWishlist();
     this.loadProducts();
   }
 

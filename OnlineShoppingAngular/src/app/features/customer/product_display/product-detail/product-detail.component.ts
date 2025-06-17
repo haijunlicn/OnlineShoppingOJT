@@ -361,16 +361,17 @@ export class ProductDetailComponent {
     }
 
     // Add the selected quantity (not just 1)
-    const fallbackImage = this.selectedVariant.imgPath
-      ?? item.product.productImages?.[0]?.imgPath
-      ?? undefined;
+const fallbackImage =
+  this.selectedVariant.imgPath?.trim() ||
+  item.product.productImages?.find(img => img.mainImageStatus)?.imgPath?.trim() ||
+  "assets/images/default.jpg";
 
     for (let i = 0; i < this.quantity; i++) {
       this.cartService.addToCart({
         id: item.product.id!,
         name: item.product.name,
         variantId: this.selectedVariant.id!,
-        variantSku: this.selectedVariant.sku,
+        variantSku: this.selectedVariant.sku,  
         stock: this.selectedVariant.stock,
         price: this.selectedVariant.price,
         image: fallbackImage,
@@ -395,7 +396,7 @@ export class ProductDetailComponent {
 
     this.quantity = 1;
   }
-
+      
   incrementQuantity(): void {
     const maxAllowed = this.getCurrentVariantRemainingStock();
     if (this.quantity < maxAllowed) {
