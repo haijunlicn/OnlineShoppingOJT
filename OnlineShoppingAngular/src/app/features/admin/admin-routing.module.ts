@@ -18,6 +18,15 @@ import { FaqUpdateComponent } from './policy-management/faq-update/faq-update.co
 import { DiscountGroupComponent } from './discount_management/discount-group/discount-group.component';
 import { ProductCreateComponent } from './product_management/product-create/product-create.component';
 import { ProductBulkUploadComponent } from './product_management/product-bulk-upload/product-bulk-upload.component';
+import { RoleListComponent } from './role-management/role-list/role-list.component';
+import { RoleFormComponent } from './role-management/role-form/role-form.component';
+import { RoleUpdateComponent } from './role-management/role-update/role-update.component';
+import { PermissionFormComponent } from './role-management/permission-form/permission-form.component';
+import { PermissionListComponent } from './role-management/permission-list/permission-list.component';
+import { PermissionUpdateComponent } from './role-management/permission-update/permission-update.component';
+import { PaymentCreateComponent } from './payment-management/payment-create/payment-create.component';
+import { PaymentListComponent } from './payment-management/payment-list/payment-list.component';
+import { PaymentUpdateComponent } from './payment-management/payment-update/payment-update.component';
 
 
 const routes: Routes = [
@@ -56,6 +65,27 @@ const routes: Routes = [
   {
     path: 'policy/faq-update' , component: FaqUpdateComponent, canActivate: [NoAuthGuard]
   },
+  {
+    path: 'role-list' , component: RoleListComponent
+  },
+  {
+    path: 'role-form' , component: RoleFormComponent
+  },
+  {
+    path: 'role-update/:id' , component: RoleUpdateComponent
+  },
+  {
+    path: 'permission-form' , component: PermissionFormComponent
+  },
+  {
+    path: 'permission-list' , component: PermissionListComponent
+  },
+  { path: 'permission-update/:id', component: PermissionUpdateComponent },
+    { path: 'payment-create', component: PaymentCreateComponent },
+      { path: 'payment-list', component: PaymentListComponent },
+{ path: 'payment-update/:id', component: PaymentUpdateComponent },
+
+
   {
     path: 'productAttributes',
     component: AttributeManagementComponent,

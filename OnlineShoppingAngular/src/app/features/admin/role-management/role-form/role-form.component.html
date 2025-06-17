@@ -1,0 +1,31 @@
+<div class="container">
+  <h2>Create Role</h2>
+  <form [formGroup]="roleForm" (ngSubmit)="submit()">
+    <div class="mb-3">
+      <label class="form-label">Role Name</label>
+      <input class="form-control" formControlName="name" />
+      <div class="text-danger" *ngIf="roleForm.get('name')?.invalid && roleForm.get('name')?.touched">
+        Name is required.
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Description</label>
+      <textarea class="form-control" formControlName="description"></textarea>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Permissions</label>
+      <div *ngFor="let perm of allPermissions">
+        <input
+          type="checkbox"
+          [value]="perm.id"
+          (change)="onPermissionChange(perm.id, getCheckedValue($event))"
+        />
+        {{ perm.code }}
+      </div>
+    </div>
+
+    <button class="btn btn-success" type="submit" [disabled]="roleForm.invalid">Create</button>
+  </form>
+</div>

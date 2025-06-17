@@ -1,0 +1,36 @@
+<div class="container">
+  <h2>Update Role</h2>
+  <form [formGroup]="roleForm" (ngSubmit)="submit()">
+    <div class="mb-3">
+      <label class="form-label">Role Name</label>
+      <input class="form-control" formControlName="name" />
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Description</label>
+      <textarea class="form-control" formControlName="description"></textarea>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Type</label>
+      <select class="form-select" formControlName="type">
+        <option [value]="0">Customer</option>
+        <option [value]="1">Admin</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Permissions</label>
+      <div *ngFor="let perm of allPermissions">
+        <input
+          type="checkbox"
+          [checked]="roleForm.value.permissionIds.includes(perm.id)"
+         (change)="onPermissionChange(perm.id, getCheckedValue($event))"
+        />
+        {{ perm.code }}
+      </div>
+    </div>
+
+    <button class="btn btn-primary" type="submit" [disabled]="roleForm.invalid">Update</button>
+  </form>
+</div>

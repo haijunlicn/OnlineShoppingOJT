@@ -1,0 +1,19 @@
+<div class="container">
+  <h2>Create Permission</h2>
+  <form [formGroup]="permissionForm" (ngSubmit)="submit()">
+    <div class="mb-3">
+      <label class="form-label">Permission Code</label>
+      <input class="form-control" formControlName="code" />
+      <div class="text-danger" *ngIf="permissionForm.get('code')?.invalid && permissionForm.get('code')?.touched">
+        Code is required.
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Description</label>
+      <textarea class="form-control" formControlName="description"></textarea>
+    </div>
+
+    <button class="btn btn-success" type="submit" [disabled]="permissionForm.invalid">Create</button>
+  </form>
+</div>

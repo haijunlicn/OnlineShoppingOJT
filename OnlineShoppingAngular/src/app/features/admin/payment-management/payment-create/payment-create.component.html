@@ -1,0 +1,21 @@
+<div class="payment-create-container">
+  <h2>Create Payment Method</h2>
+
+  <div>
+    <label>Method Name:</label>
+    <input type="text" [(ngModel)]="methodName" placeholder="Enter method name" />
+  </div>
+
+  <div>
+    <label>Upload QR Code:</label>
+    <input type="file" (change)="onFileSelected($event)" accept="image/*" />
+  </div>
+
+  <div *ngIf="uploading">Uploading...</div>
+
+  <button (click)="uploadAndSave()">Save Payment Method</button>
+
+  <div *ngIf="message" style="margin-top: 10px; color: red;">
+    {{ message }}
+  </div>
+</div>

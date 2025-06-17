@@ -131,13 +131,18 @@
         </div>
 
         <div class="action-buttons">
-          <button type="submit" class="btn primary-btn" [disabled]="isLoading">
+         <button 
+            type="submit" 
+            class="btn primary-btn"
+            [disabled]="isLoading || !registerForm.valid || !registerForm.get('acceptTerms')?.value">
             <span *ngIf="!isLoading">Register</span>
             <span *ngIf="isLoading" class="d-flex align-items-center justify-content-center">
               <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
               Registering...
             </span>
           </button>
+
+
           <button type="button" class="btn secondary-btn" (click)="resetForm()" [disabled]="isLoading">
             Cancle
           </button>

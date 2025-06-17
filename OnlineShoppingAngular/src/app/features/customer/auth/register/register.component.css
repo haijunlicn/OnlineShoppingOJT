@@ -474,4 +474,24 @@ h3 {
 .small-text {
   font-size: 0.85rem; /* or 12px / 13px */
 }
+.btn[disabled] {
+  cursor: not-allowed !important;
+  opacity: 0.6;
+  pointer-events: all;
+  position: relative;
+}
+
+.btn[disabled]::after {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #f44336;
+  color: white;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 10;
+}
 

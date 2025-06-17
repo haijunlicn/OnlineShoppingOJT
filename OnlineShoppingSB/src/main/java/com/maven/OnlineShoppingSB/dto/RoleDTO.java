@@ -1,17 +1,16 @@
 package com.maven.OnlineShoppingSB.dto;
 
-
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
-public class roleDTO {
+public class RoleDTO {
 
     private Integer id;
 
@@ -22,5 +21,11 @@ public class roleDTO {
     @Size(max = 1000, message = "Description must be at most 1000 characters")
     private String description;
 
+    private Integer type; 
+
+    private Integer delFg; 
+
     private LocalDateTime createdDate;
+
+    private List<PermissionDTO> permissions; 
 }

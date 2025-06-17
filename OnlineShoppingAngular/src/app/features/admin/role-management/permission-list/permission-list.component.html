@@ -1,0 +1,28 @@
+<div class="container">
+  <h2>Permission List</h2>
+  <button routerLink="/admin/permission-form" class="btn btn-primary mb-2">
+    + Create Permission
+  </button>
+
+  <table class="table table-striped table-bordered">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Code</th>
+        <th>Description</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let p of permissions">
+        <td>{{ p.id }}</td>
+        <td>{{ p.code }}</td>
+        <td>{{ p.description }}</td>
+        <td>
+          <button class="btn btn-sm btn-warning" [routerLink]="['/admin/permission-update', p.id]">Edit</button>
+          <button class="btn btn-sm btn-danger" (click)="deletePermission(p.id)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,38 @@
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Role List</h2>
+    <button *ngIf="isSuperAdmin()" routerLink="/admin/role-form" class="btn btn-primary">
+      + Create Role
+    </button>
+  </div>
+
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Permissions</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let role of roles">
+        <td>{{ role.id }}</td>
+        <td>{{ role.name }}</td>
+        <td>
+          <ul>
+            <li *ngFor="let p of role.permissions">{{ p.code }}</li>
+          </ul>
+        </td>
+        <td>
+          <button class="btn btn-sm btn-warning" (click)="editRole(role)">
+            Edit
+          </button>
+          <button class="btn btn-sm btn-danger" (click)="deleteRole(role.id!)">
+            Delete
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
