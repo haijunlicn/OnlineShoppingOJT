@@ -4,8 +4,6 @@ import { HomeComponent } from './general/home/home.component';
 import { VerifyComponent } from './auth/verify/verify.component';
 import { RegisterComponent } from './auth/register/register.component';
 import { LoginComponent } from './auth/login/login.component';
-import { AuthGuard } from '../../core/guards/auth.guard';
-import { NoAuthGuard } from '../../core/guards/no-auth.guard';
 import { ForgetPasswordComponent } from './auth/forget-password/forget-password.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { LocationCreateComponent } from './account/location-create/location-create.component';
@@ -16,6 +14,9 @@ import { WishlistComponent } from './general/wishlist/wishlist.component';
 import { CartComponent } from './general/cart/cart.component';
 import { ProductListComponent } from './product_display/product-list/product-list.component';
 import { ProductDetailComponent } from './product_display/product-detail/product-detail.component';
+import { NoAuthGuard } from '../../core/guards/no-auth.guard';
+import { AuthGuard } from '../../core/guards/auth.guard';
+
 
 const routes: Routes = [
 
@@ -49,8 +50,14 @@ const routes: Routes = [
   { path: 'editlocation/:id', component: EditLocationComponent },
   { path: 'userproduct', component: UserproductListComponent },
   { path: 'address', component: LocationCardComponent },
-  { path: 'general/wishlist', component: WishlistComponent },
-  { path: 'cart', component: CartComponent },
+  {
+    path: 'general/wishlist', component: WishlistComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'cart', component: CartComponent,
+    canActivate: [AuthGuard]
+  },
   { path: 'address', component: LocationCardComponent },
   {
     path: 'auth/reset-password',

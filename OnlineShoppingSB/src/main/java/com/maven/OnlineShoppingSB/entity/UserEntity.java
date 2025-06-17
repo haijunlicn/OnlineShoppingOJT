@@ -1,6 +1,7 @@
 package com.maven.OnlineShoppingSB.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,7 +12,7 @@ import java.util.List;
 @Table(name = "users")
 @Getter
 @Setter
-
+@Data
 public class UserEntity {
 
     @Id
