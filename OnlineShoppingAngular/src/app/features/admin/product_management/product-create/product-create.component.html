@@ -199,114 +199,118 @@
                                     </button>
                                 </div>
 
-                                <!-- Options List -->
-                                <div formArrayName="options" class="options-container">
-                                    <div *ngFor="let option of options.controls; let i = index" [formGroupName]="i"
-                                        class="option-box mb-2 border-start border-primary ps-2">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <small class="text-primary fw-semibold">Option {{ i + 1 }}</small>
-                                            <button type="button" class="btn btn-outline-danger btn-sm py-0 px-1"
-                                                (click)="removeOption(i)">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-
-                                        <div class="row g-2">
-                                            <!-- Option Type -->
-                                            <div class="col-5">
-                                                <select class="form-select form-select-sm" formControlName="id"
-                                                    (change)="onOptionTypeChange(i)"
-                                                    [class.is-invalid]="option.get('id')?.invalid && option.get('id')?.touched">
-                                                    <option value="">Select Type</option>
-                                                    <option *ngFor="let type of optionTypes" [value]="type.id">
-                                                        {{ type.name }}
-                                                    </option>
-                                                </select>
-                                                <div class="invalid-feedback small"
-                                                    *ngIf="option.get('id')?.invalid && option.get('id')?.touched">
-                                                    Option type is required
-                                                </div>
+                                <!-- 🔽 Scrollable Options List Container -->
+                                <div style="height: 380px; overflow-y: auto;" class="border rounded p-2 bg-white">
+                                    <div formArrayName="options" class="options-container">
+                                        <div *ngFor="let option of options.controls; let i = index" [formGroupName]="i"
+                                            class="option-box mb-2 border-start border-primary ps-2">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <small class="text-primary fw-semibold">Option {{ i + 1 }}</small>
+                                                <button type="button" class="btn btn-outline-danger btn-sm py-0 px-1"
+                                                    (click)="removeOption(i)">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
                                             </div>
 
-                                            <!-- Option Values Dropdown -->
-                                            <div class="col-7">
-                                                <div *ngIf="option.get('id')?.value; else noTypeSelected"
-                                                    class="dropdown">
-                                                    <button
-                                                        class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-start d-flex justify-content-between align-items-center"
-                                                        type="button" [id]="'optionDropdown' + i"
-                                                        data-bs-toggle="dropdown" aria-expanded="false"
-                                                        [class.is-invalid]="option.get('values')?.invalid && option.get('values')?.touched">
-                                                        <span class="dropdown-text">
-                                                            <span *ngIf="getSelectedValuesCount(i) === 0"
-                                                                class="text-muted">
-                                                                Select values
-                                                            </span>
-                                                            <span *ngIf="getSelectedValuesCount(i) > 0"
-                                                                class="text-dark">
-                                                                {{ getSelectedValuesCount(i) }} selected
-                                                            </span>
-                                                        </span>
-                                                    </button>
-
-                                                    <ul class="dropdown-menu w-100"
-                                                        [attr.aria-labelledby]="'optionDropdown' + i">
-                                                        <li
-                                                            *ngFor="let value of getOptionValues(option.get('id')?.value)">
-                                                            <div class="dropdown-item-check px-3 py-1">
-                                                                <div class="form-check">
-                                                                    <input class="form-check-input" type="checkbox"
-                                                                        [id]="'option_' + i + '_' + value.id"
-                                                                        [checked]="isValueSelected(i, value.value)"
-                                                                        (change)="toggleOptionValue(i, value.value)" />
-                                                                    <label class="form-check-label small"
-                                                                        [for]="'option_' + i + '_' + value.id">
-                                                                        {{ value.value }}
-                                                                    </label>
-                                                                </div>
-                                                            </div>
-                                                        </li>
-                                                        <li
-                                                            *ngIf="getOptionValues(option.get('id')?.value)?.length === 0">
-                                                            <span class="dropdown-item-text small text-muted">No values
-                                                                available</span>
-                                                        </li>
-                                                    </ul>
-
+                                            <div class="row g-2">
+                                                <!-- Option Type -->
+                                                <div class="col-5">
+                                                    <select class="form-select form-select-sm" formControlName="id"
+                                                        (change)="onOptionTypeChange(i)"
+                                                        [class.is-invalid]="option.get('id')?.invalid && option.get('id')?.touched">
+                                                        <option value="">Select Type</option>
+                                                        <option *ngFor="let type of optionTypes" [value]="type.id">
+                                                            {{ type.name }}
+                                                        </option>
+                                                    </select>
                                                     <div class="invalid-feedback small"
-                                                        *ngIf="option.get('values')?.invalid && option.get('values')?.touched">
-                                                        Please select at least one value
+                                                        *ngIf="option.get('id')?.invalid && option.get('id')?.touched">
+                                                        Option type is required
                                                     </div>
                                                 </div>
 
-                                                <ng-template #noTypeSelected>
-                                                    <button class="btn btn-outline-secondary btn-sm w-100 text-start"
-                                                        type="button" disabled>
-                                                        <span class="text-muted small">Select type first</span>
-                                                    </button>
-                                                </ng-template>
+                                                <!-- Option Values Dropdown -->
+                                                <div class="col-7">
+                                                    <div *ngIf="option.get('id')?.value; else noTypeSelected"
+                                                        class="dropdown">
+                                                        <button
+                                                            class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-start d-flex justify-content-between align-items-center"
+                                                            type="button" [id]="'optionDropdown' + i"
+                                                            data-bs-toggle="dropdown" aria-expanded="false"
+                                                            [class.is-invalid]="option.get('values')?.invalid && option.get('values')?.touched">
+                                                            <span class="dropdown-text">
+                                                                <span *ngIf="getSelectedValuesCount(i) === 0"
+                                                                    class="text-muted">Select values</span>
+                                                                <span *ngIf="getSelectedValuesCount(i) > 0"
+                                                                    class="text-dark">{{ getSelectedValuesCount(i) }}
+                                                                    selected</span>
+                                                            </span>
+                                                        </button>
 
-                                                <!-- Selected Values Display -->
-                                                <div class="selected-values mt-1"
-                                                    *ngIf="option.get('values')?.value?.length > 0">
-                                                    <span class="badge bg-light text-dark border me-1 mb-1"
-                                                        *ngFor="let val of option.get('values')?.value">
-                                                        {{ val }}
-                                                        <button type="button" class="btn-close btn-close-sm ms-1"
-                                                            (click)="removeOptionValue(i, val)"
-                                                            aria-label="Remove"></button>
-                                                    </span>
+                                                        <ul class="dropdown-menu w-100"
+                                                            [attr.aria-labelledby]="'optionDropdown' + i">
+                                                            <li
+                                                                *ngFor="let value of getOptionValues(option.get('id')?.value)">
+                                                                <div class="dropdown-item-check px-3 py-1">
+                                                                    <div class="form-check">
+                                                                        <input class="form-check-input" type="checkbox"
+                                                                            [id]="'option_' + i + '_' + value.id"
+                                                                            [checked]="isValueSelected(i, value.value)"
+                                                                            (change)="toggleOptionValue(i, value.value)" />
+                                                                        <label class="form-check-label small"
+                                                                            [for]="'option_' + i + '_' + value.id">
+                                                                            {{ value.value }}
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                            </li>
+                                                            <li
+                                                                *ngIf="getOptionValues(option.get('id')?.value)?.length === 0">
+                                                                <span class="dropdown-item-text small text-muted">No
+                                                                    values available</span>
+                                                            </li>
+                                                        </ul>
+
+                                                        <div class="invalid-feedback small"
+                                                            *ngIf="option.get('values')?.invalid && option.get('values')?.touched">
+                                                            Please select at least one value
+                                                        </div>
+                                                    </div>
+
+                                                    <ng-template #noTypeSelected>
+                                                        <button
+                                                            class="btn btn-outline-secondary btn-sm w-100 text-start"
+                                                            type="button" disabled>
+                                                            <span class="text-muted small">Select type first</span>
+                                                        </button>
+                                                    </ng-template>
+
+                                                    <!-- Selected Values Display -->
+                                                    <div class="selected-values mt-1"
+                                                        *ngIf="option.get('values')?.value?.length > 0">
+                                                        <span class="badge bg-light text-dark border me-1 mb-1"
+                                                            *ngFor="let val of option.get('values')?.value">
+                                                            {{ val }}
+                                                            <button type="button" class="btn-close btn-close-sm ms-1"
+                                                                (click)="removeOptionValue(i, val)"
+                                                                aria-label="Remove"></button>
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <!-- No Options Message -->
-                                    <div *ngIf="options.length === 0" class="text-center py-2">
-                                        <small class="text-muted">No options added yet</small>
+                                        <!-- No Options Message -->
+                                        <div *ngIf="options.length === 0" class="text-center py-2">
+                                            <small class="text-muted">No options added yet</small>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+
+
+
+                          
                         </div>
 
                         <!-- Enhanced Variants Section with Individual Removal -->
@@ -374,13 +378,15 @@
                                                         [disabled]="!selectedImageForBulkAssignment || getSelectedVariantsCount() === 0"
                                                         (click)="applyBulkImageAssignment()">
                                                         <i class="fas fa-check me-1"></i>
-                                                        {{ selectedImageForBulkAssignment === 'clear' ? 'Remove from Selected' : 'Apply to Selected' }}
+                                                        {{ selectedImageForBulkAssignment === 'clear' ?
+                                                        'Remove from Selected' : 'Apply to Selected' }}
                                                     </button>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="card-body p-0">
+                                    
+                                    <div  style="max-height: 400px; overflow-y: auto;" class="border rounded p-2 bg-white card-body p-0">
                                         <div class="table-responsive">
                                             <table class="table table-sm table-hover mb-0">
                                                 <thead class="table-light">
@@ -530,14 +536,18 @@
                                             <small>
                                                 <i class="fas fa-info-circle me-1"></i>
                                                 <strong>Variant Management:</strong>
-                                                {{ hasOptionsSelected ? 'Options-based variants are generated automatically.' : 'Using default variant for simple products.' }}
+                                                {{ hasOptionsSelected ?
+                                                'Options-based variants are generated automatically.'
+                                                : 'Using default variant for simple products.' }}
                                             </small>
                                         </div>
                                         <div class="col-md-6">
                                             <small>
                                                 <i class="fas fa-trash me-1"></i>
                                                 <strong>Removal:</strong>
-                                                {{ hasOptionsSelected ? 'Click the trash icon to remove unwanted variants.' : 'Default variant cannot be removed.' }}
+                                                {{ hasOptionsSelected ?
+                                                'Click the trash icon to remove unwanted variants.'
+                                                : 'Default variant cannot be removed.' }}
                                             </small>
                                         </div>
                                     </div>
