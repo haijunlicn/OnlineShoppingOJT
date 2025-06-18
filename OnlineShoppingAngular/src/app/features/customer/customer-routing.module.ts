@@ -9,6 +9,11 @@ import { ResetPasswordComponent } from './auth/reset-password/reset-password.com
 import { LocationCreateComponent } from './account/location-create/location-create.component';
 import { LocationCardComponent } from './account/location-card/location-card.component';
 import { EditLocationComponent } from './account/edit-location/edit-location.component';
+import { AboutComponent } from './general/about/about.component';
+import { ContactComponent } from './general/contact/contact.component';
+import { PrivacyPolicyComponent } from './policy/privacy-policy/privacy-policy.component';
+import { TermsConditionsComponent } from './policy/terms-conditions/terms-conditions.component';
+import { FaqComponent } from './policy/faq/faq.component';
 import { UserproductListComponent } from './general/userproduct-list/userproduct-list.component';
 import { WishlistComponent } from './general/wishlist/wishlist.component';
 import { CartComponent } from './general/cart/cart.component';
@@ -43,6 +48,14 @@ const routes: Routes = [
     path: 'auth/forgetPass',
     component: ForgetPasswordComponent,
   },
+  {path: 'about', component: AboutComponent, canActivate: [NoAuthGuard]},
+  {path: 'contact' , component: ContactComponent, canActivate: [NoAuthGuard]},
+  {path: 'policy/privacy', component: PrivacyPolicyComponent, canActivate: [NoAuthGuard]},
+  {path: 'policy/terms-conditions', component: TermsConditionsComponent, canActivate: [NoAuthGuard]},
+  {path: 'policy/faq', component: FaqComponent, canActivate: [NoAuthGuard]},
+  // {
+  //   path: 'customer/auth/verify/:id',
+  //   component: VerifyComponent,canActivate: [NoAuthGuard],
 
   {
     path: 'auth/reset-password',

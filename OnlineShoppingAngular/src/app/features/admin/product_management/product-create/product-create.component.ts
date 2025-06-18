@@ -553,6 +553,8 @@ export class ProductCreateComponent implements OnInit {
     while (this.variants.length !== 0) {
       this.variants.removeAt(0)
     }
+
+    this.initializeDefaultVariant();
   }
 
   // Existing methods remain the same...

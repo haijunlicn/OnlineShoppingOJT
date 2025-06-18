@@ -1,0 +1,65 @@
+<app-header></app-header>
+<div class="faq-container">
+  <div class="faq-header">
+    <h1>Frequently Asked Questions</h1>
+    <p>Find answers to common questions about our services</p>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-section">
+    <div class="search-input-wrapper">
+      <input 
+        type="text" 
+        placeholder="Search FAQs..." 
+        [(ngModel)]="searchTerm"
+        (input)="onSearchChange()"
+        class="search-input">
+      <i class="search-icon">🔍</i>
+    </div>
+  </div>
+
+  <!-- FAQ Items -->
+  <div class="faq-list">
+    <div *ngIf="filteredFAQs.length === 0" class="no-results">
+      <p>No FAQs found matching your search.</p>
+    </div>
+    
+    <div *ngFor="let item of filteredFAQs" class="faq-item">
+      <div class="faq-question" (click)="toggleItem(item.id!)">
+        <div class="question-content">
+          <h3>{{item.question}}</h3>
+        </div>
+        <div class="toggle-icon">
+          <span *ngIf="isOpen(item.id!)">▲</span>
+          <span *ngIf="!isOpen(item.id!)">▼</span>
+        </div>
+      </div>
+      
+      <div *ngIf="isOpen(item.id!)" class="faq-answer">
+        <p>{{item.answer}}</p>
+        <div class="feedback-section">
+          <span>Was this helpful?</span>
+          <button 
+            [class.active]="feedback[item.id!] === 'helpful'"
+            (click)="giveFeedback(item.id!, 'helpful')"
+            class="feedback-btn helpful">
+            👍 Yes
+          </button>
+          <button 
+            [class.active]="feedback[item.id!] === 'not-helpful'"
+            (click)="giveFeedback(item.id!, 'not-helpful')"
+            class="feedback-btn not-helpful">
+            👎 No
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact Section -->
+  <div class="contact-section">
+    <h2>Still have questions?</h2>
+    <p>Our customer support team is here to help you 24/7</p>
+    <button class="contact-btn">Contact Support</button>
+  </div>
+</div>

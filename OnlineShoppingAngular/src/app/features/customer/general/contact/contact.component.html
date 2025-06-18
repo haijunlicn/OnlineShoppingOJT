@@ -1,0 +1,278 @@
+<app-header></app-header>
+<div class="contact-page">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1>We'd Love to Hear from You! 💬</h1>
+      <p>Whether you have a question about products, orders, or anything else — our team is ready to help.</p>
+    </div>
+    <div class="hero-overlay"></div>
+  </section>
+
+  <div class="main-container">
+    <!-- Contact Options Section -->
+    <section class="contact-options">
+      <div class="section-header">
+        <h2>Get in Touch</h2>
+        <p>Choose your preferred way to reach us</p>
+      </div>
+
+      <div class="contact-cards">
+        <!-- Phone -->
+        <div class="contact-card" (click)="callPhone()">
+          <div class="card-icon phone-icon">
+            <i class="fas fa-phone"></i>
+          </div>
+          <h3>📞 Phone</h3>
+          <p>{{ contactInfo.phone }}</p>
+          <small>Mon-Fri 9AM-6PM</small>
+        </div>
+
+        <!-- Email -->
+        <div class="contact-card" (click)="sendEmail()">
+          <div class="card-icon email-icon">
+            <i class="fas fa-envelope"></i>
+          </div>
+          <h3>📧 Email</h3>
+          <p>{{ contactInfo.email }}</p>
+          <small>We reply within 24hrs</small>
+        </div>
+
+        <!-- Live Chat -->
+        <div class="contact-card" (click)="startLiveChat()">
+          <div class="card-icon chat-icon">
+            <i class="fas fa-comments"></i>
+          </div>
+          <h3>💬 Live Chat</h3>
+          <p>Available Now</p>
+          <button class="chat-btn">Start Chat</button>
+        </div>
+
+        <!-- Social Media -->
+        <div class="contact-card">
+          <div class="card-icon social-icon">
+            <span class="emoji">📱</span>
+          </div>
+          <h3>Social Media</h3>
+          <div class="social-buttons">
+            <button class="social-btn facebook" (click)="openSocial('facebook')">f</button>
+            <button class="social-btn viber" (click)="openSocial('viber')">V</button>
+            <button class="social-btn telegram" (click)="openSocial('telegram')">T</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="content-grid">
+      <!-- Contact Form -->
+      <section class="form-section">
+        <div class="form-card">
+          <div class="form-header">
+            <h2>Send Us a Message</h2>
+            <p>Fill out the form below and we'll get back to you soon!</p>
+          </div>
+          
+          <div class="form-content">
+            <!-- Success Message -->
+            <div *ngIf="submitSuccess" class="success-message">
+              <div class="success-icon">✓</div>
+              <p>Thank you! Your message has been sent successfully. We'll get back to you soon!</p>
+            </div>
+
+            <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="contact-form">
+              <!-- Name -->
+              <div class="form-group">
+                <label for="name">Name <span class="required">*</span></label>
+                <input 
+                  type="text" 
+                  id="name" 
+                  formControlName="name"
+                  placeholder="Enter your full name"
+                  [class.error]="isFieldInvalid('name')"
+                >
+                <div *ngIf="isFieldInvalid('name')" class="error-message">
+                  {{ getErrorMessage('name') }}
+                </div>
+              </div>
+
+              <!-- Email -->
+              <div class="form-group">
+                <label for="email">Email Address <span class="required">*</span></label>
+                <input 
+                  type="email" 
+                  id="email" 
+                  formControlName="email"
+                  placeholder="Enter your email address"
+                  [class.error]="isFieldInvalid('email')"
+                >
+                <div *ngIf="isFieldInvalid('email')" class="error-message">
+                  {{ getErrorMessage('email') }}
+                </div>
+              </div>
+
+              <!-- Phone -->
+              <div class="form-group">
+                <label for="phone">Phone Number <span class="optional">(Optional)</span></label>
+                <input 
+                  type="tel" 
+                  id="phone" 
+                  formControlName="phone"
+                  placeholder="Enter your phone number"
+                >
+              </div>
+
+              <!-- Message -->
+              <div class="form-group">
+                <label for="message">Message <span class="required">*</span></label>
+                <textarea 
+                  id="message" 
+                  formControlName="message"
+                  placeholder="Tell us how we can help you..."
+                  rows="5"
+                  [class.error]="isFieldInvalid('message')"
+                ></textarea>
+                <div *ngIf="isFieldInvalid('message')" class="error-message">
+                  {{ getErrorMessage('message') }}
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <button 
+                type="submit" 
+                style="background-color: #f3e2bf; color: rgb(68, 30, 30); padding: 10px 20px; border: none; border-radius: 6px;"
+                [disabled]="isSubmitting"
+              >
+                <i *ngIf="isSubmitting" class="fas fa-spinner fa-spin"></i>
+                <i *ngIf="!isSubmitting" class="fas fa-paper-plane"></i>
+                {{ isSubmitting ? 'Sending Message...' : 'Send Message' }}
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- Store Information -->
+      <section class="info-section">
+        <!-- Store Location -->
+        <div class="info-card">
+          <div class="info-header">
+            <i class="fas fa-map-marker-alt"></i>
+            <h3>Visit Our Store</h3>
+          </div>
+          <div class="info-content">
+            <div class="info-item">
+              <h4>Address</h4>
+              <p>{{ contactInfo.address }}</p>
+            </div>
+            <div class="info-item">
+              <h4><i class="fas fa-clock"></i> Store Hours</h4>
+              <div class="hours-list">
+                <p>Monday - Friday: 9:00 AM - 8:00 PM</p>
+                <p>Saturday: 9:00 AM - 6:00 PM</p>
+                <p>Sunday: 10:00 AM - 5:00 PM</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAQ Link -->
+        <div class="faq-card">
+          <div class="faq-content">
+            <div class="faq-header">
+              <i class="fas fa-question-circle"></i>
+              <div>
+                <h3>Need Quick Answers?</h3>
+                <p>Check out our FAQ page for instant help</p>
+              </div>
+            </div>
+            <button class="faq-btn" (click)="goToFAQ()">Visit FAQ Page →</button>
+          </div>
+        </div>
+
+        <!-- Additional Info -->
+        <div class="features-card">
+          <h3>Why Choose Us?</h3>
+          <div class="features-list">
+            <div class="feature-item">
+              <span class="feature-dot blue"></span>
+              <span>Fast response within 24 hours</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-dot green"></span>
+              <span>Friendly and professional support</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-dot purple"></span>
+              <span>Multiple ways to reach us</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-dot orange"></span>
+              <span>Available 6 days a week</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Map Section -->
+    <section class="map-section">
+      <div class="section-header">
+        <h2>Find Us Here</h2>
+        <p>Visit our physical store for a personalized shopping experience</p>
+      </div>
+      
+      <div class="map-container">
+        <iframe 
+          [src]="mapUrl"
+          width="100%" 
+          height="400" 
+          style="border:0;" 
+          allowfullscreen="" 
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+      </div>
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-grid">
+        <div class="footer-section">
+          <h3>Your Shop</h3>
+          <p>Your trusted partner for quality products and exceptional service.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="#" (click)="navigate('home')">Home</a></li>
+            <li><a href="#" (click)="navigate('products')">Products</a></li>
+            <li><a href="#" (click)="navigate('about')">About Us</a></li>
+            <li><a href="#" (click)="navigate('faq')">FAQ</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Support</h4>
+          <ul>
+            <li><a href="#" (click)="navigate('contact')">Contact Us</a></li>
+            <li><a href="#" (click)="navigate('shipping')">Shipping Info</a></li>
+            <li><a href="#" (click)="navigate('returns')">Returns</a></li>
+            <li><a href="#" (click)="navigate('privacy')">Privacy Policy</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Connect With Us</h4>
+          <div class="footer-social">
+            <button class="footer-social-btn facebook" (click)="openSocial('facebook')">f</button>
+            <button class="footer-social-btn viber" (click)="openSocial('viber')">V</button>
+            <button class="footer-social-btn telegram" (click)="openSocial('telegram')">T</button>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 Your Shop. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</div>

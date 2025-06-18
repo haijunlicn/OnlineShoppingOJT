@@ -1,0 +1,26 @@
+.form-container {
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+}
+
+input, .editor, textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+}
+
+button {
+  margin-right: 10px;
+}
+
+.error {
+  color: red;
+  font-size: 0.9em;
+}
+
+.preview {
+  margin-top: 30px;
+  border-top: 1px solid #ccc;
+  padding-top: 15px;
+}

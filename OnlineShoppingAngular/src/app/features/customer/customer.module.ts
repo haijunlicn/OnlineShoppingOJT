@@ -17,6 +17,11 @@ import { LocationCreateComponent } from './account/location-create/location-crea
 import { HttpClientModule } from '@angular/common/http';
 import { LocationCardComponent } from './account/location-card/location-card.component';
 import { EditLocationComponent } from './account/edit-location/edit-location.component';
+import { AboutComponent } from './general/about/about.component';
+import { ContactComponent } from './general/contact/contact.component';
+import { PrivacyPolicyComponent } from './policy/privacy-policy/privacy-policy.component';
+import { TermsConditionsComponent } from './policy/terms-conditions/terms-conditions.component';
+import { FaqComponent } from './policy/faq/faq.component';
 import { UserproductListComponent } from './general/userproduct-list/userproduct-list.component';
 import { WishlistDialogComponent } from './general/wishlist-dialog/wishlist-dialog.component';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -47,6 +52,13 @@ import { OrderManagementComponent } from './orderManagements/order-management/or
     UserproductListComponent,
     WishlistComponent,
     CartComponent,
+
+       AboutComponent,
+    ContactComponent,
+    PrivacyPolicyComponent,
+    TermsConditionsComponent,
+    FaqComponent,
+
     ProductListComponent,
     ProductDetailComponent,
     OrderComponent,

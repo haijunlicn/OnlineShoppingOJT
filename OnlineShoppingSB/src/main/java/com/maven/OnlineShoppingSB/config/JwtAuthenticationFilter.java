@@ -1,5 +1,6 @@
 package com.maven.OnlineShoppingSB.config;
 
+import com.maven.OnlineShoppingSB.service.CustomUserDetailsService;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtService jwtService;
-    @Autowired private UserDetailsService userDetailsService;
+    @Autowired
+    private UserDetailsService userDetailsService;
+    @Autowired
+    private CustomUserDetailsService customUserDetailsService;
 
 
     @Override
@@ -34,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // ✅ Auth URLs တွေကို JWT token မစစ်ပဲ လွတ်ခွင့်ပြု
-        if (path.startsWith("/auth/") ) {
+        if (path.startsWith("/auth/")) {
             chain.doFilter(request, response);
             return;
         }
@@ -43,6 +47,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String authHeader = request.getHeader("Authorization");
         final String token;
         final String email;
+        final Integer roleType;
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             // 👉 Token မပါလို့ 403 ပေးမယ်
@@ -54,9 +59,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         token = authHeader.substring(7);
         System.out.println("JWT Token from request: " + token);
         email = jwtService.extractEmail(token);
+        roleType = jwtService.extractRoleType(token);
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            UserDetails userDetails = customUserDetailsService.loadUserByUsernameAndRoleType(email, roleType);
 
             if (jwtService.isTokenValid(token)) {
                 UsernamePasswordAuthenticationToken authToken =

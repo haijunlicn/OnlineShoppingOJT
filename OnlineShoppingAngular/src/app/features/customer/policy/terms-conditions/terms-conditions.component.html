@@ -1,0 +1,86 @@
+<app-header></app-header>
+<div class="terms-container">
+  <!-- Header -->
+  <div class="header-section">
+    <div class="container">
+      <h1 class="page-title">Terms & Conditions</h1>
+      <h2 class="page-title-mm">Usage Policy</h2>
+      <p class="intro-text">
+        By using our website and services, you agree to the terms described below. Please read carefully.
+      </p>
+      <div class="effective-date">
+        <span class="date-label">Effective Date:</span>
+        <span class="date-value">{{ effectiveDate | date:'mediumDate' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="container">
+      <div class="content-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar" [class.sticky]="isSticky">
+          <div class="toc-header"><h3>Table of Contents</h3></div>
+          <nav class="toc-nav">
+            <ul class="toc-list">
+              <li *ngFor="let section of policies" class="toc-item">
+                <a 
+                  [href]="'#' + getSectionId(section.title)"
+                  class="toc-link"
+                  [class.active]="activeSection === getSectionId(section.title)"
+                  (click)="scrollToSection(getSectionId(section.title), $event)">
+                  <span class="toc-icon">{{ getIcon(section.title) }}</span>
+                  <span class="toc-text">{{ section.title }}</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </aside>
+
+        <!-- Content -->
+        <main class="content">
+          <section *ngFor="let section of policies" 
+                   [id]="getSectionId(section.title)" 
+                   class="content-section">
+            <h2 class="section-title">
+              <span class="section-icon">{{ getIcon(section.title) }}</span>
+              {{ section.title }}
+            </h2>
+            <p class="section-intro" [innerHTML]="section.description"></p>
+          </section>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact -->
+  <div class="contact-section">
+    <div class="container">
+      <div class="contact-content">
+        <h3>Have questions about our terms?</h3>
+        <p>Our support team is here to help you understand our policies.</p>
+        <div class="contact-actions">
+          <button class="btn btn-primary" (click)="contactSupport()">Contact Support</button>
+          <button class="btn btn-secondary" (click)="downloadTerms()">Download PDF</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agreement Checkbox -->
+  <div class="agreement-section" *ngIf="showAgreement">
+    <div class="container">
+      <div class="agreement-checkbox">
+        <input 
+          type="checkbox"
+          id="terms-agreement"
+          [(ngModel)]="agreedToTerms"
+          class="checkbox-input">
+        <label for="terms-agreement" class="checkbox-label">
+          ✔️ I agree to the Terms & Conditions
+        </label>
+      </div>
+    </div>
+  </div>
+</div>

@@ -36,9 +36,24 @@ import { AttributeManagementComponent } from './product_management/attribute-man
 import { CategoryManagementComponent } from './product_management/category-management/category-management.component';
 import { OptionManagementComponent } from './product_management/option-management/option-management.component';
 import { BrandManagementComponent } from './product_management/brand-management/brand-management.component';
+import { RichTextEditorComponent } from './policy-management/rich-text-editor/rich-text-editor.component';
+import { PolicyCreateComponent } from './policy-management/policy-create/policy-create.component';
+import { PolicyListComponent } from './policy-management/policy-list/policy-list.component';
+import { FaqListComponent } from './policy-management/faq-list/faq-list.component';
+import { FaqCreateComponent } from './policy-management/faq-create/faq-create.component';
+import { FaqUpdateComponent } from './policy-management/faq-update/faq-update.component';
 import { DiscountGroupComponent } from './discount_management/discount-group/discount-group.component';
 import { ProductCreateComponent } from './product_management/product-create/product-create.component';
 import { ProductBulkUploadComponent } from './product_management/product-bulk-upload/product-bulk-upload.component';
+import { RoleListComponent } from './role-management/role-list/role-list.component';
+import { RoleFormComponent } from './role-management/role-form/role-form.component';
+import { PermissionListComponent } from './role-management/permission-list/permission-list.component';
+import { PermissionFormComponent } from './role-management/permission-form/permission-form.component';
+import { RoleUpdateComponent } from './role-management/role-update/role-update.component';
+import { PermissionUpdateComponent } from './role-management/permission-update/permission-update.component';
+import { PaymentListComponent } from './payment-management/payment-list/payment-list.component';
+import { PaymentCreateComponent } from './payment-management/payment-create/payment-create.component';
+import { PaymentUpdateComponent } from './payment-management/payment-update/payment-update.component';
 
 
 @NgModule({
@@ -60,8 +75,24 @@ import { ProductBulkUploadComponent } from './product_management/product-bulk-up
     CategoryManagementComponent,
     OptionManagementComponent,
     BrandManagementComponent,
+    RichTextEditorComponent,
+    PolicyCreateComponent,
+    PolicyListComponent,
+    FaqListComponent,
+    FaqCreateComponent,
+    FaqUpdateComponent,
+    
     DiscountGroupComponent,
     ProductBulkUploadComponent,
+    RoleListComponent,
+    RoleFormComponent,
+    PermissionListComponent,
+    PermissionFormComponent,
+    RoleUpdateComponent,
+    PermissionUpdateComponent,
+    PaymentListComponent,
+    PaymentCreateComponent,
+    PaymentUpdateComponent
   ],
   imports: [
     CommonModule,

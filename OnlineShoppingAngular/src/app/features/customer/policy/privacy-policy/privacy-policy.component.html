@@ -1,0 +1,97 @@
+<app-header></app-header>
+<div class="privacy-policy-container">
+  <!-- Header Section -->
+  <div class="header-section">
+    <div class="trust-badge">
+      <span class="shield-icon">🛡️</span>
+      <span>Privacy Protected</span>
+    </div>
+
+    <h1 class="main-title">Privacy Policy</h1>
+    <p class="subtitle">
+      Your privacy is important to us. Here's how we collect, use, and protect your information when you shop with us.
+    </p>
+
+    <div class="last-updated">
+      <span class="clock-icon">🕒</span>
+      Last updated: January 2024
+    </div>
+  </div>
+
+  <!-- Table of Contents -->
+  <div class="table-of-contents">
+    <h3 class="toc-title">
+      <span class="compass-icon">🧭</span>
+      Quick Navigation
+    </h3>
+    <div class="toc-grid">
+      <button 
+        *ngFor="let section of sections" 
+        class="toc-item"
+        [class.active]="activeSectionId === section.id"
+        (click)="scrollToSection(section.id)">
+        <span class="toc-icon">{{ section.icon }}</span>
+        <span class="toc-text">{{ section.title }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Policy Sections -->
+  <div class="policy-content">
+    <div 
+      *ngFor="let section of sections" 
+      class="policy-section"
+      [id]="'section-' + section.id">
+
+      <div class="section-header" (click)="toggleSection(section.id)">
+        <div class="section-title-group">
+          <span class="section-icon">{{ section.icon }}</span>
+          <h2 class="section-title">{{ section.title }}</h2>
+        </div>
+        <div class="expand-icon" [class.expanded]="section.isExpanded">
+          <span>▼</span>
+        </div>
+      </div>
+
+      <div class="section-content" [class.expanded]="section.isExpanded">
+        <div class="content-inner">
+          <div *ngFor="let item of section.content" class="content-item">
+            <span class="bullet-point">🔸</span>
+            <!-- Use innerHTML binding here -->
+            <span class="content-text" [innerHTML]="item"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trust Signals -->
+  <div class="trust-signals">
+    <div class="trust-item">
+      <span class="trust-icon">🔒</span>
+      <span>SSL Encrypted</span>
+    </div>
+    <div class="trust-item">
+      <span class="trust-icon">✅</span>
+      <span>GDPR Compliant</span>
+    </div>
+    <div class="trust-item">
+      <span class="trust-icon">🛡️</span>
+      <span>Data Protected</span>
+    </div>
+  </div>
+
+  <!-- Footer CTA -->
+  <div class="footer-cta">
+    <div class="cta-content">
+      <h3 class="cta-title">
+        <span class="question-icon">❓</span>
+        Still have questions about our privacy policy?
+      </h3>
+      <button class="contact-button" (click)="onContactClick()">
+        <span class="contact-icon">👉</span>
+        Contact Us
+      </button>
+    </div>
+  </div>
+</div>

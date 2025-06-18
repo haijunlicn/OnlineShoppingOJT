@@ -1,10 +1,10 @@
 package com.maven.OnlineShoppingSB.entity;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 import java.util.List;
 
 @Entity
@@ -18,15 +18,25 @@ public class RoleEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(length = 100, nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
+    // 1 = Admin, 0 = Customer
     @Column(name = "type", nullable = false)
-    private Integer type; // 1 = ADMIN, 0 = CUSTOMER
+    private Integer type;
 
+    @Column(name = "del_flg")
+    private Integer delFg = 1;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "role_permissions",
+        joinColumns = @JoinColumn(name = "role_id"),
+        inverseJoinColumns = @JoinColumn(name = "permission_id")
+    )
+    private Set<PermissionEntity> permissions;
+
+    
     private LocalDateTime createdDate;
 
     @OneToMany(mappedBy = "role")
