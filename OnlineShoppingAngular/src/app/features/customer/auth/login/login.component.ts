@@ -57,7 +57,7 @@ export class LoginComponent {
 
     this.auth.login(email, password, rememberMe, 0).subscribe({
       next: (user) => {
-        this.alertService.toast("Login Successful", "success");
+        this.alertService.loginSuccessToast();
         this.loginModalService.hide();
         this.registerModalService.hide();
       },

@@ -103,11 +103,11 @@ export class AlertService {
       },
       didOpen: (toast) => {
         toast.style.animation = 'luxurySlideIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-        
+
         toast.addEventListener('mouseenter', () => {
           Swal.stopTimer();
         });
-        
+
         toast.addEventListener('mouseleave', () => {
           Swal.resumeTimer();
         });
@@ -147,7 +147,7 @@ export class AlertService {
       },
       didOpen: (toast) => {
         toast.style.animation = 'luxurySlideIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-        
+
         const btn = toast.querySelector('#verifyNowBtn')!;
         btn.addEventListener('click', () => {
           toast.style.animation = 'luxurySlideOut 0.25s cubic-bezier(0.55, 0.06, 0.68, 0.19)';
@@ -157,7 +157,7 @@ export class AlertService {
         toast.addEventListener('mouseenter', () => {
           Swal.stopTimer();
         });
-        
+
         toast.addEventListener('mouseleave', () => {
           Swal.resumeTimer();
         });
@@ -215,4 +215,36 @@ export class AlertService {
   hideLoading() {
     Swal.close();
   }
+
+  loginSuccessToast(message: string = 'Login Successful') {
+    const iconHtml = '<i class="fas fa-unlock-alt"></i>';
+    const toastClass = 'luxury-toast-success';
+
+    Swal.fire({
+      toast: true,
+      position: 'top', // <— centered top
+      html: `
+      <div class="luxury-toast-content">
+        <div class="luxury-toast-icon">${iconHtml}</div>
+        <span class="luxury-toast-message">${message}</span>
+      </div>
+    `,
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      customClass: {
+        popup: `luxury-toast ${toastClass}`,
+        timerProgressBar: 'luxury-progress-bar'
+      },
+      didOpen: (toast) => {
+        toast.style.animation = 'luxurySlideIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        toast.addEventListener('mouseenter', () => Swal.stopTimer());
+        toast.addEventListener('mouseleave', () => Swal.resumeTimer());
+      },
+      willClose: (toast) => {
+        toast.style.animation = 'luxurySlideOut 0.25s cubic-bezier(0.55, 0.06, 0.68, 0.19)';
+      }
+    });
+  }
+
 }

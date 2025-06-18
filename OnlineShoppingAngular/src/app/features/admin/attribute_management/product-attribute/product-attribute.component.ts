@@ -7,12 +7,12 @@ import { BrandDTO } from "../../../../core/models/product.model"
 import { CategoryDTO } from "../../../../core/models/category-dto"
 
 @Component({
-  selector: "app-attribute-management",
+  selector: "app-product-attribute",
   standalone: false,
-  templateUrl: "./attribute-management.component.html",
-  styleUrls: ["./attribute-management.component.css"],
+  templateUrl: "./product-attribute.component.html",
+  styleUrls: ["./product-attribute.component.css"],
 })
-export class AttributeManagementComponent implements OnInit {
+export class ProductAttributeComponent implements OnInit {
   options: OptionTypeDTO[] = []
   filteredOptions: OptionTypeDTO[] = []
   optionFilter = ""

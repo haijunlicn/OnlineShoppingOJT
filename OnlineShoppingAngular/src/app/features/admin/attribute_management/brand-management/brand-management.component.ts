@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { BrandDTO } from "../../../../core/models/product.model";
 import { BrandService } from "../../../../core/services/brand.service";
@@ -10,7 +10,7 @@ import { BrandService } from "../../../../core/services/brand.service";
   styleUrls: ["./brand-management.component.css"],
 })
 export class BrandManagementComponent implements OnInit {
-  brands: BrandDTO[] = [];
+ brands: BrandDTO[] = [];
   filteredBrands: BrandDTO[] = [];
   brandFilter = "";
 
@@ -18,27 +18,20 @@ export class BrandManagementComponent implements OnInit {
   brandDialogVisible = false;
   editingBrand: BrandDTO | null = null;
 
-  brandForm: FormGroup;
+  @Input() modalMode = false;
+  @Input() showCreateOnly = false;
+  @Output() brandCreated = new EventEmitter<BrandDTO>();
+  @Output() brandSelected = new EventEmitter<BrandDTO>();
 
-  constructor(
-    private fb: FormBuilder,
-    private brandService: BrandService
-  ) {
-    this.brandForm = this.fb.group({
-      id: [""],
-      name: ["", Validators.required],
-    });
-  }
+  constructor(private brandService: BrandService) {}
 
   ngOnInit(): void {
-    this.loadBrands();
-  }
-
-  updateFilters(): void {
-    const filter = this.brandFilter.toLowerCase();
-    this.filteredBrands = this.brands.filter((b) =>
-      b.name.toLowerCase().includes(filter)
-    );
+    if (!this.showCreateOnly) {
+      this.loadBrands();
+    }
+    if (this.showCreateOnly && this.modalMode) {
+      this.openBrandDialog();
+    }
   }
 
   loadBrands(): void {
@@ -56,43 +49,28 @@ export class BrandManagementComponent implements OnInit {
     });
   }
 
+  updateFilters(): void {
+    const filter = this.brandFilter.toLowerCase();
+    this.filteredBrands = this.brands.filter((b) =>
+      b.name.toLowerCase().includes(filter)
+    );
+  }
+
   openBrandDialog(brand?: BrandDTO): void {
     this.editingBrand = brand || null;
-    this.brandForm.reset();
-
-    if (brand) {
-      this.brandForm.patchValue({
-        id: brand.id,
-        name: brand.name,
-      });
-    }
-
     this.brandDialogVisible = true;
   }
 
-  saveBrand(): void {
-    if (this.brandForm.invalid) return;
+  onBrandSaved(savedBrand: BrandDTO): void {
+    if (!this.showCreateOnly) {
+      this.loadBrands();
+    }
+    this.brandDialogVisible = false;
 
-    const formValue = this.brandForm.value;
-
-    const dto: BrandDTO = {
-      id: this.editingBrand?.id || "", // blank ID for create
-      name: formValue.name,
-    };
-
-    const action$ = this.editingBrand
-      ? this.brandService.updateBrand(dto)
-      : this.brandService.createBrand(dto);
-
-    action$.subscribe({
-      next: () => {
-        this.loadBrands(); // ✅ Reload list to reflect accurate backend state
-        this.brandDialogVisible = false;
-      },
-      error: (err) => {
-        console.error(this.editingBrand ? "Error updating brand:" : "Error creating brand:", err);
-      },
-    });
+    if (!this.editingBrand) {
+      this.brandCreated.emit(savedBrand);
+    }
+    this.brandSelected.emit(savedBrand);
   }
 
   editBrand(brand: BrandDTO): void {
@@ -103,7 +81,7 @@ export class BrandManagementComponent implements OnInit {
     if (confirm(`Are you sure you want to delete the brand "${brand.name}"?`)) {
       this.brandService.deleteBrand(+brand.id).subscribe({
         next: () => {
-          this.loadBrands(); // ✅ Reload after deletion
+          this.loadBrands();
         },
         error: (err) => {
           console.error("Error deleting brand:", err);

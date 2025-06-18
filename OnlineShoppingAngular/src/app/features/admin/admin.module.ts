@@ -31,11 +31,9 @@ import { MenuModule } from 'primeng/menu';
 
 import { ProductListComponent } from './product_management/product-list/product-list.component';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { ProductAttributesComponent } from './product_management/product-attributes/product-attributes.component';
-import { AttributeManagementComponent } from './product_management/attribute-management/attribute-management.component';
-import { CategoryManagementComponent } from './product_management/category-management/category-management.component';
-import { OptionManagementComponent } from './product_management/option-management/option-management.component';
-import { BrandManagementComponent } from './product_management/brand-management/brand-management.component';
+import { CategoryManagementComponent } from './attribute_management/category-management/category-management.component';
+import { OptionManagementComponent } from './attribute_management/option-management/option-management.component';
+import { BrandManagementComponent } from './attribute_management/brand-management/brand-management.component';
 import { RichTextEditorComponent } from './policy-management/rich-text-editor/rich-text-editor.component';
 import { PolicyCreateComponent } from './policy-management/policy-create/policy-create.component';
 import { PolicyListComponent } from './policy-management/policy-list/policy-list.component';
@@ -54,6 +52,9 @@ import { PermissionUpdateComponent } from './role-management/permission-update/p
 import { PaymentListComponent } from './payment-management/payment-list/payment-list.component';
 import { PaymentCreateComponent } from './payment-management/payment-create/payment-create.component';
 import { PaymentUpdateComponent } from './payment-management/payment-update/payment-update.component';
+import { ProductAttributeComponent } from './attribute_management/product-attribute/product-attribute.component';
+import { BrandDialogComponent } from './attribute_management/brand-dialog/brand-dialog.component';
+import { CategoryDialogComponent } from './attribute_management/category-dialog/category-dialog.component';
 
 
 @NgModule({
@@ -70,8 +71,7 @@ import { PaymentUpdateComponent } from './payment-management/payment-update/paym
     AdminDashboardComponent,
     ProductListComponent,
     ProductCreateComponent,
-    ProductAttributesComponent,
-    AttributeManagementComponent,
+    ProductAttributeComponent,
     CategoryManagementComponent,
     OptionManagementComponent,
     BrandManagementComponent,
@@ -81,7 +81,6 @@ import { PaymentUpdateComponent } from './payment-management/payment-update/paym
     FaqListComponent,
     FaqCreateComponent,
     FaqUpdateComponent,
-    
     DiscountGroupComponent,
     ProductBulkUploadComponent,
     RoleListComponent,
@@ -92,7 +91,9 @@ import { PaymentUpdateComponent } from './payment-management/payment-update/paym
     PermissionUpdateComponent,
     PaymentListComponent,
     PaymentCreateComponent,
-    PaymentUpdateComponent
+    PaymentUpdateComponent,
+    BrandDialogComponent,
+    CategoryDialogComponent
   ],
   imports: [
     CommonModule,

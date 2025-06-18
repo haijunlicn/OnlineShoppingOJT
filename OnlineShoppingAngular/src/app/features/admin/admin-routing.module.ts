@@ -3,10 +3,9 @@ import { RouterModule, Routes } from '@angular/router';
 import { AdminLoginComponent } from './auth/admin-login/admin-login.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { ProductListComponent } from './product_management/product-list/product-list.component';
-import { AttributeManagementComponent } from './product_management/attribute-management/attribute-management.component';
-import { OptionManagementComponent } from './product_management/option-management/option-management.component';
-import { CategoryManagementComponent } from './product_management/category-management/category-management.component';
-import { BrandManagementComponent } from './product_management/brand-management/brand-management.component';
+import { OptionManagementComponent } from './attribute_management/option-management/option-management.component';
+import { CategoryManagementComponent } from './attribute_management/category-management/category-management.component';
+import { BrandManagementComponent } from './attribute_management/brand-management/brand-management.component';
 import { PolicyCreateComponent } from './policy-management/policy-create/policy-create.component';
 import { PolicyListComponent } from './policy-management/policy-list/policy-list.component';
 import { FaqCreateComponent } from './policy-management/faq-create/faq-create.component';
@@ -26,6 +25,7 @@ import { PaymentListComponent } from './payment-management/payment-list/payment-
 import { PaymentUpdateComponent } from './payment-management/payment-update/payment-update.component';
 import { AdminNoAuthGuard } from '../../core/guards/admin-no-auth.guard';
 import { AdminAuthGuard } from '../../core/guards/admin-auth.guard';
+import { ProductAttributeComponent } from './attribute_management/product-attribute/product-attribute.component';
 
 
 const routes: Routes = [
@@ -55,44 +55,44 @@ const routes: Routes = [
     canActivate: [AdminAuthGuard]
   },
   {
-    path: 'policy/policy-create' , component: PolicyCreateComponent, canActivate: [AdminAuthGuard]
-  },
-   {
-    path: 'policy/policy-list' , component: PolicyListComponent, canActivate: [AdminAuthGuard]
+    path: 'policy/policy-create', component: PolicyCreateComponent, canActivate: [AdminAuthGuard]
   },
   {
-    path: 'policy/faq-create' , component: FaqCreateComponent, canActivate: [AdminAuthGuard]
-  },
-   {
-    path: 'policy/faq-list' , component: FaqListComponent, canActivate: [AdminAuthGuard]
+    path: 'policy/policy-list', component: PolicyListComponent, canActivate: [AdminAuthGuard]
   },
   {
-    path: 'policy/faq-update' , component: FaqUpdateComponent, canActivate: [AdminAuthGuard]
+    path: 'policy/faq-create', component: FaqCreateComponent, canActivate: [AdminAuthGuard]
   },
   {
-    path: 'role-list' , component: RoleListComponent, canActivate: [AdminAuthGuard]
+    path: 'policy/faq-list', component: FaqListComponent, canActivate: [AdminAuthGuard]
   },
   {
-    path: 'role-form' , component: RoleFormComponent, canActivate: [AdminAuthGuard]
+    path: 'policy/faq-update', component: FaqUpdateComponent, canActivate: [AdminAuthGuard]
   },
   {
-    path: 'role-update/:id' , component: RoleUpdateComponent, canActivate: [AdminAuthGuard]
+    path: 'role-list', component: RoleListComponent, canActivate: [AdminAuthGuard]
   },
   {
-    path: 'permission-form' , component: PermissionFormComponent, canActivate: [AdminAuthGuard]
+    path: 'role-form', component: RoleFormComponent, canActivate: [AdminAuthGuard]
   },
   {
-    path: 'permission-list' , component: PermissionListComponent, canActivate: [AdminAuthGuard]
+    path: 'role-update/:id', component: RoleUpdateComponent, canActivate: [AdminAuthGuard]
   },
-  { path: 'permission-update/:id', component: PermissionUpdateComponent , canActivate: [AdminAuthGuard]},
-    { path: 'payment-create', component: PaymentCreateComponent, canActivate: [AdminAuthGuard] },
-      { path: 'payment-list', component: PaymentListComponent, canActivate: [AdminAuthGuard] },
-{ path: 'payment-update/:id', component: PaymentUpdateComponent , canActivate: [AdminAuthGuard]},
+  {
+    path: 'permission-form', component: PermissionFormComponent, canActivate: [AdminAuthGuard]
+  },
+  {
+    path: 'permission-list', component: PermissionListComponent, canActivate: [AdminAuthGuard]
+  },
+  { path: 'permission-update/:id', component: PermissionUpdateComponent, canActivate: [AdminAuthGuard] },
+  { path: 'payment-create', component: PaymentCreateComponent, canActivate: [AdminAuthGuard] },
+  { path: 'payment-list', component: PaymentListComponent, canActivate: [AdminAuthGuard] },
+  { path: 'payment-update/:id', component: PaymentUpdateComponent, canActivate: [AdminAuthGuard] },
 
 
   {
     path: 'productAttributes',
-    component: AttributeManagementComponent,
+    component: ProductAttributeComponent,
     canActivate: [AdminAuthGuard],
     children: [
       { path: '', redirectTo: 'categories', pathMatch: 'full' },
