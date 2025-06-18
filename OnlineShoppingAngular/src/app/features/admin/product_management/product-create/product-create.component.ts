@@ -55,6 +55,7 @@ export class ProductCreateComponent implements OnInit {
 
   @ViewChild("productFileInput") productFileInputRef!: ElementRef<HTMLInputElement>
 
+
   constructor(
     private categoryService: CategoryService,
     private brandService: BrandService,
@@ -103,6 +104,18 @@ export class ProductCreateComponent implements OnInit {
     variantsArray.push(variantGroup)
 
     this.hasOptionsSelected = false
+  }
+
+  brandDialogVisible = false;
+
+  openBrandDialog() {
+    this.brandDialogVisible = true;
+  }
+
+  onBrandCreated() {
+    this.fetchBrands();
+    // this.productForm.patchValue({ brandId: newBrand.id });
+    this.brandDialogVisible = false;
   }
 
   /**

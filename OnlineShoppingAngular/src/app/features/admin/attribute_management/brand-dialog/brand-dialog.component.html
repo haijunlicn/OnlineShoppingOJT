@@ -1,0 +1,22 @@
+<p-dialog [(visible)]="visible" [style]="{ width: '450px' }"
+  [header]="editingBrand ? 'Edit Brand' : 'Add Brand'" [modal]="true" styleClass="p-fluid"
+  (onHide)="closeDialog()">
+  <form [formGroup]="brandForm" (ngSubmit)="saveBrand()">
+    <div class="field mb-3">
+      <label for="brandName" class="form-label">Brand Name</label>
+      <input type="text" pInputText id="brandName" formControlName="name"
+        placeholder="e.g. Apple, Nike, Samsung" class="form-control" />
+      <small *ngIf="brandForm.get('name')?.invalid && brandForm.get('name')?.touched" class="text-danger">
+        Brand name is required
+      </small>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Cancel" icon="pi pi-times" class="p-button-text" (click)="closeDialog()">
+    </button>
+    <button pButton type="button" label="Save" icon="pi pi-check" class="p-button-success"
+      (click)="saveBrand()" [disabled]="brandForm.invalid">
+    </button>
+  </ng-template>
+</p-dialog>

@@ -29,10 +29,18 @@
 
                                 <!-- Brand and Category -->
                                 <div class="row">
+
                                     <div class="col-6 mb-2">
-                                        <label for="brand" class="form-label small fw-semibold mb-1">
-                                            Brand <span class="text-danger">*</span>
-                                        </label>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <label for="brand" class="form-label small fw-semibold mb-1 mb-0">
+                                                Brand <span class="text-danger">*</span>
+                                            </label>
+                                            <button type="button" class="btn btn-link btn-sm p-0"
+                                                (click)="openBrandDialog()">
+                                                + Add brand
+                                            </button>
+                                        </div>
+
                                         <select id="brand" class="form-select form-select-sm"
                                             [class.is-invalid]="hasError('brandId')" formControlName="brandId">
                                             <option value="">Select Brand</option>
@@ -200,7 +208,7 @@
                                 </div>
 
                                 <!-- 🔽 Scrollable Options List Container -->
-                                <div style="height: 380px; overflow-y: auto;" class="border rounded p-2 bg-white">
+                                <div style="height: 400px; overflow-y: auto;" class="border rounded p-2 bg-white">
                                     <div formArrayName="options" class="options-container">
                                         <div *ngFor="let option of options.controls; let i = index" [formGroupName]="i"
                                             class="option-box mb-2 border-start border-primary ps-2">
@@ -310,7 +318,7 @@
 
 
 
-                          
+
                         </div>
 
                         <!-- Enhanced Variants Section with Individual Removal -->
@@ -385,8 +393,9 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
-                                    <div  style="max-height: 400px; overflow-y: auto;" class="border rounded p-2 bg-white card-body p-0">
+
+                                    <div style="max-height: 400px; overflow-y: auto;"
+                                        class="border rounded p-2 bg-white card-body p-0">
                                         <div class="table-responsive">
                                             <table class="table table-sm table-hover mb-0">
                                                 <thead class="table-light">
@@ -585,3 +594,7 @@
     </main>
 </div>
 <app-admin-footer></app-admin-footer>
+
+
+<app-brand-dialog [(visible)]="brandDialogVisible" [editingBrand]="null" (save)="onBrandCreated()">
+</app-brand-dialog>
