@@ -16,8 +16,11 @@ public class UserAddressEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "user_id", nullable = false)
-    private Integer userId;
+//    @Column(name = "user_id", nullable = false)
+//    private Integer userId;
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "user_id", nullable = false)
+private UserEntity user;
 
     @Column(name = "address", length = 255, nullable = false)
     private String address;

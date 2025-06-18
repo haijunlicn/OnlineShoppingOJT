@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { Component, NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './general/home/home.component';
 import { VerifyComponent } from './auth/verify/verify.component';
@@ -16,6 +16,8 @@ import { ProductListComponent } from './product_display/product-list/product-lis
 import { ProductDetailComponent } from './product_display/product-detail/product-detail.component';
 import { NoAuthGuard } from '../../core/guards/no-auth.guard';
 import { AuthGuard } from '../../core/guards/auth.guard';
+import path from 'path';
+import { OrderManagementComponent } from './orderManagements/order-management/order-management.component';
 
 
 const routes: Routes = [
@@ -73,7 +75,8 @@ const routes: Routes = [
   {
     path: 'product/:id',
     component: ProductDetailComponent
-  }
+  },
+  {path:'order',component:OrderManagementComponent}
 
 ];
 

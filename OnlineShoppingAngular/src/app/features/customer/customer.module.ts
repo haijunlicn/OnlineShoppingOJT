@@ -27,6 +27,8 @@ import { WishlistComponent } from './general/wishlist/wishlist.component';
 import { CartComponent } from './general/cart/cart.component';
 import { ProductListComponent } from './product_display/product-list/product-list.component';
 import { ProductDetailComponent } from './product_display/product-detail/product-detail.component';
+import { OrderComponent } from './general/order/order.component';
+import { OrderManagementComponent } from './orderManagements/order-management/order-management.component';
 
 
 @NgModule({
@@ -45,9 +47,10 @@ import { ProductDetailComponent } from './product_display/product-detail/product
     UserproductListComponent,
     WishlistComponent,
     CartComponent,
-
     ProductListComponent,
-    ProductDetailComponent
+    ProductDetailComponent,
+    OrderComponent,
+    OrderManagementComponent
 
   ],
   imports: [

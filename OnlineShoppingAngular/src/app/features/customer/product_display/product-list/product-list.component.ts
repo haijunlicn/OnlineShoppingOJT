@@ -7,6 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { WishlistService } from '../../../../core/services/wishlist.service';
 import Swal from 'sweetalert2';
 import { WishlistDialogComponent } from '../../general/wishlist-dialog/wishlist-dialog.component';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-product-list',
@@ -24,7 +25,8 @@ export class ProductListComponent {
     private wishlistService: WishlistService,
     private dialog: MatDialog,
     private cartService: CartService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService // inject AuthService
   ) { }
 
   ngOnInit() {
@@ -33,6 +35,11 @@ export class ProductListComponent {
   }
 
   loadProducts() {
+    const userId = this.authService.getCurrentUser()?.id;
+  if (!userId) {
+    console.error('User ID not found');
+    return;
+  }
     this.productService.getProductList().subscribe({
       next: (products) => {
         this.products = products.map(product => ({
@@ -147,47 +154,93 @@ export class ProductListComponent {
     this.products.sort((a, b) => a.brand.name.localeCompare(b.brand.name));
   }
 
-  loadWishlist() {
-    const userId = 4; // replace with dynamic user ID
-    this.wishlistService.getWishedProductIds(userId).subscribe({
-      next: (wishedIds) => {
-        this.wishList = new Set<number>(wishedIds);
-        // this.productService.getProductList().subscribe({
-        //   next: (products) => this.products = products,
-        //   error: (err) => console.error('Error loading products:', err)
-        // });
+  // loadWishlist() {
+  //   const userId = 4; // replace with dynamic user ID
+  //   this.wishlistService.getWishedProductIds(userId).subscribe({
+  //     next: (wishedIds) => {
+  //       this.wishList = new Set<number>(wishedIds);
+  //       // this.productService.getProductList().subscribe({
+  //       //   next: (products) => this.products = products,
+  //       //   error: (err) => console.error('Error loading products:', err)
+  //       // });
+  //     },
+  //     error: (err) => console.error('Failed to load wishlist:', err)
+  //   });
+  // }
+
+  // toggleWish(productId: number): void {
+  //   const userId = 4;
+
+  //   if (this.isWished(productId)) {
+  //     this.wishlistService.removeProductFromWishlist(userId, productId).subscribe({
+  //       next: () => {
+  //         this.wishList.delete(productId);
+  //         this.loadWishlist();
+  //       },
+  //       error: (err) => {
+  //         console.error('Failed to remove from wishlist:', err);
+  //       }
+  //     });
+  //   } else {
+  //     const dialogRef = this.dialog.open(WishlistDialogComponent, {
+  //       width: '400px',
+  //       data: { productId }
+  //     });
+
+  //     dialogRef.afterClosed().subscribe(result => {
+  //       if (result && result.added) {
+  //         this.wishList.add(productId);
+  //         this.loadWishlist();
+  //       }
+  //     });
+  //   }
+  // }
+loadWishlist() {
+  const userId = this.authService.getCurrentUser()?.id;
+  if (!userId) {
+    console.error('User ID not found');
+    return;
+  }
+
+  this.wishlistService.getWishedProductIds(userId).subscribe({
+    next: (wishedIds) => {
+      this.wishList = new Set<number>(wishedIds);
+    },
+    error: (err) => console.error('Failed to load wishlist:', err)
+  });
+}
+
+toggleWish(productId: number): void {
+  const userId = this.authService.getCurrentUser()?.id;
+  if (!userId) {
+    console.error('User ID not found why?');
+    return;
+  }
+
+  if (this.isWished(productId)) {
+    this.wishlistService.removeProductFromWishlist(userId, productId).subscribe({
+      next: () => {
+        this.wishList.delete(productId);
+        this.loadWishlist();
       },
-      error: (err) => console.error('Failed to load wishlist:', err)
+      error: (err) => {
+        console.error('Failed to remove from wishlist:', err);
+      }
+    });
+  } else {
+    const dialogRef = this.dialog.open(WishlistDialogComponent, {
+      width: '400px',
+      data: { productId }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.added) {
+        this.wishList.add(productId);
+        this.loadWishlist();
+      }
     });
   }
-
-  toggleWish(productId: number): void {
-    const userId = 4;
-
-    if (this.isWished(productId)) {
-      this.wishlistService.removeProductFromWishlist(userId, productId).subscribe({
-        next: () => {
-          this.wishList.delete(productId);
-          this.loadWishlist();
-        },
-        error: (err) => {
-          console.error('Failed to remove from wishlist:', err);
-        }
-      });
-    } else {
-      const dialogRef = this.dialog.open(WishlistDialogComponent, {
-        width: '400px',
-        data: { productId }
-      });
-
-      dialogRef.afterClosed().subscribe(result => {
-        if (result && result.added) {
-          this.wishList.add(productId);
-          this.loadWishlist();
-        }
-      });
-    }
-  }
+}
 
   isWished(productId: number | string): boolean {
     const id = typeof productId === 'string' ? +productId : productId;

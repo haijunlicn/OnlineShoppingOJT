@@ -21,9 +21,12 @@ export class LocationService {
   getAllLocations(): Observable<LocationDto[]> {
     return this.http.get<LocationDto[]>(`${this.apiUrl}/all`);
   }
-  getUserLocations(): Observable<any[]> {
-  return this.http.get<any[]>(`${this.apiUrl}/user-locations`);
+  getUserLocations(userId: number): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/user-locations`, {
+    params: { userId: userId.toString() }
+  });
 }
+
 
 
 
@@ -81,6 +84,8 @@ searchLocation(query: string): Observable<any> {
   const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
   return this.http.get<any[]>(url);
 }
-  
+  deleteLocation(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`, { responseType: 'text' });
+  }
   
 }

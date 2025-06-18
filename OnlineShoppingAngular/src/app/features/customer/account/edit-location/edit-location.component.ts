@@ -143,7 +143,7 @@ export class EditLocationComponent implements OnInit, OnDestroy {
       const sub = this.locationService.updateLocation(updatedLocation).subscribe({
         next: () => {
           alert('Location updated successfully!');
-          this.router.navigate(['/locations']);
+          this.router.navigate(['/customer/address']);
         },
         error: () => alert('Failed to update location.')
       });

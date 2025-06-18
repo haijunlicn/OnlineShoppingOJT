@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { LoginModalService } from '../../../../core/services/LoginModalService';
 import { RegisterModalService } from '../../../../core/services/RegisterModalService';
 import { ForgotPasswordModalService } from '../../../../core/services/ForgotPasswordModalService';
+import { AuthService } from '../../../../core/services/auth.service';
 
 interface Category {
   name: string;
@@ -53,7 +54,8 @@ export class HomeComponent {
   constructor(
     private loginModalService: LoginModalService,
     private registerModalService: RegisterModalService,
-    private forgotModalService: ForgotPasswordModalService
+    private forgotModalService: ForgotPasswordModalService,
+    private authService: AuthService
   ) {}
 
   get loginVisible$() {
