@@ -104,3 +104,42 @@
   font-size: 0.75rem !important;
   margin-top: 0.25rem !important;
 }
+.image-upload-preview {
+  position: relative;
+  display: inline-block;
+}
+
+.img-preview {
+  max-width: 100px;
+  border-radius: 0.5rem;
+  border: 1px solid #dee2e6;
+}
+
+.remove-image {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  padding: 0.1rem 0.4rem;
+}
+
+.image-upload-area {
+  border: 2px dashed #ccc;
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  background-color: #f8f9fa;
+}
+
+.image-upload-label {
+  cursor: pointer;
+}
+
+.image-upload-input {
+  display: none;
+}
+.image-upload-label.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+}
