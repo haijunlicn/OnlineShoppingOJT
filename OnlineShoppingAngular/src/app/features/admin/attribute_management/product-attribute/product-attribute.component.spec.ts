@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AttributeManagementComponent } from './attribute-management.component';
+import { AttributeManagementComponent } from './product-attribute.component';
 
 describe('AttributeManagementComponent', () => {
   let component: AttributeManagementComponent;

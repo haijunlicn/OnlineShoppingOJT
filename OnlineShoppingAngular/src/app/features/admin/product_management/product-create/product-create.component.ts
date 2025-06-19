@@ -55,6 +55,7 @@ export class ProductCreateComponent implements OnInit {
 
   @ViewChild("productFileInput") productFileInputRef!: ElementRef<HTMLInputElement>
 
+
   constructor(
     private categoryService: CategoryService,
     private brandService: BrandService,
@@ -103,6 +104,43 @@ export class ProductCreateComponent implements OnInit {
     variantsArray.push(variantGroup)
 
     this.hasOptionsSelected = false
+  }
+
+  brandDialogVisible = false;
+
+  openBrandDialog() {
+    this.brandDialogVisible = true;
+  }
+
+  onBrandCreated() {
+    this.fetchBrands();
+    // this.productForm.patchValue({ brandId: newBrand.id });
+    this.brandDialogVisible = false;
+  }
+
+  categoryDialogVisible = false;
+  editingCategory: CategoryDTO | null = null;
+  parentCategoryForNew: CategoryDTO | null = null;
+  categoryDropdown: any[] = []; // your dropdown data here
+
+  openCategoryDialogForNew(parent?: CategoryDTO) {
+    this.editingCategory = null;
+    this.parentCategoryForNew = parent || null;
+    // Fetch categories and wait before opening the dialog
+    this.categoryService.getAllCategories().subscribe((categories) => {
+      this.categoryDropdown = categories.map((cat) => ({
+        value: cat.id,
+        label: cat.name,
+      }));
+      console.log("Dropdown data:", this.categoryDropdown);
+      this.categoryDialogVisible = true;
+    });
+  }
+
+  onCategorySaved(savedCategory: CategoryDTO) {
+    this.categoryDialogVisible = false;
+    this.fetchCategories();
+    this.selectedCategory = savedCategory;
   }
 
   /**
@@ -553,6 +591,8 @@ export class ProductCreateComponent implements OnInit {
     while (this.variants.length !== 0) {
       this.variants.removeAt(0)
     }
+
+    this.initializeDefaultVariant();
   }
 
   // Existing methods remain the same...
@@ -563,6 +603,7 @@ export class ProductCreateComponent implements OnInit {
         this.categories = categoryTree
         this.flattenCategories()
         this.loading.categories = false
+        this.categoryDropdown = categoryTree
       },
       error: (err) => {
         console.error("Failed to fetch categories", err)

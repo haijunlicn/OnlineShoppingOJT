@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthService } from '@app/core/services/auth.service';
 
 @Component({
   selector: 'app-admin-header',
@@ -8,10 +9,14 @@ import { Router } from '@angular/router';
   styleUrl: './admin-header.component.css'
 })
 export class AdminHeaderComponent {
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+  ) { }
 
-  logout(): void {
-    // Call logout service or simply redirect
-    this.router.navigate(['/auth/adminLogout']);
+  onLogout(): void {
+    this.authService.logout();
+    this.router.navigate(['/admin/login']);
+    console.log('User logged out');
   }
 }

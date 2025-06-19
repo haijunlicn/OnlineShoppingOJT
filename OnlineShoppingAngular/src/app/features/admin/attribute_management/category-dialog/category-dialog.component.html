@@ -1,0 +1,91 @@
+<p-dialog [(visible)]="visible" (visibleChange)="visibleChange.emit($event)" 
+  [style]="{width: '450px'}"
+  [header]="editingCategory ? 'Edit Category' : 'Add Category'" 
+  [modal]="true" 
+  styleClass="p-fluid">
+
+  <form [formGroup]="categoryForm" (ngSubmit)="saveCategory()">
+    <div class="field mb-3" *ngIf="!editingCategory">
+      <label for="parentCategory" class="form-label">Parent Category (Optional)</label>
+
+      <!-- Bootstrap Dropdown Replacement -->
+      <div *ngIf="isAddingSubcategory && parentCategoryForNew" class="form-control parent-selected">
+        <span>{{ parentCategoryForNew.name }}</span>
+        <input type="hidden" formControlName="parentCategoryId">
+      </div>
+
+      <div *ngIf="!isAddingSubcategory" class="dropdown bootstrap-dropdown">
+        <button class="form-control d-flex justify-content-between align-items-center dropdown-toggle" type="button"
+          id="parentCategoryDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+          <span *ngIf="getSelectedCategoryName(); else placeholderTemplate">
+            {{ getSelectedCategoryName() }}
+          </span>
+          <ng-template #placeholderTemplate>
+            <span class="text-muted">Select Parent Category</span>
+          </ng-template>
+        </button>
+        <ul class="dropdown-menu w-100" aria-labelledby="parentCategoryDropdown">
+          <li>
+            <a class="dropdown-item" href="javascript:void(0)" (click)="selectParentCategory(null)">
+              <i class="pi pi-times-circle me-2 text-muted"></i>None (Root Category)
+            </a>
+          </li>
+          <li *ngIf="categoryDropdown.length > 0">
+            <hr class="dropdown-divider">
+          </li>
+          <li *ngFor="let category of categoryDropdown">
+            <a class="dropdown-item" href="javascript:void(0)" (click)="selectParentCategory(category.value)">
+              <i class="pi pi-folder me-2"></i>{{ category.label }}
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Info below if subcategory is being added -->
+      <div *ngIf="isAddingSubcategory && parentCategoryForNew" class="mt-2">
+        <small class="text-muted">
+          <i class="pi pi-info-circle me-1"></i>
+          Adding subcategory under: <strong>{{ parentCategoryForNew.name }}</strong>
+        </small>
+      </div>
+    </div>
+
+    <div class="field mb-3">
+      <label for="categoryName" class="form-label">Category Name</label>
+      <input type="text" pInputText id="categoryName" formControlName="name" 
+        placeholder="e.g. Electronics, Clothing" class="form-control" required />
+      <small *ngIf="categoryForm.get('name')?.invalid && categoryForm.get('name')?.touched"
+        class="text-danger d-block mt-1">
+        Category name is required
+      </small>
+    </div>
+
+    <!-- Category Image Upload -->
+    <div class="field mb-3">
+      <label class="form-label">Category Image</label>
+      <div class="image-upload-preview mb-2" *ngIf="categoryImagePreview">
+        <img [src]="categoryImagePreview" alt="Category preview" class="img-preview">
+        <button type="button" class="btn btn-sm btn-outline-danger remove-image" (click)="removeCategoryImage()">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+      <div class="image-upload-area">
+        <label for="categoryImage" class="image-upload-label">
+          <i class="pi pi-cloud-upload me-1"></i>
+          Upload Image
+        </label>
+        <input type="file" id="categoryImage" class="image-upload-input" (change)="onImageSelected($event)"
+          accept="image/*">
+        <small class="text-muted d-block mt-1">Recommended size: 100x100px. Max 2MB.</small>
+      </div>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button pButton pRipple type="button" label="Cancel" icon="pi pi-times" 
+      class="p-button-text p-button-sm" (click)="closeDialog()"></button>
+    <button pButton pRipple type="button" label="Save" icon="pi pi-check" 
+      class="p-button-success p-button-sm" (click)="saveCategory()" 
+      [disabled]="categoryForm.invalid"></button>
+  </ng-template>
+</p-dialog>

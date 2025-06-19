@@ -5,6 +5,8 @@ import { Menu } from "primeng/menu"
 import { OptionTypeDTO, OptionValueDTO } from "../../../../core/models/option.model"
 import { OptionService } from "../../../../core/services/option.service"
 import { OptionvalueService } from "../../../../core/services/optionvalue.service"
+import Swal from "sweetalert2"
+import { AlertService } from "@app/core/services/alert.service"
 
 @Component({
   selector: "app-option-management",
@@ -43,6 +45,7 @@ export class OptionManagementComponent implements OnInit {
     private fb: FormBuilder,
     private optionService: OptionService,
     private optionValueService: OptionvalueService,
+    private alertService: AlertService,
   ) {
     this.optionForm = this.fb.group({
       id: [""],
@@ -104,62 +107,29 @@ export class OptionManagementComponent implements OnInit {
     this.optionDialogVisible = true
   }
 
-  saveOption(): void {
-    if (this.optionForm.invalid) return;
-    const formValue = this.optionForm.value;
-
-    if (this.editingOption) {
-      const updateData: OptionTypeDTO = {
-        id: this.editingOption.id,
-        name: formValue.name,
-        optionValues: this.editingOption.optionValues,
-      };
-
-      this.optionService.updateOptionType(updateData).subscribe({
-        next: () => {
-          this.optionDialogVisible = false;
-          this.loadOptions(); // ✅ reload
-        },
-        error: (error) => {
-          console.error("Error updating option:", error);
-        },
-      });
-    } else {
-      const newOption: OptionTypeDTO = {
-        id: "",
-        name: formValue.name,
-        optionValues: [],
-      };
-
-      this.optionService.createOptionType(newOption).subscribe({
-        next: () => {
-          this.optionDialogVisible = false;
-          this.loadOptions(); // ✅ reload
-        },
-        error: (error) => {
-          console.error("Error creating option:", error);
-        },
-      });
-    }
-  }
-
-
   editOption(option: OptionTypeDTO): void {
     this.openOptionDialog(option)
   }
 
   deleteOption(option: OptionTypeDTO): void {
-    if (confirm(`Are you sure you want to delete the option "${option.name}"?`)) {
-      this.optionService.deleteOptionType(Number.parseInt(option.id)).subscribe({
-        next: () => {
-          this.options = this.options.filter((o) => o.id !== option.id)
-          this.updateFilters()
-        },
-        error: (error) => {
-          console.error("Error deleting option:", error)
-        },
-      })
-    }
+    this.alertService.confirm(
+      `Are you sure you want to delete the option "${option.name}"?`,
+      'Delete Option'
+    ).then((confirmed) => {
+      if (confirmed) {
+        this.optionService.deleteOptionType(Number.parseInt(option.id)).subscribe({
+          next: () => {
+            this.options = this.options.filter(o => o.id !== option.id);
+            this.updateFilters();
+            this.alertService.toast(`"${option.name}" has been deleted.`, 'success');
+          },
+          error: (error) => {
+            console.error("Error deleting option:", error);
+            this.alertService.toast('Failed to delete the option.', 'error');
+          }
+        });
+      }
+    });
   }
 
   addValueToOption(option: OptionTypeDTO): void {
@@ -182,62 +152,37 @@ export class OptionManagementComponent implements OnInit {
     this.optionValueDialogVisible = true
   }
 
-  saveOptionValue(): void {
-    if (this.optionValueForm.invalid || !this.selectedOption) return;
-
-    const formValue = this.optionValueForm.value;
-
-    if (this.editingOptionValue) {
-      const updateData: OptionValueDTO = {
-        id: this.editingOptionValue.id,
-        optionId: formValue.optionId,
-        value: formValue.value,
-      };
-
-      this.optionValueService.updateOptionValues(updateData).subscribe({
-        next: () => {
-          this.optionValueDialogVisible = false;
-          this.loadOptions(); // ✅ reload
-        },
-        error: (error) => {
-          console.error("Error updating option value:", error);
-        },
-      });
+  saveOption(option: OptionTypeDTO): void {
+    if (option.id) {
+      this.optionService.updateOptionType(option).subscribe(() => this.loadOptions());
     } else {
-      const newValue: OptionValueDTO = {
-        optionId: formValue.optionId,
-        value: formValue.value,
-      };
+      this.optionService.createOptionType(option).subscribe(() => this.loadOptions());
+    }
+  }
 
-      this.optionValueService.createOptionValue(newValue).subscribe({
-        next: () => {
-          this.optionValueDialogVisible = false;
-          this.loadOptions(); // ✅ reload
-        },
-        error: (error) => {
-          console.error("Error creating option value:", error);
-        },
-      });
+  saveOptionValue(value: OptionValueDTO): void {
+    if (value.id) {
+      this.optionValueService.updateOptionValues(value).subscribe(() => this.loadOptions());
+    } else {
+      this.optionValueService.createOptionValue(value).subscribe(() => this.loadOptions());
     }
   }
 
 
   deleteOptionValue(value: OptionValueDTO, option: OptionTypeDTO): void {
-    if (confirm(`Are you sure you want to delete the value "${value.value}"?`)) {
-      this.optionValueService.deleteOptionValue(value.id!).subscribe({
-        next: () => {
-          const optionIndex = this.options.findIndex((o) => o.id === option.id)
-          if (optionIndex !== -1) {
-            this.options[optionIndex].optionValues = this.options[optionIndex].optionValues.filter(
-              (v) => v.id !== value.id,
-            )
-          }
-        },
-        error: (error) => {
-          console.error("Error deleting option value:", error)
-        },
-      })
-    }
+    this.optionValueService.deleteOptionValue(value.id!).subscribe({
+      next: () => {
+        const optionIndex = this.options.findIndex((o) => o.id === option.id)
+        if (optionIndex !== -1) {
+          this.options[optionIndex].optionValues = this.options[optionIndex].optionValues.filter(
+            (v) => v.id !== value.id,
+          )
+        }
+      },
+      error: (error) => {
+        console.error("Error deleting option value:", error)
+      },
+    })
   }
 
   showValueMenu(event: MouseEvent, value: OptionValueDTO, option: OptionTypeDTO): void {
