@@ -7,6 +7,7 @@ import { CategoryService } from "../../../../core/services/category.service"
 import { log } from "node:console"
 import { CloudinaryService } from "../../../../core/services/cloudinary.service"
 import { Observable } from "rxjs"
+import { AlertService } from "@app/core/services/alert.service"
 
 @Component({
   selector: "app-category-management",
@@ -22,7 +23,8 @@ export class CategoryManagementComponent implements OnInit {
   categoryFilter = ""
   isAddingSubcategory = false
   selectedParentDropdown: any[] = []
-  expandedCategories: Set<number> = new Set() // Track expanded categories
+  expandedCategories: Set<number> = new Set()
+
   // Category image handling
   categoryDialogVisible = false
   editingCategory: CategoryDTO | null = null
@@ -31,17 +33,23 @@ export class CategoryManagementComponent implements OnInit {
   @ViewChild("categoryMenu") categoryMenu!: Menu
   categoryMenuItems: MenuItem[] = []
   selectedCategoryForMenu: CategoryDTO | null = null
+
   // Loading state
   loadingCategories = false
-  viewMode: "grid" | "list" = "grid"
 
   constructor(
     private categoryService: CategoryService,
     private cloudinaryService: CloudinaryService,
+    private alertService: AlertService
   ) { }
 
   ngOnInit(): void {
     this.loadCategories()
+  }
+
+  // Track by function for better performance
+  trackByCategory(index: number, category: CategoryDTO): number {
+    return category.id || index
   }
 
   updateFilters(): void {
@@ -105,8 +113,7 @@ export class CategoryManagementComponent implements OnInit {
     this.filteredCategoryTree = [...this.categoryTree]
     this.updateFilters()
 
-    console.log("categories : ", this.categories);
-    
+    console.log("categories : ", this.categories)
   }
 
   loadCategories(): void {
@@ -148,8 +155,8 @@ export class CategoryManagementComponent implements OnInit {
   getDirectSubcategories(parentId: number): CategoryDTO[] {
     const subcategories = this.categories.filter((cat) => cat.parentCategoryId === parentId)
     if (this.categoryFilter.trim() === "") {
-      console.log("subs for id " + parentId + " are : " , subcategories);
-      
+      console.log("subs for id " + parentId + " are : ", subcategories)
+
       return subcategories
     }
     return subcategories.filter((cat) => this.categoryMatchesFilter(cat))
@@ -258,22 +265,30 @@ export class CategoryManagementComponent implements OnInit {
   }
 
   deleteCategory(category: CategoryDTO): void {
-    if (confirm(`Are you sure you want to delete the category "${category.name}"?`)) {
-      this.categoryService.deleteCategory(category.id!).subscribe({
-        next: () => {
-          this.categories = this.categories.filter((c) => c.id !== category.id)
-          this.buildCategoryTree()
-          this.updateCategoryDropdowns()
-        },
-        error: (error) => {
-          console.error("Error deleting category:", error)
-          if (error.status === 400) {
-            alert("Cannot delete category. It may have subcategories or products associated with it.")
-          }
-        },
-      })
-    }
+    this.alertService
+      .confirm(`Are you sure you want to delete the category "${category.name}"?`, 'Delete Category')
+      .then((confirmed) => {
+        if (confirmed) {
+          this.categoryService.deleteCategory(category.id!).subscribe({
+            next: () => {
+              this.categories = this.categories.filter((c) => c.id !== category.id);
+              this.buildCategoryTree();
+              this.updateCategoryDropdowns();
+              this.alertService.toast(`"${category.name}" has been deleted.`, 'success');
+            },
+            error: (error) => {
+              console.error("Error deleting category:", error);
+              if (error.status === 400) {
+                this.alertService.toast("Cannot delete category. It may have subcategories or products associated with it.", 'error');
+              } else {
+                this.alertService.toast("Failed to delete the category.", 'error');
+              }
+            },
+          });
+        }
+      });
   }
+
 
   showCategoryMenu(event: MouseEvent, category: CategoryDTO): void {
     this.selectedCategoryForMenu = category

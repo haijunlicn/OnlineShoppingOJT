@@ -91,16 +91,24 @@ main.flex-grow-1 {
 /* Modern SweetAlert2 Toast Styles */
 .swal2-popup.modern-toast {
   border-radius: 12px !important;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.12) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12) !important;
   padding: 1rem 1.5rem !important;
   min-width: 320px !important;
   border-left: 6px solid transparent !important;
   animation: slideIn 0.4s;
 }
-.swal2-popup.modern-toast-success { border-left-color: #28a745 !important; }
-.swal2-popup.modern-toast-error   { border-left-color: #dc3545 !important; }
-.swal2-popup.modern-toast-warning { border-left-color: #ffc107 !important; }
-.swal2-popup.modern-toast-info    { border-left-color: #17a2b8 !important; }
+.swal2-popup.modern-toast-success {
+  border-left-color: #28a745 !important;
+}
+.swal2-popup.modern-toast-error {
+  border-left-color: #dc3545 !important;
+}
+.swal2-popup.modern-toast-warning {
+  border-left-color: #ffc107 !important;
+}
+.swal2-popup.modern-toast-info {
+  border-left-color: #17a2b8 !important;
+}
 
 .swal2-title.modern-toast-title {
   font-size: 1.1rem !important;
@@ -114,8 +122,14 @@ main.flex-grow-1 {
 }
 
 @keyframes slideIn {
-  from { transform: translateY(-30px); opacity: 0; }
-  to   { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* Add this to your global styles or component CSS */
@@ -140,12 +154,12 @@ main.flex-grow-1 {
   box-shadow: var(--luxury-shadow-lg) !important;
   backdrop-filter: blur(12px) !important;
   background: rgba(249, 248, 246, 0.98) !important;
-  font-family: 'Cinzel', serif !important;
+  font-family: "Cinzel", serif !important;
 }
 
 .luxury-alert .swal2-title {
   color: var(--luxury-primary) !important;
-  font-family: 'Cinzel', serif !important;
+  font-family: "Cinzel", serif !important;
   font-weight: 600 !important;
   font-size: 1.5rem !important;
   margin-bottom: 1rem !important;
@@ -277,7 +291,7 @@ main.flex-grow-1 {
   font-weight: 600;
   font-size: 1rem;
   margin-bottom: 0.25rem;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
 }
 
 .luxury-toast-subtitle {
@@ -439,7 +453,7 @@ main.flex-grow-1 {
   color: var(--luxury-primary);
   font-size: 1rem;
   font-weight: 500;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
 }
 
 /* Animations */
@@ -491,12 +505,12 @@ main.flex-grow-1 {
     max-width: 90vw !important;
     margin: 0.5rem !important;
   }
-  
+
   .luxury-toast-content {
     padding: 0.75rem 0.875rem;
     gap: 0.625rem;
   }
-  
+
   .luxury-toast-icon {
     width: 18px;
     height: 18px;
@@ -506,4 +520,11 @@ main.flex-grow-1 {
   .luxury-toast-message {
     font-size: 0.85rem;
   }
+}
+
+/* Make SweetAlert2 toast above any modal overlays */
+.swal2-container.swal2-top-end,
+.swal2-container.swal2-top,
+.swal2-container.swal2-bottom-end {
+  z-index: 99999 !important;
 }

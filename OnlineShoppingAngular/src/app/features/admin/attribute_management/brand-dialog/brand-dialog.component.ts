@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BrandDTO } from '@app/core/models/product.model';
+import { AlertService } from '@app/core/services/alert.service';
 import { BrandService } from '@app/core/services/brand.service';
 
 @Component({
@@ -18,8 +19,9 @@ export class BrandDialogComponent {
   brandForm: FormGroup;
 
   constructor(
-    private fb: FormBuilder, 
-    private brandService: BrandService
+    private fb: FormBuilder,
+    private brandService: BrandService,
+    private alertService: AlertService
   ) {
     this.brandForm = this.fb.group({
       name: ["", Validators.required],
@@ -60,14 +62,24 @@ export class BrandDialogComponent {
 
     action$.subscribe({
       next: (savedBrand: BrandDTO) => {
+        this.alertService.toast(
+          `Brand ${this.editingBrand ? 'updated' : 'created'} successfully.`,
+          'success'
+        );
+
         this.save.emit(savedBrand);
         this.closeDialog();
       },
       error: (err) => {
         console.error(this.editingBrand ? "Error updating brand:" : "Error creating brand:", err);
+        this.alertService.toast(
+          `Failed to ${this.editingBrand ? 'update' : 'create'} brand.`,
+          'error'
+        );
       },
     });
   }
+
 
   closeDialog(): void {
     this.visible = false;

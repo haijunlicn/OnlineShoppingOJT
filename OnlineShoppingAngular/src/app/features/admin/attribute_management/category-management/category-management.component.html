@@ -10,111 +10,129 @@
     (click)="openCategoryDialog()"></button>
 </div>
 
-<!-- Grid-Style Categories with Image Support -->
-<div class="categories-grid-view">
-  <div *ngFor="let rootCategory of getRootCategories()" class="category-grid-container">
+<!-- Hierarchy View -->
+<div class="categories-container">
+  <div class="hierarchy-view">
+    <div *ngFor="let rootCategory of getRootCategories(); trackBy: trackByCategory" class="category-branch">
 
-    <!-- Root Category Card with Image -->
-    <div class="category-card root-category" [class.expanded]="isExpanded(rootCategory.id!)"
-      (click)="toggleExpanded(rootCategory.id!)">
-      <div class="category-image-wrapper">
-        <img [src]="getCategoryImage(rootCategory)" alt="" class="category-image">
-        <div class="category-overlay">
-          <div class="category-actions" (click)="$event.stopPropagation()">
-            <button class="btn btn-sm btn-light me-1" (click)="addSubcategory(rootCategory)" pTooltip="Add Subcategory"
-              tooltipPosition="top" tooltipStyleClass="custom-tooltip">
+      <!-- Root Category -->
+      <div class="category-node root-node" [class.expanded]="isExpanded(rootCategory.id!)"
+        [class.has-children]="hasSubcategories(rootCategory.id!)">
+
+        <div class="node-content" (click)="toggleExpanded(rootCategory.id!)">
+          <div class="node-expand-icon" *ngIf="hasSubcategories(rootCategory.id!)">
+            <i class="pi" [class.pi-chevron-right]="!isExpanded(rootCategory.id!)"
+              [class.pi-chevron-down]="isExpanded(rootCategory.id!)"></i>
+          </div>
+
+          <div class="node-image">
+            <img [src]="getCategoryImage(rootCategory)" [alt]="rootCategory.name" class="category-thumbnail">
+          </div>
+
+          <div class="node-info">
+            <h3 class="category-title">{{ rootCategory.name }}</h3>
+            <div class="category-meta">
+              <span class="subcategory-badge" *ngIf="getTotalSubcategoryCount(rootCategory.id!) > 0">
+                {{ getTotalSubcategoryCount(rootCategory.id!) }} subcategories
+              </span>
+            </div>
+          </div>
+
+          <div class="node-actions" (click)="$event.stopPropagation()">
+            <button pButton pRipple type="button"
+              class="p-button-success p-button-rounded" (click)="addSubcategory(rootCategory)"
+              pTooltip="Add Subcategory" tooltipPosition="top" tooltipStyleClass="custom-tooltip">
               <i class="pi pi-plus"></i>
             </button>
-            <button class="btn btn-sm btn-light" (click)="showCategoryMenu($event, rootCategory)"
-              pTooltip="More Actions" tooltipPosition="top" tooltipStyleClass="custom-tooltip">
+
+            <button pButton pRipple class="action-btn secondary p-button-rounded p-button-text"
+              (click)="showCategoryMenu($event, rootCategory)" pTooltip="More Actions" tooltipPosition="top"
+              tooltipStyleClass="custom-tooltip">
               <i class="pi pi-ellipsis-v"></i>
             </button>
           </div>
         </div>
-        <div class="expand-indicator" *ngIf="hasSubcategories(rootCategory.id!)">
-          <i class="pi pi-chevron-down" [class.expanded]="isExpanded(rootCategory.id!)"></i>
+
+        <!-- Subcategories -->
+        <div class="subcategories-container" *ngIf="hasSubcategories(rootCategory.id!) && isExpanded(rootCategory.id!)">
+          <ng-container *ngTemplateOutlet="hierarchyTemplate; context: { 
+            categories: getDirectSubcategories(rootCategory.id!), 
+            level: 1 
+          }"></ng-container>
         </div>
       </div>
-      <div class="category-info">
-        <span class="category-name">{{ rootCategory.name }}</span>
-        <span class="subcategory-count" *ngIf="getTotalSubcategoryCount(rootCategory.id!) > 0">
-          {{ getTotalSubcategoryCount(rootCategory.id!) }}
-        </span>
-      </div>
     </div>
 
-    <!-- Expandable Subcategories Grid -->
-    <div class="subcategories-grid" [class.expanded]="isExpanded(rootCategory.id!)"
-      *ngIf="hasSubcategories(rootCategory.id!)">
-      <div class="subcategories-container">
-        <ng-container *ngTemplateOutlet="subcategoryGridTemplate; context: { 
-          categories: getDirectSubcategories(rootCategory.id!), 
-          level: 1 
-        }"></ng-container>
+    <!-- Empty State -->
+    <div *ngIf="getRootCategories().length === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="pi pi-sitemap"></i>
       </div>
+      <h3>No categories found</h3>
+      <p>Create your first category to start organizing your products</p>
+      <button pButton type="button" label="Add Category" icon="pi pi-plus" class="p-button-success"
+        (click)="openCategoryDialog()"></button>
     </div>
-  </div>
-
-  <!-- Empty state -->
-  <div *ngIf="getRootCategories().length === 0" class="text-center p-5">
-    <i class="pi pi-sitemap mb-3" style="font-size: 3rem; opacity: 0.3"></i>
-    <h5 class="mb-2">No categories found</h5>
-    <p class="text-muted mb-3">Create your first category to organize products</p>
-    <button pButton type="button" label="Add Category" icon="pi pi-plus" class="p-button-success"
-      (click)="openCategoryDialog()"></button>
   </div>
 </div>
 
-<!-- Recursive Subcategory Grid Template with Image Support -->
-<ng-template #subcategoryGridTemplate let-categories="categories" let-level="level">
-  <div class="subcategory-grid-level" [style.margin-left.rem]="level * 0.5">
-    <div *ngFor="let category of categories" class="subcategory-card-wrapper">
+<!-- Recursive Hierarchy Template -->
+<ng-template #hierarchyTemplate let-categories="categories" let-level="level">
+  <div class="hierarchy-level" [attr.data-level]="level">
+    <div *ngFor="let category of categories; trackBy: trackByCategory" class="category-node child-node"
+      [class.expanded]="isExpanded(category.id!)" [class.has-children]="hasSubcategories(category.id!)"
+      [class.level-1]="level === 1" [class.level-2]="level === 2" [class.level-3]="level >= 3">
 
-      <!-- Subcategory Card with Image -->
-      <div class="subcategory-card" [class.has-children]="hasSubcategories(category.id!)">
-        <div class="subcategory-image-wrapper">
-          <img [src]="getCategoryImage(category)" alt="" class="subcategory-image">
-          <div class="subcategory-overlay">
-            <div class="subcategory-actions" (click)="$event.stopPropagation()">
-              <button class="btn btn-xs btn-light me-1" (click)="addSubcategory(category)" pTooltip="Add Subcategory"
-                tooltipPosition="top" tooltipStyleClass="custom-tooltip">
-                <i class="pi pi-plus"></i>
-              </button>
-              <button class="btn btn-xs btn-light" (click)="showCategoryMenu($event, category)" pTooltip="More Actions"
-                tooltipPosition="top" tooltipStyleClass="custom-tooltip">
-                <i class="pi pi-ellipsis-v"></i>
-              </button>
-            </div>
+      <div class="node-content" (click)="toggleExpanded(category.id!)">
+        <div class="level-connector"></div>
+
+        <div class="node-expand-icon" *ngIf="hasSubcategories(category.id!)">
+          <i class="pi" [class.pi-chevron-right]="!isExpanded(category.id!)"
+            [class.pi-chevron-down]="isExpanded(category.id!)"></i>
+        </div>
+
+        <div class="node-image">
+          <img [src]="getCategoryImage(category)" [alt]="category.name" class="category-thumbnail">
+        </div>
+
+        <div class="node-info">
+          <h4 class="category-title">{{ category.name }}</h4>
+          <div class="category-meta" *ngIf="getTotalSubcategoryCount(category.id!) > 0">
+            <span class="subcategory-badge">
+              {{ getTotalSubcategoryCount(category.id!) }} subcategories
+            </span>
           </div>
-          <div class="expand-indicator-mini" *ngIf="hasSubcategories(category.id!)"
-            (click)="toggleExpanded(category.id!); $event.stopPropagation()">
-            <i class="pi pi-chevron-down" [class.expanded]="isExpanded(category.id!)"></i>
-          </div>
+        </div>
+
+        <div class="node-actions" (click)="$event.stopPropagation()">
+
+          <button pButton pRipple type="button"
+            class="p-button-success p-button-rounded" (click)="addSubcategory(category)"
+            pTooltip="Add Subcategory" tooltipPosition="top" tooltipStyleClass="custom-tooltip">
+            <i class="pi pi-plus"></i>
+          </button>
+
+          <button pButton pRipple class="action-btn secondary p-button-rounded p-button-text"
+            (click)="showCategoryMenu($event, category)" pTooltip="More Actions" tooltipPosition="top"
+            tooltipStyleClass="custom-tooltip">
+            <i class="pi pi-ellipsis-v"></i>
+          </button>
 
         </div>
 
+      </div>
 
-        <div class="subcategory-info">
-          <span class="subcategory-name">{{ category.name }}</span>
-          <span class="subcategory-count mini" *ngIf="getTotalSubcategoryCount(category.id!) > 0">
-            {{ getTotalSubcategoryCount(category.id!) }}
-          </span>
-        </div>
-
-        <!-- Nested Subcategories Grid (Recursive) -->
-        <div class="nested-subcategories-grid" [class.expanded]="isExpanded(category.id!)"
-          *ngIf="hasSubcategories(category.id!) && isExpanded(category.id!)">
-          <ng-container *ngTemplateOutlet="subcategoryGridTemplate; context: { 
+      <div class="subcategories-container" *ngIf="hasSubcategories(category.id!) && isExpanded(category.id!)">
+        <ng-container *ngTemplateOutlet="hierarchyTemplate; context: { 
           categories: getDirectSubcategories(category.id!), 
           level: level + 1 
         }"></ng-container>
-        </div>
       </div>
     </div>
   </div>
 </ng-template>
 
-<!-- Context Menu (UNCHANGED) -->
+<!-- Context Menu -->
 <p-menu #categoryMenu [model]="categoryMenuItems" [popup]="true" appendTo="body"></p-menu>
 
 <app-category-dialog [(visible)]="categoryDialogVisible" [editingCategory]="editingCategory"

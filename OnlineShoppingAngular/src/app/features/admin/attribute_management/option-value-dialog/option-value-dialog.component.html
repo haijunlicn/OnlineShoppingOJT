@@ -1,0 +1,27 @@
+<p-dialog [(visible)]="visible" [style]="{width: '450px'}"
+    [header]="editingValue ? 'Edit Option Value' : 'Add Option Value'" [modal]="true" styleClass="p-fluid"
+    (onHide)="onCancel()">
+
+    <form [formGroup]="optionValueForm" (ngSubmit)="onSave()">
+        <div *ngIf="selectedOption" class="field mb-3">
+            <label class="form-label">Option Type</label>
+            <input type="text" class="form-control" [value]="selectedOption.name" readonly />
+        </div>
+
+        <div class="field mb-3">
+            <label class="form-label">Value</label>
+            <input type="text" pInputText formControlName="value" placeholder="e.g. Red, Large" class="form-control" />
+            <small *ngIf="optionValueForm.get('value')?.invalid && optionValueForm.get('value')?.touched"
+                class="text-danger mt-1 d-block">
+                Value is required
+            </small>
+        </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+        <button pButton type="button" label="Cancel" icon="pi pi-times" class="p-button-text"
+            (click)="onCancel()"></button>
+        <button pButton type="submit" label="Save" icon="pi pi-check" class="p-button-success"
+            [disabled]="optionValueForm.invalid" (click)="onSave()"></button>
+    </ng-template>
+</p-dialog>

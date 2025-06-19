@@ -55,6 +55,8 @@ import { PaymentUpdateComponent } from './payment-management/payment-update/paym
 import { ProductAttributeComponent } from './attribute_management/product-attribute/product-attribute.component';
 import { BrandDialogComponent } from './attribute_management/brand-dialog/brand-dialog.component';
 import { CategoryDialogComponent } from './attribute_management/category-dialog/category-dialog.component';
+import { OptionDialogComponent } from './attribute_management/option-dialog/option-dialog.component';
+import { OptionValueDialogComponent } from './attribute_management/option-value-dialog/option-value-dialog.component';
 
 
 @NgModule({
@@ -93,7 +95,9 @@ import { CategoryDialogComponent } from './attribute_management/category-dialog/
     PaymentCreateComponent,
     PaymentUpdateComponent,
     BrandDialogComponent,
-    CategoryDialogComponent
+    CategoryDialogComponent,
+    OptionDialogComponent,
+    OptionValueDialogComponent
   ],
   imports: [
     CommonModule,

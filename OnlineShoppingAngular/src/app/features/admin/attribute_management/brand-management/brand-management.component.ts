@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { BrandDTO } from "../../../../core/models/product.model";
 import { BrandService } from "../../../../core/services/brand.service";
+import { AlertService } from "@app/core/services/alert.service";
 
 @Component({
   selector: "app-brand-management",
@@ -10,7 +11,7 @@ import { BrandService } from "../../../../core/services/brand.service";
   styleUrls: ["./brand-management.component.css"],
 })
 export class BrandManagementComponent implements OnInit {
- brands: BrandDTO[] = [];
+  brands: BrandDTO[] = [];
   filteredBrands: BrandDTO[] = [];
   brandFilter = "";
 
@@ -23,7 +24,10 @@ export class BrandManagementComponent implements OnInit {
   @Output() brandCreated = new EventEmitter<BrandDTO>();
   @Output() brandSelected = new EventEmitter<BrandDTO>();
 
-  constructor(private brandService: BrandService) {}
+  constructor(
+    private brandService: BrandService,
+    private alertService: AlertService,
+  ) { }
 
   ngOnInit(): void {
     if (!this.showCreateOnly) {
@@ -78,18 +82,26 @@ export class BrandManagementComponent implements OnInit {
   }
 
   deleteBrand(brand: BrandDTO): void {
-    if (confirm(`Are you sure you want to delete the brand "${brand.name}"?`)) {
-      this.brandService.deleteBrand(+brand.id).subscribe({
-        next: () => {
-          this.loadBrands();
-        },
-        error: (err) => {
-          console.error("Error deleting brand:", err);
-          if (err.status === 400) {
-            alert("Cannot delete brand. It may have products associated with it.");
-          }
-        },
+    this.alertService
+      .confirm(`Are you sure you want to delete the brand "${brand.name}"?`, 'Delete Brand')
+      .then((confirmed) => {
+        if (confirmed) {
+          this.brandService.deleteBrand(+brand.id).subscribe({
+            next: () => {
+              this.alertService.toast(`"${brand.name}" has been deleted.`, 'success');
+              this.loadBrands();
+            },
+            error: (err) => {
+              console.error("Error deleting brand:", err);
+              if (err.status === 400) {
+                this.alertService.toast("Cannot delete brand. It may have products associated with it.", 'error');
+              } else {
+                this.alertService.toast("Failed to delete the brand.", 'error');
+              }
+            },
+          });
+        }
       });
-    }
   }
+
 }
