@@ -17,7 +17,8 @@
 
       <!-- Root Category -->
       <div class="category-node root-node" [class.expanded]="isExpanded(rootCategory.id!)"
-        [class.has-children]="hasSubcategories(rootCategory.id!)">
+        [class.has-children]="hasSubcategories(rootCategory.id!)"
+        [class.has-options]="hasAssignedOptions(rootCategory.id!)">
 
         <div class="node-content" (click)="toggleExpanded(rootCategory.id!)">
           <div class="node-expand-icon" *ngIf="hasSubcategories(rootCategory.id!)">
@@ -35,17 +36,19 @@
               <span class="subcategory-badge" *ngIf="getTotalSubcategoryCount(rootCategory.id!) > 0">
                 {{ getTotalSubcategoryCount(rootCategory.id!) }} subcategories
               </span>
+              <span class="options-badge" *ngIf="hasAssignedOptions(rootCategory.id!)">
+                <i class="pi pi-cog"></i>
+                Options assigned
+              </span>
             </div>
           </div>
 
           <div class="node-actions" (click)="$event.stopPropagation()">
-            <button pButton pRipple type="button"
-              class="p-button-success p-button-rounded" (click)="addSubcategory(rootCategory)"
+            <button pButton pRipple class="p-button-success p-button-text" (click)="addSubcategory(rootCategory)"
               pTooltip="Add Subcategory" tooltipPosition="top" tooltipStyleClass="custom-tooltip">
               <i class="pi pi-plus"></i>
             </button>
-
-            <button pButton pRipple class="action-btn secondary p-button-rounded p-button-text"
+            <button pButton pRipple class="p-button-rounded p-button-text"
               (click)="showCategoryMenu($event, rootCategory)" pTooltip="More Actions" tooltipPosition="top"
               tooltipStyleClass="custom-tooltip">
               <i class="pi pi-ellipsis-v"></i>
@@ -81,7 +84,8 @@
   <div class="hierarchy-level" [attr.data-level]="level">
     <div *ngFor="let category of categories; trackBy: trackByCategory" class="category-node child-node"
       [class.expanded]="isExpanded(category.id!)" [class.has-children]="hasSubcategories(category.id!)"
-      [class.level-1]="level === 1" [class.level-2]="level === 2" [class.level-3]="level >= 3">
+      [class.has-options]="hasAssignedOptions(category.id!)" [class.level-1]="level === 1" [class.level-2]="level === 2"
+      [class.level-3]="level >= 3">
 
       <div class="node-content" (click)="toggleExpanded(category.id!)">
         <div class="level-connector"></div>
@@ -97,29 +101,27 @@
 
         <div class="node-info">
           <h4 class="category-title">{{ category.name }}</h4>
-          <div class="category-meta" *ngIf="getTotalSubcategoryCount(category.id!) > 0">
-            <span class="subcategory-badge">
+          <div class="category-meta">
+            <span class="subcategory-badge" *ngIf="getTotalSubcategoryCount(category.id!) > 0">
               {{ getTotalSubcategoryCount(category.id!) }} subcategories
+            </span>
+            <span class="options-badge" *ngIf="hasAssignedOptions(category.id!)">
+              <i class="pi pi-cog"></i>
+              Options assigned
             </span>
           </div>
         </div>
 
         <div class="node-actions" (click)="$event.stopPropagation()">
-
-          <button pButton pRipple type="button"
-            class="p-button-success p-button-rounded" (click)="addSubcategory(category)"
+          <button pButton pRipple class="p-button-rounded p-button-text" (click)="addSubcategory(category)"
             pTooltip="Add Subcategory" tooltipPosition="top" tooltipStyleClass="custom-tooltip">
             <i class="pi pi-plus"></i>
           </button>
-
-          <button pButton pRipple class="action-btn secondary p-button-rounded p-button-text"
-            (click)="showCategoryMenu($event, category)" pTooltip="More Actions" tooltipPosition="top"
-            tooltipStyleClass="custom-tooltip">
+          <button pButton pRipple class="p-button-rounded p-button-text" (click)="showCategoryMenu($event, category)"
+            pTooltip="More Actions" tooltipPosition="top" tooltipStyleClass="custom-tooltip">
             <i class="pi pi-ellipsis-v"></i>
           </button>
-
         </div>
-
       </div>
 
       <div class="subcategories-container" *ngIf="hasSubcategories(category.id!) && isExpanded(category.id!)">
@@ -135,6 +137,12 @@
 <!-- Context Menu -->
 <p-menu #categoryMenu [model]="categoryMenuItems" [popup]="true" appendTo="body"></p-menu>
 
+<!-- Category Dialog -->
 <app-category-dialog [(visible)]="categoryDialogVisible" [editingCategory]="editingCategory"
   [parentCategoryForNew]="parentCategoryForNew" [categoryDropdown]="categoryDropdown" (save)="onCategorySaved($event)">
 </app-category-dialog>
+
+<!-- Category Options Assignment Dialog -->
+<app-category-options-dialog [(visible)]="categoryOptionsDialogVisible" [category]="selectedCategoryForOptions"
+  [selectedOptions]="selectedCategoryForOptions?.optionTypes || []" (save)="onCategoryOptionsAssigned()">
+</app-category-options-dialog>

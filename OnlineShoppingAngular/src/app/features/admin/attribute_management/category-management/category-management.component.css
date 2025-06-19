@@ -47,6 +47,16 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
+/* Special styling for categories with options */
+.category-node.has-options .node-content {
+  border-left: 4px solid #3b82f6;
+}
+
+.category-node.has-options.root-node .node-content {
+  border-left: 4px solid #3b82f6;
+  background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
+}
+
 .child-node .node-content {
   background: #fefefe;
   border: 1px solid #f1f5f9;
@@ -197,6 +207,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .subcategory-badge {
@@ -208,8 +219,26 @@
   font-weight: 500;
 }
 
+.options-badge {
+  background: #eff6ff;
+  color: #3b82f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.options-badge i {
+  font-size: 0.7rem;
+}
+
 .child-node.level-2 .subcategory-badge,
-.child-node.level-3 .subcategory-badge {
+.child-node.level-3 .subcategory-badge,
+.child-node.level-2 .options-badge,
+.child-node.level-3 .options-badge {
   font-size: 0.7rem;
   padding: 0.2rem 0.4rem;
 }
@@ -406,6 +435,14 @@
   color: #388e3c;
 }
 
+::ng-deep .p-menu .menu-item-setOptions .pi {
+  color: #6366f1;
+}
+
+::ng-deep .p-menu .menu-item-setOptions:hover {
+  background: #f0f9ff !important;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .hierarchy-view {
@@ -463,6 +500,10 @@
     width: 28px;
     height: 28px;
   }
+
+  .category-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
 }
-
-

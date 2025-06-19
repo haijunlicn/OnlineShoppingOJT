@@ -57,6 +57,7 @@ import { BrandDialogComponent } from './attribute_management/brand-dialog/brand-
 import { CategoryDialogComponent } from './attribute_management/category-dialog/category-dialog.component';
 import { OptionDialogComponent } from './attribute_management/option-dialog/option-dialog.component';
 import { OptionValueDialogComponent } from './attribute_management/option-value-dialog/option-value-dialog.component';
+import { CategoryOptionsDialogComponent } from './attribute_management/category-options-dialog/category-options-dialog.component';
 
 
 @NgModule({
@@ -97,7 +98,8 @@ import { OptionValueDialogComponent } from './attribute_management/option-value-
     BrandDialogComponent,
     CategoryDialogComponent,
     OptionDialogComponent,
-    OptionValueDialogComponent
+    OptionValueDialogComponent,
+    CategoryOptionsDialogComponent
   ],
   imports: [
     CommonModule,

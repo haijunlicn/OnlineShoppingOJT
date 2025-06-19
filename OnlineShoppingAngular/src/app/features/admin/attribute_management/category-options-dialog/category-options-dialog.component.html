@@ -1,0 +1,105 @@
+<p-dialog [(visible)]="visible" (onHide)="onHide()" [modal]="true" [closable]="true" [draggable]="false"
+    [resizable]="false" styleClass="category-options-dialog" [style]="{ width: '700px', maxHeight: '85vh' }">
+
+    <ng-template pTemplate="header">
+        <div class="dialog-header">
+            <div class="header-content">
+                <div class="header-icon">
+                    <i class="pi pi-cog"></i>
+                </div>
+                <div class="header-text">
+                    <h4 class="mb-0">Set Options</h4>
+                    <p class="mb-0 text-muted">{{ category?.name }}</p>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+
+    <div class="dialog-content">
+        <!-- Loading State -->
+        <div *ngIf="loading" class="loading-state">
+            <div class="loading-spinner">
+                <i class="pi pi-spinner pi-spin"></i>
+            </div>
+            <p class="loading-text">Loading options...</p>
+        </div>
+
+        <!-- Options Selection -->
+        <div *ngIf="!loading" class="options-selection">
+            <!-- Header with search and count -->
+            <div class="selection-header">
+                <div class="search-container row">
+                    <div class="custom-search">
+                        <i class="pi pi-search search-icon"></i>
+                        <input type="text" class="search-input" placeholder="Search options..." #searchInput
+                            (input)="filterOptions(searchInput.value)">
+                    </div>
+
+                </div>
+                <div class="selection-count">
+                    <span class="count-badge">{{ getSelectedCount() }} selected</span>
+                </div>
+            </div>
+
+            <!-- Options Grid -->
+            <div class="options-container" *ngIf="filteredOptions.length > 0">
+                <div class="options-grid">
+                    <div *ngFor="let option of filteredOptions; trackBy: trackByOption" class="option-card"
+                        [class.selected]="isOptionSelected(option)" (click)="toggleOption(option)">
+
+                        <div class="option-header">
+                            <div class="option-checkbox">
+                                <i class="pi" [class.pi-check-circle-fill]="isOptionSelected(option)"
+                                    [class.pi-circle]="!isOptionSelected(option)"></i>
+                            </div>
+                            <div class="option-title">
+                                <h6 class="option-name">{{ option.name }}</h6>
+                                <span class="option-count">{{ option.optionValues.length || 0 }} values</span>
+                            </div>
+                        </div>
+
+                        <div class="option-values" *ngIf="option.optionValues && option.optionValues.length > 0">
+                            <div class="values-list">
+                                <span *ngFor="let value of option.optionValues.slice(0, 4)" class="value-chip">
+                                    {{ value.value }}
+                                </span>
+                                <span *ngIf="option.optionValues.length > 4" class="more-chip">
+                                    +{{ option.optionValues.length - 4 }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="filteredOptions.length === 0 && !loading" class="empty-state">
+                <div class="empty-icon">
+                    <i class="pi pi-info-circle"></i>
+                </div>
+                <h5>No options found</h5>
+                <p *ngIf="availableOptions.length === 0">Create some options first to assign them to categories.</p>
+                <p *ngIf="availableOptions.length > 0">Try adjusting your search criteria.</p>
+            </div>
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <div class="dialog-footer">
+            <div class="footer-summary">
+                <span class="summary-text">
+                    {{ getSelectedCount() }} of {{ availableOptions.length }} options selected
+                </span>
+            </div>
+            <div class="footer-actions">
+                <button pButton type="button" label="Cancel" class="p-button-text p-button-secondary" (click)="onHide()"
+                    [disabled]="saving">
+                </button>
+                <button pButton type="button" [label]="saving ? 'Saving...' : 'Save Options'"
+                    [icon]="saving ? 'pi pi-spinner pi-spin' : 'pi pi-check'" class="p-button-primary"
+                    (click)="onSave()" [disabled]="saving">
+                </button>
+            </div>
+        </div>
+    </ng-template>
+</p-dialog>
