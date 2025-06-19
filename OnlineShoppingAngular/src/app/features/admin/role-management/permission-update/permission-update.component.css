@@ -1,0 +1,56 @@
+/* Form container spacing */
+.container {
+  max-width: 700px;
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Header */
+h2 {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+/* Label styling */
+.form-label {
+  font-weight: 500;
+  color: #444;
+}
+
+/* Input focus styling */
+.form-control:focus, 
+textarea.form-control:focus {
+  border-color: #28a745;
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+/* Error message styling */
+.text-danger {
+  font-size: 0.875rem;
+  margin-top: 4px;
+}
+
+/* Submit button styling */
+button.btn-success {
+  padding: 10px 25px;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+/* Button hover effect */
+button.btn-success:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+/* Responsive spacing */
+@media (max-width: 768px) {
+  .container {
+    padding: 20px;
+  }
+}

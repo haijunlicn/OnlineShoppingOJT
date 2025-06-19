@@ -23,12 +23,12 @@ th, td {
 }
 
 th {
-  background-color: #007bff;
+  background-color: #23c4cd;
   color: white;
 }
 
 td {
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #21b2e2;
 }
 
 img {
@@ -39,7 +39,7 @@ img {
 
 button {
   padding: 6px 12px;
-  background-color: #dc3545;
+  background-color: #1ddbf4;
   color: white;
   border: none;
   border-radius: 4px;
@@ -47,5 +47,5 @@ button {
 }
 
 button:hover {
-  background-color: #c82333;
+  background-color: #18a5b5;
 }

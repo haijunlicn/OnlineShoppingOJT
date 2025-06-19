@@ -620,3 +620,61 @@
 .product-card, .category-card, .testimonial-card {
   box-shadow: 0 4px 24px rgba(75,46,25,0.07);
 }
+.category-carousel-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.category-carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+
+.category-carousel::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+.category-card {
+  flex: 0 0 auto;
+  width: 200px;
+  margin-right: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+
+.category-card:hover {
+  transform: scale(1.05);
+}
+
+.scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  border: none;
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+  z-index: 10;
+  padding: 0 10px;
+  border-radius: 50%;
+  transition: background 0.3s;
+}
+
+.scroll-btn.left {
+  left: 0;
+}
+
+.scroll-btn.right {
+  right: 0;
+}
+
+.scroll-btn:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}

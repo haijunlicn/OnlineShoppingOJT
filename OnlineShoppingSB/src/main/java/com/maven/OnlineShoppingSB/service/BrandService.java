@@ -28,6 +28,7 @@ public class BrandService {
             if (existing.getDelFg() == 0) {
                 // Previously deleted — reactivate it
                 existing.setDelFg(1);
+                existing.setLogo(dto.getLogo());
                 BrandEntity restored = repo.save(existing);
 
                 return new BrandDTO(restored.getId(), restored.getName());
@@ -40,6 +41,7 @@ public class BrandService {
         // Create new brand
         BrandEntity entity = new BrandEntity();
         entity.setName(dto.getName());
+        entity.setLogo(dto.getLogo());
         entity.setDelFg(1);
 
         BrandEntity saved = repo.save(entity);
@@ -54,6 +56,7 @@ public class BrandService {
                     BrandDTO dto = new BrandDTO();
                     dto.setId(entity.getId());
                     dto.setName(entity.getName());
+                    dto.setLogo(entity.getLogo());
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -67,6 +70,7 @@ public class BrandService {
         BrandDTO dto = new BrandDTO();
         dto.setId(entity.getId());
         dto.setName(entity.getName());
+        dto.setLogo(entity.getLogo());
         return dto;
     }
 

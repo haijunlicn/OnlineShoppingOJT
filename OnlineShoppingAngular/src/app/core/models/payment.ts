@@ -2,7 +2,8 @@ export interface PaymentMethodDTO {
   id?: number;
   methodName: string;
   qrPath?: string;
+  logo?: string;
   status?: number;
-  createdDate?: Date;
-  updatedDate?: Date;
+  createdDate?: string;
+  updatedDate?: string;
 }

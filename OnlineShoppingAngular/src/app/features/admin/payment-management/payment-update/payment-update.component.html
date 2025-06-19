@@ -1,26 +1,43 @@
-<div class="payment-update-container">
-  <h2>Update Payment Method</h2>
+<app-admin-header></app-admin-header>
+<div class="d-flex" style="min-height: 100vh;">
+  <app-admin-sidebar></app-admin-sidebar>
+  <main class="flex-grow-1 bg-light py-3 px-3">
+    <div class="payment-update-container">
+      <h2>Update Payment Method</h2>
 
-  <div>
-    <label>Method Name:</label>
-    <input type="text" [(ngModel)]="paymentMethod.methodName" placeholder="Enter method name" />
-  </div>
+      <div>
+        <label>Method Name:</label>
+        <input type="text" [(ngModel)]="paymentMethod.methodName" placeholder="Enter method name" />
+      </div>
 
-  <div>
-    <label>Upload New QR Code:</label>
-    <input type="file" (change)="onFileSelected($event)" accept="image/*" />
-  </div>
+      <div>
+        <label>Upload New QR Code:</label>
+        <input type="file" (change)="onQRFileSelected($event)" accept="image/*" />
+      </div>
 
-  <div *ngIf="paymentMethod.qrPath">
-    <p>Current QR Code:</p>
-    <img [src]="paymentMethod.qrPath" alt="QR Code" width="150" />
-  </div>
+      <div *ngIf="paymentMethod.qrPath">
+        <p>Current QR Code:</p>
+        <img [src]="paymentMethod.qrPath" alt="QR Code" width="150" />
+      </div>
 
-  <div *ngIf="uploading">Uploading...</div>
+      <div>
+        <label>Upload New Logo:</label>
+        <input type="file" (change)="onLogoFileSelected($event)" accept="image/*" />
+      </div>
 
-  <button (click)="updateAndSave()">Update Payment Method</button>
+      <div *ngIf="paymentMethod.logo">
+        <p>Current Logo:</p>
+        <img [src]="paymentMethod.logo" alt="Logo" width="150" />
+      </div>
 
-  <div *ngIf="message" class="error-message">
-    {{ message }}
-  </div>
+      <div *ngIf="uploading">Uploading...</div>
+
+      <button (click)="updateAndSave()">Update Payment Method</button>
+
+      <div *ngIf="message" class="error-message">
+        {{ message }}
+      </div>
+    </div>
+  </main>
 </div>
+<app-admin-footer></app-admin-footer>

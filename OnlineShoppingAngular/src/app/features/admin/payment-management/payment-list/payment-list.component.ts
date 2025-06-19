@@ -6,8 +6,7 @@ import { PaymentMethodService } from '@app/core/services/paymentmethod.service';
   selector: 'app-payment-list',
   standalone: false,
   templateUrl: './payment-list.component.html',
-    styleUrl: './payment-list.component.css'
-
+  styleUrls: ['./payment-list.component.css'] // Fixed typo: was "styleUrl"
 })
 export class PaymentListComponent implements OnInit {
   payments: PaymentMethodDTO[] = [];

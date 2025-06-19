@@ -26,6 +26,9 @@ public class PaymentEntity {
 
     @Column(name = "qr_path")
     private String qrPath;
+    
+    @Column(name = "logo" , length = 255)
+    private String logo;
 
     @Column(name = "status")
     private int status;

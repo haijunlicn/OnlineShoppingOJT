@@ -40,6 +40,7 @@ public class PaymentService {
             entity = softDeleted.get();
             entity.setStatus(1); // Reactivate
             entity.setQrPath(dto.getQrPath());
+            entity.setLogo(dto.getLogo());
         } else {
             entity = mapper.map(dto, PaymentEntity.class);
             entity.setStatus(1);
@@ -68,6 +69,7 @@ public class PaymentService {
 
         existing.setMethodName(dto.getMethodName());
         existing.setQrPath(dto.getQrPath());
+        existing.setLogo(dto.getLogo());
 
         PaymentEntity updated = repo.save(existing);
         return mapper.map(updated, PaymentDTO.class);

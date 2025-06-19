@@ -14,19 +14,26 @@
     </div>
   </section>
 
-  <!-- Featured Categories -->
-  <section class="categories-section">
-    <h2 class="section-title">Shop by Category</h2>
-    <div class="categories-grid">
+ <!-- Featured Categories -->
+<section class="categories-section">
+  <h2 class="section-title">Shop by Category</h2>
+  <div class="category-carousel-wrapper">
+    <button class="scroll-btn left" (click)="scrollLeft()">‹</button>
+    
+    <div class="category-carousel" #carousel>
       <div class="category-card" *ngFor="let category of categories">
-        <img [src]="category.image" [alt]="category.name" class="category-image">
+        <img [src]="category.image" [alt]="category.name" class="category-image" />
         <div class="category-info">
           <h3>{{ category.name }}</h3>
           <a [routerLink]="category.link" class="category-link">Shop Now</a>
         </div>
       </div>
     </div>
-  </section>
+
+    <button class="scroll-btn right" (click)="scrollRight()">›</button>
+  </div>
+</section>
+
 
   <!-- Promotional Banners -->
   <section class="promo-section">
