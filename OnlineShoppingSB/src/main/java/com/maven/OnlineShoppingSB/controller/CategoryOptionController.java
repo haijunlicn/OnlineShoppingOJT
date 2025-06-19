@@ -44,4 +44,14 @@ public class CategoryOptionController {
         service.delete(id);
         return ResponseEntity.ok("CategoryOption deleted successfully (soft delete)!");
     }
+
+    @PostMapping("/category/{categoryId}/assign")
+    public ResponseEntity<String> assignOptionsToCategory(
+            @PathVariable Long categoryId,
+            @RequestBody List<CategoryOptionDTO> options
+    ) {
+        service.assignOptionsToCategory(categoryId, options);
+        return ResponseEntity.ok("Category options assigned successfully!");
+    }
+
 }

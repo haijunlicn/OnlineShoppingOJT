@@ -426,7 +426,7 @@
                                                     <tr *ngFor="let variant of variants.controls; let i = index"
                                                         [formGroupName]="i"
                                                         [class.table-primary]="bulkAssignmentMode && isVariantSelected(i)"
-                                                        [class.table-warning]="productVariants[i]?.isDefault">
+                                                        [class.table-warning]="productVariants[i].isDefault">
                                                         <td class="ps-3">
                                                             <input *ngIf="bulkAssignmentMode" type="checkbox"
                                                                 class="form-check-input"

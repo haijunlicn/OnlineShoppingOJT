@@ -28,29 +28,6 @@ public class CategoryService {
     @Autowired
     private ModelMapper mapper;
 
-//    public CategoryDTO insertCategory(CategoryDTO dto) {
-//        CategoryEntity entity = new CategoryEntity();
-//        entity.setName(dto.getName());
-//        // entity.setDelFg(false);
-//
-//        if (dto.getParentCategoryId() != null) {
-//            CategoryEntity parent = repo.findById(dto.getParentCategoryId())
-//                    .orElseThrow(() -> new RuntimeException("Parent category not found"));
-//            entity.setParentCategory(parent);
-//        }
-//
-//        CategoryEntity saved = repo.save(entity);
-//
-//        CategoryDTO resultDto = new CategoryDTO();
-//        resultDto.setId(saved.getId());
-//        resultDto.setName(saved.getName());
-//        resultDto.setParentCategoryId(
-//            saved.getParentCategory() != null ? saved.getParentCategory().getId() : null
-//        );
-//
-//        return resultDto;
-//    }
-
     public CategoryDTO insertCategory(CategoryDTO dto) {
         CategoryEntity parent = null;
         if (dto.getParentCategoryId() != null) {
@@ -126,7 +103,7 @@ public class CategoryService {
                     dto.setName(category.getName());
                     dto.setParentCategoryId(category.getParentCategory() != null ? category.getParentCategory().getId() : null);
                     dto.setParentCategoryName(category.getParentCategory() != null ? category.getParentCategory().getName() : null);
-
+                    dto.setImgPath(category.getImgPath());
                     // Set optionTypes
                     List<CategoryOptionEntity> categoryOptions = cateOptionRepo.findByCategoryIdAndDelFg(category.getId(), 1);
                     List<OptionDTO> optionDTOs = categoryOptions.stream()

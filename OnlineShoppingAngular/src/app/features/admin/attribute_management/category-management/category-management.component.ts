@@ -8,6 +8,7 @@ import { log } from "node:console"
 import { CloudinaryService } from "../../../../core/services/cloudinary.service"
 import { Observable } from "rxjs"
 import { AlertService } from "@app/core/services/alert.service"
+import { CategoryOptionService } from "@app/core/services/category-option.service"
 
 @Component({
   selector: "app-category-management",
@@ -30,6 +31,13 @@ export class CategoryManagementComponent implements OnInit {
   editingCategory: CategoryDTO | null = null
   parentCategoryForNew: CategoryDTO | null = null
 
+  // Category options assignment
+  categoryOptionsDialogVisible = false
+  selectedCategoryForOptions: CategoryDTO | null = null
+
+  // Track categories with assigned options
+  categoriesWithOptions: Set<number> = new Set()
+
   @ViewChild("categoryMenu") categoryMenu!: Menu
   categoryMenuItems: MenuItem[] = []
   selectedCategoryForMenu: CategoryDTO | null = null
@@ -40,7 +48,7 @@ export class CategoryManagementComponent implements OnInit {
   constructor(
     private categoryService: CategoryService,
     private cloudinaryService: CloudinaryService,
-    private alertService: AlertService
+    private categoryOptionService: CategoryOptionService,
   ) { }
 
   ngOnInit(): void {
@@ -117,20 +125,42 @@ export class CategoryManagementComponent implements OnInit {
   }
 
   loadCategories(): void {
-    this.loadingCategories = true
-    this.categoryService.getAllCategories().subscribe({
+    this.loadingCategories = true;
+
+    this.categoryService.getAllCategoriesWithOptions().subscribe({
       next: (categories: CategoryDTO[]) => {
-        this.categories = categories
-        this.buildCategoryTree()
-        this.updateCategoryDropdowns()
-        this.recomputeSubcategoryCounts()
-        this.loadingCategories = false
+        this.categories = categories;
+
+        this.categoriesWithOptions = new Set(
+          categories
+            .filter((cat) => cat.optionTypes && cat.optionTypes.length > 0)
+            .map((cat) => cat.id!)
+        );
+
+        this.buildCategoryTree();
+        this.updateCategoryDropdowns();
+        this.recomputeSubcategoryCounts();
+
+        this.loadingCategories = false;
+
+        console.log("categoriessssss : ", this.categories);
+
       },
       error: (error) => {
-        console.error("Error loading categories:", error)
-        this.loadingCategories = false
-      },
-    })
+        console.error("Error loading categories with options:", error);
+        this.loadingCategories = false;
+      }
+    });
+  }
+
+  hasAssignedOptions(categoryId: number): boolean {
+    return this.categoriesWithOptions.has(categoryId)
+  }
+
+  getAssignedOptionsCount(categoryId: number): number {
+    // This would need to be implemented based on your service
+    // For now, return a placeholder
+    return this.hasAssignedOptions(categoryId) ? 1 : 0
   }
 
   updateCategoryDropdowns(): void {
@@ -265,30 +295,38 @@ export class CategoryManagementComponent implements OnInit {
   }
 
   deleteCategory(category: CategoryDTO): void {
-    this.alertService
-      .confirm(`Are you sure you want to delete the category "${category.name}"?`, 'Delete Category')
-      .then((confirmed) => {
-        if (confirmed) {
-          this.categoryService.deleteCategory(category.id!).subscribe({
-            next: () => {
-              this.categories = this.categories.filter((c) => c.id !== category.id);
-              this.buildCategoryTree();
-              this.updateCategoryDropdowns();
-              this.alertService.toast(`"${category.name}" has been deleted.`, 'success');
-            },
-            error: (error) => {
-              console.error("Error deleting category:", error);
-              if (error.status === 400) {
-                this.alertService.toast("Cannot delete category. It may have subcategories or products associated with it.", 'error');
-              } else {
-                this.alertService.toast("Failed to delete the category.", 'error');
-              }
-            },
-          });
-        }
-      });
+    if (confirm(`Are you sure you want to delete the category "${category.name}"?`)) {
+      this.categoryService.deleteCategory(category.id!).subscribe({
+        next: () => {
+          this.categories = this.categories.filter((c) => c.id !== category.id)
+          this.buildCategoryTree()
+          this.updateCategoryDropdowns()
+        },
+        error: (error) => {
+          console.error("Error deleting category:", error)
+          if (error.status === 400) {
+            alert("Cannot delete category. It may have subcategories or products associated with it.")
+          }
+        },
+      })
+    }
   }
 
+  // New method for opening category options dialog
+  setCategoryOptions(category: CategoryDTO): void {
+    this.selectedCategoryForOptions = {
+      ...category,
+      optionTypes: category.optionTypes ?? [],
+    };
+    this.categoryOptionsDialogVisible = true;
+  }
+
+  // Handle options assignment save
+  onCategoryOptionsAssigned(): void {
+    this.categoryOptionsDialogVisible = false
+    this.selectedCategoryForOptions = null
+    this.loadCategories()
+  }
 
   showCategoryMenu(event: MouseEvent, category: CategoryDTO): void {
     this.selectedCategoryForMenu = category
@@ -299,6 +337,12 @@ export class CategoryManagementComponent implements OnInit {
         icon: "pi pi-plus",
         command: () => this.addSubcategory(category),
         styleClass: "menu-item menu-item-addSubcategory",
+      },
+      {
+        label: "Set Options",
+        icon: "pi pi-cog",
+        command: () => this.setCategoryOptions(category),
+        styleClass: "menu-item menu-item-setOptions",
       },
       {
         label: "Edit",
