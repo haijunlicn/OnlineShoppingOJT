@@ -1,3 +1,7 @@
+<app-admin-header></app-admin-header>
+<div class="d-flex" style="min-height: 100vh;">
+    <app-admin-sidebar></app-admin-sidebar>
+    <main class="flex-grow-1 bg-light py-3 px-3">
 <div class="container">
   <h2>Create Permission</h2>
   <form [formGroup]="permissionForm" (ngSubmit)="submit()">
@@ -17,3 +21,6 @@
     <button class="btn btn-success" type="submit" [disabled]="permissionForm.invalid">Create</button>
   </form>
 </div>
+</main>
+</div>
+<app-admin-footer></app-admin-footer>

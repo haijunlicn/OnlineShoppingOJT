@@ -2,6 +2,7 @@
   [header]="editingBrand ? 'Edit Brand' : 'Add Brand'" [modal]="true" styleClass="p-fluid"
   (onHide)="closeDialog()">
   <form [formGroup]="brandForm" (ngSubmit)="saveBrand()">
+    <!-- Brand Name -->
     <div class="field mb-3">
       <label for="brandName" class="form-label">Brand Name</label>
       <input type="text" pInputText id="brandName" formControlName="name"
@@ -10,13 +11,63 @@
         Brand name is required
       </small>
     </div>
+
+    <!-- Brand Logo -->
+   <!-- Brand Logo -->
+<div class="field mb-3">
+  <label class="form-label">Brand Logo</label>
+
+  <!-- Preview Section -->
+  <div class="image-upload-preview mb-2" *ngIf="previewUrl">
+    <img [src]="previewUrl" alt="Logo Preview" class="img-preview" />
+    <button
+      type="button"
+      class="btn btn-sm btn-outline-danger remove-image"
+      (click)="removeImage()"
+      [disabled]="isUploading"
+    >
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+
+  <!-- Upload Section -->
+  <div class="image-upload-area">
+    <label for="brandLogo" class="image-upload-label" [class.disabled]="isUploading">
+      <i class="pi pi-cloud-upload me-1"></i> Upload Logo
+    </label>
+    <input
+      type="file"
+      id="brandLogo"
+      class="image-upload-input"
+      (change)="onFileSelected($event)"
+      accept="image/*"
+      [disabled]="isUploading"
+    />
+    <small class="text-muted d-block mt-1">Recommended size: 100x100px. Max 2MB.</small>
+  </div>
+</div>
   </form>
 
+  <!-- Footer Buttons -->
   <ng-template pTemplate="footer">
     <button pButton type="button" label="Cancel" icon="pi pi-times" class="p-button-text" (click)="closeDialog()">
     </button>
-    <button pButton type="button" label="Save" icon="pi pi-check" class="p-button-success"
-      (click)="saveBrand()" [disabled]="brandForm.invalid">
+
+    <button
+      pButton
+      type="button"
+      class="p-button-success"
+      [disabled]="brandForm.invalid || isUploading"
+      (click)="saveBrand()"
+    >
+      <ng-container *ngIf="!isUploading; else loadingTpl">
+        <i class="pi pi-check me-2"></i>
+        Save
+      </ng-container>
+      <ng-template #loadingTpl>
+        <i class="pi pi-spin pi-spinner me-2"></i>
+        Uploading...
+      </ng-template>
     </button>
   </ng-template>
 </p-dialog>

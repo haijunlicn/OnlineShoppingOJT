@@ -47,7 +47,10 @@
 
   <div *ngIf="cart.length > 0" class="cart-summary">
     <h3>Total: ${{ getTotal() }}</h3>
-    <button class="clear-btn" (click)="clearCart()">🧹 Clear Cart</button>
+    <div class="cart-actions">
+      <button class="clear-btn" (click)="clearCart()">🧹 Clear Cart</button>
+      <button class="checkout-btn" (click)="proceedToCheckout()">🛒 Proceed to Checkout</button>
+    </div>
   </div>
 
   <button class="back-btn" routerLink="/customer/productList" routerLinkActive="active">

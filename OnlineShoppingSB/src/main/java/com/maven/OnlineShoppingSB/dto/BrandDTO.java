@@ -14,7 +14,7 @@ public class BrandDTO {
 
     @NotEmpty(message = "Name is required")
     private String name;
-
+    private String logo;
     private Integer delFg;
     private String createdDate;
     private String updatedDate;

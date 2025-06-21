@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BrandRepository extends JpaRepository<BrandEntity, Long> {
-	//List<CategoryEntity> findByDelFgFalse();
 	List<BrandEntity> findByDelFg(int delFg);
 	Optional<BrandEntity> findByNameIgnoreCase(String name);
 

@@ -48,9 +48,9 @@ public class CategoryOptionService {
             CategoryOptionDTO dto = new CategoryOptionDTO();
             dto.setId(entity.getId());
             dto.setCategoryId(entity.getCategory().getId());
-            dto.setCategoryName(entity.getCategory().getName()); 
+            dto.setCategoryName(entity.getCategory().getName());
             dto.setOptionId(entity.getOption().getId());
-            dto.setOptionName(entity.getOption().getName());     
+            dto.setOptionName(entity.getOption().getName());
             dto.setDelFg(entity.getDelFg());
             return dto;
         }).collect(Collectors.toList());
@@ -99,4 +99,28 @@ public class CategoryOptionService {
         dto.setDelFg(entity.getDelFg());
         return dto;
     }
+
+    public void assignOptionsToCategory(Long categoryId, List<CategoryOptionDTO> options) {
+        CategoryEntity category = categoryRepo.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        // Optional: clear previous assignments
+        List<CategoryOptionEntity> existing = repo.findByCategoryId(categoryId);
+        repo.deleteAll(existing); // OR use soft delete: setDelFg(0) and saveAll
+
+        // Insert new assignments
+        List<CategoryOptionEntity> newEntities = options.stream().map(dto -> {
+            OptionEntity option = optionRepo.findById(dto.getOptionId())
+                    .orElseThrow(() -> new RuntimeException("Option not found: " + dto.getOptionId()));
+
+            CategoryOptionEntity entity = new CategoryOptionEntity();
+            entity.setCategory(category);
+            entity.setOption(option);
+            entity.setDelFg(1); // active
+            return entity;
+        }).collect(Collectors.toList());
+
+        repo.saveAll(newEntities);
+    }
+
 }

@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.maven.OnlineShoppingSB.entity.CategoryOptionEntity;
 
 public interface CategoryOptionRepository extends JpaRepository<CategoryOptionEntity, Long> {
-    List<CategoryOptionEntity> findByCategoryId(Integer categoryId);
+    List<CategoryOptionEntity> findByCategoryId(Long categoryId);
     List<CategoryOptionEntity> findByOptionId(Integer optionId);
     List<CategoryOptionEntity> findByCategoryIdAndDelFg(Long categoryId, Integer delFg);
 }

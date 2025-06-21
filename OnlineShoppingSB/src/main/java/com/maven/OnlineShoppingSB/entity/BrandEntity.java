@@ -20,6 +20,9 @@ public class BrandEntity {
     @Column(length = 100, nullable = false, unique = true)
     private String name;
 
+    @Column(name = "logo" ,length = 255)
+    private String logo;
+    
     @Column(name = "del_fg", nullable = false)
     private Integer delFg = 1;
 

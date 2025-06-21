@@ -14,12 +14,12 @@ export class PaymentUpdateComponent implements OnInit {
     id: 0,
     methodName: '',
     qrPath: '',
+    logo: '',
     status: 1,
-    createdDate: new Date(),
-    updatedDate: new Date(),
   };
 
-  selectedFile?: File;
+  selectedQRFile?: File;
+  selectedLogoFile?: File;
   uploading = false;
   message = '';
 
@@ -43,10 +43,17 @@ export class PaymentUpdateComponent implements OnInit {
     }
   }
 
-  onFileSelected(event: any) {
+  onQRFileSelected(event: any) {
     const file: File = event.target.files[0];
     if (file) {
-      this.selectedFile = file;
+      this.selectedQRFile = file;
+    }
+  }
+
+  onLogoFileSelected(event: any) {
+    const file: File = event.target.files[0];
+    if (file) {
+      this.selectedLogoFile = file;
     }
   }
 
@@ -58,14 +65,54 @@ export class PaymentUpdateComponent implements OnInit {
 
     this.uploading = true;
 
-    if (this.selectedFile) {
-      this.paymentmethodService.uploadImage(this.selectedFile).subscribe({
-        next: (imageUrl: string) => {
-          this.paymentMethod.qrPath = imageUrl;
+    // Upload QR and Logo in parallel if needed
+    const uploadQR = this.selectedQRFile
+      ? this.paymentmethodService.uploadImage(this.selectedQRFile)
+      : null;
+
+    const uploadLogo = this.selectedLogoFile
+      ? this.paymentmethodService.uploadImage(this.selectedLogoFile)
+      : null;
+
+    if (uploadQR && uploadLogo) {
+      uploadQR.subscribe({
+        next: (qrUrl) => {
+          this.paymentMethod.qrPath = qrUrl;
+          uploadLogo!.subscribe({
+            next: (logoUrl) => {
+              this.paymentMethod.logo = logoUrl;
+              this.saveUpdatedMethod();
+            },
+            error: (err) => {
+              this.message = 'Logo upload failed: ' + err.message;
+              this.uploading = false;
+            }
+          });
+        },
+        error: (err) => {
+          this.message = 'QR code upload failed: ' + err.message;
+          this.uploading = false;
+        }
+      });
+    } else if (uploadQR) {
+      uploadQR.subscribe({
+        next: (qrUrl) => {
+          this.paymentMethod.qrPath = qrUrl;
           this.saveUpdatedMethod();
         },
         error: (err) => {
-          this.message = 'Image upload failed: ' + err.message;
+          this.message = 'QR code upload failed: ' + err.message;
+          this.uploading = false;
+        }
+      });
+    } else if (uploadLogo) {
+      uploadLogo.subscribe({
+        next: (logoUrl) => {
+          this.paymentMethod.logo = logoUrl;
+          this.saveUpdatedMethod();
+        },
+        error: (err) => {
+          this.message = 'Logo upload failed: ' + err.message;
           this.uploading = false;
         }
       });
@@ -75,7 +122,7 @@ export class PaymentUpdateComponent implements OnInit {
   }
 
   private saveUpdatedMethod(): void {
-    this.paymentMethod.updatedDate = new Date();
+this.paymentMethod.updatedDate = new Date().toISOString();
 
     this.paymentmethodService.updatePaymentMethod(this.paymentMethod).subscribe({
       next: () => {

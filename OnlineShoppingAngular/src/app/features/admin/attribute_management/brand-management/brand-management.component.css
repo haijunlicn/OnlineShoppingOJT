@@ -32,4 +32,9 @@
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   }
 }
+.brand-logo img {
+  max-height: 80px;
+  max-width: 100%;
+  object-fit: contain;
+}
 

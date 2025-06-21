@@ -1,8 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { LoginModalService } from '../../../../core/services/LoginModalService';
 import { RegisterModalService } from '../../../../core/services/RegisterModalService';
 import { ForgotPasswordModalService } from '../../../../core/services/ForgotPasswordModalService';
-import { AuthService } from '../../../../core/services/auth.service';
+import { CategoryService } from '@app/core/services/category.service';
+import { CategoryDTO } from '@app/core/models/category-dto';
+import { AuthService } from '@app/core/services/auth.service';
 
 interface Category {
   name: string;
@@ -28,15 +31,12 @@ interface Testimonial {
   selector: 'app-home',
   standalone: false,
   templateUrl: './home.component.html',
-  styleUrl: './home.component.css'
+  styleUrls: ['./home.component.css']
 })
-export class HomeComponent {
-  categories: Category[] = [
-    { name: "Women's Fashion", image: 'assets/images/categories/women.jpg', link: '/customer/productList?category=women' },
-    { name: "Men's Fashion", image: 'assets/images/categories/men.jpg', link: '/customer/productList?category=men' },
-    { name: 'Accessories', image: 'assets/images/categories/accessories.jpg', link: '/customer/productList?category=accessories' },
-    { name: 'Footwear', image: 'assets/images/categories/footwear.jpg', link: '/customer/productList?category=footwear' },
-  ];
+export class HomeComponent implements OnInit {
+  categories: { name: string, image: string, link: string }[] = [];
+
+  @ViewChild('carousel', { static: false }) carouselRef!: ElementRef;
 
   featuredProducts: Product[] = [
     { name: 'Classic Black Handbag', image: 'assets/images/products/handbag.jpg', price: 285000, rating: 4.8 },
@@ -52,24 +52,53 @@ export class HomeComponent {
   ];
 
   constructor(
+    private categoryService: CategoryService,
     private loginModalService: LoginModalService,
     private registerModalService: RegisterModalService,
     private forgotModalService: ForgotPasswordModalService,
     private authService: AuthService
   ) {}
 
+ ngOnInit(): void {
+    this.loadCategories();
+  }
+
+  loadCategories(): void {
+    this.categoryService.getAllCategories().subscribe((data: CategoryDTO[]) => {
+      this.categories = data.map(dto => ({
+        name: dto.name || '',
+        image: dto.imgPath || 'assets/images/categories/default.jpg',
+        link: `/customer/productList?category=${encodeURIComponent(dto.name || '')}`
+      }));
+    });
+  }
+
+ scrollLeft(): void {
+  const carousel = this.carouselRef.nativeElement as HTMLElement;
+  const cardWidth = carousel.querySelector('.category-card')?.clientWidth || 300;
+  carousel.scrollBy({ left: -cardWidth * 4, behavior: 'smooth' });
+}
+
+scrollRight(): void {
+  const carousel = this.carouselRef.nativeElement as HTMLElement;
+  const cardWidth = carousel.querySelector('.category-card')?.clientWidth || 300;
+  carousel.scrollBy({ left: cardWidth * 4, behavior: 'smooth' });
+}
+
+
   get loginVisible$() {
     return this.loginModalService.loginVisible$;
   }
+
   get registerVisible$() {
     return this.registerModalService.registerVisible$;
   }
+
   get forgotVisible$() {
     return this.forgotModalService.forgotVisible$;
   }
 
   onShopNow() {
-    // Navigate to shop or scroll to featured products
     window.scrollTo({ top: 600, behavior: 'smooth' });
   }
 
@@ -89,11 +118,9 @@ export class HomeComponent {
 
   onSearch(query: string) {
     console.log('Homepage search:', query);
-    // Implement navigation or search logic here
   }
 
   onSubscribe(email: string) {
     console.log('Newsletter subscribe:', email);
-    // Implement newsletter logic here
   }
 }

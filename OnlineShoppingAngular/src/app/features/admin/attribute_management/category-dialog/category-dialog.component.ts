@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CategoryDTO } from '@app/core/models/category-dto';
+import { AlertService } from '@app/core/services/alert.service';
 import { CategoryService } from '@app/core/services/category.service';
 import { CloudinaryService } from '@app/core/services/cloudinary.service';
 import { Observable } from 'rxjs';
@@ -30,6 +31,7 @@ export class CategoryDialogComponent {
     private fb: FormBuilder,
     private categoryService: CategoryService,
     private cloudinaryService: CloudinaryService,
+    private alertService: AlertService
   ) {
     this.categoryForm = this.fb.group({
       id: [null],
@@ -81,26 +83,29 @@ export class CategoryDialogComponent {
   }
 
   onImageSelected(event: any): void {
-    const file = event.target.files[0]
+    const file = event.target.files[0];
     if (file) {
-      this.selectedImage = file
+      this.selectedImage = file;
 
-      // Create a preview
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (e) => {
-        this.categoryImagePreview = e.target?.result as string
-      }
-      reader.readAsDataURL(file)
+        this.categoryImagePreview = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+
+      this.alertService.toast("Image selected for upload.", "info");
     }
   }
 
   removeCategoryImage(): void {
-    this.selectedImage = null
-    this.categoryImagePreview = null
+    this.selectedImage = null;
+    this.categoryImagePreview = null;
     this.categoryForm.patchValue({
       imagePath: null,
-    })
+    });
+    this.alertService.toast("Category image removed.", "info");
   }
+
 
   getSelectedCategoryName(): string | null {
     const parentId = this.categoryForm.get("parentCategoryId")?.value
@@ -117,43 +122,53 @@ export class CategoryDialogComponent {
   }
 
   saveCategory(): void {
-    if (this.categoryForm.invalid) return
+    if (this.categoryForm.invalid) return;
 
-    const formValue = this.categoryForm.value
+    const formValue = this.categoryForm.value;
 
     const handleAfterSave = (savedCategory: CategoryDTO) => {
-      this.save.emit(savedCategory)
-      this.closeDialog()
-    }
+      this.alertService.toast(
+        this.editingCategory ? "Category updated successfully." : "Category created successfully.",
+        'success'
+      );
+      this.save.emit(savedCategory);
+      this.closeDialog();
+    };
 
     const saveWithImage = (imgPath?: string) => {
-      
-      console.log("saving wiht image : " , imgPath);
-      
-
-      const categoryDTO = this.buildCategoryDTO(formValue, imgPath)
+      const categoryDTO = this.buildCategoryDTO(formValue, imgPath);
 
       const save$ = this.editingCategory
         ? this.categoryService.updateCategory(categoryDTO)
-        : this.categoryService.createCategory(categoryDTO)
+        : this.categoryService.createCategory(categoryDTO);
 
       save$.subscribe({
         next: (savedCategory) => handleAfterSave(savedCategory),
-        error: (err) =>
-          console.error(this.editingCategory ? "Error updating category:" : "Error creating category:", err),
-      })
-    }
+        error: (err) => {
+          console.error(this.editingCategory ? "Error updating category:" : "Error creating category:", err);
+          this.alertService.toast(
+            this.editingCategory
+              ? "Failed to update category."
+              : "Failed to create category.",
+            'error'
+          );
+        },
+      });
+    };
 
     if (this.selectedImage) {
       this.uploadImage(this.selectedImage).subscribe({
         next: (imgPath: string) => saveWithImage(imgPath),
-        error: (err: unknown) => console.error("Image upload failed", err),
+        error: (err: unknown) => {
+          console.error("Image upload failed", err);
+          this.alertService.toast("Image upload failed.", "error");
+        },
       });
     } else {
       saveWithImage(formValue.imagePath);
     }
-
   }
+
 
   private buildCategoryDTO(formValue: any, imagePath?: string): CategoryDTO {
     return {

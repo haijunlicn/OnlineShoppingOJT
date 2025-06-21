@@ -52,9 +52,16 @@
 
                                     <!-- Category Dropdown -->
                                     <div class="col-6 mb-2">
-                                        <label for="category" class="form-label small fw-semibold mb-1">
-                                            Category <span class="text-danger">*</span>
-                                        </label>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <label for="category" class="form-label small fw-semibold mb-1">
+                                                Category <span class="text-danger">*</span>
+                                            </label>
+                                            <button type="button" class="btn btn-link btn-sm p-0"
+                                                (click)="openCategoryDialogForNew()">
+                                                + Add category
+                                            </button>
+                                        </div>
+
                                         <div class="dropdown">
                                             <button
                                                 class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-start d-flex justify-content-between align-items-center"
@@ -419,7 +426,7 @@
                                                     <tr *ngFor="let variant of variants.controls; let i = index"
                                                         [formGroupName]="i"
                                                         [class.table-primary]="bulkAssignmentMode && isVariantSelected(i)"
-                                                        [class.table-warning]="productVariants[i]?.isDefault">
+                                                        [class.table-warning]="productVariants[i].isDefault">
                                                         <td class="ps-3">
                                                             <input *ngIf="bulkAssignmentMode" type="checkbox"
                                                                 class="form-check-input"
@@ -595,6 +602,10 @@
 </div>
 <app-admin-footer></app-admin-footer>
 
-
 <app-brand-dialog [(visible)]="brandDialogVisible" [editingBrand]="null" (save)="onBrandCreated()">
 </app-brand-dialog>
+
+<app-category-dialog [(visible)]="categoryDialogVisible" [editingCategory]="editingCategory"
+    [parentCategoryForNew]="parentCategoryForNew" [categoryDropdown]="categoryDropdown"
+    (save)="onCategorySaved($event)">
+</app-category-dialog>

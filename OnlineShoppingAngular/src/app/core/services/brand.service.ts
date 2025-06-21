@@ -31,5 +31,12 @@ export class BrandService {
   deleteBrand(id: number): Observable<string> {
     return this.http.delete(`${this.baseUrl}/delete/${id}`, { responseType: 'text' });
   }
+   uploadImage(file: File): Observable<string> {
+  const formData = new FormData();
+  formData.append('file', file);
+  return this.http.post('http://localhost:8080/api/cloudinary/upload', formData, {
+    responseType: 'text',
+  });
+}
 
 }

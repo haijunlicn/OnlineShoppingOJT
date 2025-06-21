@@ -35,11 +35,11 @@ export class ProductListComponent {
   }
 
   loadProducts() {
-    const userId = this.authService.getCurrentUser()?.id;
-  if (!userId) {
-    console.error('User ID not found');
-    return;
-  }
+  //   const userId = this.authService.getCurrentUser()?.id;
+  // if (!userId) {
+  //   console.error('User ID not found');
+  //   return;
+  // }
     this.productService.getProductList().subscribe({
       next: (products) => {
         this.products = products.map(product => ({
