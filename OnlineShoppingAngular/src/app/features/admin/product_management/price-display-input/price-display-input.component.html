@@ -1,0 +1,15 @@
+<ng-container *ngIf="displayValue !== undefined">
+  <input
+    type="text"
+    class="form-control form-control-sm"
+    [value]="displayValue"
+    (input)="onInputChange($event)"
+    mask="separator"
+    thousandSeparator=","
+    decimalMarker="."
+    [dropSpecialCharacters]="false"
+    placeholder="0.00"
+  />
+</ng-container>
+
+<input type="hidden" [formControl]="control" />

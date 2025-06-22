@@ -6,7 +6,7 @@ import type { ProductImageDTO } from "../models/product.model"
   providedIn: "root",
 })
 export class ProductFormService {
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder) { }
 
   // Create the full product form with image support
   createProductForm(): FormGroup {
@@ -15,7 +15,7 @@ export class ProductFormService {
       description: [""],
       basePrice: [0, [Validators.required, Validators.min(0)]],
       stock: [0, [Validators.required, Validators.min(0)]],
-      brandId: ["", Validators.required],
+      brandId: [""],
       categoryId: [null, Validators.required],
       options: this.fb.array([]),
       variants: this.fb.array([]),
@@ -159,11 +159,24 @@ export class ProductFormService {
   }
 
   applyBulkPrice(form: FormGroup): void {
-    const basePrice = form.get("basePrice")?.value || 0
-    const variantsArray = this.getVariantsArray(form)
+    const basePrice = Number(form.get("basePrice")?.value) || 0;
+    const variantsArray = this.getVariantsArray(form);
 
     for (let i = 0; i < variantsArray.length; i++) {
-      variantsArray.at(i).get("price")?.setValue(basePrice)
+      const control = variantsArray.at(i).get('price');
+
+      if (control) {
+        // First reset to 0 (to force value change even if basePrice is 0)
+        control.setValue(0, { emitEvent: true });
+
+        // Then apply the base price (ensure this triggers valueChanges even if same)
+        setTimeout(() => {
+          control.setValue(basePrice, { emitEvent: true });
+        }, 10);
+      }
     }
   }
+
+
+
 }

@@ -28,6 +28,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { ColorPickerModule } from 'primeng/colorpicker';
 import { TreeModule } from 'primeng/tree';
 import { MenuModule } from 'primeng/menu';
+import { NgxMaskModule } from 'ngx-mask';
 
 import { ProductListComponent } from './product_management/product-list/product-list.component';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
@@ -58,6 +59,7 @@ import { CategoryDialogComponent } from './attribute_management/category-dialog/
 import { OptionDialogComponent } from './attribute_management/option-dialog/option-dialog.component';
 import { OptionValueDialogComponent } from './attribute_management/option-value-dialog/option-value-dialog.component';
 import { CategoryOptionsDialogComponent } from './attribute_management/category-options-dialog/category-options-dialog.component';
+import { PriceDisplayInputComponent } from './product_management/price-display-input/price-display-input.component';
 
 
 @NgModule({
@@ -99,7 +101,8 @@ import { CategoryOptionsDialogComponent } from './attribute_management/category-
     CategoryDialogComponent,
     OptionDialogComponent,
     OptionValueDialogComponent,
-    CategoryOptionsDialogComponent
+    CategoryOptionsDialogComponent,
+    PriceDisplayInputComponent,
   ],
   imports: [
     CommonModule,
@@ -121,7 +124,8 @@ import { CategoryOptionsDialogComponent } from './attribute_management/category-
     ColorPickerModule,
     TreeModule,
     MenuModule,
-    FormsModule
+    FormsModule,
+    NgxMaskModule.forRoot(),
   ]
 })
 export class AdminModule { }
