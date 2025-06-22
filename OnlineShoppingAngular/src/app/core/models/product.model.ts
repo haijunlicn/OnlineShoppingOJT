@@ -35,6 +35,7 @@ export interface ProductDTO {
 export interface BrandDTO {
   id: string
   name: string
+  logo: string;
 }
 
 export interface CreateProductRequestDTO {

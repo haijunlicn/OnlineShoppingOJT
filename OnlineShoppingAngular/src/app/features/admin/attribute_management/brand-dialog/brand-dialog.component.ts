@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, SimpleChanges, OnChanges } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BrandDTO } from '@app/core/models/product.model';
 import { AlertService } from '@app/core/services/alert.service';
@@ -8,15 +8,18 @@ import { BrandService } from '@app/core/services/brand.service';
   selector: 'app-brand-dialog',
   standalone: false,
   templateUrl: './brand-dialog.component.html',
-  styleUrl: './brand-dialog.component.css'
+  styleUrls: ['./brand-dialog.component.css']
 })
-export class BrandDialogComponent {
+export class BrandDialogComponent implements OnInit, OnChanges {
   @Input() visible = false;
   @Input() editingBrand: BrandDTO | null = null;
   @Output() visibleChange = new EventEmitter<boolean>();
   @Output() save = new EventEmitter<BrandDTO>();
 
   brandForm: FormGroup;
+  selectedFile?: File;
+  previewUrl: string | null = null;
+  isUploading = false;
 
   constructor(
     private fb: FormBuilder,
@@ -24,24 +27,51 @@ export class BrandDialogComponent {
     private alertService: AlertService
   ) {
     this.brandForm = this.fb.group({
-      name: ["", Validators.required],
+      name: ['', Validators.required]
     });
   }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes["editingBrand"]) {
+    if (changes['editingBrand']) {
       if (this.editingBrand) {
         this.brandForm.patchValue({ name: this.editingBrand.name });
+        this.previewUrl = this.editingBrand.logo || null;
       } else {
         this.brandForm.reset();
+        this.previewUrl = null;
       }
     }
 
-    if (changes["visible"] && !this.visible) {
-      // Reset form on close
+    // ❗ prevent clearing form while uploading
+    if (changes['visible'] && !this.visible && !this.isUploading) {
       this.brandForm.reset();
+      this.previewUrl = null;
+      this.selectedFile = undefined;
+    }
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0];
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.previewUrl = reader.result as string;
+      };
+      reader.readAsDataURL(this.selectedFile);
+    }
+  }
+
+  removeImage(): void {
+    this.previewUrl = null;
+    this.selectedFile = undefined;
+
+    const input = document.getElementById('brandLogo') as HTMLInputElement;
+    if (input) {
+      input.value = '';
     }
   }
 
@@ -51,35 +81,52 @@ export class BrandDialogComponent {
     const name = this.brandForm.value.name.trim();
     if (!name) return;
 
-    const dto: BrandDTO = {
-      id: this.editingBrand?.id || "",
-      name,
+    const saveOrUpdate = (logoUrl?: string) => {
+      const dto: BrandDTO = {
+        id: this.editingBrand?.id || '',
+        name,
+        logo: logoUrl ?? this.editingBrand?.logo ?? ''
+      };
+
+      const action$ = this.editingBrand
+        ? this.brandService.updateBrand(dto)
+        : this.brandService.createBrand(dto);
+
+      action$.subscribe({
+        next: (savedBrand: BrandDTO) => {
+          this.alertService.toast(
+            `Brand ${this.editingBrand ? 'updated' : 'created'} successfully.`,
+            'success'
+          );
+          this.isUploading = false; // ✅ hide spinner after all done
+          this.save.emit(savedBrand);
+          this.closeDialog();
+        },
+        error: (err) => {
+          this.isUploading = false;
+          console.error('Error saving brand:', err);
+          this.alertService.toast('Failed to save brand.', 'error');
+        }
+      });
     };
 
-    const action$ = this.editingBrand
-      ? this.brandService.updateBrand(dto)
-      : this.brandService.createBrand(dto);
-
-    action$.subscribe({
-      next: (savedBrand: BrandDTO) => {
-        this.alertService.toast(
-          `Brand ${this.editingBrand ? 'updated' : 'created'} successfully.`,
-          'success'
-        );
-
-        this.save.emit(savedBrand);
-        this.closeDialog();
-      },
-      error: (err) => {
-        console.error(this.editingBrand ? "Error updating brand:" : "Error creating brand:", err);
-        this.alertService.toast(
-          `Failed to ${this.editingBrand ? 'update' : 'create'} brand.`,
-          'error'
-        );
-      },
-    });
+    if (this.selectedFile) {
+      this.isUploading = true;
+      this.brandService.uploadImage(this.selectedFile).subscribe({
+        next: (url: string) => {
+          saveOrUpdate(url); // only closeDialog after saving done
+        },
+        error: (err) => {
+          this.isUploading = false;
+          console.error('Image upload error:', err);
+          this.alertService.toast('Image upload failed.', 'error');
+        }
+      });
+    } else {
+      this.isUploading = true;
+      saveOrUpdate();
+    }
   }
-
 
   closeDialog(): void {
     this.visible = false;

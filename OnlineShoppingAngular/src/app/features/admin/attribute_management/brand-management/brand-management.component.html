@@ -15,28 +15,47 @@
   <div *ngFor="let brand of filteredBrands" class="brand-card">
     <div class="card h-100 border-0 shadow-sm">
       <div class="card-body text-center">
-        <div class="brand-icon mb-3">
-          <i class="pi pi-bookmark"></i>
+        <!-- Brand Logo -->
+        <div class="brand-logo mb-3">
+          <img
+            [src]="brand.logo || 'assets/images/no-image.png'"
+            alt="{{ brand.name }}"
+            class="img-fluid"
+            style="max-height: 80px; object-fit: contain;"
+          />
         </div>
         <h6 class="card-title mb-2">{{ brand.name }}</h6>
+
+        <!-- Buttons -->
         <div class="d-flex justify-content-center gap-1">
-          <button pButton pRipple type="button" icon="pi pi-pencil"
-            class="p-button-rounded p-button-text p-button-sm p-button-warning" pTooltip="Edit" tooltipPosition="top"
-            tooltipStyleClass="custom-tooltip" (click)="editBrand(brand)">
-          </button>
+          <button
+            pButton
+            pRipple
+            type="button"
+            icon="pi pi-pencil"
+            class="p-button-rounded p-button-text p-button-sm p-button-warning"
+            pTooltip="Edit"
+            tooltipPosition="top"
+            tooltipStyleClass="custom-tooltip"
+            (click)="editBrand(brand)"
+          ></button>
 
-          <button pButton pRipple type="button" icon="pi pi-trash"
-            class="p-button-rounded p-button-text p-button-sm p-button-danger" pTooltip="Delete" tooltipPosition="top"
-            tooltipStyleClass="custom-tooltip" (click)="deleteBrand(brand)">
-          </button>
-
+          <button
+            pButton
+            pRipple
+            type="button"
+            icon="pi pi-trash"
+            class="p-button-rounded p-button-text p-button-sm p-button-danger"
+            pTooltip="Delete"
+            tooltipPosition="top"
+            tooltipStyleClass="custom-tooltip"
+            (click)="deleteBrand(brand)"
+          ></button>
         </div>
       </div>
     </div>
   </div>
 </div>
-
-
 
 <!-- Empty state -->
 <div *ngIf="filteredBrands.length === 0" class="text-center p-5">
