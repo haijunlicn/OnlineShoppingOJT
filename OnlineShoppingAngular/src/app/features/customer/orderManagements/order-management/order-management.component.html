@@ -62,7 +62,7 @@
                 <div class="address-info">
                   <h5>{{ address.address }}</h5>
                   <p>{{ address.township }}, {{ address.city }}</p>
-                  <small>Fee: {{ (shippingRates[address.township] || 2000).toLocaleString() }} MMK</small>
+                  <small>Fee: {{ getShippingFeeForAddress(address).toLocaleString() }} MMK</small>
                 </div>
                 <div class="address-actions">
                   <button class="btn-icon" (click)="editAddress(address); $event.stopPropagation()">
@@ -356,6 +356,10 @@
               <div class="detail-row">
                 <i class="fas fa-map-marker-alt"></i>
                 <span>{{ selectedAddress.township }}, {{ selectedAddress.city }}</span>
+              </div>
+              <div class="detail-row">
+                <i class="fas fa-route"></i>
+                <span>Distance: {{ getDistanceFromStore(selectedAddress) }} km from store</span>
               </div>
               <div class="detail-row">
                 <i class="fas fa-clock"></i>

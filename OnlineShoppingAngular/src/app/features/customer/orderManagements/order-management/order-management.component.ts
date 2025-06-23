@@ -115,19 +115,16 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
   shippingFee = 0;
   totalAmount = 0;
 
-  // Shipping rates by township
-  shippingRates: { [key: string]: number } = {
-    Kamayut: 2000,
-    Bahan: 1500,
-    Pabedan: 3000,
-    Dagon: 2500,
-    Yangkin: 1800,
-    Sanchaung: 2200,
-    Mayangone: 2800,
-    Hlaing: 2300,
-    Kyimyindaing: 3200,
-    Lanmadaw: 2700,
+  // Store location (Yangon center) - you can change this to your actual store location
+  private readonly STORE_LOCATION = {
+    lat: 16.8409, // Yangon center latitude
+    lng: 96.1735  // Yangon center longitude
   };
+
+  // Dynamic shipping rate calculation based on distance
+  private readonly BASE_SHIPPING_RATE = 500; // Base rate in MMK
+  private readonly RATE_PER_KM = 50; // Additional rate per kilometer
+  private readonly MAX_SHIPPING_RATE = 6000; // Maximum shipping rate
 
   private subscriptions: Subscription[] = [];
 
@@ -767,7 +764,28 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
 
   calculateShippingFee(): void {
     if (this.selectedAddress) {
-      this.shippingFee = this.shippingRates[this.selectedAddress.township] || 2000;
+      const destLat = this.selectedAddress.lat;
+      const destLng = this.selectedAddress.lng;
+
+      // Haversine formula
+      const toRad = (v: number) => v * Math.PI / 180;
+      const R = 6371; // Earth radius in km
+      const dLat = toRad(destLat - this.STORE_LOCATION.lat);
+      const dLng = toRad(destLng - this.STORE_LOCATION.lng);
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(toRad(this.STORE_LOCATION.lat)) * Math.cos(toRad(destLat)) *
+                Math.sin(dLng/2) * Math.sin(dLng/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      const distance = R * c;
+
+      let shippingFee = this.BASE_SHIPPING_RATE + this.RATE_PER_KM * distance;
+      if (shippingFee > this.MAX_SHIPPING_RATE) {
+        shippingFee = this.MAX_SHIPPING_RATE;
+      }
+      
+      // Round to nearest 100 MMK for cleaner display
+      this.shippingFee = Math.round(shippingFee / 100) * 100;
+      
       this.totalAmount = this.itemSubtotal + this.shippingFee;
       this.paymentAmount = this.totalAmount;
     }
@@ -792,10 +810,6 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
   }
 
   getEstimatedDeliveryTime(): string {
-    // Example: Assume store is at a fixed location (e.g., Yangon center)
-    const storeLat = 16.8409;
-    const storeLng = 96.1735;
-
     if (!this.selectedAddress) return '';
 
     const destLat = this.selectedAddress.lat;
@@ -804,10 +818,10 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     // Haversine formula
     const toRad = (v: number) => v * Math.PI / 180;
     const R = 6371; // Earth radius in km
-    const dLat = toRad(destLat - storeLat);
-    const dLng = toRad(destLng - storeLng);
+    const dLat = toRad(destLat - this.STORE_LOCATION.lat);
+    const dLng = toRad(destLng - this.STORE_LOCATION.lng);
     const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(toRad(storeLat)) * Math.cos(toRad(destLat)) *
+              Math.cos(toRad(this.STORE_LOCATION.lat)) * Math.cos(toRad(destLat)) *
               Math.sin(dLng/2) * Math.sin(dLng/2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     const distance = R * c;
@@ -827,6 +841,54 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     } else {
       return '1-2 weeks';
     }
+  }
+
+  getShippingFeeForAddress(address: LocationDto): number {
+    if (!address || !address.lat || !address.lng) {
+      return this.BASE_SHIPPING_RATE;
+    }
+
+    const destLat = address.lat;
+    const destLng = address.lng;
+
+    // Haversine formula
+    const toRad = (v: number) => v * Math.PI / 180;
+    const R = 6371; // Earth radius in km
+    const dLat = toRad(destLat - this.STORE_LOCATION.lat);
+    const dLng = toRad(destLng - this.STORE_LOCATION.lng);
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(toRad(this.STORE_LOCATION.lat)) * Math.cos(toRad(destLat)) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = R * c;
+
+    let shippingFee = this.BASE_SHIPPING_RATE + this.RATE_PER_KM * distance;
+    shippingFee = Math.min(shippingFee, this.MAX_SHIPPING_RATE);
+    
+    // Round to nearest 100 MMK for cleaner display
+    return Math.round(shippingFee / 100) * 100;
+  }
+
+  getDistanceFromStore(address: LocationDto): number {
+    if (!address || !address.lat || !address.lng) {
+      return 0;
+    }
+
+    const destLat = address.lat;
+    const destLng = address.lng;
+
+    // Haversine formula
+    const toRad = (v: number) => v * Math.PI / 180;
+    const R = 6371; // Earth radius in km
+    const dLat = toRad(destLat - this.STORE_LOCATION.lat);
+    const dLng = toRad(destLng - this.STORE_LOCATION.lng);
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(toRad(this.STORE_LOCATION.lat)) * Math.cos(toRad(destLat)) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = R * c;
+
+    return Math.round(distance * 10) / 10; // Round to 1 decimal place
   }
 }
 

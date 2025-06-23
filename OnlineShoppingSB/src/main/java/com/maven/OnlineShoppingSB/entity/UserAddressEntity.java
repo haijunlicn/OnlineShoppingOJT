@@ -16,8 +16,7 @@ public class UserAddressEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-//    @Column(name = "user_id", nullable = false)
-//    private Integer userId;
+
 @ManyToOne(fetch = FetchType.LAZY)
 @JoinColumn(name = "user_id", nullable = false,
         columnDefinition = "INT(11)")
