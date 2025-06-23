@@ -33,7 +33,7 @@
                                     <div class="col-6 mb-2">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <label for="brand" class="form-label small fw-semibold mb-1 mb-0">
-                                                Brand <span class="text-danger">*</span>
+                                                Brand
                                             </label>
                                             <button type="button" class="btn btn-link btn-sm p-0"
                                                 (click)="openBrandDialog()">
@@ -128,9 +128,13 @@
                                         Base Price <span class="text-danger">*</span>
                                     </label>
                                     <div class="input-group input-group-sm">
-                                        <span class="input-group-text">$</span>
-                                        <input type="number" id="basePrice" class="form-control form-control-sm"
-                                            formControlName="basePrice" placeholder="0.00" min="0" step="0.01">
+                                        <span class="input-group-text">MMK</span>
+                                        <!-- Visible input: formatted text -->
+                                        <input type="text" class="form-control form-control-sm" [value]="displayPrice"
+                                            (input)="onDisplayPriceInput($event)" mask="separator" thousandSeparator=","
+                                            decimalMarker="." [dropSpecialCharacters]="false" placeholder="0.00" />
+                                        <!-- Hidden real number input (bind to form control) -->
+                                        <input type="hidden" formControlName="basePrice" />
                                     </div>
                                 </div>
 
@@ -230,19 +234,23 @@
                                             <div class="row g-2">
                                                 <!-- Option Type -->
                                                 <div class="col-5">
-                                                    <select class="form-select form-select-sm" formControlName="id"
-                                                        (change)="onOptionTypeChange(i)"
-                                                        [class.is-invalid]="option.get('id')?.invalid && option.get('id')?.touched">
-                                                        <option value="">Select Type</option>
-                                                        <option *ngFor="let type of optionTypes" [value]="type.id">
-                                                            {{ type.name }}
-                                                        </option>
-                                                    </select>
+                                                    <div class="input-group input-group-sm">
+                                                        <select class="form-select" formControlName="id"
+                                                            (change)="onOptionTypeChange(i)"
+                                                            [class.is-invalid]="option.get('id')?.invalid && option.get('id')?.touched">
+                                                            <option value="">Select Type</option>
+                                                            <option *ngFor="let type of optionTypes" [value]="type.id">
+                                                                {{ type.name }}</option>
+                                                        </select>
+                                                        <button type="button" class="btn btn-outline-secondary"
+                                                            (click)="openAddOptionDialog()">+</button>
+                                                    </div>
                                                     <div class="invalid-feedback small"
                                                         *ngIf="option.get('id')?.invalid && option.get('id')?.touched">
                                                         Option type is required
                                                     </div>
                                                 </div>
+
 
                                                 <!-- Option Values Dropdown -->
                                                 <div class="col-7">
@@ -283,6 +291,13 @@
                                                                 *ngIf="getOptionValues(option.get('id')?.value)?.length === 0">
                                                                 <span class="dropdown-item-text small text-muted">No
                                                                     values available</span>
+                                                            </li>
+                                                            <li>
+                                                                <button type="button"
+                                                                    class="dropdown-item text-primary small"
+                                                                    (click)="openAddOptionValueDialog(option.get('id')?.value)">
+                                                                    + Add new value
+                                                                </button>
                                                             </li>
                                                         </ul>
 
@@ -342,10 +357,6 @@
                                                     Mode</span>
                                             </h6>
                                             <div class="d-flex gap-2">
-                                                <button type="button" class="btn btn-outline-secondary btn-sm"
-                                                    (click)="productFormService.applyBulkPrice(productForm)">
-                                                    Apply Base Price
-                                                </button>
                                                 <button type="button" class="btn btn-outline-secondary btn-sm"
                                                     (click)="applyBulkStock()">
                                                     Set Stock
@@ -416,7 +427,7 @@
                                                         </th>
                                                         <th scope="col" style="width: 250px;">Variant</th>
                                                         <th scope="col" style="width: 200px;">Image Assignment</th>
-                                                        <th scope="col" style="width: 120px;">Price ($)</th>
+                                                        <th scope="col" style="width: 120px;">Price (MMK)</th>
                                                         <th scope="col" style="width: 100px;">Stock</th>
                                                         <th scope="col">SKU</th>
                                                         <th scope="col" style="width: 80px;">Actions</th>
@@ -434,7 +445,6 @@
                                                                 (change)="toggleVariantSelection(i)">
                                                             <span *ngIf="!bulkAssignmentMode">{{ i + 1 }}</span>
                                                         </td>
-
 
                                                         <td>
                                                             <div class="variant-options">
@@ -501,10 +511,30 @@
                                                             </div>
                                                         </td>
 
+
                                                         <td>
-                                                            <input type="number" class="form-control form-control-sm"
-                                                                formControlName="price" min="0" step="0.01">
+
+                                                            <app-price-display-input
+                                                                [control]="getFormControl(variant.get('price'))"></app-price-display-input>
+
                                                         </td>
+
+                                                        <!--
+                                                        <td>
+                                                             <input type="text" class="form-control form-control-sm"
+                                                                [value]="formatPrice(variant.get('price')?.value)"
+                                                                (input)="onVariantDisplayPriceInput($event, i)"
+                                                                placeholder="0.00" mask="separator"
+                                                                thousandSeparator="," decimalMarker="."
+                                                                [dropSpecialCharacters]="false" />
+
+                                                                {{ variant.get('price')?.value }}
+
+                                                            <input type="hidden"
+                                                                [formControl]="getFormControl(variant.get('price'))" /> 
+
+                                                        </td> -->
+
 
                                                         <td>
                                                             <input type="number" class="form-control form-control-sm"
@@ -542,7 +572,6 @@
                             </div>
                         </div>
 
-
                         <!-- Info Panel for Variant Management -->
                         <div class="row mt-2" *ngIf="productVariants.length > 0">
                             <div class="col-12">
@@ -570,7 +599,6 @@
                                 </div>
                             </div>
                         </div>
-
 
                         <!-- Submit Button -->
                         <div class="row mt-3">
@@ -609,3 +637,10 @@
     [parentCategoryForNew]="parentCategoryForNew" [categoryDropdown]="categoryDropdown"
     (save)="onCategorySaved($event)">
 </app-category-dialog>
+
+<app-option-dialog [(visible)]="optionDialogVisible" [editingOption]="editingOption" (save)="onOptionTypeSaved($event)">
+</app-option-dialog>
+
+<app-option-value-dialog [(visible)]="optionValueDialogVisible" [selectedOption]="selectedOptionTypeForDialog"
+    [editingValue]="editingOptionValue" (save)="onOptionValueSaved($event)">
+</app-option-value-dialog>

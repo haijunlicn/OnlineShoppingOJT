@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray, Validators, FormControl } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, FormControl, AbstractControl } from '@angular/forms';
 import { BrandDTO, CreateProductRequestDTO, ImagePoolItem, ProductImageDTO, ProductVariantDTO } from '../../../../core/models/product.model';
 import { CategoryDTO, CategoryFlatDTO, CategoryNode } from '../../../../core/models/category-dto';
 import { OptionService } from '../../../../core/services/option.service';
@@ -11,6 +11,9 @@ import { VariantGeneratorService } from '../../../../core/services/variant-gener
 import { ProductFormService } from '../../../../core/services/product-form.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CloudinaryService } from '../../../../core/services/cloudinary.service';
+import { OptionvalueService } from '@app/core/services/optionvalue.service';
+import { AlertService } from '@app/core/services/alert.service';
+import { distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: "app-product-create",
@@ -27,6 +30,7 @@ export class ProductCreateComponent implements OnInit {
   brands: BrandDTO[] = []
   categories: CategoryDTO[] = []
   optionTypes: OptionTypeDTO[] = []
+  displayPrice: string = '';
 
   // Centralized Image Pool
   imagePool: ImagePoolItem[] = []
@@ -55,15 +59,16 @@ export class ProductCreateComponent implements OnInit {
 
   @ViewChild("productFileInput") productFileInputRef!: ElementRef<HTMLInputElement>
 
-
   constructor(
     private categoryService: CategoryService,
     private brandService: BrandService,
     private optionService: OptionService,
+    private optionValueService: OptionvalueService,
     private productService: ProductService,
     private variantGeneratorService: VariantGeneratorService,
     public productFormService: ProductFormService,
     private imageUploadService: CloudinaryService,
+    private alertService: AlertService,
     private router: Router,
     private route: ActivatedRoute,
   ) {
@@ -72,7 +77,7 @@ export class ProductCreateComponent implements OnInit {
     // Watch for option changes
     this.options.valueChanges.subscribe(() => {
       console.log("option changes");
-
+      // this.refreshDisplayValues();
       this.checkOptionsAndGenerateVariants()
     })
 
@@ -106,12 +111,46 @@ export class ProductCreateComponent implements OnInit {
     this.hasOptionsSelected = false
   }
 
-  brandDialogVisible = false;
 
+  onDisplayPriceInput(event: Event): void {
+    const input = (event.target as HTMLInputElement).value;
+    this.displayPrice = input;
+
+    const numericValue = Number(input.replace(/,/g, ''));
+    if (!isNaN(numericValue)) {
+      this.productForm.get('basePrice')?.setValue(numericValue, { emitEvent: false });
+    }
+
+    this.autoApplyBasePrice()
+  }
+
+  // onApplyBasePrice(): void {
+  //   this.productFormService.applyBulkPrice(this.productForm);
+  //   console.log("Applied base price to all variants");
+
+  //   const variants = this.productFormService.getVariantsArray(this.productForm);
+  //   variants.controls.forEach((variant, i) => {
+  //     console.log(`Variant ${i} new price: `, variant.get('price')?.value);
+  //   });
+  // }
+
+  autoApplyBasePrice(): void {
+    this.productFormService.applyBulkPrice(this.productForm);
+    const variants = this.productFormService.getVariantsArray(this.productForm);
+    console.log("Auto-applied base price to all variants");
+    variants.controls.forEach((variant, i) => {
+      console.log(`Variant ${i} new price: `, variant.get('price')?.value);
+    });
+  }
+
+  getFormControl(control: AbstractControl | null): FormControl {
+    return control as FormControl;
+  }
+
+  brandDialogVisible = false;
   openBrandDialog() {
     this.brandDialogVisible = true;
   }
-
   onBrandCreated() {
     this.fetchBrands();
     // this.productForm.patchValue({ brandId: newBrand.id });
@@ -122,7 +161,6 @@ export class ProductCreateComponent implements OnInit {
   editingCategory: CategoryDTO | null = null;
   parentCategoryForNew: CategoryDTO | null = null;
   categoryDropdown: any[] = []; // your dropdown data here
-
   openCategoryDialogForNew(parent?: CategoryDTO) {
     this.editingCategory = null;
     this.parentCategoryForNew = parent || null;
@@ -136,11 +174,77 @@ export class ProductCreateComponent implements OnInit {
       this.categoryDialogVisible = true;
     });
   }
-
   onCategorySaved(savedCategory: CategoryDTO) {
     this.categoryDialogVisible = false;
     this.fetchCategories();
     this.selectedCategory = savedCategory;
+  }
+
+  // Dialog control
+  optionDialogVisible: boolean = false;
+  editingOption: OptionTypeDTO | null = null;
+  optionValueDialogVisible: boolean = false;
+  selectedOptionTypeForDialog: OptionTypeDTO | null = null;
+  editingOptionValue: OptionValueDTO | null = null;
+  openAddOptionDialog(): void {
+    this.editingOption = null;
+    this.optionDialogVisible = true;
+  }
+  onOptionTypeSaved(newType: OptionTypeDTO): void {
+    this.optionService.createOptionType(newType).subscribe({
+      next: () => {
+        this.fetchOptionTypes();
+        // Auto-select the new option in the form
+        const index = this.options.length - 1;
+        const group = this.options.at(index);
+        if (group) {
+          // Wait briefly to ensure fetchOptionTypes() completes before selection
+          setTimeout(() => {
+            const created = this.optionTypes.find(opt => opt.name === newType.name);
+            if (created) {
+              group.patchValue({ id: created.id, name: created.name, values: [] });
+            }
+          }, 300); // Slight delay to ensure updated list is in
+        }
+      },
+      error: () => {
+        this.alertService.toast('Failed to save new option type.', 'error');
+      }
+    });
+  }
+  openAddOptionValueDialog(optionTypeId: number): void {
+    // Try to find the full option type
+    const optionType = this.optionTypes.find(opt => Number(opt.id) == optionTypeId);
+    if (!optionType) {
+      console.warn(`OptionType with id ${optionTypeId} not found`);
+      return;
+    }
+    // Set dialog state
+    this.selectedOptionTypeForDialog = optionType;
+    this.editingOptionValue = null;
+    this.optionValueDialogVisible = true;
+  }
+  onOptionValueSaved(newValue: OptionValueDTO): void {
+    const typeId = newValue.optionId;
+    this.optionValueService.createOptionValue(newValue).subscribe({
+      next: () => {
+        // Re-fetch option values
+        this.optionValueService.getValuesByOptionId(typeId).subscribe((values) => {
+          const optionType = this.optionTypes.find(opt => +opt.id === typeId);
+          if (optionType) {
+            optionType.optionValues = values;
+          }
+          const newVal = values.find(v => v.value === newValue.value);
+          const index = this.options.controls.findIndex(ctrl => +ctrl.get('id')?.value === typeId);
+          if (index !== -1 && newVal) {
+            this.toggleOptionValue(index, newVal.value);
+          }
+        });
+      },
+      error: () => {
+        this.alertService.toast('Failed to save new option value.', 'error');
+      }
+    });
   }
 
   /**
@@ -148,13 +252,10 @@ export class ProductCreateComponent implements OnInit {
    */
   private checkOptionsAndGenerateVariants(): void {
     const hasValidOptions = this.hasValidOptionsSelected()
-
     if (hasValidOptions !== this.hasOptionsSelected) {
       this.hasOptionsSelected = hasValidOptions
-
     }
-
-    this.generateProductVariants()
+    this.generateProductVariants();
   }
 
   /**
@@ -176,10 +277,6 @@ export class ProductCreateComponent implements OnInit {
   generateProductVariants(): void {
     const variantsArray = this.productFormService.getVariantsArray(this.productForm)
 
-    console.log("variants : ", variantsArray);
-
-
-
     // Clear existing variants
     while (variantsArray.length) {
       variantsArray.removeAt(0)
@@ -194,6 +291,7 @@ export class ProductCreateComponent implements OnInit {
     if (!this.hasOptionsSelected) {
       // No options selected - use default variant
       this.initializeDefaultVariant()
+      this.autoApplyBasePrice()
       return
     }
 
@@ -207,9 +305,6 @@ export class ProductCreateComponent implements OnInit {
 
     this.productVariants = this.variantGeneratorService.generateCombinations(optionsWithValues)
 
-    console.log("product variants : ", this.productVariants);
-
-
     const basePrice = this.productForm.get("basePrice")?.value || 0
 
     this.productVariants.forEach(() => {
@@ -222,6 +317,8 @@ export class ProductCreateComponent implements OnInit {
       })
       variantsArray.push(variantGroup)
     })
+
+    this.autoApplyBasePrice();
   }
 
   /**
@@ -271,14 +368,11 @@ export class ProductCreateComponent implements OnInit {
     if (!this.productVariants[variantIndex]?.isRemovable) {
       return // Cannot remove default variant
     }
-
     // Remove from form array
     const variantsArray = this.productFormService.getVariantsArray(this.productForm)
     variantsArray.removeAt(variantIndex)
-
     // Remove from product variants
     this.productVariants.splice(variantIndex, 1)
-
     // Update selected variants indices
     const newSelectedVariants = new Set<number>()
     this.selectedVariants.forEach((index) => {
@@ -290,7 +384,6 @@ export class ProductCreateComponent implements OnInit {
       // Skip the removed index
     })
     this.selectedVariants = newSelectedVariants
-
     // Clear any image assignments for removed variant
     this.clearVariantImageAssignments("")
   }
@@ -308,14 +401,11 @@ export class ProductCreateComponent implements OnInit {
   getVariantDisplayLabel(variantIndex: number): string {
     const variant = this.productVariants[variantIndex]
     if (!variant) return ""
-
     if (variant.isDefault) {
       return "Default Variant"
     }
-
     return variant.displayLabel || variant.options.map((opt) => `${opt.optionName}: ${opt.valueName}`).join(", ")
   }
-
 
   // Image Pool Methods with Display Order Management
   triggerImageUpload(): void {
@@ -330,7 +420,6 @@ export class ProductCreateComponent implements OnInit {
     const files = Array.from((event.target as HTMLInputElement).files || []) as File[]
     const remainingSlots = 10 - this.imagePool.length
     const filesToAdd = files.slice(0, remainingSlots)
-
     this.errorMessage = ""
 
     filesToAdd.forEach((file) => {
@@ -350,7 +439,6 @@ export class ProductCreateComponent implements OnInit {
         this.errorMessage = validation.error || "Invalid file"
       }
     })
-
     event.target.value = ""
   }
 
