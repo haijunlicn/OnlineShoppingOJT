@@ -88,11 +88,6 @@ export class ProductListComponent {
   // Data loading methods
   loadProducts() {
     this.loadingProducts = true
-    //   const userId = this.authService.getCurrentUser()?.id;
-    // if (!userId) {
-    //   console.error('User ID not found');
-    //   return;
-    // }
     this.productService.getProductList().subscribe({
       next: (products) => {
         this.products = products.map((product) => ({
@@ -407,53 +402,57 @@ export class ProductListComponent {
   }
 
   // Product helper methods (keep your existing methods)
-  getStockStatus(product: any): string {
-    return product.variants.some((v: any) => v.stock > 0) ? "In Stock" : "Out of Stock"
+  getStockStatus(product: ProductListItemDTO): string {
+    return product.variants.some(v => v.stock > 0) ? 'In Stock' : 'Out of Stock';
   }
 
-  getMainProductImage(product: any): string {
+  getMainProductImage(product: ProductDTO): string {
     if (product.productImages && product.productImages.length > 0) {
-      const mainImage = product.productImages.find((img: any) => img.mainImageStatus)
+      const mainImage = product.productImages.find((img: any) => img.mainImageStatus);
+
       if (mainImage) {
         return mainImage.imgPath!
       } else if (product.productImages[0]) {
         return product.productImages[0].imgPath!
       }
     }
-    return "assets/images/placeholder.jpg"
+    return 'assets/images/placeholder.jpg'; // Fallback image
   }
 
   getLowestPrice(product: any): number {
     if (product.variants && product.variants.length > 0) {
-      const prices = product.variants.map((v: any) => v.price)
-      return Math.min(...prices)
+      const prices = product.variants.map((v: any) => v.price);
+      return Math.min(...prices);
     }
-    return product.product.basePrice
+    return product.product.basePrice;
   }
 
   hasStock(product: any): boolean {
     if (product.variants && product.variants.length > 0) {
+      console.log("stock checking...");
       return product.variants.some((v: any) => v.stock > 0)
     }
+     console.log("stock checking... false");
     return false
   }
 
   isOnSale(product: any): boolean {
     if (product.variants && product.variants.length > 0) {
-      return product.variants.some((v: any) => v.price < product.product.basePrice)
+      return product.variants.some((v: any) => v.price < product.product.basePrice);
     }
-    return false
+    return false;
   }
 
   isNew(product: any): boolean {
+    // Check if product was created within the last 14 days
     if (product.product.createdDate) {
-      const createdDate = new Date(product.product.createdDate)
-      const now = new Date()
-      const diffTime = Math.abs(now.getTime() - createdDate.getTime())
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-      return diffDays <= 14
+      const createdDate = new Date(product.product.createdDate);
+      const now = new Date();
+      const diffTime = Math.abs(now.getTime() - createdDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays <= 14;
     }
-    return false
+    return false;
   }
 
   hasColorVariants(product: any): boolean {
