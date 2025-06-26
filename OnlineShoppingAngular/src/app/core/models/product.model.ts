@@ -30,8 +30,8 @@ export interface ProductDTO {
   name: string;
   description: string;
   brandId: string;
-   brand?: BrandDTO;
-  category: CategoryDTO;
+  brand?: BrandDTO;
+  category?: CategoryDTO;
   categoryId: number | string;
   basePrice: number;
   createdDate?: string;
@@ -77,7 +77,6 @@ export interface ProductImageDTO {
   id?: number;
   productId?: number;
   imgPath?: string;
-  imageUrl: string;
   displayOrder: number;
   mainImageStatus: boolean;
   altText?: string;
