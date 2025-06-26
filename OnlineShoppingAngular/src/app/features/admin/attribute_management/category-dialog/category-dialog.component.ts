@@ -141,10 +141,13 @@ export class CategoryDialogComponent {
   };
 
   const handleError = (errorMessage: string, errorObj: any) => {
+    console.error(errorMessage, errorObj);
+    this.alertService.toast(errorMessage, 'error');
     this.isUploading = false; // End loading
   };
 
   const saveWithImage = (imgPath?: string) => {
+    const categoryDTO = this.buildCategoryDTO(formValue, imgPath);
 
     const save$ = this.editingCategory
       ? this.categoryService.updateCategory(categoryDTO)
