@@ -46,4 +46,10 @@ public class UserEntity {
     // New relationship: user can join many discount groups
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<DiscountUserGroupMemberEntity> discountUserGroupMembers;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserAddressEntity> addresses;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<WishlistTitleEntity> wishlistTitles;
 }

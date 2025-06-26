@@ -7,4 +7,5 @@ export interface LocationDto {
   city: string;
   zipCode: String;
   country: string;
+  userId:number;
 }

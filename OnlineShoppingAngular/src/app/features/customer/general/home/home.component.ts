@@ -1,9 +1,11 @@
+
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { LoginModalService } from '../../../../core/services/LoginModalService';
 import { RegisterModalService } from '../../../../core/services/RegisterModalService';
 import { ForgotPasswordModalService } from '../../../../core/services/ForgotPasswordModalService';
 import { CategoryService } from '@app/core/services/category.service';
 import { CategoryDTO } from '@app/core/models/category-dto';
+import { AuthService } from '@app/core/services/auth.service';
 
 interface Category {
   name: string;
@@ -53,7 +55,8 @@ export class HomeComponent implements OnInit {
     private categoryService: CategoryService,
     private loginModalService: LoginModalService,
     private registerModalService: RegisterModalService,
-    private forgotModalService: ForgotPasswordModalService
+    private forgotModalService: ForgotPasswordModalService,
+    private authService: AuthService
   ) {}
 
  ngOnInit(): void {

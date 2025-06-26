@@ -12,6 +12,7 @@ import { CategoryDTO } from '@app/core/models/category-dto';
 import { TreeNode } from 'primeng/api';
 import { BrandService } from '@app/core/services/brand.service';
 import { FilterSidebarComponent, FilterState } from '../../common/filter-sidebar/filter-sidebar.component';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-product-list',
@@ -64,6 +65,7 @@ export class ProductListComponent {
     private categoryService: CategoryService,
     private brandService: BrandService,
     private router: Router,
+    private authService: AuthService // inject AuthService
   ) { }
 
   ngOnInit() {
@@ -86,6 +88,11 @@ export class ProductListComponent {
   // Data loading methods
   loadProducts() {
     this.loadingProducts = true
+    //   const userId = this.authService.getCurrentUser()?.id;
+    // if (!userId) {
+    //   console.error('User ID not found');
+    //   return;
+    // }
     this.productService.getProductList().subscribe({
       next: (products) => {
         this.products = products.map((product) => ({
@@ -129,16 +136,6 @@ export class ProductListComponent {
         console.error("Failed to load brands", err)
         this.loadingBrands = false
       },
-    })
-  }
-
-  loadWishlist() {
-    const userId = 4 // Replace with dynamic user ID
-    this.wishlistService.getWishedProductIds(userId).subscribe({
-      next: (wishedIds) => {
-        this.wishList = new Set<number>(wishedIds)
-      },
-      error: (err) => console.error("Failed to load wishlist:", err),
     })
   }
 
@@ -474,45 +471,89 @@ export class ProductListComponent {
       return colorOption.optionValues
     }
 
-    return []
+    return [];
   }
 
-  // Wishlist and interaction methods (keep your existing methods)
+  quickView(product: any, event: Event): void {
+    event.stopPropagation();
+    // Implement quick view modal logic
+    console.log('Quick view', product);
+  }
+
+  addToWishlist(product: any, event: Event): void {
+    event.stopPropagation();
+    // Implement wishlist logic
+    console.log('Add to wishlist', product);
+  }
+
+  viewProduct(product: any): void {
+    // Navigate to product detail page
+    // this.router.navigate(['/product', product.id]);
+    console.log('View product', product);
+  }
+
+  goToDetail(product: ProductCardItem): void {
+    this.router.navigate(['/customer/product', product.id]);
+  }
+
+  sortByPriceAsc() {
+    this.products.sort((a, b) => this.getLowestPrice(a) - this.getLowestPrice(b));
+  }
+
+  sortByBrand() {
+    this.products.sort((a, b) => a.brand.name.localeCompare(b.brand.name));
+  }
+  
+  loadWishlist() {
+    const userId = this.authService.getCurrentUser()?.id;
+    if (!userId) {
+      console.error('User ID not found');
+      return;
+    }
+
+    this.wishlistService.getWishedProductIds(userId).subscribe({
+      next: (wishedIds) => {
+        this.wishList = new Set<number>(wishedIds);
+      },
+      error: (err) => console.error('Failed to load wishlist:', err)
+    });
+  }
+
   toggleWish(productId: number): void {
-    const userId = 4
+    const userId = this.authService.getCurrentUser()?.id;
+    if (!userId) {
+      console.error('User ID not found why?');
+      return;
+    }
 
     if (this.isWished(productId)) {
       this.wishlistService.removeProductFromWishlist(userId, productId).subscribe({
         next: () => {
-          this.wishList.delete(productId)
-          this.loadWishlist()
+          this.wishList.delete(productId);
+          this.loadWishlist();
         },
         error: (err) => {
-          console.error("Failed to remove from wishlist:", err)
-        },
-      })
+          console.error('Failed to remove from wishlist:', err);
+        }
+      });
     } else {
-      // Add wishlist logic here
-      console.log("Add to wishlist", productId)
+      const dialogRef = this.dialog.open(WishlistDialogComponent, {
+        width: '400px',
+        data: { productId }
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        if (result && result.added) {
+          this.wishList.add(productId);
+          this.loadWishlist();
+        }
+      });
     }
   }
 
   isWished(productId: number | string): boolean {
     const id = typeof productId === "string" ? +productId : productId
     return this.wishList.has(id)
-  }
-
-  quickView(product: any, event: Event): void {
-    event.stopPropagation()
-    console.log("Quick view", product)
-  }
-
-  viewProduct(product: any): void {
-    console.log("View product", product)
-  }
-
-  goToDetail(product: ProductCardItem): void {
-    this.router.navigate(["/customer/product", product.id])
   }
 
   // Add Math to component for template usage

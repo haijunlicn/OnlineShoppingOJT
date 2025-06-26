@@ -4,9 +4,11 @@ import com.maven.OnlineShoppingSB.dto.ProductDTO;
 import com.maven.OnlineShoppingSB.dto.WishlistDTO;
 import com.maven.OnlineShoppingSB.dto.WishlistTitleDTO;
 import com.maven.OnlineShoppingSB.entity.ProductEntity;
+import com.maven.OnlineShoppingSB.entity.UserEntity;
 import com.maven.OnlineShoppingSB.entity.WishlistEntity;
 import com.maven.OnlineShoppingSB.entity.WishlistTitleEntity;
 import com.maven.OnlineShoppingSB.repository.ProductRepository;
+import com.maven.OnlineShoppingSB.repository.UserRepository;
 import com.maven.OnlineShoppingSB.repository.WishlistRepository;
 import com.maven.OnlineShoppingSB.repository.WishlistTitleRepository;
 import org.modelmapper.ModelMapper;
@@ -32,9 +34,15 @@ public class WishlistService {
     @Autowired
     private ModelMapper mapper;
 
+    @Autowired
+    private UserRepository userRepository;
+
     public WishlistTitleEntity createWishlistTitle(WishlistTitleDTO dto) {
         WishlistTitleEntity title = new WishlistTitleEntity();
-        title.setUserId(dto.getUserId());
+        UserEntity user = userRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.getUserId()));
+
+        title.setUser(user);
         title.setTitle(dto.getTitle());
         title.setCreatedDate(LocalDateTime.now());
         title.setUpdatedDate(LocalDateTime.now());

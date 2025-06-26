@@ -52,8 +52,7 @@ import { RoleUpdateComponent } from './role-management/role-update/role-update.c
 import { PermissionUpdateComponent } from './role-management/permission-update/permission-update.component';
 import { PaymentListComponent } from './payment-management/payment-list/payment-list.component';
 import { PaymentCreateComponent } from './payment-management/payment-create/payment-create.component';
-import { PaymentUpdateComponent } from './payment-management/payment-update/payment-update.component';
-import { ProductAttributeComponent } from './attribute_management/product-attribute/product-attribute.component';
+import { PaymentUpdateComponent } from './payment-management/payment-update/payment-update.component';import { ProductAttributeComponent } from './attribute_management/product-attribute/product-attribute.component';
 import { BrandDialogComponent } from './attribute_management/brand-dialog/brand-dialog.component';
 import { CategoryDialogComponent } from './attribute_management/category-dialog/category-dialog.component';
 import { OptionDialogComponent } from './attribute_management/option-dialog/option-dialog.component';

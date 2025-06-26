@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { CartService } from '../../../../core/services/cart.service';
 import { CartItem } from '../../../../core/models/cart.model'; // optional if you have strong typing
 
@@ -11,7 +12,10 @@ import { CartItem } from '../../../../core/models/cart.model'; // optional if yo
 export class CartComponent implements OnInit {
   cart: CartItem[] = [];
 
-  constructor(private cartService: CartService) {}
+  constructor(
+    private cartService: CartService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadCart();
@@ -38,5 +42,20 @@ export class CartComponent implements OnInit {
   clearCart(): void {
     this.cartService.clearCart();
     this.loadCart();
+  }
+
+  proceedToCheckout(): void {
+    if (this.cart.length === 0) {
+      alert('Your cart is empty. Please add items before proceeding to checkout.');
+      return;
+    }
+    
+    // Navigate to order management with cart data
+    this.router.navigate(['/customer/order'], {
+      state: {
+        cartItems: this.cart,
+        cartTotal: this.getTotal()
+      }
+    });
   }
 }

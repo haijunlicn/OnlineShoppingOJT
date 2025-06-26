@@ -7,7 +7,7 @@ import { PaymentMethodService } from '@app/core/services/paymentmethod.service';
   selector: 'app-payment-create',
   standalone: false,
   templateUrl: './payment-create.component.html',
-  styleUrls: ['./payment-create.component.css'] // ✅ fixed typo (was `styleUrl`)
+  styleUrls: ['./payment-create.component.css'] // ✅ fixed typo (was styleUrl)
 })
 export class PaymentCreateComponent {
   methodName = '';

@@ -35,6 +35,8 @@ import { ProductDetailComponent } from './product_display/product-detail/product
 import { CategoryGridComponent } from './product_display/category-grid/category-grid.component';
 import { CategoryDropdownComponent } from './product_display/category-dropdown/category-dropdown.component';
 import { FilterSidebarComponent } from './common/filter-sidebar/filter-sidebar.component';
+import { OrderComponent } from './general/order/order.component';
+import { OrderManagementComponent } from './orderManagements/order-management/order-management.component';
 
 
 @NgModule({
@@ -53,17 +55,19 @@ import { FilterSidebarComponent } from './common/filter-sidebar/filter-sidebar.c
     UserproductListComponent,
     WishlistComponent,
     CartComponent,
-       AboutComponent,
+
+    AboutComponent,
     ContactComponent,
     PrivacyPolicyComponent,
     TermsConditionsComponent,
     FaqComponent,
-
     ProductListComponent,
     ProductDetailComponent,
     CategoryGridComponent,
     CategoryDropdownComponent,
-    FilterSidebarComponent
+    FilterSidebarComponent,
+    OrderComponent,
+    OrderManagementComponent
 
   ],
   imports: [

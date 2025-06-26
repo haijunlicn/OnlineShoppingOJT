@@ -4,23 +4,26 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Setter
-public class UserAddressDto {
+public class StoreBranchDto {
     private Integer id;
-    private String address;
-    private String township;
-    @JsonProperty("lng")
-    private Double longitude;
+    private String name;
+    private String fullAddress;
+
     @JsonProperty("lat")
     private Double latitude;
+
+    @JsonProperty("lng")
+    private Double longitude;
+
+    private String phoneNumber;
+
+    private Boolean delFg;
+
     private String city;
     private String country;
+
     @JsonProperty("zipCode")
     private String zipcode;
-    private LocalDateTime createdDate;
-    private LocalDateTime updatedDate;
-    private Integer userId;
 }
