@@ -1,0 +1,279 @@
+/* Modern, clean styling */
+.card {
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.badge {
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cursor-pointer:hover {
+  transform: scale(1.05);
+  opacity: 0.8;
+}
+
+.table th {
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6c757d;
+}
+
+.table td {
+  vertical-align: middle;
+  padding: 1rem 0.75rem;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+.btn-close-white {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* Form styling */
+.form-control {
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.1);
+}
+
+/* Stock status colors */
+.text-success {
+  color: #198754 !important;
+}
+
+.text-warning {
+  color: #fd7e14 !important;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}
+
+.bg-success {
+  background-color: #198754 !important;
+}
+
+.bg-warning {
+  background-color: #fd7e14 !important;
+}
+
+.bg-danger {
+  background-color: #dc3545 !important;
+}
+
+/* Breadcrumb styling */
+.breadcrumb {
+  background: none;
+  padding: 0;
+  margin: 0;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+  content: "›";
+  color: #6c757d;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .container-fluid {
+    padding: 1rem;
+  }
+
+  .card-body {
+    padding: 1.5rem;
+  }
+
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+
+  .d-flex.gap-2 {
+    flex-direction: column;
+  }
+
+  .d-flex.gap-2 .btn {
+    width: 100%;
+  }
+
+  .custom-modal {
+    padding: 0.5rem;
+  }
+
+  .modal-dialog {
+    max-height: 95vh;
+  }
+}
+
+/* Animation for loading states */
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Alert styling */
+.alert {
+  border-radius: 8px;
+  border: none;
+}
+
+/* Code styling */
+code {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Status badge styles (match product list) */
+.status-badge {
+  border-radius: 4px;
+  padding: 0.13rem 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  display: inline-block;
+  min-width: 70px;
+  text-align: center;
+  margin-right: 0.25rem;
+}
+.status-active {
+  background-color: #d4edda;
+  color: #155724;
+}
+.status-inactive {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+.status-warning {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+/* Modern summary bar */
+.d-flex.flex-wrap.align-items-center.gap-3.py-3.border-bottom.mb-4 {
+  background: #f9fafb;
+  border-radius: 8px;
+  border-bottom: 1px solid #e9ecef !important;
+  margin-bottom: 2rem !important;
+  padding: 1.25rem 1rem !important;
+}
+
+.vr {
+  border-left: 1.5px solid #e0e0e0;
+  height: 24px;
+  margin: 0 0.5rem;
+}
+
+/* Remove old card color styles for stock overview */
+.bg-primary,
+.bg-success,
+.bg-warning,
+.bg-danger {
+  background: none !important;
+  color: inherit !important;
+}
+
+/* Enhanced Card Styles */
+.card {
+  transition: all 0.3s ease;
+  border-radius: 12px !important;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Stats Cards with Colored Borders */
+.stats-card {
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.stats-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Individual Stats Card Border Colors */
+.stats-card.total-stock {
+  border-left: 4px solid #0d6efd;
+  border-color: rgba(13, 110, 253, 0.15);
+}
+
+.stats-card.total-stock:hover {
+  border-color: rgba(13, 110, 253, 0.3);
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.1);
+}
+
+.stats-card.in-stock {
+  border-left: 4px solid #198754;
+  border-color: rgba(25, 135, 84, 0.15);
+}
+
+.stats-card.in-stock:hover {
+  border-color: rgba(25, 135, 84, 0.3);
+  box-shadow: 0 4px 12px rgba(25, 135, 84, 0.1);
+}
+
+.stats-card.low-stock {
+  border-left: 4px solid #fd7e14;
+  border-color: rgba(253, 126, 20, 0.15);
+}
+
+.stats-card.low-stock:hover {
+  border-color: rgba(253, 126, 20, 0.3);
+  box-shadow: 0 4px 12px rgba(253, 126, 20, 0.1);
+}
+
+.stats-card.out-of-stock {
+  border-left: 4px solid #dc3545;
+  border-color: rgba(220, 53, 69, 0.15);
+}
+
+.stats-card.out-of-stock:hover {
+  border-color: rgba(220, 53, 69, 0.3);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.1);
+}
+
+.stats-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stats-icon i {
+  font-size: 1.2rem;
+}

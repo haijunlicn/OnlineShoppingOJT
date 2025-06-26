@@ -46,7 +46,11 @@ public class ProductService {
     @Autowired
     private ProductOptionRepository productOptionRepo;
     @Autowired
+    private ProductImageRepository productImageRepo;
+    @Autowired
     private ProductVariantRepository variantRepo;
+    @Autowired
+    private VariantSerialService variantSerialService;
     @Autowired
     private ModelMapper mapper;
     @Autowired
@@ -72,13 +76,63 @@ public class ProductService {
             addProductOptions(product, request.getOptions());
         }
         if (request.getVariants() != null) {
-            addProductVariants(product, request.getVariants());
+            addProductVariants(product, request.getVariants(), null);
         }
         if (request.getProductImages() != null) {
             addProductImages(product, request.getProductImages());
         }
 
         return product;
+    }
+
+    @Transactional
+    public void updateProduct(CreateProductRequestDTO request) {
+        ProductDTO dto = request.getProduct();
+
+        ProductEntity product = productRepo.findById(dto.getId())
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + dto.getId()));
+
+        product.setName(dto.getName());
+        product.setDescription(dto.getDescription());
+        product.setBrand(findBrandById(dto.getBrandId()));
+        product.setCategory(findCategoryById(dto.getCategoryId()));
+        product.setBasePrice(dto.getBasePrice());
+
+        // Delete old options and images (variants handled separately)
+        productOptionRepo.deleteByProductId(product.getId());
+        productImageRepo.deleteByProductId(product.getId());
+
+        product.getOptions().clear();
+        product.getProductImages().clear();
+
+        // Fetch current variants
+        Map<Long, ProductVariantEntity> existingVariants = variantRepo
+                .findByProductIdAndDelFg(product.getId(), 1) // 1 = not deleted
+                .stream()
+                .collect(Collectors.toMap(ProductVariantEntity::getId, v -> v));
+
+        if (request.getOptions() != null) {
+            addProductOptions(product, request.getOptions());
+        }
+
+        if (request.getVariants() != null) {
+            addProductVariants(product, request.getVariants(), existingVariants); // handles deletions too
+        }
+
+        if (request.getProductImages() != null) {
+            updateProductImages(product, request.getProductImages());
+        }
+
+        productRepo.save(product);
+    }
+
+    @Transactional
+    public void updateStock(StockUpdateRequestDTO request) {
+        for (StockUpdateRequestDTO.StockChange change : request.getStockUpdates()) {
+            ProductVariantEntity variant = variantRepo.findById(change.getVariantId())
+                    .orElseThrow(() -> new RuntimeException("Variant not found: " + change.getVariantId()));
+            variant.setStock(change.getNewStock());
+        }
     }
 
     // ───────────────────────────────────────────────
@@ -112,35 +166,76 @@ public class ProductService {
         }
     }
 
-    private void addProductVariants(ProductEntity product, List<ProductVariantDTO> variantDTOs) {
+    private void addProductVariants(ProductEntity product, List<ProductVariantDTO> variantDTOs, Map<Long, ProductVariantEntity> existingVariants) {
+        // 🔥 Delete removed variants
+        if (existingVariants != null) {
+            Set<Long> incomingIds = variantDTOs.stream()
+                    .map(ProductVariantDTO::getId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+
+            List<ProductVariantEntity> toDelete = existingVariants.values().stream()
+                    .filter(v -> !incomingIds.contains(v.getId()))
+                    .collect(Collectors.toList());
+
+            for (ProductVariantEntity v : toDelete) {
+                v.setDelFg(0);
+                // variantRepo.delete(v);
+            }
+        }
+
         for (ProductVariantDTO variantDto : variantDTOs) {
-            ProductVariantEntity variant = new ProductVariantEntity();
-            variant.setProduct(product);
-            variant.setStock(variantDto.getStock());
-            variant.setSku(variantDto.getSku());
-            variant.setImgPath(variantDto.getImgPath());
+            ProductVariantEntity variant;
+            boolean isExisting = variantDto.getId() != null;
 
-            if (variantDto.getOptions() != null) {
-                for (VariantOptionDTO opt : variantDto.getOptions()) {
-                    OptionEntity option = findOptionById(opt.getOptionId());
-
-                    OptionValueEntity value = optionValueRepo.findByOptionAndId(option, opt.getOptionValueId())
-                            .orElseThrow(() -> new RuntimeException("OptionValue not found: ValueName=" + opt.getValueName() + " OptionName=" + opt.getOptionName()));
-
-                    VariantOptionValueEntity variantOptVal = new VariantOptionValueEntity();
-                    variantOptVal.setVariant(variant);
-                    variantOptVal.setOptionValue(value);
-
-                    variant.getVariantOptionValues().add(variantOptVal);
+            if (isExisting) {
+                variant = existingVariants.get(variantDto.getId());
+                if (variant == null) {
+                    throw new RuntimeException("Variant not found with id: " + variantDto.getId());
                 }
+
+                variant.setProduct(product);
+                variant.setStock(variantDto.getStock());
+                variant.setImgPath(variantDto.getImgPath());
+
+                String basePrefix = generateSkuPrefix(product.getName(), variantDto);
+                String[] parts = variant.getSku().split("-");
+                String serial = parts[parts.length - 1];
+                variant.setSku(basePrefix + "-" + serial);
+
+                variant.getVariantOptionValues().clear();
+            } else {
+                variant = new ProductVariantEntity();
+                variant.setProduct(product);
+                variant.setStock(variantDto.getStock());
+                variant.setImgPath(variantDto.getImgPath());
+
+                String basePrefix = generateSkuPrefix(product.getName(), variantDto);
+                long serial = variantSerialService.getNextSerial();
+                String paddedSerial = String.format("%05d", serial);
+                variant.setSku(basePrefix + "-" + paddedSerial);
             }
 
-            VariantPriceEntity priceEntity = new VariantPriceEntity();
-            priceEntity.setVariant(variant);
-            priceEntity.setPrice(variantDto.getPrice());
-            priceEntity.setStartDate(LocalDateTime.now());
+            for (VariantOptionDTO opt : variantDto.getOptions()) {
+                OptionEntity option = findOptionById(opt.getOptionId());
+                OptionValueEntity value = optionValueRepo.findByOptionAndId(option, opt.getOptionValueId())
+                        .orElseThrow(() -> new RuntimeException("OptionValue not found"));
 
-            variant.getPrices().add(priceEntity);
+                VariantOptionValueEntity variantOptVal = new VariantOptionValueEntity();
+                variantOptVal.setVariant(variant);
+                variantOptVal.setOptionValue(value);
+
+                variant.getVariantOptionValues().add(variantOptVal);
+            }
+
+//            variant.getPrices().clear();
+//            VariantPriceEntity priceEntity = new VariantPriceEntity();
+//            priceEntity.setVariant(variant);
+//            priceEntity.setPrice(variantDto.getPrice());
+//            priceEntity.setStartDate(LocalDateTime.now());
+//            variant.getPrices().add(priceEntity);
+
+            updateVariantPrice(variant, variantDto.getPrice());
             product.getVariants().add(variant);
         }
     }
@@ -171,12 +266,40 @@ public class ProductService {
         return mapToProductListItemDTO(product);
     }
 
+    private void updateVariantPrice(ProductVariantEntity variant, BigDecimal newPrice) {
+        LocalDateTime now = LocalDateTime.now();
+
+        VariantPriceEntity currentPrice = variant.getPrices().stream()
+                .filter(price ->
+                        (price.getStartDate() == null || !price.getStartDate().isAfter(now)) &&
+                                (price.getEndDate() == null || !price.getEndDate().isBefore(now))
+                )
+                .findFirst()
+                .orElse(null);
+
+        if (currentPrice != null && currentPrice.getPrice().compareTo(newPrice) == 0) {
+            return; // No change
+        }
+
+        if (currentPrice != null) {
+            currentPrice.setEndDate(now); // Expire old price
+        }
+
+        VariantPriceEntity newPriceEntity = new VariantPriceEntity();
+        newPriceEntity.setVariant(variant);
+        newPriceEntity.setPrice(newPrice);
+        newPriceEntity.setStartDate(now);
+        variant.getPrices().add(newPriceEntity);
+    }
+
+
     private ProductListItemDTO mapToProductListItemDTO(ProductEntity product) {
         ProductDTO productDTO = mapper.map(product, ProductDTO.class);
         BrandDTO brandDTO = mapper.map(product.getBrand(), BrandDTO.class);
         CategoryDTO categoryDTO = mapper.map(product.getCategory(), CategoryDTO.class);
 
-        List<ProductVariantDTO> variants = variantRepo.findByProductId(product.getId()).stream()
+        // List<ProductVariantDTO> variants = variantRepo.findByProductId(product.getId()).stream()
+        List<ProductVariantDTO> variants = variantRepo.findByProductIdAndDelFg(product.getId(), 1).stream()
                 .map(variant -> {
                     ProductVariantDTO dto = new ProductVariantDTO();
                     dto.setId(variant.getId());
@@ -219,6 +342,7 @@ public class ProductService {
                     OptionEntity option = po.getOption();
 
                     List<OptionValueEntity> usedOptionValues = product.getVariants().stream()
+                            .filter(variant -> variant.getDelFg() != null && variant.getDelFg() == 1)
                             .flatMap(variant -> variant.getVariantOptionValues().stream())
                             .map(VariantOptionValueEntity::getOptionValue)
                             .filter(val -> val.getOption().getId().equals(option.getId()))
@@ -257,6 +381,7 @@ public class ProductService {
 
         return item;
     }
+
 
     // Provide Excel template as InputStreamResource
     public InputStreamResource getExcelTemplate() throws IOException {
@@ -680,7 +805,6 @@ public class ProductService {
         }
     }
 
-
     private boolean parseBooleanSafe(String str, boolean def) {
         if (str == null) return def;
         return str.equalsIgnoreCase("true") || str.equals("1");
@@ -706,7 +830,90 @@ public class ProductService {
 //            return cell.getBooleanCellValue();
 //        } else if (cell.getCellType() == CellType.STRING) {
 //            return Boolean.parseBoolean(cell.getStringCellValue().trim());
+    private void updateProductImages(ProductEntity product, List<ProductImageDTO> newImageDTOs) {
+        List<ProductImageEntity> existingImages = new ArrayList<>(product.getProductImages());
+
+        // Track incoming paths to avoid re-adding
+        Set<String> incomingPaths = newImageDTOs.stream()
+                .map(ProductImageDTO::getImgPath)
+                .collect(Collectors.toSet());
+
+        // 1. Remove images no longer present
+        for (ProductImageEntity existingImage : existingImages) {
+            if (!incomingPaths.contains(existingImage.getImgPath())) {
+                product.getProductImages().remove(existingImage);
+                productImageRepo.delete(existingImage); // Optional: also delete from cloud manually
+            }
+        }
+
+        // 2. Add new images (only those not already existing)
+        Set<String> existingPaths = existingImages.stream()
+                .map(ProductImageEntity::getImgPath)
+                .collect(Collectors.toSet());
+
+        for (ProductImageDTO dto : newImageDTOs) {
+            if (!existingPaths.contains(dto.getImgPath())) {
+                ProductImageEntity newImg = new ProductImageEntity();
+                newImg.setProduct(product);
+                newImg.setImgPath(dto.getImgPath());
+                newImg.setAltText(dto.getAltText());
+                newImg.setDisplayOrder(dto.getDisplayOrder());
+                newImg.setMainImageStatus(Boolean.TRUE.equals(dto.isMainImageStatus()));
+
+                product.getProductImages().add(newImg);
+            }
+        }
+    }
+
+    private String generateSkuPrefix(String productName, ProductVariantDTO variantDto) {
+        // Get initials of product name words
+        String[] words = productName.trim().split("\\s+");
+        StringBuilder initials = new StringBuilder();
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                initials.append(Character.toUpperCase(word.charAt(0)));
+            }
+        }
+        String namePart = initials.length() > 0 ? initials.toString() : "PRD";
+
+        // Build variant part
+        List<String> variantParts = new ArrayList<>();
+        for (VariantOptionDTO opt : variantDto.getOptions()) {
+            String val = opt.getValueName();
+            if (val != null && !val.isEmpty()) {
+                // Extract digits
+                String digits = val.replaceAll("\\D+", "");
+                if (!digits.isEmpty()) {
+                    variantParts.add(digits);
+                } else {
+                    // Take first 3 letters of each word separated by hyphen
+                    String[] valWords = val.trim().split("\\s+");
+                    List<String> parts = new ArrayList<>();
+                    for (String vw : valWords) {
+                        parts.add(vw.length() >= 3 ? vw.substring(0, 3).toUpperCase() : vw.toUpperCase());
+                    }
+                    variantParts.add(String.join("-", parts));
+                }
+            }
+        }
+
+        String variantPart = String.join("-", variantParts);
+        return namePart + (variantPart.isEmpty() ? "" : "-" + variantPart);
+    }
+
+
+//    private String generateSkuPrefix(String productName, ProductVariantDTO variantDto) {
+//        String skuBase = productName.substring(0, Math.min(3, productName.length())).toUpperCase();
+//
+//        StringBuilder skuOptions = new StringBuilder();
+//        for (VariantOptionDTO opt : variantDto.getOptions()) {
+//            String val = opt.getValueName();
+//            if (val != null && !val.isEmpty()) {
+//                skuOptions.append("-").append(val.substring(0, Math.min(4, val.length())).toUpperCase());
+//            }
 //        }
-//        return null;
+//
+//        return skuBase + skuOptions;
 //    }
+
 }

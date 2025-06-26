@@ -8,6 +8,7 @@ export interface CategoryDTO {
   children?: CategoryDTO[];
   optionTypes?: OptionTypeDTO[];
   imgPath?: string;
+  level?: number;
 }
 
 export interface CategoryFlatDTO extends CategoryDTO {
@@ -28,4 +29,10 @@ export interface CategoryOptionDTO {
   name: string;
   selectedAt: Date;
 }
+
+export interface CategoryGroup {
+  root: CategoryDTO;
+  subcategories: CategoryDTO[];
+}
+
 

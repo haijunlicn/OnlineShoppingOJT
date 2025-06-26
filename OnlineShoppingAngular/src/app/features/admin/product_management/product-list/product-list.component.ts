@@ -1,9 +1,11 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Table } from 'primeng/table';
-import { ProductListItemDTO } from '../../../../core/models/product.model';
+import { BrandDTO, ProductListItemDTO } from '../../../../core/models/product.model';
 import { ProductService } from '../../../../core/services/product.service';
 import { CategoryService } from '../../../../core/services/category.service';
 import { CategoryDTO } from '../../../../core/models/category-dto';
+import { BrandService } from '@app/core/services/brand.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-premium-products',
@@ -16,9 +18,10 @@ export class ProductListComponent implements OnInit {
 
   products: ProductListItemDTO[] = [];
   categories: any[] = [];
-  brands: any[] = [];
+  brands: BrandDTO[] = [];
   statuses: any[] = [
     { label: 'In Stock', value: 'In Stock' },
+    { label: 'Low Stock', value: 'Low Stock' },
     { label: 'Out of Stock', value: 'Out of Stock' }
   ];
 
@@ -34,8 +37,11 @@ export class ProductListComponent implements OnInit {
 
   showFilters = false;
 
-  constructor(private productService: ProductService,
-    private categoryService: CategoryService
+  constructor(
+    private productService: ProductService,
+    private categoryService: CategoryService,
+    private brandService: BrandService,
+    private router: Router
   ) { }
 
   ngOnInit() {
@@ -83,16 +89,18 @@ export class ProductListComponent implements OnInit {
 
 
   loadBrands() {
-    this.brands = [
-      { label: 'Louis Vuitton', value: 'Louis Vuitton' },
-      { label: 'Gucci', value: 'Gucci' },
-      { label: 'Chanel', value: 'Chanel' },
-      { label: 'Hermès', value: 'Hermès' },
-      { label: 'Prada', value: 'Prada' },
-      { label: 'Rolex', value: 'Rolex' },
-      { label: 'Cartier', value: 'Cartier' },
-      { label: 'Tiffany & Co.', value: 'Tiffany & Co.' }
-    ];
+    this.brandService.getAllBrands().subscribe({
+      next: (brands: BrandDTO[]) => {
+        this.brands = brands.map(brand => ({
+          id: brand.id,
+          name: brand.name,
+          logo: brand.logo
+        }));
+      },
+      error: (error) => {
+        console.error("Error loading brands:", error);
+      }
+    });
   }
 
   toggleFilters() {
@@ -109,13 +117,41 @@ export class ProductListComponent implements OnInit {
     this.selectedStatus = null;
     this.globalFilterValue = '';
     this.priceRange = [this.minPrice, this.maxPrice];
-    console.log("Cleared all filters");
-
   }
 
   getStockStatus(product: ProductListItemDTO): string {
-    return product.variants.some(v => v.stock > 0) ? 'In Stock' : 'Out of Stock';
+    const totalStock = this.getTotalStock(product);
+    if (totalStock === 0) return 'Out of Stock';
+    if (totalStock <= 10) return 'Low Stock';
+    return 'In Stock';
   }
+
+  getTotalStock(product: ProductListItemDTO): number {
+    return product.variants.reduce((total, variant) => total + variant.stock, 0);
+  }
+
+  getOverallStockClass(product: ProductListItemDTO): string {
+    const status = this.getStockStatus(product);
+    switch (status) {
+      case 'Out of Stock': return 'status-inactive';
+      case 'Low Stock': return 'status-low';
+      default: return 'status-active';
+    }
+  }
+
+  getStatusColor(status: string): string {
+    switch (status) {
+      case 'In Stock':
+        return '#28a745'; // green
+      case 'Low Stock':
+        return '#fd7e14'; // orange
+      case 'Out of Stock':
+        return '#dc3545'; // red
+      default:
+        return '#6c757d'; // gray fallback
+    }
+  }
+
 
   onGlobalFilter(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -128,9 +164,9 @@ export class ProductListComponent implements OnInit {
     this.dt.filter(category?.value ?? null, 'category.name', 'equals');
   }
 
-  selectBrand(brand: any) {
+  selectBrand(brand: BrandDTO | null) {
     this.selectedBrand = brand;
-    this.dt.filter(brand?.value ?? null, 'brand.name', 'equals');
+    this.dt.filter(brand?.name ?? null, 'brand.name', 'equals');
   }
 
   selectStatus(status: any) {
@@ -165,6 +201,7 @@ export class ProductListComponent implements OnInit {
 
   viewProduct(product: any): void {
     console.log('View product details:', product);
+    this.router.navigate(['/admin/product', product.id]);
   }
 
   editProduct(product: any): void {

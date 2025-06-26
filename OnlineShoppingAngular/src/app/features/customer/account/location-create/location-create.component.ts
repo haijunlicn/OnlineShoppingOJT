@@ -10,6 +10,7 @@ import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms'
 import { Subscription } from 'rxjs';
 import { LocationService } from '../../../../core/services/location.service';
 import { LocationDto } from '../../../../core/models/location-dto';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-location',
@@ -31,7 +32,8 @@ export class LocationCreateComponent implements OnInit, OnDestroy {
   constructor(
     private locationService: LocationService,
     private formBuilder: FormBuilder,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+     private authService: AuthService // Add this
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
 
@@ -177,33 +179,42 @@ export class LocationCreateComponent implements OnInit, OnDestroy {
   }
 
   saveLocation(): void {
-    if (!this.currentLatLng) {
-      alert('Please select a location first!');
-      return;
-    }
-
-    if (this.addressForm.invalid) {
-      alert('Please fill in all required fields!');
-      return;
-    }
-
-    const location: LocationDto = {
-      lat: this.currentLatLng.lat,
-      lng: this.currentLatLng.lng,
-      address: this.addressForm.get('address')?.value || '',
-      township: this.addressForm.get('township')?.value || '',
-      city: this.addressForm.get('city')?.value || '',
-      zipCode: String(this.addressForm.get('zipCode')?.value) || '',
-      country: this.addressForm.get('country')?.value || ''
-    };
-
-    const saveSub = this.locationService.saveLocation(location).subscribe({
-      next: () => alert('Location saved successfully!'),
-      error: () => alert('Failed to save location.')
-    });
-
-    this.subscriptions.push(saveSub);
+  if (!this.currentLatLng) {
+    alert('Please select a location first!');
+    return;
   }
+
+  if (this.addressForm.invalid) {
+    alert('Please fill in all required fields!');
+    return;
+  }
+
+  const userId = this.authService.getCurrentUser()?.id;
+
+  if (!userId) {
+    alert('User not logged in!');
+    return;
+  }
+
+  const location: LocationDto = {
+    lat: this.currentLatLng.lat,
+    lng: this.currentLatLng.lng,
+    address: this.addressForm.get('address')?.value || '',
+    township: this.addressForm.get('township')?.value || '',
+    city: this.addressForm.get('city')?.value || '',
+    zipCode: String(this.addressForm.get('zipCode')?.value) || '',
+    country: this.addressForm.get('country')?.value || '',
+    userId: userId
+  };
+
+  const saveSub = this.locationService.saveLocation(location).subscribe({
+    next: () => alert('Location saved successfully!'),
+    error: () => alert('Failed to save location.')
+  });
+
+  this.subscriptions.push(saveSub);
+}
+
 
   onSearch(): void {
     const query = this.searchControl.value?.trim();

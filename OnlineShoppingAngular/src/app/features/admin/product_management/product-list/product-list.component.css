@@ -107,6 +107,11 @@
   color: #16a34a;
 }
 
+.status-low {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
 .status-inactive {
   background: #fbeaea;
   color: #ef4444;
@@ -131,7 +136,6 @@
   color: #1a1a1a;
   font-weight: 600;
 }
-
 
 /* Button Styling */
 :host ::ng-deep .p-button {
@@ -181,11 +185,6 @@
   }
 }
 
-main {
-  min-height: 100vh;
-  background: #f6f8fa;
-}
-
 .card {
   background: #fff;
   border: none;
@@ -201,7 +200,7 @@ main {
   --border-color: var(--color-border, #e0e0e0);
   border-radius: 0.7rem;
   overflow: hidden;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
   background: #fff;
 }
 
@@ -516,7 +515,7 @@ main {
   .price-filter-group {
     min-width: 120px;
   }
-  
+
   .price-inputs input,
   .price-input {
     width: 45px;
@@ -542,4 +541,63 @@ main {
   object-fit: cover;
   border: 1px solid #e9ecef;
   background: #f8f9fa;
+}
+
+/* --- Responsive Table Improvements --- */
+@media (max-width: 600px) {
+  /* Hide Brand/Category, Created, and Actions columns */
+  ::ng-deep .p-datatable-products th:nth-child(3),
+  ::ng-deep .p-datatable-products td:nth-child(3),
+  ::ng-deep .p-datatable-products th:nth-child(6),
+  ::ng-deep .p-datatable-products td:nth-child(6),
+  ::ng-deep .p-datatable-products th:nth-child(7),
+  ::ng-deep .p-datatable-products td:nth-child(7) {
+    display: none !important;
+  }
+
+  /* Reduce padding and font size */
+  ::ng-deep .p-datatable-products th,
+  ::ng-deep .p-datatable-products td {
+    padding: 0.3rem 0.2rem;
+    font-size: 0.78rem;
+  }
+
+  /* Make table horizontally scrollable */
+  ::ng-deep .p-datatable-products {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  ::ng-deep .p-datatable-products table {
+    min-width: 600px;
+  }
+
+  /* Filter row: stack controls vertically and full width */
+  .filter-row th {
+    display: block;
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  .filter-row .bootstrap-dropdown,
+  .filter-row .price-filter-group {
+    width: 100%;
+  }
+  .filter-row input[type="text"],
+  .filter-row input[type="number"] {
+    width: 100%;
+    margin-bottom: 0.3rem;
+  }
+
+  /* Action buttons: larger and spaced */
+  .action-buttons {
+    flex-direction: row;
+    gap: 0.4rem;
+    justify-content: flex-start;
+  }
+  .action-btn {
+    width: 2rem !important;
+    height: 2rem !important;
+    font-size: 1rem !important;
+  }
 }

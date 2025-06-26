@@ -95,7 +95,8 @@ export class HeaderComponent implements OnInit {
   }
 
   onProfile(): void {
-    this.router.navigate(['/customer/profile']);
+    // this.router.navigate(['/customer/profile']);
+    console.log("user id : " , this.authService.getCurrentUser()?.id);
     this.isProfileDropdownOpen = false;
   }
 

@@ -51,32 +51,8 @@ export class VariantGeneratorService {
       });
       combinations = newCombinations;
     });
-
     return combinations;
   }
-
-  // private cartesianProduct(optionsWithValues: any[]): any[] {
-  //   return optionsWithValues.reduce(
-  //     (acc, option) => {
-  //       const newAcc: any[] = []
-  //       acc.forEach((existingCombination) => {
-  //         option.values.forEach((value: any) => {
-  //           newAcc.push([
-  //             ...existingCombination,
-  //             {
-  //               optionId: option.optionId,
-  //               optionName: option.optionName,
-  //               optionValueId: value.optionValueId,
-  //               valueName: value.valueName,
-  //             },
-  //           ])
-  //         })
-  //       })
-  //       return newAcc
-  //     },
-  //     [[]],
-  //   )
-  // }
 
   private generateDisplayLabel(combination: any[]): string {
     return combination.map((item) => `${item.optionName}: ${item.valueName}`).join(", ")

@@ -37,14 +37,12 @@ public class UserAddressController {
 //        return ResponseEntity.ok(dto);
 //    }
 @GetMapping("/user-locations")
-public ResponseEntity<List<UserAddressDto>> getUserLocations() {
-    List<UserAddressDto> dtos = userAddressService.getUserAddressesByUserId();
-    if (dtos.isEmpty()) {
-        return ResponseEntity.notFound().build();
-    }
-    System.out.println("location dtos: " + dtos);
+public ResponseEntity<List<UserAddressDto>> getUserLocations(@RequestParam Integer userId) {
+        System.out.println("hello2");
+    List<UserAddressDto> dtos = userAddressService.getUserAddressesByUserId(userId);
     return ResponseEntity.ok(dtos);
 }
+
 
 
     @DeleteMapping("/{id}")
@@ -64,6 +62,7 @@ public ResponseEntity<List<UserAddressDto>> getUserLocations() {
 
     @PutMapping("/update/{id}")
     public ResponseEntity<String> updateAddress(@PathVariable Integer id, @RequestBody UserAddressDto dto) {
+        System.out.println("hay yo !");
         try {
             userAddressService.updateUserAddress(id, dto);
             return ResponseEntity.ok("User address updated successfully.");

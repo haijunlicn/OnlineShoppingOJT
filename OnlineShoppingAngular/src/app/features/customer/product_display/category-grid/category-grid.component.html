@@ -1,0 +1,10 @@
+<div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+  <div class="col" *ngFor="let category of categories">
+    <div class="card category-tile h-100" (click)="onCategoryClick(category)">
+      <img *ngIf="category.imgPath" [src]="category.imgPath" class="card-img-top" alt="{{category.name}}" style="height:120px;object-fit:cover;">
+      <div class="card-body text-center">
+        <h6 class="mb-1">{{ category.name }}</h6>
+      </div>
+    </div>
+  </div>
+</div>

@@ -11,7 +11,6 @@ import java.util.List;
 @Table(name = "roles")
 @Getter
 @Setter
-@Data
 public class RoleEntity {
 
     @Id

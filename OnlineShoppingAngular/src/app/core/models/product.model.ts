@@ -5,15 +5,16 @@ import type { VariantOptionDTO } from "./variant.model";
 // Product Variant
 export interface ProductVariantDTO {
   id?: number;
-  options: VariantOptionDTO[];
-  price: number;
-  stock: number;
-  sku: string;
-  imgPath?: string;
-  priceHistory?: VariantPriceDTO[];
-  displayLabel?: string;
-  isDefault?: boolean;     // Marks default variant
-  isRemovable?: boolean;
+  options: VariantOptionDTO[]
+  price: number
+  stock: number
+  sku: string
+  imgPath?: string
+  priceHistory?: VariantPriceDTO[]
+  displayLabel?: string
+  isDefault?: boolean
+  isRemovable?: boolean
+  isExisting?: boolean 
 }
 
 // Product Option
@@ -28,7 +29,7 @@ export interface ProductDTO {
   id?: number;
   name: string;
   description: string;
-  brandId: number | string;
+  brandId: string;
    brand?: BrandDTO;
   category: CategoryDTO;
   categoryId: number | string;
@@ -39,7 +40,7 @@ export interface ProductDTO {
 
 // Brand DTO
 export interface BrandDTO {
-  id: number | string;
+  id: string;
   name: string;
   logo: string;
 }

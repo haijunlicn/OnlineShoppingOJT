@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 public class ProductVariantDTO {
-	private long id;
+	private Long id;
 	private List<VariantOptionDTO> options;
 	private BigDecimal price;
 	private Integer stock;

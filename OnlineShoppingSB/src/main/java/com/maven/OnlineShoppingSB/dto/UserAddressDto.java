@@ -22,4 +22,5 @@ public class UserAddressDto {
     private String zipcode;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private Integer userId;
 }

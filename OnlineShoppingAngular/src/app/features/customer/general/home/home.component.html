@@ -1,117 +1,118 @@
 <app-header></app-header>
 
-<div class="main-content">
-  <!-- Hero Section -->
-  <section class="hero-section">
-    <div class="hero-content">
-      <h1 class="hero-title">Discover Your Next Favorite</h1>
-      <p class="hero-subtitle">Shop the latest trends and exclusive deals, all in one place.</p>
-      <form class="hero-search-form" (submit)="$event.preventDefault(); onSearch(heroSearchInput.value)">
-        <input #heroSearchInput type="text" class="hero-search-input" placeholder="Search for products, brands, and more..." aria-label="Search">
-        <button type="submit" class="hero-search-btn"><i class="fas fa-search"></i></button>
-      </form>
-      <button class="hero-btn" (click)="onShopNow()">Shop Now</button>
-    </div>
-  </section>
-
- <!-- Featured Categories -->
-<section class="categories-section">
-  <h2 class="section-title">Shop by Category</h2>
-  <div class="category-carousel-wrapper">
-    <button class="scroll-btn left" (click)="scrollLeft()">‹</button>
-    
-    <div class="category-carousel" #carousel>
-      <div class="category-card" *ngFor="let category of categories">
-        <img [src]="category.image" [alt]="category.name" class="category-image" />
-        <div class="category-info">
-          <h3>{{ category.name }}</h3>
-          <a [routerLink]="category.link" class="category-link">Shop Now</a>
-        </div>
+<main class="main-content">
+  <div>
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-content">
+        <h1 class="hero-title">Discover Your Next Favorite</h1>
+        <p class="hero-subtitle">Shop the latest trends and exclusive deals, all in one place.</p>
+        <form class="hero-search-form" (submit)="$event.preventDefault(); onSearch(heroSearchInput.value)">
+          <input #heroSearchInput type="text" class="hero-search-input"
+            placeholder="Search for products, brands, and more..." aria-label="Search">
+          <button type="submit" class="hero-search-btn"><i class="fas fa-search"></i></button>
+        </form>
+        <button class="hero-btn" (click)="onShopNow()">Shop Now</button>
       </div>
-    </div>
+    </section>
 
-    <button class="scroll-btn right" (click)="scrollRight()">›</button>
-  </div>
-</section>
+    <!-- Featured Categories -->
+    <section class="categories-section">
+      <h2 class="section-title">Shop by Category</h2>
+      <div class="category-carousel-wrapper">
+        <button class="scroll-btn left" (click)="scrollLeft()">‹</button>
 
-
-  <!-- Promotional Banners -->
-  <section class="promo-section">
-    <div class="promo-grid">
-      <div class="promo-banner promo-sale">
-        <div>
-          <h3>Summer Sale</h3>
-          <p>Up to 50% off selected items</p>
-          <a href="#" class="promo-btn">Shop Sale</a>
-        </div>
-      </div>
-      <div class="promo-banner promo-new">
-        <div>
-          <h3>New Arrivals</h3>
-          <p>Fresh styles just landed</p>
-          <a href="#" class="promo-btn">Explore</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Featured Products -->
-  <section class="featured-section">
-    <h2 class="section-title">Featured Products</h2>
-    <div class="featured-grid">
-      <div class="product-card" *ngFor="let product of featuredProducts">
-        <img [src]="product.image" [alt]="product.name" class="product-image">
-        <div class="product-info">
-          <h3 class="product-title">{{ product.name }}</h3>
-          <div class="product-rating">
-            <span *ngFor="let filled of getRatingStars(product.rating); let i = index" class="star" [class.star-filled]="filled" [class.star-empty]="!filled">
-              <i class="fas fa-star"></i>
-            </span>
-            <span class="rating-text">({{ product.rating }})</span>
-          </div>
-          <p class="product-price">{{ product.price | currency:'MMK' }}</p>
-          <div class="product-actions">
-            <button class="add-to-cart-btn" (click)="onAddToCart(product)"><i class="fas fa-shopping-bag"></i></button>
-            <button class="wishlist-btn" (click)="onWishlist(product)"><i class="fas fa-heart"></i></button>
+        <div class="category-carousel" #carousel>
+          <div class="category-card" *ngFor="let category of categories">
+            <img [src]="category.image" [alt]="category.name" class="category-image" />
+            <div class="category-info">
+              <h3>{{ category.name }}</h3>
+              <a [routerLink]="category.link" class="category-link">Shop Now</a>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- Testimonials -->
-  <section class="testimonials-section">
-    <h2 class="section-title">What Our Customers Say</h2>
-    <div class="testimonials-grid">
-      <div class="testimonial-card" *ngFor="let testimonial of testimonials">
-        <div class="testimonial-quote">“{{ testimonial.quote }}”</div>
-        <div class="testimonial-user">
-          <img [src]="testimonial.avatar" [alt]="testimonial.name" class="testimonial-avatar">
+        <button class="scroll-btn right" (click)="scrollRight()">›</button>
+      </div>
+    </section>
+
+
+    <!-- Promotional Banners -->
+    <section class="promo-section">
+      <div class="promo-grid">
+        <div class="promo-banner promo-sale">
           <div>
-            <div class="testimonial-name">{{ testimonial.name }}</div>
-            <div class="testimonial-rating">
-              <i class="fas fa-star" *ngFor="let s of [1,2,3,4,5]; let i = index" [class.star-filled]="i < testimonial.rating"></i>
+            <h3>Summer Sale</h3>
+            <p>Up to 50% off selected items</p>
+            <a href="#" class="promo-btn">Shop Sale</a>
+          </div>
+        </div>
+        <div class="promo-banner promo-new">
+          <div>
+            <h3>New Arrivals</h3>
+            <p>Fresh styles just landed</p>
+            <a href="#" class="promo-btn">Explore</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured Products -->
+    <section class="featured-section">
+      <h2 class="section-title">Featured Products</h2>
+      <div class="featured-grid">
+        <div class="product-card" *ngFor="let product of featuredProducts">
+          <img [src]="product.image" [alt]="product.name" class="product-image">
+          <div class="product-info">
+            <h3 class="product-title">{{ product.name }}</h3>
+            <div class="product-rating">
+              <span *ngFor="let filled of getRatingStars(product.rating); let i = index" class="star"
+                [class.star-filled]="filled" [class.star-empty]="!filled">
+                <i class="fas fa-star"></i>
+              </span>
+              <span class="rating-text">({{ product.rating }})</span>
+            </div>
+            <p class="product-price">{{ product.price | currency:'MMK' }}</p>
+            <div class="product-actions">
+              <button class="add-to-cart-btn" (click)="onAddToCart(product)"><i
+                  class="fas fa-shopping-bag"></i></button>
+              <button class="wishlist-btn" (click)="onWishlist(product)"><i class="fas fa-heart"></i></button>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Newsletter Signup -->
-  <section class="newsletter-section">
-    <div class="newsletter-content">
-      <h2>Stay Updated</h2>
-      <p>Subscribe to our newsletter for exclusive offers and updates</p>
-      <form class="newsletter-form" (submit)="$event.preventDefault(); onSubscribe(newsletterEmail.value)">
-        <input #newsletterEmail type="email" placeholder="Enter your email" required>
-        <button type="submit">Subscribe</button>
-      </form>
-    </div>
-  </section>
-</div>
+    <!-- Testimonials -->
+    <section class="testimonials-section">
+      <h2 class="section-title">What Our Customers Say</h2>
+      <div class="testimonials-grid">
+        <div class="testimonial-card" *ngFor="let testimonial of testimonials">
+          <div class="testimonial-quote">“{{ testimonial.quote }}”</div>
+          <div class="testimonial-user">
+            <img [src]="testimonial.avatar" [alt]="testimonial.name" class="testimonial-avatar">
+            <div>
+              <div class="testimonial-name">{{ testimonial.name }}</div>
+              <div class="testimonial-rating">
+                <i class="fas fa-star" *ngFor="let s of [1,2,3,4,5]; let i = index"
+                  [class.star-filled]="i < testimonial.rating"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-<!-- <app-register *ngIf="(registerVisible$ | async)" class="register-modal-overlay"></app-register>
-<app-login *ngIf="(loginVisible$ | async)" class="login-modal-overlay"></app-login>
-<app-forget-password *ngIf="(forgotVisible$ | async)" class="forgot-modal-overlay"> </app-forget-password>
- -->
+    <!-- Newsletter Signup -->
+    <section class="newsletter-section">
+      <div class="newsletter-content">
+        <h2>Stay Updated</h2>
+        <p>Subscribe to our newsletter for exclusive offers and updates</p>
+        <form class="newsletter-form" (submit)="$event.preventDefault(); onSubscribe(newsletterEmail.value)">
+          <input #newsletterEmail type="email" placeholder="Enter your email" required>
+          <button type="submit">Subscribe</button>
+        </form>
+      </div>
+    </section>
+  </div>
+</main>

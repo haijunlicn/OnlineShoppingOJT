@@ -26,6 +26,8 @@ import { PaymentUpdateComponent } from './payment-management/payment-update/paym
 import { AdminNoAuthGuard } from '../../core/guards/admin-no-auth.guard';
 import { AdminAuthGuard } from '../../core/guards/admin-auth.guard';
 import { ProductAttributeComponent } from './attribute_management/product-attribute/product-attribute.component';
+import { ProductDetailComponent } from './product_management/product-detail/product-detail.component';
+import { ProductEditComponent } from './product_management/product-edit/product-edit.component';
 
 
 const routes: Routes = [
@@ -106,7 +108,14 @@ const routes: Routes = [
     component: ProductBulkUploadComponent,
     canActivate: [AdminAuthGuard]
   },
-
+  {
+    path: 'product/:id',
+    component: ProductDetailComponent
+  },
+  {
+    path: 'product/edit/:id',
+    component: ProductEditComponent
+  }
 ];
 
 @NgModule({
