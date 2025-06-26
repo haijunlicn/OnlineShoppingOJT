@@ -95,5 +95,11 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred");
         }
     }
+    @GetMapping("/related")
+    public ResponseEntity<List<ProductDTO>> getRelatedProducts(
+            @RequestParam Long categoryId,
+            @RequestParam Long productId) {
+        return ResponseEntity.ok(productService.getRelatedProducts(categoryId, productId));
+    }
 
 }

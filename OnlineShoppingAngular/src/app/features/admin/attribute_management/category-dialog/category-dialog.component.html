@@ -82,10 +82,24 @@
   </form>
 
   <ng-template pTemplate="footer">
-    <button pButton pRipple type="button" label="Cancel" icon="pi pi-times" 
-      class="p-button-text p-button-sm" (click)="closeDialog()"></button>
-    <button pButton pRipple type="button" label="Save" icon="pi pi-check" 
-      class="p-button-success p-button-sm" (click)="saveCategory()" 
-      [disabled]="categoryForm.invalid"></button>
-  </ng-template>
+  <button pButton pRipple type="button" label="Cancel" icon="pi pi-times"
+    class="p-button-text p-button-sm" (click)="closeDialog()" [disabled]="isUploading">
+  </button>
+
+  <button pButton pRipple type="button" class="p-button-success p-button-sm"
+    (click)="saveCategory()"
+    [disabled]="categoryForm.invalid || isUploading">
+    
+    <ng-container *ngIf="!isUploading; else loadingTpl">
+      <i class="pi pi-check me-2"></i>
+      Save
+    </ng-container>
+
+    <ng-template #loadingTpl>
+      <i class="pi pi-spin pi-spinner me-2"></i>
+      Saving...
+    </ng-template>
+  </button>
+</ng-template>
+
 </p-dialog>

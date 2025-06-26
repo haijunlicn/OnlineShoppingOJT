@@ -1,6 +1,6 @@
 import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { CreateProductRequestDTO, ProductCardItem, ProductListItemDTO, ProductVariantDTO } from '../models/product.model';
+import { CreateProductRequestDTO, ProductCardItem, ProductDTO, ProductListItemDTO, ProductVariantDTO } from '../models/product.model';
 import { catchError, Observable, throwError } from 'rxjs';
 
 @Injectable({
@@ -48,4 +48,9 @@ export class ProductService {
       observe: 'events'
     });
   }
+  getRelatedProducts(categoryId: number, productId: number) {
+  return this.http.get<ProductDTO[]>(`${this.baseUrl}/related?categoryId=${categoryId}&productId=${productId}`);
+}
+
+
 }

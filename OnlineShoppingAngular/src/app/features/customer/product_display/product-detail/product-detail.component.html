@@ -195,50 +195,31 @@
         </div>
       </div>
     </div>
+<!-- Related Products -->
+<div class="related-products-wrapper mt-3" *ngIf="relatedProducts.length > 0">
+  <h4 class="mb-2">Related Products</h4>
 
-    <!-- Related Products -->
-    <div class="row mt-3">
-      <div class="col-12">
-        <h4 class="mb-2">Related Products</h4>
-        <div class="row">
-          <div class="col-6 col-md-3 mb-3">
-            <div class="card h-100">
-              <img src="/assets/placeholder.jpg" class="card-img-top" alt="Related product">
-              <div class="card-body">
-                <h5 class="card-title">Related Product</h5>
-                <p class="card-text">$99.99</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-6 col-md-3 mb-3">
-            <div class="card h-100">
-              <img src="/assets/placeholder.jpg" class="card-img-top" alt="Related product">
-              <div class="card-body">
-                <h5 class="card-title">Related Product</h5>
-                <p class="card-text">$99.99</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-6 col-md-3 mb-3">
-            <div class="card h-100">
-              <img src="/assets/placeholder.jpg" class="card-img-top" alt="Related product">
-              <div class="card-body">
-                <h5 class="card-title">Related Product</h5>
-                <p class="card-text">$99.99</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-6 col-md-3 mb-3">
-            <div class="card h-100">
-              <img src="/assets/placeholder.jpg" class="card-img-top" alt="Related product">
-              <div class="card-body">
-                <h5 class="card-title">Related Product</h5>
-                <p class="card-text">$99.99</p>
-              </div>
-            </div>
-          </div>
+  <!-- Scroll Left Button -->
+  <button class="scroll-btn left" (click)="scrollLeft()">‹</button>
+
+  <!-- Scrollable Container -->
+  <div class="related-products-scroll" #scrollContainer>
+    <div class="related-product-card" *ngFor="let product of relatedProducts">
+      <div class="card h-100">
+<img [src]="getMainProductImage(product)" alt="Product Image" />
+
+
+        <div class="card-body">
+          <h5 class="card-title">{{ product?.name }}</h5>
+          <p class="card-text">${{ product?.basePrice }}</p>
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Scroll Right Button -->
+  <button class="scroll-btn right" (click)="scrollRight()">›</button>
+</div>
+
   </div>
 </main>

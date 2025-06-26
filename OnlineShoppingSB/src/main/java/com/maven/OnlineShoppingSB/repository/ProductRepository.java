@@ -13,4 +13,6 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
    //  List<OptionEntity> findByDeletedFalse();
 
     List<OptionEntity> findByDelFg(int delFg);
+    List<ProductEntity> findTop10ByCategoryIdAndIdNotOrderByCreatedDateDesc(Long categoryId, Long productId);
+
 }

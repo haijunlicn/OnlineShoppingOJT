@@ -97,26 +97,6 @@ export class ProductListComponent {
     return false;
   }
 
-  hasColorVariants(product: any): boolean {
-    return this.getColorOptions(product).length > 0;
-  }
-
-  getColorOptions(product: any): any[] {
-    if (!product.options) return [];
-
-    // Find color option type
-    const colorOption = product.options.find((opt: any) =>
-      opt.name.toLowerCase().includes('color') ||
-      opt.name.toLowerCase().includes('colour')
-    );
-
-    if (colorOption && colorOption.optionValues) {
-      return colorOption.optionValues;
-    }
-
-    return [];
-  }
-
   quickView(product: any, event: Event): void {
     event.stopPropagation();
     // Implement quick view modal logic

@@ -26,6 +26,8 @@ export class CategoryDialogComponent {
   categoryImagePreview: string | null = null
   selectedImage: File | null = null
   defaultCategoryImage = "/assets/default-category.png"
+  isUploading: boolean = false;
+
 
   constructor(
     private fb: FormBuilder,
@@ -122,54 +124,54 @@ export class CategoryDialogComponent {
   }
 
   saveCategory(): void {
-    if (this.categoryForm.invalid) return;
+  if (this.categoryForm.invalid) return;
 
-    const formValue = this.categoryForm.value;
+  this.isUploading = true; // Start loading
 
-    const handleAfterSave = (savedCategory: CategoryDTO) => {
-      this.alertService.toast(
-        this.editingCategory ? "Category updated successfully." : "Category created successfully.",
-        'success'
-      );
-      this.save.emit(savedCategory);
-      this.closeDialog();
-    };
+  const formValue = this.categoryForm.value;
 
-    const saveWithImage = (imgPath?: string) => {
-      const categoryDTO = this.buildCategoryDTO(formValue, imgPath);
+  const handleAfterSave = (savedCategory: CategoryDTO) => {
+    this.alertService.toast(
+      this.editingCategory ? "Category updated successfully." : "Category created successfully.",
+      'success'
+    );
+    this.save.emit(savedCategory);
+    this.closeDialog();
+    this.isUploading = false; // End loading
+  };
 
-      const save$ = this.editingCategory
-        ? this.categoryService.updateCategory(categoryDTO)
-        : this.categoryService.createCategory(categoryDTO);
+  const handleError = (errorMessage: string, errorObj: any) => {
+    this.isUploading = false; // End loading
+  };
 
-      save$.subscribe({
-        next: (savedCategory) => handleAfterSave(savedCategory),
-        error: (err) => {
-          console.error(this.editingCategory ? "Error updating category:" : "Error creating category:", err);
-          this.alertService.toast(
-            this.editingCategory
-              ? "Failed to update category."
-              : "Failed to create category.",
-            'error'
-          );
-        },
-      });
-    };
+  const saveWithImage = (imgPath?: string) => {
 
-    if (this.selectedImage) {
-      this.uploadImage(this.selectedImage).subscribe({
-        next: (imgPath: string) => saveWithImage(imgPath),
-        error: (err: unknown) => {
-          console.error("Image upload failed", err);
-          this.alertService.toast("Image upload failed.", "error");
-        },
-      });
-    } else {
-      saveWithImage(formValue.imagePath);
-    }
+    const save$ = this.editingCategory
+      ? this.categoryService.updateCategory(categoryDTO)
+      : this.categoryService.createCategory(categoryDTO);
+
+    save$.subscribe({
+      next: (savedCategory) => handleAfterSave(savedCategory),
+      error: (err) => {
+        handleError(
+          this.editingCategory ? "Failed to update category." : "Failed to create category.",
+          err
+        );
+      },
+    });
+  };
+
+  if (this.selectedImage) {
+    this.uploadImage(this.selectedImage).subscribe({
+      next: (imgPath: string) => saveWithImage(imgPath),
+      error: (err: unknown) => {
+        handleError("Image upload failed.", err);
+      },
+    });
+  } else {
+    saveWithImage(formValue.imagePath);
   }
-
-
+}
   private buildCategoryDTO(formValue: any, imagePath?: string): CategoryDTO {
     return {
       id: this.editingCategory?.id,

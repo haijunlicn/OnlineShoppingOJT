@@ -693,7 +693,13 @@ public class ProductService {
             return def;
         }
     }
+    public List<ProductDTO> getRelatedProducts(Long categoryId, Long productId) {
+        List<ProductEntity> relatedProducts = productRepo.findTop10ByCategoryIdAndIdNotOrderByCreatedDateDesc(categoryId, productId);
 
+        return relatedProducts.stream()
+                .map(product -> mapper.map(product, ProductDTO.class))
+                .collect(Collectors.toList());
+    }
 //    private Boolean getCellBoolean(Cell cell) {
 //        if (cell == null) return null;
 //        if (cell.getCellType() == CellType.BOOLEAN) {

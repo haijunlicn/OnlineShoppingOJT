@@ -594,10 +594,12 @@ export class ProductCreateComponent implements OnInit {
 
       const productImages: ProductImageDTO[] = this.imagePool.map((img) => ({
         imgPath: img.uploadedUrl!,
+        imageUrl: img.uploadedUrl!, 
         displayOrder: img.displayOrder,
         mainImageStatus: img.isMain,
         altText: img.altText,
-      }))
+      }));
+
 
       const requestDto: CreateProductRequestDTO = {
         product: {
@@ -607,6 +609,17 @@ export class ProductCreateComponent implements OnInit {
           brandId: formValue.brandId,
           categoryId: formValue.categoryId,
           basePrice: formValue.basePrice,
+          
+          category: {
+      id: formValue.categoryId,
+      name: '' 
+    },
+
+    brand: {
+      id: formValue.brandId,
+      name: formValue.brandName || '', 
+  logo: formValue.brandLogo || 'default-logo.png', 
+    },
         },
         options: formValue.options,
         variants: formValue.variants.map((variant: any, index: number) => {

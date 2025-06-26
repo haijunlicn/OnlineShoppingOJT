@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import com.maven.OnlineShoppingSB.dto.OptionDTO;
 import com.maven.OnlineShoppingSB.entity.CategoryOptionEntity;
-import com.maven.OnlineShoppingSB.entity.OptionEntity;
 import com.maven.OnlineShoppingSB.repository.CategoryOptionRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
