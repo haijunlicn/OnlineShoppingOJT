@@ -11,7 +11,7 @@ import java.util.List;
 
 @Data
 public class ProductDTO {
-    private String id;
+    private Long id;
     private String name;
     private String description;
     private Long brandId;

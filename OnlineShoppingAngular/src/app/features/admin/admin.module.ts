@@ -60,6 +60,8 @@ import { OptionDialogComponent } from './attribute_management/option-dialog/opti
 import { OptionValueDialogComponent } from './attribute_management/option-value-dialog/option-value-dialog.component';
 import { CategoryOptionsDialogComponent } from './attribute_management/category-options-dialog/category-options-dialog.component';
 import { PriceDisplayInputComponent } from './product_management/price-display-input/price-display-input.component';
+import { ProductDetailComponent } from './product_management/product-detail/product-detail.component';
+import { StockUpdateModalComponent } from './product_management/stock-update-modal/stock-update-modal.component';
 
 
 @NgModule({
@@ -103,6 +105,8 @@ import { PriceDisplayInputComponent } from './product_management/price-display-i
     OptionValueDialogComponent,
     CategoryOptionsDialogComponent,
     PriceDisplayInputComponent,
+    ProductDetailComponent,
+    StockUpdateModalComponent,
   ],
   imports: [
     CommonModule,

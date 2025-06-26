@@ -14,6 +14,7 @@ import { CloudinaryService } from '../../../../core/services/cloudinary.service'
 import { OptionvalueService } from '@app/core/services/optionvalue.service';
 import { AlertService } from '@app/core/services/alert.service';
 import { distinctUntilChanged } from 'rxjs';
+import { FormValidationService } from '@app/core/services/form-validation.service';
 
 @Component({
   selector: "app-product-create",
@@ -71,6 +72,7 @@ export class ProductCreateComponent implements OnInit {
     private alertService: AlertService,
     private router: Router,
     private route: ActivatedRoute,
+    private formValidation: FormValidationService,
   ) {
     this.productForm = this.productFormService.createProductForm()
 
@@ -111,7 +113,6 @@ export class ProductCreateComponent implements OnInit {
     this.hasOptionsSelected = false
   }
 
-
   onDisplayPriceInput(event: Event): void {
     const input = (event.target as HTMLInputElement).value;
     this.displayPrice = input;
@@ -123,16 +124,6 @@ export class ProductCreateComponent implements OnInit {
 
     this.autoApplyBasePrice()
   }
-
-  // onApplyBasePrice(): void {
-  //   this.productFormService.applyBulkPrice(this.productForm);
-  //   console.log("Applied base price to all variants");
-
-  //   const variants = this.productFormService.getVariantsArray(this.productForm);
-  //   variants.controls.forEach((variant, i) => {
-  //     console.log(`Variant ${i} new price: `, variant.get('price')?.value);
-  //   });
-  // }
 
   autoApplyBasePrice(): void {
     this.productFormService.applyBulkPrice(this.productForm);
@@ -874,74 +865,25 @@ export class ProductCreateComponent implements OnInit {
   }
 
   applyBulkStock(): void {
-    const stockValue = this.bulkStockValue
-    for (let i = 0; i < this.variants.length; i++) {
-      this.variants.at(i).get("stock")?.setValue(stockValue)
-    }
+    this.productFormService.applyBulkStock(this.variants, this.bulkStockValue);
   }
 
   getSkuForVariant(i: number): string {
     const productName = this.productForm.get("name")?.value || ""
     const variant = this.productVariants[i]
-    const variantOptionValues: string[] = variant.options.map((opt) => opt.valueName!)
-    return this.getSkuBase(productName, variantOptionValues)
+    return this.productFormService.getSkuForVariant(productName, variant)
   }
-
-  getSkuBase(productName: string, variantOptions: string[]): string {
-    const initials = productName
-      .split(/\s+/)
-      .filter((word) => word.length > 0)
-      .map((word) => word[0].toUpperCase())
-      .join("")
-
-    const namePart = initials || "PRD"
-
-    const variantPart = variantOptions
-      .map((value) => {
-        const digitMatch = value.match(/\d+/g)
-        if (digitMatch) {
-          return digitMatch.join("")
-        }
-
-        return value
-          .split(/\s+/)
-          .filter((w) => w.length > 0)
-          .map((w) => w.substring(0, 3).toUpperCase())
-          .join("-")
-      })
-      .join("-")
-
-    return `${namePart}-${variantPart}`
-  }
-
-  private markFormGroupTouched(): void {
-    Object.keys(this.productForm.controls).forEach((key) => {
-      const control = this.productForm.get(key)
-      control?.markAsTouched()
-
-      if (key === "options" && control instanceof FormArray) {
-        control.controls.forEach((group) => {
-          if (group instanceof FormGroup) {
-            Object.keys(group.controls).forEach((key) => {
-              group.get(key)?.markAsTouched()
-            })
-          }
-        })
-      }
-    })
+  
+  markFormGroupTouched(): void {
+    this.formValidation.markFormGroupTouched(this.productForm);
   }
 
   hasError(fieldName: string): boolean {
-    const field = this.productForm.get(fieldName)
-    return !!(field && field.invalid && field.touched)
+    return this.formValidation.hasError(this.productForm, fieldName);
   }
 
   getErrorMessage(fieldName: string): string {
-    const field = this.productForm.get(fieldName)
-    if (field?.errors) {
-      if (field.errors["required"]) return `${fieldName} is required`
-      if (field.errors["minlength"]) return `${fieldName} is too short`
-    }
-    return ""
+    return this.formValidation.getErrorMessage(this.productForm, fieldName);
   }
+
 }

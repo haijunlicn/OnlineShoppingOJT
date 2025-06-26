@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, DoCheck, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
@@ -10,25 +10,57 @@ import { Subscription } from 'rxjs';
 })
 
 export class PriceDisplayInputComponent implements OnInit, OnDestroy {
+
+  constructor(private cdr: ChangeDetectorRef) { }
+
   @Input() control!: FormControl;
 
-  displayValue: string = 'Hello';
-  private valueSub!: Subscription;
+  displayValue = '';
+  private valueSub?: Subscription;
+  private lastRawValue: number | null | undefined
 
   ngOnInit(): void {
-    this.updateDisplayValue(this.control.value);
+    if (this.control) {
+      this.initializeDisplayValue();
+      this.subscribeToValueChanges();
+    }
+  }
 
-    console.log("this.control.value : ", this.control.value);
-    
-
-    // Always subscribe on init
-    this.valueSub = this.control.valueChanges.subscribe(val => {
-      this.updateDisplayValue(val);
-    });
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['control'] && this.control) {
+      this.initializeDisplayValue();
+      this.subscribeToValueChanges();
+    }
   }
 
   ngOnDestroy(): void {
     this.valueSub?.unsubscribe();
+  }
+
+  initializeDisplayValue(): void {
+    const actualValue = this.control?.value;
+
+    if (actualValue == null || actualValue === 0) {
+      // If it's not initialized yet, wait and try again
+      setTimeout(() => this.initializeDisplayValue(), 10);
+      return;
+    }
+
+    // Force UI update
+    this.control?.setValue(0, { emitEvent: false });
+
+    setTimeout(() => {
+      this.control?.setValue(actualValue, { emitEvent: true });
+      this.updateDisplayValue(actualValue);
+      this.lastRawValue = actualValue;
+    }, 0);
+  }
+
+  private subscribeToValueChanges(): void {
+    this.valueSub?.unsubscribe();
+    this.valueSub = this.control?.valueChanges.subscribe((val) => {
+      this.updateDisplayValue(val);
+    });
   }
 
   updateDisplayValue(val: number | null | undefined): void {
@@ -36,21 +68,17 @@ export class PriceDisplayInputComponent implements OnInit, OnDestroy {
   }
 
   onInputChange(event: Event): void {
-    const input = (event.target as HTMLInputElement).value;
-    this.displayValue = input;
+    const raw = (event.target as HTMLInputElement).value;
+    this.displayValue = raw;
 
-    const numericValue = Number(input.replace(/,/g, ''));
+    const numericValue = Number(raw.replace(/,/g, ''));
     if (!isNaN(numericValue)) {
-      this.control.setValue(numericValue, { emitEvent: false });
+      this.control?.setValue(numericValue, { emitEvent: false });
     }
   }
 
   formatPrice(value: number | null | undefined): string {
-    if (value == null || isNaN(value)) {
-      console.log("not good..................");
-      
-      return '';
-    }
-    return value.toLocaleString('en-US', { minimumFractionDigits: 0 });
+    if (value == null || isNaN(value)) return '';
+    return value.toLocaleString('en-US');
   }
 }

@@ -11,8 +11,9 @@ export interface ProductVariantDTO {
   imgPath?: string
   priceHistory?: VariantPriceDTO[]
   displayLabel?: string
-  isDefault?: boolean // New: Mark default variants
+  isDefault?: boolean
   isRemovable?: boolean
+  isExisting?: boolean 
 }
 
 export interface ProductOptionDTO {

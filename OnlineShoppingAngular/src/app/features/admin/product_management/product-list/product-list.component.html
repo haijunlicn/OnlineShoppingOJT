@@ -34,12 +34,22 @@
                 <th pSortableColumn="product.name">
                   Name <p-sortIcon field="product.name"></p-sortIcon>
                 </th>
-                <th pSortableColumn="category.name">
+                <th>
+                  <span pSortableColumn="brand.name">
+                    Brand <p-sortIcon field="brand.name"></p-sortIcon>
+                  </span>
+                  /
+                  <span pSortableColumn="category.name">
+                    Category <p-sortIcon field="category.name"></p-sortIcon>
+                  </span>
+                </th>
+
+                <!-- <th pSortableColumn="category.name">
                   Category <p-sortIcon field="category.name"></p-sortIcon>
                 </th>
                 <th pSortableColumn="brand.name">
                   Brand <p-sortIcon field="brand.name"></p-sortIcon>
-                </th>
+                </th> -->
                 <th pSortableColumn="product.basePrice">
                   Price <p-sortIcon field="product.basePrice"></p-sortIcon>
                 </th>
@@ -60,6 +70,34 @@
                     placeholder="Search name..." class="form-control form-control-sm" />
                 </th>
                 <th>
+                  <!-- Brand Filter -->
+                  <div class="dropdown bootstrap-dropdown mb-2">
+                    <button
+                      class="form-control form-control-sm d-flex justify-content-between align-items-center dropdown-toggle"
+                      type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      <span *ngIf="getSelectedBrandName(); else brandPlaceholder">
+                        {{ getSelectedBrandName() }}
+                      </span>
+                      <ng-template #brandPlaceholder>
+                        <span class="text-muted">All Brands</span>
+                      </ng-template>
+                    </button>
+                    <ul class="dropdown-menu w-100">
+                      <li>
+                        <a class="dropdown-item" href="javascript:void(0)" (click)="selectBrand(null)">
+                          <i class="pi pi-times-circle me-2 text-muted"></i>All Brands
+                        </a>
+                      </li>
+                      <li>
+                        <hr class="dropdown-divider">
+                      </li>
+                      <li *ngFor="let brand of brands">
+                        <a class="dropdown-item" href="javascript:void(0)" (click)="selectBrand(brand)">
+                          <i class="pi pi-briefcase me-2"></i>{{ brand.name }}
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
                   <!-- Bootstrap Category Dropdown -->
                   <div class="dropdown bootstrap-dropdown">
                     <button
@@ -90,19 +128,16 @@
                   </div>
                 </th>
 
-                <th></th>
-
                 <th>
                   <div class="price-filter-group">
-                    <!-- Input group style -->
-                    <div class="input-group input-group-sm mb-2">
-                      <span class="input-group-text">$</span>
-                      <input type="number" [(ngModel)]="priceRange[0]" (ngModelChange)="onPriceInputChange()"
-                        [min]="minPrice" [max]="priceRange[1]" class="form-control" placeholder="Min">
-                      <span class="input-group-text">to</span>
-                      <input type="number" [(ngModel)]="priceRange[1]" (ngModelChange)="onPriceInputChange()"
-                        [min]="priceRange[0]" [max]="maxPrice" class="form-control" placeholder="Max">
-                    </div>
+                    <small class="text-muted">Min</small>
+                    <input type="number" [(ngModel)]="priceRange[0]" (ngModelChange)="onPriceInputChange()"
+                      [min]="minPrice" [max]="priceRange[1]" class="form-control form-control-sm mb-1"
+                      placeholder="MMK" />
+
+                    <small class="text-muted">Max</small>
+                    <input type="number" [(ngModel)]="priceRange[1]" (ngModelChange)="onPriceInputChange()"
+                      [min]="priceRange[0]" [max]="maxPrice" class="form-control form-control-sm" placeholder="MMK" />
                   </div>
                 </th>
 
@@ -130,8 +165,7 @@
                       </li>
                       <li *ngFor="let status of statuses">
                         <a class="dropdown-item" href="javascript:void(0)" (click)="selectStatus(status)">
-                          <i class="pi pi-circle me-2"
-                            [style.color]="status.value === 'In Stock' ? '#28a745' : '#dc3545'"></i>
+                          <i class="pi pi-circle me-2" [style.color]="getStatusColor(status.value)"></i>
                           {{ status.label }}
                         </a>
                       </li>
@@ -157,16 +191,23 @@
                   </div>
                 </td>
                 <td class="fw-semibold">{{ product.product.name }}</td>
-                <td><span class="category-badge">{{ product.category.name }}</span></td>
-                <td><span class="brand-badge">{{ product.brand.name }}</span></td>
-                <td class="fw-bold">{{ product.product.basePrice | currency:'USD':'symbol':'1.2-2' }}</td>
                 <td>
-                  <span class="status-badge"
-                    [ngClass]="product.status === 'In Stock' ? 'status-active' : 'status-inactive'">
-                    {{ product.status }}
+                  <div class="text-nowrap">
+                    <span class="fw-semibold">{{ product.brand.name }}</span>
+                    <br />
+                    <small class="text-muted">{{ product.category.name }}</small>
+                  </div>
+                </td>
+
+                <!-- <td><span class="category-badge">{{ product.category.name }}</span></td>
+                <td><span class="brand-badge">{{ product.brand.name }}</span></td> -->
+                <td class="fw-bold">{{ product.product.basePrice | currency:'MMK ':'code':'1.0-0' }}</td>
+                <td>
+                  <span class="status-badge" [ngClass]="getOverallStockClass(product)">
+                    {{ getStockStatus(product) }}
                   </span>
                 </td>
-                <td>{{ product.product.createdDate | date: 'medium' }}</td>
+                <td>{{ product.product.createdDate | date: 'dd MMM, h:mm a' }}</td>
                 <td>
                   <div class="action-buttons d-flex gap-1">
                     <button pButton pRipple type="button" icon="pi pi-eye"

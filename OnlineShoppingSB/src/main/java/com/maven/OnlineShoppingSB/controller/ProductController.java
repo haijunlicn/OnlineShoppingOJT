@@ -3,6 +3,7 @@ package com.maven.OnlineShoppingSB.controller;
 import com.maven.OnlineShoppingSB.dto.CreateProductRequestDTO;
 import com.maven.OnlineShoppingSB.dto.ProductDTO;
 import com.maven.OnlineShoppingSB.dto.ProductListItemDTO;
+import com.maven.OnlineShoppingSB.dto.StockUpdateRequestDTO;
 import com.maven.OnlineShoppingSB.entity.ProductEntity;
 import com.maven.OnlineShoppingSB.service.ExcelTemplateService;
 import com.maven.OnlineShoppingSB.service.ProductService;
@@ -36,8 +37,6 @@ public class ProductController {
     @PostMapping("/create")
     public ResponseEntity<String> createProduct(@RequestBody CreateProductRequestDTO requestDTO) {
         try {
-            System.out.println("request product dto : " + requestDTO);
-            System.out.println("product images : " + requestDTO.getProductImages());
             productService.createProduct(requestDTO);
             return ResponseEntity.ok("Product created successfully!");
         } catch (AccessDeniedException ex) {
@@ -53,11 +52,25 @@ public class ProductController {
         }
     }
 
+    @PutMapping("/update")
+    public ResponseEntity<String> updateProduct(@RequestBody CreateProductRequestDTO requestDTO) {
+        try {
+            productService.updateProduct(requestDTO);
+            return ResponseEntity.ok("Product updated successfully!");
+        } catch (AccessDeniedException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to update the product.");
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occurred during update.");
+        }
+    }
+
+
     @GetMapping("/list")
     public ResponseEntity<List<ProductListItemDTO>> getAllProducts() {
-        System.out.println("hello");
         List<ProductListItemDTO> dtos = productService.getAllProducts();
-        System.out.println("product list : " + dtos);
         return ResponseEntity.ok(dtos);
     }
 
@@ -65,7 +78,6 @@ public class ProductController {
     public ResponseEntity<ProductListItemDTO> getProductById(@PathVariable Long id) {
         try {
             ProductListItemDTO productDTO = productService.getProductById(id);
-            System.out.println("product detail : " + productDTO);
             return ResponseEntity.ok(productDTO);
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -93,6 +105,16 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Upload failed: " + ex.getMessage());
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred");
+        }
+    }
+
+    @PutMapping("/update-stock")
+    public ResponseEntity<String> updateStock(@RequestBody StockUpdateRequestDTO request) {
+        try {
+            productService.updateStock(request);
+            return ResponseEntity.ok("Stock updated successfully.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 

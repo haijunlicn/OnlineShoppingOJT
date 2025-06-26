@@ -1,0 +1,12 @@
+.category-tile {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid #eee;
+}
+.category-tile:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+.card-img-top {
+  border-bottom: 1px solid #f0f0f0;
+}

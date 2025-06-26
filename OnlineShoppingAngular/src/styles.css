@@ -528,3 +528,7 @@ main.flex-grow-1 {
 .swal2-container.swal2-bottom-end {
   z-index: 99999 !important;
 }
+
+.main-content {
+  padding-top: 100px !important;
+}

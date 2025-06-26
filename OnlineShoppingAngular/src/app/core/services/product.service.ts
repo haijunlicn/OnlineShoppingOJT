@@ -15,6 +15,17 @@ export class ProductService {
     return this.http.post(`${this.baseUrl}/create`, request, { responseType: 'text' });
   }
 
+  updateProduct(request: CreateProductRequestDTO): Observable<string> {
+    return this.http.put(`${this.baseUrl}/update`, request, { responseType: 'text' });
+  }
+
+  updateStock(productId: number, stockUpdates: { variantId: number; newStock: number }[]): Observable<string> {
+    return this.http.put(`${this.baseUrl}/update-stock`, {
+      productId,
+      stockUpdates
+    }, { responseType: 'text' });
+  }
+
   getProductList(): Observable<ProductListItemDTO[]> {
     return this.http.get<ProductListItemDTO[]>(`${this.baseUrl}/list`);
   }

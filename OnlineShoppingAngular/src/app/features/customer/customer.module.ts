@@ -32,6 +32,9 @@ import { WishlistComponent } from './general/wishlist/wishlist.component';
 import { CartComponent } from './general/cart/cart.component';
 import { ProductListComponent } from './product_display/product-list/product-list.component';
 import { ProductDetailComponent } from './product_display/product-detail/product-detail.component';
+import { CategoryGridComponent } from './product_display/category-grid/category-grid.component';
+import { CategoryDropdownComponent } from './product_display/category-dropdown/category-dropdown.component';
+import { FilterSidebarComponent } from './common/filter-sidebar/filter-sidebar.component';
 
 
 @NgModule({
@@ -57,7 +60,10 @@ import { ProductDetailComponent } from './product_display/product-detail/product
     FaqComponent,
 
     ProductListComponent,
-    ProductDetailComponent
+    ProductDetailComponent,
+    CategoryGridComponent,
+    CategoryDropdownComponent,
+    FilterSidebarComponent
 
   ],
   imports: [
