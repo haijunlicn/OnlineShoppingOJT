@@ -163,13 +163,6 @@
               <img [src]="getMainProductImage(product.product)" class="card-img-top" (click)="goToDetail(product)"
                 alt="{{ product.product.name }}" style="height: 180px; object-fit: contain; background: #f8f9fa;">
 
-              <!-- Quick View Overlay -->
-              <div class="position-absolute bottom-0 start-0 end-0 p-1 text-center quick-view-btn">
-                <button class="btn btn-sm btn-light w-100 py-1" style="font-size: 0.8rem;"
-                  (click)="quickView(product, $event)">
-                  Quick View
-                </button>
-              </div>
             </div>
 
             <!-- Product Info -->
@@ -186,7 +179,7 @@
               </h6>
 
               <!-- Variant Preview -->
-              <div class="variant-preview mb-1" *ngIf="hasColorVariants(product)">
+              <!-- <div class="variant-preview mb-1" *ngIf="hasColorVariants(product)">
                 <div class="d-flex gap-1 align-items-center">
                   <div *ngFor="let color of getColorOptions(product).slice(0, 3)" class="color-dot"
                     [style.background-color]="color.value" [title]="color.name">
@@ -195,7 +188,7 @@
                     +{{ getColorOptions(product).length - 3 }} more
                   </small>
                 </div>
-              </div>
+              </div> -->
 
               <!-- Price & Stock -->
               <div class="d-flex justify-content-between align-items-center mt-2">
