@@ -10,6 +10,7 @@ import Swal from 'sweetalert2';
 import { User } from '../models/User';
 import { jwtDecode } from 'jwt-decode';
 import { StorageService } from './StorageService';
+import { AccessControlService } from './AccessControl.service';
 
 
 @Injectable({
@@ -25,8 +26,12 @@ export class AuthService {
     private loginModalService: LoginModalService,
     private registerModalService: RegisterModalService,
     private alertService: AlertService,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private accessControlService: AccessControlService
   ) { }
+
+  private userLoadedSubject = new BehaviorSubject<boolean>(false);
+  public userLoaded$ = this.userLoadedSubject.asObservable();
 
   // Create BehaviorSubject to hold user object (initially null)
   private userSubject = new BehaviorSubject<User | null>(null);
@@ -44,28 +49,25 @@ export class AuthService {
 
   initializeUserFromToken(): void {
     const token = this.storageService.getItem('token');
+
     if (token && !this.isTokenExpired(token)) {
       const decoded: any = jwtDecode(token);
       const email = decoded.sub;
-      const roleType = decoded.roleType; // 👈 Make sure your backend encodes this into the token
-      console.log("roletype : " , decoded.roleType); // will show 0 or 1
+      const roleType = decoded.roleType;
 
-      if (email && roleType !== undefined) {
-        this.getCurrentUserByEmailAndRoleType(email, roleType).subscribe({
-          next: () => {
-            // No need to handle, userSubject is already set inside the method
-          },
-          error: () => {
-            this.userSubject.next(null);
-            this.storageService.removeItem('token');
-          }
-        });
-      } else {
-        this.userSubject.next(null);
-        this.storageService.removeItem('token');
-      }
+      this.getCurrentUserByEmailAndRoleType(email, roleType).subscribe({
+        next: () => {
+          this.userLoadedSubject.next(true); // ✅ Done
+        },
+        error: () => {
+          this.userSubject.next(null);
+          this.storageService.removeItem('token');
+          this.userLoadedSubject.next(true); // ✅ Still done
+        }
+      });
     } else {
       this.userSubject.next(null);
+      this.userLoadedSubject.next(true); // ✅ Still done
     }
   }
 
@@ -91,16 +93,18 @@ export class AuthService {
       params: { userId: userId.toString() }
     });
   }
-
   login(email: string, password: string, rememberMe: boolean, roleType: number): Observable<User> {
     return this.http.post<any>(`${this.apiUrl}/login`, { email, password, rememberMe, roleType }).pipe(
       switchMap((res) => {
-        if (!res.token) throw new Error(res.message || 'Login failed');
+        if (!res.token) throw new Error(res.message = 'Login failed');
 
         const token = res.token;
         const decodedToken: any = jwtDecode(token);
         const email = decodedToken.sub;
 
+        // ✅ Clear both before setting
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
         this.storageService.setItem('token', token, rememberMe ? 'local' : 'session');
 
         return this.getCurrentUserByEmailAndRoleType(email, 0); // return user observable
@@ -120,21 +124,25 @@ export class AuthService {
           isVerified: res.isVerified,
           delFg: res.delFg,
           createdDate: res.createdDate,
-          updatedDate: res.updatedDate
+          updatedDate: res.updatedDate,
+          permissions: res.permissions
         };
+
+        console.log("/me called : ", user);
+        
+
         return user;
       }),
       tap((user: User) => {
         this.userSubject.next(user);
+        this.accessControlService.setPermissions(user.permissions!);
       })
     );
   }
 
-
   logout() {
     this.storageService.removeItem('token');
     this.userSubject.next(null);
-    this.router.navigate(['/customer/auth/login']);
   }
 
   // Optional: get current user snapshot
@@ -175,10 +183,14 @@ export class AuthService {
     return this.http.post<any>(`${this.apiUrl}/login`, { email, password, rememberMe, roleType }).pipe(
       switchMap((res) => {
         if (!res.token) {
-          throw new Error(res.message || 'Login failed');
+          throw new Error(res.message = 'Login failed');
         }
 
         const token = res.token;
+
+        // ✅ Clear both before setting
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
 
         if (rememberMe) {
           this.storageService.setItem('token', token, 'local');

@@ -1,0 +1,24 @@
+<div *ngIf="loading">Loading...</div>
+<div *ngIf="error && !loading">{{ error }}</div>
+<div *ngIf="order && !loading">
+  <h2>Order #{{ order.trackingNumber }}</h2>
+  <div>Status: <span [ngClass]="getOrderStatusClass(order.paymentStatus)">{{ order.paymentStatus }}</span></div>
+  <div>Total: {{ formatCurrency(order.totalAmount) }}</div>
+  <div>Created: {{ formatDate(order.createdDate) }}</div>
+  <!-- ... more order details ... -->
+
+  <!-- Status Update Section -->
+  <div>
+    <label>Change Status:</label>
+    <select #statusSel>
+      <option [value]="1">Pending</option>
+      <option [value]="2">Processing</option>
+      <option [value]="3">Shipped</option>
+      <option [value]="4">Delivered</option>
+      <option [value]="5">Cancelled</option>
+    </select>
+    <button (click)="updateOrderStatus(+statusSel.value)">Update Status</button>
+    <span *ngIf="updatingStatus">Updating...</span>
+    <span *ngIf="updateStatusError">{{ updateStatusError }}</span>
+  </div>
+</div>

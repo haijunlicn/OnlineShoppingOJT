@@ -1,0 +1,369 @@
+<app-header></app-header>
+
+<div class="payment-accept-container">
+  <!-- Payment Accept Header -->
+  <div class="payment-header">
+    <div class="header-content">
+      <div class="header-info">
+        <h1>Payment & Order Processing</h1>
+        <p>Complete your order and payment</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-back-to-order" (click)="goBackToOrderManagement()">
+          <i class="fas fa-arrow-left"></i>
+          Back to Order
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="checkout-2col-grid">
+    <!-- LEFT: Payment Method -->
+    <div class="checkout-left">
+      <div class="payment-method-section">
+        <!-- Show selected payment method info even after success -->
+        <div *ngIf="selectedPaymentMethod">
+          <h4>Payment Method: {{ getPaymentMethodName(selectedPaymentMethod) }}</h4>
+          <!-- Optionally show details, icons, etc -->
+        </div>
+        <ng-container *ngIf="!paymentSuccess">
+          <!-- Payment Method Selection -->
+          <div class="payment-methods" *ngIf="!selectedPaymentMethod">
+            <div class="payment-option" (click)="selectPaymentMethod('credit-card')">
+              <div class="payment-icon">
+                <i class="fas fa-credit-card"></i>
+              </div>
+              <div class="payment-details">
+                <h4>Credit / Debit Card</h4>
+                <p>Pay securely with your card</p>
+              </div>
+              <div class="payment-arrow">
+                <i class="fas fa-chevron-right"></i>
+              </div>
+            </div>
+            <div class="payment-option" (click)="selectPaymentMethod('qr-payment')">
+              <div class="payment-icon qr">
+                <i class="fas fa-qrcode"></i>
+              </div>
+              <div class="payment-details">
+                <h4>Mobile Wallet</h4>
+                <p>Pay with QR code using mobile apps</p>
+              </div>
+              <div class="payment-arrow">
+                <i class="fas fa-chevron-right"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Credit Card Form -->
+          <div *ngIf="showCreditCardForm" class="payment-form">
+            <div class="form-header">
+              <button class="btn-back" (click)="backToPaymentMethods()">
+                <i class="fas fa-arrow-left"></i>
+                Back
+              </button>
+              <h3>Enter Card Details</h3>
+              <div class="security-badge">
+                <i class="fas fa-shield-alt"></i>
+                <span>Secure Payment</span>
+              </div>
+            </div>
+            <form (ngSubmit)="processCreditCardPayment()" #creditCardForm="ngForm">
+              <div class="form-group">
+                <label>Card Number</label>
+                <div class="input-wrapper">
+                  <input 
+                    type="text" 
+                    [(ngModel)]="creditCardData.cardNumber"
+                    name="cardNumber"
+                    (input)="formatCardNumber($event)"
+                    placeholder="1234 5678 9012 3456"
+                    maxlength="19"
+                    required
+                  >
+                  <i class="fas fa-credit-card"></i>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Cardholder Name</label>
+                <div class="input-wrapper">
+                  <input 
+                    type="text" 
+                    [(ngModel)]="creditCardData.cardHolderName"
+                    name="cardHolderName"
+                    placeholder="John Doe"
+                    required
+                  >
+                  <i class="fas fa-user"></i>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Expiry Date</label>
+                  <div class="input-wrapper">
+                    <input 
+                      type="text" 
+                      [(ngModel)]="creditCardData.expiryDate"
+                      name="expiryDate"
+                      (input)="formatExpiryDate($event)"
+                      placeholder="MM/YY"
+                      maxlength="5"
+                      required
+                    >
+                    <i class="fas fa-calendar"></i>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>CVV</label>
+                  <div class="input-wrapper">
+                    <input 
+                      type="text" 
+                      [(ngModel)]="creditCardData.cvv"
+                      name="cvv"
+                      placeholder="123"
+                      maxlength="4"
+                      required
+                    >
+                    <i class="fas fa-lock"></i>
+                  </div>
+                </div>
+              </div>
+              <button 
+                type="submit" 
+                class="btn-pay"
+                [disabled]="isProcessing || !isValidCreditCard()"
+              >
+                <i class="fas fa-lock" *ngIf="!isProcessing"></i>
+                <i class="fas fa-spinner fa-spin" *ngIf="isProcessing"></i>
+                {{ isProcessing ? 'Processing...' : 'Pay ' + totalAmount.toLocaleString() + ' MMK' }}
+              </button>
+            </form>
+          </div>
+
+          <!-- QR Payment Section -->
+          <div *ngIf="showQRCode" class="qr-payment-section">
+            <!-- QR Method Selection -->
+            <div class="qr-selection" *ngIf="!selectedQRMethod">
+              <div class="selection-header">
+                <button class="btn-back" (click)="backToPaymentMethods()">
+                  <i class="fas fa-arrow-left"></i>
+                  Back to Payment Methods
+                </button>
+                <h3>Choose Mobile Wallet</h3>
+              </div>
+              <div class="qr-methods-grid">
+                <div 
+                  *ngFor="let method of qrPaymentMethods; trackBy: trackByMethodId"
+                  class="qr-method-card"
+                  (click)="selectQRMethod(method.id)"
+                >
+                  <div class="method-icon" [style.background-color]="method.color">
+                    <ng-container *ngIf="method.logo; else iconTpl">
+                      <img [src]="method.logo" alt="{{ method.name }}" style="width: 28px; height: 28px; border-radius: 4px;" />
+                    </ng-container>
+                    <ng-template #iconTpl>
+                      <i [class]="method.icon"></i>
+                    </ng-template>
+                  </div>
+                  <div class="method-info">
+                    <h5>{{ method.name }}</h5>
+                    <p>{{ method.description }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- QR Payment Display -->
+            <div class="qr-payment" *ngIf="selectedQRMethod">
+              <div class="qr-payment-card">
+                <div class="qr-header">
+                  <button class="btn-back" (click)="selectedQRMethod = ''">
+                    <i class="fas fa-arrow-left"></i>
+                    Back
+                  </button>
+                  <div class="selected-method">
+                    <div class="method-icon" [style.background-color]="getSelectedQRMethod()?.color">
+                      <ng-container *ngIf="getSelectedQRMethod()?.logo; else iconTpl2">
+                        <img [src]="getSelectedQRMethod()?.logo" alt="{{ getSelectedQRMethod()?.name }}" style="width: 28px; height: 28px; border-radius: 4px;" />
+                      </ng-container>
+                      <ng-template #iconTpl2>
+                        <i [class]="getSelectedQRMethod()?.icon"></i>
+                      </ng-template>
+                    </div>
+                    <div class="method-details">
+                      <h4>{{ getSelectedQRMethod()?.name }}</h4>
+                      <p>Amount: {{ totalAmount.toLocaleString() }} MMK</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="qr-content" *ngIf="qrPaymentData">
+                  <div class="qr-display">
+                    <div class="qr-code-area">
+                      <div class="qr-image-enhanced">
+                        <ng-container *ngIf="getSelectedQRMethod()?.qrPath; else defaultQR">
+                          <img [src]="getSelectedQRMethod()?.qrPath" alt="QR Code" />
+                        </ng-container>
+                        <ng-template #defaultQR>
+                          <i class="fas fa-qrcode"></i>
+                        </ng-template>
+                      </div>
+                      <div class="qr-timer">
+                        <i class="fas fa-clock"></i>
+                        <span>Expires in {{ timerDisplay }}</span>
+                      </div>
+                    </div>
+                    <div class="qr-instructions">
+                      <h5>How to Pay:</h5>
+                      <ol>
+                        <li>Open {{ getSelectedQRMethod()?.name }} app</li>
+                        <li>Tap "Scan QR" or "Pay"</li>
+                        <li>Scan the QR code</li>
+                        <li>Confirm payment</li>
+                      </ol>
+                    </div>
+                  </div>
+                  
+                  <!-- Image Upload Section -->
+                  <div class="upload-section-enhanced">
+                    <h5>Upload QR Screenshot for Translation</h5>
+                    <div class="upload-area-enhanced" *ngIf="!uploadedImageUrl">
+                      <input 
+                        type="file" 
+                        id="qr-upload" 
+                        accept="image/*" 
+                        (change)="onImageUpload($event)"
+                        style="display: none;"
+                      >
+                      <label for="qr-upload" class="upload-button-enhanced">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <span>Upload Image</span>
+                      </label>
+                    </div>
+                    <div class="uploaded-preview-enhanced" *ngIf="uploadedImageUrl">
+                      <div class="image-preview-enhanced">
+                        <img [src]="uploadedImageUrl" alt="QR Code" />
+                        <button class="btn-remove-enhanced" (click)="clearUploadedImage()">
+                          <i class="fas fa-times"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <button 
+                    class="btn-verify"
+                    (click)="verifyQRPayment()"
+                    [disabled]="isProcessing"
+                  >
+                    <i class="fas fa-check-circle" *ngIf="!isProcessing"></i>
+                    <i class="fas fa-spinner fa-spin" *ngIf="isProcessing"></i>
+                    {{ isProcessing ? 'Processing Payment & Placing Order...' : 'I have completed the payment & Place Order' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+        <ng-container *ngIf="paymentSuccess">
+          <div class="payment-success-message">
+            <i class="fas fa-check-circle" style="color: #28a745; font-size: 2rem;"></i>
+            <h4>Thank you for your payment!</h4>
+            <p>Your payment has been received. If you have any questions, please contact support.</p>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- RIGHT: Customer/Delivery Info + Order Summary -->
+    <div class="checkout-right">
+      <div class="customer-delivery-section">
+        <h3>
+          <i class="fas fa-user"></i>
+          Customer & Delivery Information
+        </h3>
+        <div class="info-details">
+          <div class="info-row">
+            <span class="label">Name:</span>
+            <span class="value">{{ customerName }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Email:</span>
+            <span class="value">{{ customerEmail }}</span>
+          </div>
+          <div class="info-row" *ngIf="customerPhone">
+            <span class="label">Phone:</span>
+            <span class="value">{{ customerPhone }}</span>
+          </div>
+          <div class="info-row" *ngIf="selectedAddress">
+            <span class="label">Address:</span>
+            <span class="value">
+              {{ selectedAddress.address }}, {{ selectedAddress.city }}, {{ selectedAddress.zipCode }}
+            </span>
+          </div>
+          <div class="info-row" *ngIf="selectedDeliveryMethod">
+            <span class="label">Delivery Method:</span>
+            <span class="value">
+              <i [ngClass]="getDeliveryMethodIconClass()" class="delivery-method-icon"></i>
+              {{ selectedDeliveryMethod.name }}
+            </span>
+          </div>
+          <div class="info-row">
+            <span class="label">Estimated Delivery:</span>
+            <span class="value">{{ formatDeliveryRange() }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="order-totals-section">
+        <h3>
+          <i class="fas fa-calculator"></i>
+          Order Summary
+        </h3>
+        <div class="order-summary-list">
+          <div *ngFor="let item of orderItems" class="order-summary-item-row">
+            {{ item.name }} ({{ item.variantSku }}) (Qty: {{ item.quantity }})
+          </div>
+        </div>
+        <div class="order-totals">
+          <div class="total-row">
+            <span class="label">Subtotal:</span>
+            <span class="value">{{ itemSubtotal | number }} MMK</span>
+          </div>
+          <div class="total-row">
+            <span class="label">Shipping Fee:</span>
+            <span class="value">{{ shippingFee | number }} MMK</span>
+          </div>
+          <div class="total-row final-total">
+            <span class="label">Total Amount:</span>
+            <span class="value">{{ totalAmount | number }} MMK</span>
+          </div>
+        </div>
+      </div>
+      <div class="order-status-section">
+        <div class="status-badge" [class]="orderStatus.toLowerCase().replace(' ', '-')">
+          <i class="fas fa-clock"></i>
+          <span>{{ orderStatus }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Status Overlay -->
+  <div *ngIf="paymentMessage" class="payment-status-overlay">
+    <div class="payment-status-card" [class.success]="paymentSuccess" [class.error]="!paymentSuccess">
+      <div class="status-icon">
+        <i class="fas fa-check-circle" *ngIf="paymentSuccess"></i>
+        <i class="fas fa-exclamation-circle" *ngIf="!paymentSuccess"></i>
+      </div>
+      <div class="status-content">
+        <h3>{{ paymentSuccess ? 'Payment Successful!' : 'Payment Failed' }}</h3>
+        <p>{{ paymentMessage }}</p>
+        <div class="status-actions">
+          <button *ngIf="!paymentSuccess" class="btn-try-again" (click)="paymentMessage = ''">
+            Try Again
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

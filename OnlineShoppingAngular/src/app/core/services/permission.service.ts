@@ -25,7 +25,8 @@ export class PermissionService {
   getPermissionById(id: number): Observable<PermissionDTO> {
     return this.http.get<PermissionDTO>(`${this.baseUrl}/getbyid/${id}`);
   }
-   updatePermission(id: number, permission: PermissionDTO): Observable<PermissionDTO> {
+  
+  updatePermission(id: number, permission: PermissionDTO): Observable<PermissionDTO> {
     return this.http.put<PermissionDTO>(`${this.baseUrl}/update/${id}`, permission, {
       responseType: 'json'
     });

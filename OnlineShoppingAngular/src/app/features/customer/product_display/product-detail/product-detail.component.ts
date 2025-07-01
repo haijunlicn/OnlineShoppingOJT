@@ -73,7 +73,7 @@ scrollRight(): void {
   fetchProductDetail(): void {
     const id = this.route.snapshot.paramMap.get("id");
     if (id) {
-      this.productService.getProductById(+id).subscribe({
+      this.productService.getPublicProductById(+id).subscribe({
         next: (data) => {
           this.product = data;
           this.initializeComponent();

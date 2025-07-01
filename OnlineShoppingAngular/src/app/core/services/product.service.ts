@@ -34,6 +34,15 @@ export class ProductService {
     return this.http.get<ProductCardItem>(`${this.baseUrl}/${id}`);
   }
 
+  getPublicProductList(): Observable<ProductListItemDTO[]> {
+    return this.http.get<ProductListItemDTO[]>(`${this.baseUrl}/public-list`);
+  }
+
+  getPublicProductById(id: number): Observable<ProductCardItem> {
+    return this.http.get<ProductCardItem>(`${this.baseUrl}/public/${id}`);
+  }
+
+
   generateSku(productName: string, variant: ProductVariantDTO): string {
     const skuBase = productName.substring(0, 3).toUpperCase();
 
@@ -60,8 +69,8 @@ export class ProductService {
     });
   }
   getRelatedProducts(categoryId: number, productId: number) {
-  return this.http.get<ProductDTO[]>(`${this.baseUrl}/related?categoryId=${categoryId}&productId=${productId}`);
-}
+    return this.http.get<ProductDTO[]>(`${this.baseUrl}/related?categoryId=${categoryId}&productId=${productId}`);
+  }
 
 
 }

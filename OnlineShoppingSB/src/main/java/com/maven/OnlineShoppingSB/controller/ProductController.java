@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,7 +35,9 @@ public class ProductController {
     private ExcelTemplateService excelService;
 
     // POST /products - create new product with options and variants
+
     @PostMapping("/create")
+    @PreAuthorize("hasAuthority('PRODUCT_CREATE') or hasRole('SUPERADMIN')")
     public ResponseEntity<String> createProduct(@RequestBody CreateProductRequestDTO requestDTO) {
         try {
             productService.createProduct(requestDTO);
@@ -53,6 +56,7 @@ public class ProductController {
     }
 
     @PutMapping("/update")
+    @PreAuthorize("hasAuthority('PRODUCT_UPDATE') or hasRole('SUPERADMIN')")
     public ResponseEntity<String> updateProduct(@RequestBody CreateProductRequestDTO requestDTO) {
         try {
             productService.updateProduct(requestDTO);
@@ -67,14 +71,15 @@ public class ProductController {
         }
     }
 
-
     @GetMapping("/list")
+    @PreAuthorize("hasAuthority('PRODUCT_READ') or hasRole('SUPERADMIN')")
     public ResponseEntity<List<ProductListItemDTO>> getAllProducts() {
         List<ProductListItemDTO> dtos = productService.getAllProducts();
         return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('PRODUCT_READ') or hasRole('SUPERADMIN')")
     public ResponseEntity<ProductListItemDTO> getProductById(@PathVariable Long id) {
         try {
             ProductListItemDTO productDTO = productService.getProductById(id);
@@ -86,7 +91,26 @@ public class ProductController {
         }
     }
 
+    @GetMapping("/public-list")
+    public ResponseEntity<List<ProductListItemDTO>> getPublicProductList() {
+        List<ProductListItemDTO> dtos = productService.getAllProducts();
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/public/{id}")
+    public ResponseEntity<ProductListItemDTO> getPublicProductById(@PathVariable Long id) {
+        try {
+            ProductListItemDTO productDTO = productService.getProductById(id);
+            return ResponseEntity.ok(productDTO);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @GetMapping("/bulk-upload-template")
+    @PreAuthorize("hasAuthority('PRODUCT_CREATE') or hasRole('SUPERADMIN')")
     public ResponseEntity<byte[]> downloadTemplate() throws IOException {
         ByteArrayInputStream stream = excelService.generateProductUploadTemplate();
 
@@ -97,6 +121,7 @@ public class ProductController {
     }
 
     @PostMapping("/upload-zip")
+    @PreAuthorize("hasAuthority('PRODUCT_CREATE') or hasRole('SUPERADMIN')")
     public ResponseEntity<String> uploadZip(@RequestParam("zipFile") MultipartFile zipFile) {
         try {
             productService.processZipFile(zipFile);
@@ -107,7 +132,9 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred");
         }
     }
+
     @GetMapping("/related")
+    // @PreAuthorize("hasAuthority('PRODUCT_READ') or hasRole('SUPERADMIN')")
     public ResponseEntity<List<ProductDTO>> getRelatedProducts(
             @RequestParam Long categoryId,
             @RequestParam Long productId) {
@@ -115,6 +142,7 @@ public class ProductController {
     }
 
     @PutMapping("/update-stock")
+    @PreAuthorize("hasAuthority('PRODUCT_STOCK_UPDATE') or hasRole('SUPERADMIN')")
     public ResponseEntity<String> updateStock(@RequestBody StockUpdateRequestDTO request) {
         try {
             productService.updateStock(request);

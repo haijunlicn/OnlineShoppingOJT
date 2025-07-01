@@ -2,9 +2,7 @@
 
 <!-- Mobile Filter Toggle -->
 <div class="mobile-filter-toggle d-md-none">
-  <button 
-    class="btn btn-outline-primary w-100 mb-3"
-    (click)="toggleMobileFilters()">
+  <button class="btn btn-outline-primary w-100 mb-3" (click)="toggleMobileFilters()">
     <i class="pi pi-filter me-2"></i>
     Filters
     <span class="badge bg-primary ms-2" *ngIf="activeFilterCount > 0">
@@ -14,25 +12,18 @@
 </div>
 
 <!-- Filter Sidebar -->
-<app-filter-sidebar
-  [categories]="categories"
-  [brands]="brands"
-  [isVisible]="showFilters"
-  (filtersChanged)="onFiltersChanged($event)"
-  (clearAllFilters)="onClearAllFilters()">
+<app-filter-sidebar [categories]="categories" [brands]="brands" [isVisible]="showFilters"
+  (filtersChanged)="onFiltersChanged($event)" >
 </app-filter-sidebar>
 
 <!-- Mobile Backdrop -->
-<div 
-  class="mobile-backdrop d-md-none"
-  [class.show]="showFilters"
-  (click)="closeMobileFilters()">
+<div class="mobile-backdrop d-md-none" [class.show]="showFilters" (click)="closeMobileFilters()">
 </div>
 
 <!-- Main Content -->
 <main class="main-content" [class.with-sidebar]="showFilters">
   <div class="container-fluid">
-    
+
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-3">
       <ol class="breadcrumb">
@@ -43,105 +34,92 @@
 
     <!-- Header Section -->
     <div class="products-header">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <div class="d-flex align-items-center">
-          <!-- Desktop Filter Toggle -->
-          <button 
-            class="btn btn-outline-secondary me-3 d-none d-md-inline-flex"
-            (click)="toggleFilters()">
-            <i class="pi pi-filter me-2"></i>
-            {{ showFilters ? 'Hide' : 'Show' }} Filters
-          </button>
-          
-          <!-- Category Dropdown - Moved to left side -->
-          <app-category-dropdown 
-            [categories]="categories"
-            (categorySelected)="onCategorySelected($event)"
-            (viewAllCategories)="onViewAllCategories()">
-          </app-category-dropdown>
-          
-          <div class="ms-3">
-            <h5 class="mb-0">Products</h5>
-            <small class="text-muted">{{ filteredProducts.length }} of {{ products.length }} items</small>
-          </div>
-        </div>
-
-        <!-- Sort Options Only -->
-        <div class="d-flex gap-2 align-items-center">
-          <!-- Sort Dropdown -->
-          <div class="dropdown">
-            <button 
-              class="btn btn-outline-secondary dropdown-toggle" 
-              type="button" 
-              data-bs-toggle="dropdown">
-              <i class="pi pi-sort me-2"></i>
-              {{ currentSortLabel }}
+      <div class="container-fluid">
+        <!-- Main Header Row -->
+        <div class="products-header-row">
+          <!-- Left Side -->
+          <div class="products-header-left">
+            <!-- Desktop Filter Toggle -->
+            <button class="btn filter-toggle-btn d-none d-md-inline-flex" (click)="toggleFilters()">
+              <i class="pi pi-filter"></i>
+              <span>{{ showFilters ? 'Hide' : 'Show' }}</span>
             </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" (click)="setSortOption('featured')">Featured</a></li>
-              <li><a class="dropdown-item" (click)="setSortOption('price-asc')">Price: Low to High</a></li>
-              <li><a class="dropdown-item" (click)="setSortOption('price-desc')">Price: High to Low</a></li>
-              <li><a class="dropdown-item" (click)="setSortOption('name-asc')">Name: A to Z</a></li>
-              <li><a class="dropdown-item" (click)="setSortOption('newest')">Newest First</a></li>
-              <li><a class="dropdown-item" (click)="setSortOption('rating')">Highest Rated</a></li>
-            </ul>
+
+            <!-- Product Info -->
+            <div class="products-info">
+              <h5>Products</h5>
+              <small>{{ filteredProducts.length }} of {{ products.length }} items</small>
+            </div>
+          </div>
+
+          <!-- Right Side -->
+          <div class="products-header-right">
+            <!-- Sort Dropdown -->
+            <div class="dropdown sort-dropdown">
+              <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="pi pi-sort"></i>
+                <span class="d-none d-sm-inline">{{ currentSortLabel }}</span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" (click)="setSortOption('featured')">Featured</a></li>
+                <li><a class="dropdown-item" (click)="setSortOption('price-asc')">Price: Low to High</a></li>
+                <li><a class="dropdown-item" (click)="setSortOption('price-desc')">Price: High to Low</a></li>
+                <li><a class="dropdown-item" (click)="setSortOption('name-asc')">Name: A to Z</a></li>
+                <li><a class="dropdown-item" (click)="setSortOption('newest')">Newest First</a></li>
+                <li><a class="dropdown-item" (click)="setSortOption('rating')">Highest Rated</a></li>
+              </ul>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Active Filters Display -->
-      <div class="active-filters mb-3" *ngIf="hasActiveFilters()">
-        <div class="d-flex flex-wrap align-items-center gap-2">
-          <span class="text-muted small me-2">Active filters:</span>
-          
-          <!-- Category Filters -->
-          <span *ngFor="let categoryId of currentFilters.categories" 
-                class="badge bg-primary filter-badge">
-            {{ getCategoryName(categoryId) }}
-            <button class="btn-close btn-close-white ms-1" 
-                    (click)="removeCategoryFilter(categoryId)"></button>
-          </span>
-          
-          <!-- Brand Filters -->
-          <span *ngFor="let brandId of currentFilters.brands" 
-                class="badge bg-info filter-badge">
-            {{ getBrandName(brandId) }}
-            <button class="btn-close btn-close-white ms-1" 
-                    (click)="removeBrandFilter(brandId)"></button>
-          </span>
-          
-          <!-- Price Filter -->
-          <span *ngIf="currentFilters.priceRange.min !== null || currentFilters.priceRange.max !== null" 
-                class="badge bg-success filter-badge">
-            ${{ currentFilters.priceRange.min || 0 }} - ${{ currentFilters.priceRange.max || '∞' }}
-            <button class="btn-close btn-close-white ms-1" 
-                    (click)="removePriceFilter()"></button>
-          </span>
-          
-          <!-- Other Filters -->
-          <span *ngIf="currentFilters.inStock" class="badge bg-warning filter-badge">
-            In Stock
-            <button class="btn-close btn-close-white ms-1" 
-                    (click)="removeStockFilter()"></button>
-          </span>
-          
-          <span *ngIf="currentFilters.onSale" class="badge bg-danger filter-badge">
-            On Sale
-            <button class="btn-close btn-close-white ms-1" 
-                    (click)="removeSaleFilter()"></button>
-          </span>
-          
-          <button class="btn btn-link btn-sm p-0 ms-2" (click)="clearAllFilters()">
-            Clear All
-          </button>
+        <!-- Compact Active Filters -->
+        <div class="active-filters" *ngIf="hasActiveFilters()">
+          <div class="active-filters-content">
+            <span class="active-filters-label">Filters:</span>
+
+            <!-- Category Filters -->
+            <span *ngFor="let categoryId of currentFilters.categories" class="badge bg-primary filter-badge">
+              {{ getCategoryName(categoryId) }}
+              <button class="btn-close btn-close-white" (click)="removeCategoryFilter(categoryId)"></button>
+            </span>
+
+            <!-- Brand Filters -->
+            <span *ngFor="let brandId of currentFilters.brands" class="badge bg-info filter-badge">
+              {{ getBrandName(+brandId) }}
+              <button class="btn-close btn-close-white" (click)="removeBrandFilter(brandId)"></button>
+            </span>
+
+            <!-- Price Filter -->
+            <span *ngIf="currentFilters.priceRange.min !== null || currentFilters.priceRange.max !== null"
+              class="badge bg-success filter-badge">
+              ${{ currentFilters.priceRange.min || 0 }} - ${{ currentFilters.priceRange.max || '∞' }}
+              <button class="btn-close btn-close-white" (click)="removePriceFilter()"></button>
+            </span>
+
+            <!-- Other Filters -->
+            <span *ngIf="currentFilters.inStock" class="badge bg-warning filter-badge">
+              In Stock
+              <button class="btn-close btn-close-white" (click)="removeStockFilter()"></button>
+            </span>
+
+            <span *ngIf="currentFilters.onSale" class="badge bg-danger filter-badge">
+              On Sale
+              <button class="btn-close btn-close-white" (click)="removeSaleFilter()"></button>
+            </span>
+
+            <button class="btn clear-all-btn" (click)="clearAllFilters()">
+              Clear All
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Product Grid -->
     <div class="products-container">
-      <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
-        <div class="col" *ngFor="let product of paginatedProducts">
+      <!-- Fixed Width Cards with Flex Wrap -->
+      <div class="products-grid-wrapper">
+        <div class="product-card-container" *ngFor="let product of paginatedProducts">
           <div class="card h-100 product-card">
             <!-- Product Image Container -->
             <div class="position-relative product-img-wrapper">
@@ -162,15 +140,14 @@
               <!-- Product Image -->
               <img [src]="getMainProductImage(product.product)" class="card-img-top" (click)="goToDetail(product)"
                 alt="{{ product.product.name }}" style="height: 180px; object-fit: contain; background: #f8f9fa;">
-
             </div>
 
             <!-- Product Info -->
             <div class="card-body p-2" (click)="goToDetail(product)">
               <!-- Brand & Category -->
               <div class="d-flex justify-content-between">
-                <small class="text-muted" style="font-size: 0.75rem;">{{ product.brand.name }}</small>
-                <small class="text-muted" style="font-size: 0.75rem;">{{ product.category.name }}</small>
+                <small class="text-muted brand-text">{{ product.brand.name }}</small>
+                <small class="text-muted category-text">{{ product.category.name }}</small>
               </div>
 
               <!-- Product Name -->
@@ -178,29 +155,17 @@
                 {{ product.product.name }}
               </h6>
 
-              <!-- Variant Preview -->
-              <!-- <div class="variant-preview mb-1" *ngIf="hasColorVariants(product)">
-                <div class="d-flex gap-1 align-items-center">
-                  <div *ngFor="let color of getColorOptions(product).slice(0, 3)" class="color-dot"
-                    [style.background-color]="color.value" [title]="color.name">
-                  </div>
-                  <small *ngIf="getColorOptions(product).length > 3" class="text-muted ms-1" style="font-size: 0.7rem;">
-                    +{{ getColorOptions(product).length - 3 }} more
-                  </small>
-                </div>
-              </div> -->
-
               <!-- Price & Stock -->
               <div class="d-flex justify-content-between align-items-center mt-2">
-                <div>
-                  <span class="fw-bold" style="font-size: 0.95rem;">${{ getLowestPrice(product) }}</span>
-                  <span class="text-decoration-line-through text-muted ms-1" style="font-size: 0.8rem;"
-                    *ngIf="isOnSale(product)">
+                <div class="price-container">
+                  <span class="fw-bold current-price">${{ getLowestPrice(product) }}</span>
+                  <span class="text-decoration-line-through text-muted ms-1 original-price" *ngIf="isOnSale(product)">
                     ${{ product.product.basePrice }}
                   </span>
                 </div>
 
-                <span class="stock-badge" [ngClass]="{'in-stock': hasStock(product), 'out-of-stock': !hasStock(product)}">
+                <span class="stock-badge"
+                  [ngClass]="{'in-stock': hasStock(product), 'out-of-stock': !hasStock(product)}">
                   {{ hasStock(product) ? 'In Stock' : 'Out of Stock' }}
                 </span>
               </div>
@@ -217,7 +182,7 @@
 
       <!-- Empty State -->
       <div *ngIf="filteredProducts.length === 0" class="empty-state text-center py-5">
-        <i class="pi pi-search" style="font-size: 4rem; color: #6c757d;"></i>
+        <i class="pi pi-search empty-icon"></i>
         <h4 class="mt-3 text-muted">No products found</h4>
         <p class="text-muted">Try adjusting your filters or search criteria</p>
         <button class="btn btn-primary" (click)="clearAllFilters()">Clear All Filters</button>
@@ -229,19 +194,17 @@
       <div class="d-flex justify-content-between align-items-center">
         <div class="pagination-info">
           <small class="text-muted">
-            Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to 
-            {{ Math.min(currentPage * itemsPerPage, filteredProducts.length) }} 
+            Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
+            {{ Math.min(currentPage * itemsPerPage, filteredProducts.length) }}
             of {{ filteredProducts.length }} results
           </small>
         </div>
-        
+
         <ul class="pagination pagination-sm mb-0">
           <li class="page-item" [class.disabled]="currentPage === 1">
             <a class="page-link" (click)="goToPage(currentPage - 1)">Previous</a>
           </li>
-          <li *ngFor="let page of getPageNumbers()" 
-              class="page-item" 
-              [class.active]="page === currentPage">
+          <li *ngFor="let page of getPageNumbers()" class="page-item" [class.active]="page === currentPage">
             <a class="page-link" (click)="goToPage(page)">{{ page }}</a>
           </li>
           <li class="page-item" [class.disabled]="currentPage === totalPages">

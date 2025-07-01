@@ -21,8 +21,11 @@ import { ProductListComponent } from './product_display/product-list/product-lis
 import { ProductDetailComponent } from './product_display/product-detail/product-detail.component';
 import { NoAuthGuard } from '../../core/guards/no-auth.guard';
 import { AuthGuard } from '../../core/guards/auth.guard';
-import path from 'path';
 import { OrderManagementComponent } from './orderManagements/order-management/order-management.component';
+import { PaymentAcceptComponent } from './orderManagements/payment-accept/payment-accept.component';
+import { OrderDetailComponent } from './orderManagements/order-detail/order-detail.component';
+import { OrderListComponent } from './orderManagements/order-list/order-list.component';
+import { RefundRequestFormComponent } from './refundManagements/refund-request-form/refund-request-form.component';
 
 
 const routes: Routes = [
@@ -48,11 +51,11 @@ const routes: Routes = [
     path: 'auth/forgetPass',
     component: ForgetPasswordComponent,
   },
-  {path: 'about', component: AboutComponent, canActivate: [NoAuthGuard]},
-  {path: 'contact' , component: ContactComponent, canActivate: [NoAuthGuard]},
-  {path: 'policy/privacy', component: PrivacyPolicyComponent, canActivate: [NoAuthGuard]},
-  {path: 'policy/terms-conditions', component: TermsConditionsComponent, canActivate: [NoAuthGuard]},
-  {path: 'policy/faq', component: FaqComponent, canActivate: [NoAuthGuard]},
+  { path: 'about', component: AboutComponent, canActivate: [NoAuthGuard] },
+  { path: 'contact', component: ContactComponent, canActivate: [NoAuthGuard] },
+  { path: 'policy/privacy', component: PrivacyPolicyComponent, canActivate: [NoAuthGuard] },
+  { path: 'policy/terms-conditions', component: TermsConditionsComponent, canActivate: [NoAuthGuard] },
+  { path: 'policy/faq', component: FaqComponent, canActivate: [NoAuthGuard] },
   // {
   //   path: 'customer/auth/verify/:id',
   //   component: VerifyComponent,canActivate: [NoAuthGuard],
@@ -89,7 +92,12 @@ const routes: Routes = [
     path: 'product/:id',
     component: ProductDetailComponent
   },
-  {path:'order',component:OrderManagementComponent}
+  {path:'order',component:OrderManagementComponent},
+  {path:'payment',component:PaymentAcceptComponent},
+  {path:'orderDetail/:id',component:OrderDetailComponent, canActivate: [AuthGuard]},
+  {path:'orders',component:OrderListComponent, canActivate: [AuthGuard]},
+  { path: 'order', component: OrderManagementComponent },
+  { path: 'refundRequest', component: RefundRequestFormComponent }
 
 ];
 

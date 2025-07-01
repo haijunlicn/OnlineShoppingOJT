@@ -1,42 +1,79 @@
-<nav class="sb-topnav navbar navbar-expand navbar-dark fixed-top d-flex justify-content-between">
-  <div class="logo">
-    <p><span class="brand">Britium <span class="gallery-highlight">Gallery</span></span></p>
+<nav class="admin-header navbar navbar-expand navbar-dark">
+  <div class="header-left">
+    <!-- Logo -->
+    <div class="logo">
+      <p>
+        <span class="brand">Britium <span class="gallery-highlight">Gallery</span></span>
+      </p>
+    </div>
+    <!-- Admin Panel Label -->
+    <span class="admin-label">Admin Panel</span>
   </div>
-  <span class="text-white ms-2">Admin Panel</span>
 
-  <div class="d-flex">
-    <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle">
-      <i class="fas fa-bars"></i>
+  <!-- Search Bar -->
+  <div class="header-center">
+    <form class="search-form" (ngSubmit)="onSearch()">
+      <div class="search-wrapper">
+        <input class="form-control search-input" type="search" placeholder="Search products, orders, users..."
+          [(ngModel)]="searchQuery" name="search" aria-label="Search">
+        <button type="submit" class="search-btn">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Right Side Actions -->
+  <div class="header-right">
+    <!-- Notifications -->
+    <button class="btn btn-link notification-btn position-relative" (click)="onNotificationClick()"
+      title="Notifications">
+      <i class="fas fa-bell"></i>
+      <span class="notification-badge position-absolute top-0 start-100 translate-middle badge rounded-pill"
+        *ngIf="notificationCount > 0">
+        {{ notificationCount > 99 ? '99+' : notificationCount }}
+      </span>
     </button>
 
-    <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown"
-          aria-expanded="false">
-          <i class="fas fa-user fa-fw"></i>
-        </a>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-          <li><a class="dropdown-item" href="#">Profile</a></li>
-          <li><a class="dropdown-item" href="#">Settings</a></li>
-          <li><hr class="dropdown-divider" /></li>
-          <li><a class="dropdown-item" (click)="onLogout()">Logout</a></li>
-        </ul>
-      </li>
-    </ul>
+    <!-- User Dropdown -->
+    <div class="dropdown">
+      <button class="btn btn-link user-dropdown dropdown-toggle" type="button" id="userDropdown"
+        data-bs-toggle="dropdown" aria-expanded="false">
+        <div class="user-info">
+          <div class="user-avatar">
+            <i class="fas fa-user-circle"></i>
+          </div>
+          <span class="user-name d-none d-md-inline">Admin</span>
+        </div>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+        <li>
+          <h6 class="dropdown-header">
+            <i class="fas fa-user me-2"></i>Admin User
+          </h6>
+        </li>
+        <li>
+          <hr class="dropdown-divider">
+        </li>
+        <li>
+          <a class="dropdown-item" (click)="onProfileClick()">
+            <i class="fas fa-user-edit me-2"></i>Profile
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" (click)="onSettingsClick()">
+            <i class="fas fa-cog me-2"></i>Settings
+          </a>
+        </li>
+        <li>
+          <hr class="dropdown-divider">
+        </li>
+        <li>
+          <a class="dropdown-item logout-item" (click)="onLogout()">
+            <i class="fas fa-sign-out-alt me-2"></i>Logout
+          </a>
+        </li>
+      </ul>
+    </div>
   </div>
 </nav>
-
-<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
-      <a class="navbar-brand ms-3" href="#">DevUI Admin</a>
-      <form class="d-flex ms-auto me-3">
-        <input class="form-control me-2" type="search" placeholder="Enter a keyword..." aria-label="Search">
-      </form>
-      <div class="d-flex align-items-center">
-        <button class="btn btn-link position-relative me-2">
-          <i class="bi bi-bell"></i>
-          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">15</span>
-        </button>
-        <span class="me-3">Admin</span>
-        <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:32px;height:32px;">A</div>
-      </div>
-    </nav>

@@ -6,6 +6,7 @@ import { CategoryService } from '../../../../core/services/category.service';
 import { CategoryDTO } from '../../../../core/models/category-dto';
 import { BrandService } from '@app/core/services/brand.service';
 import { Router } from '@angular/router';
+import { AccessControlService } from '@app/core/services/AccessControl.service';
 
 @Component({
   selector: 'app-premium-products',
@@ -41,6 +42,7 @@ export class ProductListComponent implements OnInit {
     private productService: ProductService,
     private categoryService: CategoryService,
     private brandService: BrandService,
+    private accessControl: AccessControlService,
     private router: Router
   ) { }
 
@@ -223,5 +225,13 @@ export class ProductListComponent implements OnInit {
   getMainProductImage(product: ProductListItemDTO): string {
     const mainImage = product.product.productImages?.find((img) => img.mainImageStatus)
     return mainImage?.imgPath || "/assets/img/default-product.jfif"
+  }
+
+  get canCreateProduct(): boolean {
+    return this.accessControl.hasAny('PRODUCT_CREATE', 'SUPERADMIN_PERMISSION');
+  }
+
+  get canBulkUploadProducts(): boolean {
+    return this.accessControl.hasAny('PRODUCT_CREATE', 'SUPERADMIN_PERMISSION');
   }
 }

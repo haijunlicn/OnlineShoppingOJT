@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 import com.maven.OnlineShoppingSB.entity.RoleEntity;
 
 @Repository
-public interface RoleRepository extends JpaRepository<RoleEntity, Integer> {
+public interface RoleRepository extends JpaRepository<RoleEntity, Long> {
     Optional<RoleEntity> findByName(String name);
     List<RoleEntity> findByDelFg(Integer delFg);
     List<RoleEntity> findByTypeAndDelFg(Integer type, Integer delFg);

@@ -2,6 +2,7 @@ package com.maven.OnlineShoppingSB.controller;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -261,29 +262,17 @@ public class authController {
         userDTO.setUpdatedDate(user.getUpdatedDate());
         userDTO.setRoleName(user.getRole() != null ? user.getRole().getName() : null);
 
+        // 🟩 NEW: Set permissions from role
+        if (user.getRole() != null && user.getRole().getPermissions() != null) {
+            List<String> permissionNames = user.getRole().getPermissions()
+                    .stream()
+                    .map(p -> p.getCode())
+                    .toList();
+            userDTO.setPermissions(permissionNames); // ensure this field exists in userDTO
+        }
+
         return ResponseEntity.ok(userDTO);
     }
-
-
-//    @GetMapping("/me")
-//    public ResponseEntity<?> getCurrentUser(@RequestParam String email) {
-//        UserEntity user = userRepo.findByEmail(email)
-//                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-//
-//        // 👉 Manual mapping to DTO
-//        userDTO userDTO = new userDTO();
-//        userDTO.setId(user.getId());
-//        userDTO.setEmail(user.getEmail());
-//        userDTO.setName(user.getName());
-//        userDTO.setPhone(user.getPhone());
-//        userDTO.setIsVerified(user.getIsVerified());
-//        userDTO.setDelFg(user.getDelFg());
-//        userDTO.setCreatedDate(user.getCreatedDate());
-//        userDTO.setUpdatedDate(user.getUpdatedDate());
-//        userDTO.setRoleName(user.getRole() != null ? user.getRole().getName() : null); // Null check for role
-//        return ResponseEntity.ok(userDTO);
-//    }
-
 
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@RequestBody Map<String, String> body) {

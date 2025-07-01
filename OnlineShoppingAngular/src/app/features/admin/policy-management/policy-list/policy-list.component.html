@@ -1,47 +1,48 @@
-<app-admin-header></app-admin-header>
-<div class="d-flex" style="min-height: 100vh;">
+<div class="admin-layout">
+  <app-admin-header></app-admin-header>
+  <div class="admin-main">
     <app-admin-sidebar></app-admin-sidebar>
-    <main class="flex-grow-1 bg-light py-3 px-3">
-<div class="policy-container">
-  <h2>Policy List</h2>
+    <main class="admin-content">
+      <div class="policy-container">
+        <h2>Policy List</h2>
 
-  <div class="action-bar">
-    <button class="create-btn" routerLink="/admin/policy/policy-create">+ Create New Policy</button>
+        <div class="action-bar">
+          <button class="create-btn" routerLink="/admin/policy/policy-create">+ Create New Policy</button>
+        </div>
+
+        <div *ngIf="isLoading" class="loading">Loading policies...</div>
+        <div *ngIf="error" class="error">{{ error }}</div>
+
+        <div *ngIf="policies.length > 0; else noPolicies">
+          <table class="policy-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Type</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let policy of policies">
+                <td>{{ policy.id }}</td>
+                <td>{{ policy.title }}</td>
+                <td [innerHTML]="sanitizeHtml(policy.description)"></td>
+                <td>{{ getTypeLabel(policy.type) }}</td>
+                <td>
+                  <button (click)="deletePolicy(policy.id)" class="delete-btn">🗑️ Delete</button>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+        <ng-template #noPolicies>
+          <p>No policies found.</p>
+        </ng-template>
+      </div>
+    </main>
   </div>
-
-  <div *ngIf="isLoading" class="loading">Loading policies...</div>
-  <div *ngIf="error" class="error">{{ error }}</div>
-
-  <div *ngIf="policies.length > 0; else noPolicies">
-    <table class="policy-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Title</th>
-          <th>Description</th>
-          <th>Type</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-       <tr *ngFor="let policy of policies">
-        <td>{{ policy.id }}</td>
-        <td>{{ policy.title }}</td>
-        <td [innerHTML]="sanitizeHtml(policy.description)"></td>
-        <td>{{ getTypeLabel(policy.type) }}</td>
-        <td>
-          <button (click)="deletePolicy(policy.id)" class="delete-btn">🗑️ Delete</button>
-        </td>
-      </tr>
-
-      </tbody>
-    </table>
-  </div>
-
-  <ng-template #noPolicies>
-    <p>No policies found.</p>
-  </ng-template>
-</div>
-</main>
-</div>
-<app-admin-footer></app-admin-footer>
+  <app-admin-footer></app-admin-footer>
