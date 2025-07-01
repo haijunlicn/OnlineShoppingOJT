@@ -15,6 +15,12 @@ public class DeliveryMethodController {
 
     @GetMapping("/available")
     public List<DeliveryMethodDto> getAvailableMethods(@RequestParam double distance) {
-        return deliveryMethodService.getAvailableMethods(distance);
+
+        List<DeliveryMethodDto> deliMethods = deliveryMethodService.getAvailableMethods(distance);
+
+        System.out.println("deli list : " + deliMethods);
+
+        return deliMethods;
+
     }
 }

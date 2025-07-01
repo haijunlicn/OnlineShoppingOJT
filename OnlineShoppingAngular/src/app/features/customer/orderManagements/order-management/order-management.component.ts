@@ -75,7 +75,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     private deliveryMethodService: DeliveryMethodService
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
-    
+
     this.addressForm = this.formBuilder.group({
       address: ['', Validators.required],
       township: [''],
@@ -157,10 +157,10 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
           variantSku: item.variantSku,
           imgPath: item.imgPath
         }));
-        
+
         this.itemSubtotal = state.cartTotal || this.calculateSubtotal();
         this.totalAmount = this.itemSubtotal;
-        
+
         console.log('Cart data loaded successfully:', {
           items: this.orderItems.length,
           subtotal: this.itemSubtotal,
@@ -187,10 +187,10 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
           variantSku: item.variantSku,
           imgPath: item.imgPath
         }));
-        
+
         this.itemSubtotal = this.calculateSubtotal();
         this.totalAmount = this.itemSubtotal;
-        
+
         console.log('Using current cart data:', {
           items: this.orderItems.length,
           subtotal: this.itemSubtotal,
@@ -248,7 +248,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     this.newAddress = this.getEmptyAddress();
     this.addressForm.reset();
     this.currentLatLng = null;
-    
+
     // Initialize map after modal is shown
     setTimeout(() => {
       if (this.isBrowser) {
@@ -263,7 +263,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     this.isEditing = true;
     this.newAddress = { ...address };
     this.addressForm.patchValue(address);
-    
+
     // Initialize map and set marker
     setTimeout(() => {
       if (this.isBrowser) {
@@ -322,7 +322,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
 
   autoLocate(): void {
     if (!this.isBrowser) return;
-    
+
     this.isLoading = true;
     const geoSub = this.locationService.getCurrentPosition().subscribe({
       next: (position) => {
@@ -419,6 +419,9 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
       return;
     }
 
+    console.log("current user Id : ", this.currentUserId);
+
+
     const location: LocationDto = {
       lat: this.currentLatLng.lat,
       lng: this.currentLatLng.lng,
@@ -507,7 +510,15 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
   }
 
   fetchDeliveryMethodsAndCalculateFee(): void {
+    console.log("selected address : ", this.selectedAddress);
+
+    console.log("Store Location : ", this.storeLocation);
+    
+
     if (this.selectedAddress && this.storeLocation) {
+
+      console.log("condition one");
+
       const distance = this.getDistanceFromStore(this.selectedAddress);
       this.deliveryMethodService.getAvailableMethods(distance).subscribe(methods => {
         this.deliveryMethods = methods;
@@ -516,6 +527,9 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       });
     } else {
+
+      console.log("condition two");
+
       this.deliveryMethods = [];
       this.selectedDeliveryMethod = null;
       this.calculateShippingFee();
@@ -575,10 +589,10 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     const R = 6371; // Earth radius in km
     const dLat = toRad(destLat - storeLat);
     const dLng = toRad(destLng - storeLng);
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(toRad(storeLat)) * Math.cos(toRad(destLat)) *
-              Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(storeLat)) * Math.cos(toRad(destLat)) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = R * c;
     if (distance < 50) {
       return '1-2 days';
@@ -604,10 +618,10 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     const R = 6371; // Earth radius in km
     const dLat = toRad(destLat - storeLat);
     const dLng = toRad(destLng - storeLng);
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(toRad(storeLat)) * Math.cos(toRad(destLat)) *
-              Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(storeLat)) * Math.cos(toRad(destLat)) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = R * c;
     const method = this.selectedDeliveryMethod;
     let shippingFee = method.baseFee + method.feePerKm * distance;
@@ -627,10 +641,10 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     const R = 6371; // Earth radius in km
     const dLat = toRad(destLat - storeLat);
     const dLng = toRad(destLng - storeLng);
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(toRad(storeLat)) * Math.cos(toRad(destLat)) *
-              Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(storeLat)) * Math.cos(toRad(destLat)) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = R * c;
     return Math.round(distance * 10) / 10; // Round to 1 decimal place
   }

@@ -164,7 +164,7 @@ public class OrderService {
 
             // Convert product
             ProductDTO productDto = new ProductDTO();
-            productDto.setId(item.getVariant().getProduct().getId().toString());
+            productDto.setId(item.getVariant().getProduct().getId());
             productDto.setName(item.getVariant().getProduct().getName());
             productDto.setDescription(item.getVariant().getProduct().getDescription());
             
