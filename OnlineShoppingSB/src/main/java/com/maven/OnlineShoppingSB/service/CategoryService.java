@@ -78,7 +78,7 @@ public class CategoryService {
 
     public List<CategoryDTO> getAllCategories() {
         List<CategoryEntity> cateList = repo.findByDelFg(1);
-        System.out.println("cate entity list : " + cateList);
+        // System.out.println("cate entity list : " + cateList);
         return cateList.stream()
                 .map(entity -> {
                     CategoryDTO dto = new CategoryDTO();

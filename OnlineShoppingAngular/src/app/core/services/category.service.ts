@@ -20,6 +20,10 @@ export class CategoryService {
     return this.http.get<CategoryDTO[]>(`${this.baseUrl}/list`);
   }
 
+  getAllPublicCategories(): Observable<CategoryDTO[]> {
+    return this.http.get<CategoryDTO[]>(`${this.baseUrl}/public/list`);
+  }
+
   getAllCategoriesWithOptions(): Observable<CategoryDTO[]> {
     return this.http.get<CategoryDTO[]>(`${this.baseUrl}/list-with-options`);
   }

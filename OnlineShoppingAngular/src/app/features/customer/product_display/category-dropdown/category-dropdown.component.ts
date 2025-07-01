@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Router } from '@angular/router';
 import { CategoryDTO, CategoryGroup } from '@app/core/models/category-dto';
 
 @Component({
@@ -15,6 +16,8 @@ export class CategoryDropdownComponent {
   categoryGroups: CategoryGroup[] = []
   selectedRootCategory: CategoryDTO | null = null
   isDropdownOpen = false
+
+  constructor(private router: Router) { }
 
   ngOnInit() {
     this.organizeCategoriesByRoot()
@@ -55,6 +58,39 @@ export class CategoryDropdownComponent {
   onCategoryClick(category: CategoryDTO) {
     this.categorySelected.emit(category)
     this.closeDropdown()
+    this.navigateToProductListWithCategory(category)
+  }
+
+  private navigateToProductListWithCategory(category: CategoryDTO) {
+    const sanitizedCategoryName = this.sanitizeForUrl(category.name!);
+    console.log("sanitized cate name : ", sanitizedCategoryName);
+    this.router.navigate(['/customer/productList'], {
+      queryParams: {
+        categories: sanitizedCategoryName
+      }
+    });
+  }
+
+  private sanitizeForUrl(name: string): string {
+    return encodeURIComponent(name.trim());
+  }
+
+
+
+  // private navigateToProductListWithCategory(category: CategoryDTO) {
+  //   // Format category name for URL (replace spaces with hyphens, encode)
+  //   const categoryName = this.formatNameForUrl(category.name!);
+
+  //   // Navigate to product list page with category filter applied using name
+  //   this.router.navigate(['/customer/productList'], {
+  //     queryParams: {
+  //       categories: categoryName
+  //     }
+  //   })
+  // }
+
+  private formatNameForUrl(name: string): string {
+    return encodeURIComponent(name.toLowerCase().replace(/\s+/g, '-'));
   }
 
   openDropdown() {
@@ -68,6 +104,9 @@ export class CategoryDropdownComponent {
   onViewAllCategories() {
     this.viewAllCategories.emit()
     this.closeDropdown()
+
+    // Navigate to product list without any filters
+    this.router.navigate(['/customer/productList'])
   }
 
   get selectedSubcategories(): CategoryDTO[] {

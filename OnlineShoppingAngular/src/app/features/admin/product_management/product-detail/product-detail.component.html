@@ -1,123 +1,127 @@
-<app-admin-header></app-admin-header>
-<div class="d-flex" style="min-height: 100vh;">
-    <app-admin-sidebar></app-admin-sidebar>
-    <main class="flex-grow-1 bg-light py-4 px-4">
-        <div class="container-fluid" *ngIf="product">
-            <!-- Header Section -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb mb-2">
-                            <li class="breadcrumb-item"><a routerLink="/admin/dashboard"
-                                    class="text-decoration-none">Dashboard</a></li>
-                            <li class="breadcrumb-item"><a routerLink="/admin/productList"
-                                    class="text-decoration-none">Products</a></li>
-                            <li class="breadcrumb-item active">{{ product.product.name }}</li>
-                        </ol>
-                    </nav>
-                    <h2 class="fw-bold text-dark mb-0">Product Details</h2>
+<div class="admin-layout">
+    <app-admin-header></app-admin-header>
+    <div class="admin-main">
+        <app-admin-sidebar></app-admin-sidebar>
+        <main class="admin-content">
+            <div class="container-fluid" *ngIf="product">
+                <!-- Header Section -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-2">
+                                <li class="breadcrumb-item"><a routerLink="/admin/dashboard"
+                                        class="text-decoration-none">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a routerLink="/admin/productList"
+                                        class="text-decoration-none">Products</a></li>
+                                <li class="breadcrumb-item active">{{ product.product.name }}</li>
+                            </ol>
+                        </nav>
+                        <h2 class="fw-bold text-dark mb-0">Product Details</h2>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary" (click)="openStockUpdateModal()" *ngIf="canUpdateStock">
+                            <i class="bi bi-box-seam me-2"></i>Update Stock
+                        </button>
+                        <button class="btn btn-primary" (click)="editProduct()" *ngIf="canEditProduct">
+                            <i class="bi bi-pencil-square me-2"></i>Edit Product
+                        </button>
+                    </div>
+
                 </div>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-outline-primary" (click)="openStockUpdateModal()">
-                        <i class="bi bi-box-seam me-2"></i>Update Stock
-                    </button>
-                    <button class="btn btn-primary" (click)="editProduct()">
-                        <i class="bi bi-pencil-square me-2"></i>Edit Product
-                    </button>
-                </div>
-            </div>
 
-            <!-- Main Product Card -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body p-4">
-                    <div class="row g-4">
-                        <!-- Product Image -->
-                        <div class="col-lg-4">
-                            <div class="position-relative">
-                                <img [src]="mainImageUrl" class="img-fluid rounded-3 w-100" [alt]="product.product.name"
-                                    style="height: 300px; object-fit: cover;" />
-                                <div class="position-absolute top-0 end-0 m-3">
-                                    <span class="badge bg-white text-dark shadow-sm">
-                                        {{ product.product.productImages?.length || 0 }} Images
-                                    </span>
-                                </div>
-                            </div>
-                            <!-- Thumbnail Gallery -->
-                            <div class="d-flex gap-2 mt-3 overflow-auto"
-                                *ngIf="product.product.productImages && product.product.productImages.length > 1">
-                                <img *ngFor="let image of product.product.productImages" [src]="image.imgPath"
-                                    class="rounded-2 border cursor-pointer"
-                                    [class.border-primary]="image.imgPath === mainImageUrl"
-                                    style="width: 60px; height: 60px; object-fit: cover; flex-shrink: 0;"
-                                    (click)="setMainImage(image.imgPath)" />
-                            </div>
-                        </div>
-
-                        <!-- Product Information -->
-                        <div class="col-lg-8">
-                            <div class="row g-4">
-                                <div class="col-md-8">
-                                    <h3 class="fw-bold text-dark mb-3">{{ product.product.name }}</h3>
-
-                                    <div class="mb-3">
-                                        <span class="badge bg-light text-dark border me-2 px-3 py-2">
-                                            <i class="bi bi-tag me-1"></i>{{ product.brand.name }}
-                                        </span>
-                                        <span class="badge bg-light text-dark border px-3 py-2">
-                                            <i class="bi bi-grid me-1"></i>{{ product.category.name }}
+                <!-- Main Product Card -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <div class="row g-4">
+                            <!-- Product Image -->
+                            <div class="col-lg-4">
+                                <div class="position-relative">
+                                    <img [src]="mainImageUrl" class="img-fluid rounded-3 w-100"
+                                        [alt]="product.product.name" style="height: 300px; object-fit: cover;" />
+                                    <div class="position-absolute top-0 end-0 m-3">
+                                        <span class="badge bg-white text-dark shadow-sm">
+                                            {{ product.product.productImages?.length || 0 }} Images
                                         </span>
                                     </div>
-
-                                    <div class="mb-4">
-                                        <h4 class="text-success fw-bold mb-1">{{ getPriceRange() }}</h4>
-                                        <small class="text-muted">Base Price: {{ product.product.basePrice |
-                                            currency:'MMK ':'code':'1.0-0' }}</small>
-                                    </div>
-
-                                    <div class="mb-4">
-                                        <h6 class="text-muted mb-2">DESCRIPTION</h6>
-                                        <p class="text-dark lh-base">{{ product.product.description
-                                            || 'No description available' }}</p>
-                                    </div>
                                 </div>
+                                <!-- Thumbnail Gallery -->
+                                <div class="d-flex gap-2 mt-3 overflow-auto"
+                                    *ngIf="product.product.productImages && product.product.productImages.length > 1">
+                                    <img *ngFor="let image of product.product.productImages" [src]="image.imgPath"
+                                        class="rounded-2 border cursor-pointer"
+                                        [class.border-primary]="image.imgPath === mainImageUrl"
+                                        style="width: 60px; height: 60px; object-fit: cover; flex-shrink: 0;"
+                                        (click)="setMainImage(image.imgPath)" />
+                                </div>
+                            </div>
 
-                                <div class="col-md-4">
-                                    <div class="bg-light rounded-3 p-3 h-100">
-                                        <h6 class="mb-3">PRODUCT INFO</h6>
+                            <!-- Product Information -->
+                            <div class="col-lg-8">
+                                <div class="row g-4">
+                                    <div class="col-md-8">
+                                        <h3 class="fw-bold text-dark mb-3">{{ product.product.name }}</h3>
 
                                         <div class="mb-3">
-                                            <small class="text-muted d-block">Created</small>
-                                            <span class="fw-medium">{{ product.product.createdDate | date: 'MMM dd, y'
-                                                }}</span>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <small class="text-muted d-block">Total Variants</small>
-                                            <span class="fw-medium">{{ product.variants.length }}</span>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <small class="text-muted d-block">Total Stock</small>
-                                            <span class="fw-bold" [ngClass]="getOverallStockClass()">
-                                                {{ getTotalStock() }} units
+                                            <span class="badge bg-light text-dark border me-2 px-3 py-2">
+                                                <i class="bi bi-tag me-1"></i>{{ product.brand.name }}
+                                            </span>
+                                            <span class="badge bg-light text-dark border px-3 py-2">
+                                                <i class="bi bi-grid me-1"></i>{{ product.category.name }}
                                             </span>
                                         </div>
 
-                                        <div class="mb-3">
-                                            <small class="text-muted d-block">Stock Status</small>
-                                            <span class="fw-medium" [ngClass]="getOverallStockClass()">
-                                                <i class="bi" [ngClass]="getStockIcon()"></i>
-                                                {{ getOverallStockStatus() }}
-                                            </span>
+                                        <div class="mb-4">
+                                            <h4 class="text-success fw-bold mb-1">{{ getPriceRange() }}</h4>
+                                            <small class="text-muted">Base Price: {{ product.product.basePrice |
+                                                currency:'MMK ':'code':'1.0-0' }}</small>
                                         </div>
 
-                                        <div *ngIf="product.options && product.options.length > 0">
-                                            <small class="text-muted d-block">Options</small>
-                                            <div class="d-flex flex-wrap gap-1 mt-1">
-                                                <span class="badge bg-white text-dark border small"
-                                                    *ngFor="let option of product.options">
-                                                    {{ option.name }}
+                                        <div class="mb-4">
+                                            <h6 class="text-muted mb-2">DESCRIPTION</h6>
+                                            <p class="text-dark lh-base">{{ product.product.description
+                                                || 'No description available' }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <div class="bg-light rounded-3 p-3 h-100">
+                                            <h6 class="mb-3">PRODUCT INFO</h6>
+
+                                            <div class="mb-3">
+                                                <small class="text-muted d-block">Created</small>
+                                                <span class="fw-medium">{{ product.product.createdDate | date: 'MMM dd,
+                                                    y'
+                                                    }}</span>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <small class="text-muted d-block">Total Variants</small>
+                                                <span class="fw-medium">{{ product.variants.length }}</span>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <small class="text-muted d-block">Total Stock</small>
+                                                <span class="fw-bold" [ngClass]="getOverallStockClass()">
+                                                    {{ getTotalStock() }} units
                                                 </span>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <small class="text-muted d-block">Stock Status</small>
+                                                <span class="fw-medium" [ngClass]="getOverallStockClass()">
+                                                    <i class="bi" [ngClass]="getStockIcon()"></i>
+                                                    {{ getOverallStockStatus() }}
+                                                </span>
+                                            </div>
+
+                                            <div *ngIf="product.options && product.options.length > 0">
+                                                <small class="text-muted d-block">Options</small>
+                                                <div class="d-flex flex-wrap gap-1 mt-1">
+                                                    <span class="badge bg-white text-dark border small"
+                                                        *ngFor="let option of product.options">
+                                                        {{ option.name }}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -126,80 +130,79 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Enhanced Stock Overview Card with Colored Border -->
-            <div class="card border-0 shadow-sm mb-4 stock-overview">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h5 class="fw-bold text-dark mb-0 d-flex align-items-center">
-                            <i class="bi bi-bar-chart-fill me-2 text-primary"></i>
-                            Stock Overview
-                        </h5>
-                    </div>
+                <!-- Enhanced Stock Overview Card with Colored Border -->
+                <div class="card border-0 shadow-sm mb-4 stock-overview">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h5 class="fw-bold text-dark mb-0 d-flex align-items-center">
+                                <i class="bi bi-bar-chart-fill me-2 text-primary"></i>
+                                Stock Overview
+                            </h5>
+                        </div>
 
-                    <div class="row g-3">
-                        <div class="col-md-3 col-sm-6">
-                            <div class="stats-card total-stock bg-light rounded-3 p-3 h-100">
-                                <div class="d-flex align-items-center">
-                                    <div class="stats-icon bg-primary bg-opacity-10 rounded-circle p-2 me-3">
-                                        <i class="bi bi-boxes text-primary"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-muted small mb-1">Total Stock</p>
-                                        <h4 class="fw-bold mb-0">{{ getTotalStock() }}</h4>
+                        <div class="row g-3">
+                            <div class="col-md-3 col-sm-6">
+                                <div class="stats-card total-stock bg-light rounded-3 p-3 h-100">
+                                    <div class="d-flex align-items-center">
+                                        <div class="stats-icon bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                            <i class="bi bi-boxes text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-muted small mb-1">Total Stock</p>
+                                            <h4 class="fw-bold mb-0">{{ getTotalStock() }}</h4>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="col-md-3 col-sm-6">
-                            <div class="stats-card in-stock bg-light rounded-3 p-3 h-100">
-                                <div class="d-flex align-items-center">
-                                    <div class="stats-icon bg-success bg-opacity-10 rounded-circle p-2 me-3">
-                                        <i class="bi bi-check-circle-fill text-success"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-muted small mb-1">In Stock</p>
-                                        <h4 class="fw-bold mb-0 text-success">{{ getInStockVariants() }}</h4>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="stats-card in-stock bg-light rounded-3 p-3 h-100">
+                                    <div class="d-flex align-items-center">
+                                        <div class="stats-icon bg-success bg-opacity-10 rounded-circle p-2 me-3">
+                                            <i class="bi bi-check-circle-fill text-success"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-muted small mb-1">In Stock</p>
+                                            <h4 class="fw-bold mb-0 text-success">{{ getInStockVariants() }}</h4>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="col-md-3 col-sm-6">
-                            <div class="stats-card low-stock bg-light rounded-3 p-3 h-100">
-                                <div class="d-flex align-items-center">
-                                    <div class="stats-icon bg-warning bg-opacity-10 rounded-circle p-2 me-3">
-                                        <i class="bi bi-exclamation-triangle-fill text-warning"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-muted small mb-1">Low Stock</p>
-                                        <h4 class="fw-bold mb-0 text-warning">{{ getLowStockVariants() }}</h4>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="stats-card low-stock bg-light rounded-3 p-3 h-100">
+                                    <div class="d-flex align-items-center">
+                                        <div class="stats-icon bg-warning bg-opacity-10 rounded-circle p-2 me-3">
+                                            <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-muted small mb-1">Low Stock</p>
+                                            <h4 class="fw-bold mb-0 text-warning">{{ getLowStockVariants() }}</h4>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="col-md-3 col-sm-6">
-                            <div class="stats-card out-of-stock bg-light rounded-3 p-3 h-100">
-                                <div class="d-flex align-items-center">
-                                    <div class="stats-icon bg-danger bg-opacity-10 rounded-circle p-2 me-3">
-                                        <i class="bi bi-x-circle-fill text-danger"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-muted small mb-1">Out of Stock</p>
-                                        <h4 class="fw-bold mb-0 text-danger">{{ getOutOfStockVariants() }}</h4>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="stats-card out-of-stock bg-light rounded-3 p-3 h-100">
+                                    <div class="d-flex align-items-center">
+                                        <div class="stats-icon bg-danger bg-opacity-10 rounded-circle p-2 me-3">
+                                            <i class="bi bi-x-circle-fill text-danger"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-muted small mb-1">Out of Stock</p>
+                                            <h4 class="fw-bold mb-0 text-danger">{{ getOutOfStockVariants() }}</h4>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
 
-            <!-- <div class="d-flex flex-wrap align-items-center gap-3 py-3 border-bottom mb-4"
+                <!-- <div class="d-flex flex-wrap align-items-center gap-3 py-3 border-bottom mb-4"
                 style="background: #f9fafb; border-radius: 8px;">
                 <div class="fw-bold fs-5 me-3">Stock Overview</div>
                 <div class="vr mx-2" style="height: 24px;"></div>
@@ -227,119 +230,123 @@
                 </div>
             </div> -->
 
-            <!-- Product Options (if any) -->
-            <div class="card border-0 shadow-sm mb-4" *ngIf="product.options && product.options.length > 0">
-                <div class="card-body p-4">
-                    <h5 class="fw-bold text-dark mb-3">
-                        <i class="bi bi-gear me-2"></i>Product Options
-                    </h5>
-                    <div class="row g-3">
-                        <div class="col-md-6" *ngFor="let option of product.options">
-                            <div class="border rounded-3 p-3 bg-light">
-                                <h6 class="fw-bold text-primary mb-2">{{ option.name }}</h6>
-                                <div class="d-flex flex-wrap gap-2">
-                                    <span class="badge bg-white text-dark border"
-                                        *ngFor="let value of option.optionValues">
-                                        {{ value.value }}
-                                    </span>
+                <!-- Product Options (if any) -->
+                <div class="card border-0 shadow-sm mb-4" *ngIf="product.options && product.options.length > 0">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold text-dark mb-3">
+                            <i class="bi bi-gear me-2"></i>Product Options
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-md-6" *ngFor="let option of product.options">
+                                <div class="border rounded-3 p-3 bg-light">
+                                    <h6 class="fw-bold text-primary mb-2">{{ option.name }}</h6>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <span class="badge bg-white text-dark border"
+                                            *ngFor="let value of option.optionValues">
+                                            {{ value.value }}
+                                        </span>
+                                    </div>
+                                    <small class="text-muted mt-2 d-block">{{ option.optionValues.length }}
+                                        values</small>
                                 </div>
-                                <small class="text-muted mt-2 d-block">{{ option.optionValues.length }} values</small>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Variants Table -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold text-dark mb-0">
-                            <i class="bi bi-list-ul me-2"></i>Product Variants ({{ product.variants.length }})
-                        </h5>
-                    </div>
+                <!-- Variants Table -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold text-dark mb-0">
+                                <i class="bi bi-list-ul me-2"></i>Product Variants ({{ product.variants.length }})
+                            </h5>
+                        </div>
 
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="border-0 fw-bold">SKU</th>
-                                    <th class="border-0 fw-bold">Configuration</th>
-                                    <th class="border-0 fw-bold">Price</th>
-                                    <th class="border-0 fw-bold">Stock</th>
-                                    <th class="border-0 fw-bold">Status</th>
-                                    <th class="border-0 fw-bold">Image</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr *ngFor="let variant of product.variants; trackBy: trackByVariantId">
-                                    <td>
-                                        <code class="bg-light px-2 py-1 rounded text-dark">{{ variant.sku }}</code>
-                                    </td>
-                                    <td>
-                                        <div *ngIf="variant.options && variant.options.length > 0">
-                                            <span class="badge bg-light text-dark border me-1 mb-1"
-                                                *ngFor="let option of variant.options">
-                                                {{ getOptionName(option.optionId) }}: {{ getOptionValue(option.optionId,
-                                                option.optionValueId) }}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="border-0 fw-bold">SKU</th>
+                                        <th class="border-0 fw-bold">Configuration</th>
+                                        <th class="border-0 fw-bold">Price</th>
+                                        <th class="border-0 fw-bold">Stock</th>
+                                        <th class="border-0 fw-bold">Status</th>
+                                        <th class="border-0 fw-bold">Image</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let variant of product.variants; trackBy: trackByVariantId">
+                                        <td>
+                                            <code class="bg-light px-2 py-1 rounded text-dark">{{ variant.sku }}</code>
+                                        </td>
+                                        <td>
+                                            <div *ngIf="variant.options && variant.options.length > 0">
+                                                <span class="badge bg-light text-dark border me-1 mb-1"
+                                                    *ngFor="let option of variant.options">
+                                                    {{ getOptionName(option.optionId) }}: {{
+                                                    getOptionValue(option.optionId,
+                                                    option.optionValueId) }}
+                                                </span>
+                                            </div>
+                                            <span class="text-muted small"
+                                                *ngIf="!variant.options || variant.options.length === 0">
+                                                Default variant
                                             </span>
-                                        </div>
-                                        <span class="text-muted small"
-                                            *ngIf="!variant.options || variant.options.length === 0">
-                                            Default variant
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold">{{ variant.price | currency:'MMK ':'code':'1.0-0' }}</div>
-                                        <small class="text-muted" *ngIf="variant.price !== product.product.basePrice">
-                                            <span
-                                                [class]="variant.price > product.product.basePrice ? 'text-success' : 'text-danger'">
-                                                {{ variant.price > product.product.basePrice ? '+' : '' }}{{
-                                                (variant.price - product.product.basePrice)
-                                                | currency:'MMK':'code':'1.0-0' }}
-                                            </span>
-                                        </small>
-                                    </td>
-                                    <td>
-                                        <span class="fw-bold fs-5">{{ variant.stock }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="status-badge" [ngClass]="{
+                                        </td>
+                                        <td>
+                                            <div class="fw-bold">{{ variant.price | currency:'MMK ':'code':'1.0-0' }}
+                                            </div>
+                                            <small class="text-muted"
+                                                *ngIf="variant.price !== product.product.basePrice">
+                                                <span
+                                                    [class]="variant.price > product.product.basePrice ? 'text-success' : 'text-danger'">
+                                                    {{ variant.price > product.product.basePrice ? '+' : '' }}{{
+                                                    (variant.price - product.product.basePrice)
+                                                    | currency:'MMK':'code':'1.0-0' }}
+                                                </span>
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold fs-5">{{ variant.stock }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge" [ngClass]="{
                                                 'status-active': variant.stock > 5,
                                                 'status-inactive': variant.stock === 0,
                                                 'status-warning': variant.stock > 0 && variant.stock <= 5
                                             }">
-                                            <i class="bi" [ngClass]="{
+                                                <i class="bi" [ngClass]="{
                                                     'bi-check-circle-fill': variant.stock > 5,
                                                     'bi-x-circle-fill': variant.stock === 0,
                                                     'bi-exclamation-triangle-fill': variant.stock > 0 && variant.stock <= 5
                                                 }"></i>
-                                            {{ getVariantStockStatus(variant.stock) }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <img *ngIf="variant.imgPath" [src]="variant.imgPath" alt="Variant Image"
-                                            class="rounded-2 border"
-                                            style="width: 50px; height: 50px; object-fit: cover;">
-                                        <div *ngIf="!variant.imgPath"
-                                            class="d-flex align-items-center justify-content-center bg-light rounded-2 border text-muted"
-                                            style="width: 50px; height: 50px;">
-                                            <i class="bi bi-image"></i>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                                {{ getVariantStockStatus(variant.stock) }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <img *ngIf="variant.imgPath" [src]="variant.imgPath" alt="Variant Image"
+                                                class="rounded-2 border"
+                                                style="width: 50px; height: 50px; object-fit: cover;">
+                                            <div *ngIf="!variant.imgPath"
+                                                class="d-flex align-items-center justify-content-center bg-light rounded-2 border text-muted"
+                                                style="width: 50px; height: 50px;">
+                                                <i class="bi bi-image"></i>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </main>
-</div>
+        </main>
+    </div>
 
-<!-- Stock Update Modal - Using Angular's *ngIf instead of Bootstrap modal -->
-<app-stock-update-modal [show]="showStockModal" [product]="product" (closeModal)="onCloseStockModal()"
-    (stockUpdated)="onStockUpdated()">
-</app-stock-update-modal>
+    <!-- Stock Update Modal - Using Angular's *ngIf instead of Bootstrap modal -->
+    <app-stock-update-modal [show]="showStockModal" [product]="product" (closeModal)="onCloseStockModal()"
+        (stockUpdated)="onStockUpdated()">
+    </app-stock-update-modal>
 
-<app-admin-footer></app-admin-footer>
+    <app-admin-footer></app-admin-footer>

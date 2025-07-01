@@ -37,6 +37,9 @@ import { CategoryDropdownComponent } from './product_display/category-dropdown/c
 import { FilterSidebarComponent } from './common/filter-sidebar/filter-sidebar.component';
 import { OrderComponent } from './general/order/order.component';
 import { OrderManagementComponent } from './orderManagements/order-management/order-management.component';
+import { OrderListComponent } from './orderManagements/order-list/order-list.component';
+import { FileUploadComponent } from './refundManagements/file-upload/file-upload.component';
+import { RefundRequestFormComponent } from './refundManagements/refund-request-form/refund-request-form.component';
 
 
 @NgModule({
@@ -67,7 +70,10 @@ import { OrderManagementComponent } from './orderManagements/order-management/or
     CategoryDropdownComponent,
     FilterSidebarComponent,
     OrderComponent,
-    OrderManagementComponent
+    OrderManagementComponent,
+    OrderListComponent,
+    FileUploadComponent,
+    RefundRequestFormComponent
 
   ],
   imports: [

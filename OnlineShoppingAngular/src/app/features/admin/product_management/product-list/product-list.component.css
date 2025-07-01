@@ -340,8 +340,9 @@ p-table td:last-child {
   background: #fff;
   border: none;
 }
+
 main {
-  min-height: 100vh;
+  /* min-height: 100vh; */
   background: #f6f8fa;
 }
 

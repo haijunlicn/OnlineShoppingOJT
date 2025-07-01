@@ -1,12 +1,13 @@
 <div class="category-dropdown-container">
-  <!-- Trigger Button -->
+  <!-- Header-Specific Trigger Button -->
   <button 
-    class="btn btn-outline-secondary dropdown-toggle category-trigger"
+    class="header-category-trigger"
     (mouseenter)="openDropdown()"
     (click)="openDropdown()"
     [class.active]="isDropdownOpen">
-    <i class="pi pi-th-large me-2"></i>
-    All Categories
+    <i class="pi pi-th-large"></i>
+    <span>Categories</span>
+    <i class="pi pi-chevron-down"></i>
   </button>
 
   <!-- Dropdown Menu -->

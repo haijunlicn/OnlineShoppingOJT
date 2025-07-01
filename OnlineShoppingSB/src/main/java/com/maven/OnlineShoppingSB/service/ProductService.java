@@ -228,13 +228,6 @@ public class ProductService {
                 variant.getVariantOptionValues().add(variantOptVal);
             }
 
-//            variant.getPrices().clear();
-//            VariantPriceEntity priceEntity = new VariantPriceEntity();
-//            priceEntity.setVariant(variant);
-//            priceEntity.setPrice(variantDto.getPrice());
-//            priceEntity.setStartDate(LocalDateTime.now());
-//            variant.getPrices().add(priceEntity);
-
             updateVariantPrice(variant, variantDto.getPrice());
             product.getVariants().add(variant);
         }
@@ -253,6 +246,7 @@ public class ProductService {
         }
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<ProductListItemDTO> getAllProducts() {
         List<ProductEntity> products = productRepo.findAll(Sort.by(Sort.Direction.DESC, "createdDate"));
         return products.stream()
@@ -260,6 +254,7 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ProductListItemDTO getProductById(Long id) {
         ProductEntity product = productRepo.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Product not found with id: " + id));
@@ -817,6 +812,8 @@ public class ProductService {
             return def;
         }
     }
+
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<ProductDTO> getRelatedProducts(Long categoryId, Long productId) {
         List<ProductEntity> relatedProducts = productRepo.findTop10ByCategoryIdAndIdNotOrderByCreatedDateDesc(categoryId, productId);
 
@@ -824,12 +821,7 @@ public class ProductService {
                 .map(product -> mapper.map(product, ProductDTO.class))
                 .collect(Collectors.toList());
     }
-//    private Boolean getCellBoolean(Cell cell) {
-//        if (cell == null) return null;
-//        if (cell.getCellType() == CellType.BOOLEAN) {
-//            return cell.getBooleanCellValue();
-//        } else if (cell.getCellType() == CellType.STRING) {
-//            return Boolean.parseBoolean(cell.getStringCellValue().trim());
+
     private void updateProductImages(ProductEntity product, List<ProductImageDTO> newImageDTOs) {
         List<ProductImageEntity> existingImages = new ArrayList<>(product.getProductImages());
 
@@ -900,20 +892,5 @@ public class ProductService {
         String variantPart = String.join("-", variantParts);
         return namePart + (variantPart.isEmpty() ? "" : "-" + variantPart);
     }
-
-
-//    private String generateSkuPrefix(String productName, ProductVariantDTO variantDto) {
-//        String skuBase = productName.substring(0, Math.min(3, productName.length())).toUpperCase();
-//
-//        StringBuilder skuOptions = new StringBuilder();
-//        for (VariantOptionDTO opt : variantDto.getOptions()) {
-//            String val = opt.getValueName();
-//            if (val != null && !val.isEmpty()) {
-//                skuOptions.append("-").append(val.substring(0, Math.min(4, val.length())).toUpperCase());
-//            }
-//        }
-//
-//        return skuBase + skuOptions;
-//    }
 
 }

@@ -44,12 +44,12 @@ import { FaqUpdateComponent } from './policy-management/faq-update/faq-update.co
 import { DiscountGroupComponent } from './discount_management/discount-group/discount-group.component';
 import { ProductCreateComponent } from './product_management/product-create/product-create.component';
 import { ProductBulkUploadComponent } from './product_management/product-bulk-upload/product-bulk-upload.component';
-import { RoleListComponent } from './role-management/role-list/role-list.component';
-import { RoleFormComponent } from './role-management/role-form/role-form.component';
-import { PermissionListComponent } from './role-management/permission-list/permission-list.component';
-import { PermissionFormComponent } from './role-management/permission-form/permission-form.component';
-import { RoleUpdateComponent } from './role-management/role-update/role-update.component';
-import { PermissionUpdateComponent } from './role-management/permission-update/permission-update.component';
+import { RoleListComponent } from './roleAndPermission/role-list/role-list.component';
+import { RoleFormComponent } from './roleAndPermission/role-form/role-form.component';
+import { PermissionListComponent } from './roleAndPermission/permission-list/permission-list.component';
+import { PermissionFormComponent } from './roleAndPermission/permission-form/permission-form.component';
+import { RoleUpdateComponent } from './roleAndPermission/role-update/role-update.component';
+import { PermissionUpdateComponent } from './roleAndPermission/permission-update/permission-update.component';
 import { PaymentListComponent } from './payment-management/payment-list/payment-list.component';
 import { PaymentCreateComponent } from './payment-management/payment-create/payment-create.component';
 import { PaymentUpdateComponent } from './payment-management/payment-update/payment-update.component';import { ProductAttributeComponent } from './attribute_management/product-attribute/product-attribute.component';
@@ -61,6 +61,7 @@ import { CategoryOptionsDialogComponent } from './attribute_management/category-
 import { PriceDisplayInputComponent } from './product_management/price-display-input/price-display-input.component';
 import { ProductDetailComponent } from './product_management/product-detail/product-detail.component';
 import { StockUpdateModalComponent } from './product_management/stock-update-modal/stock-update-modal.component';
+import { AdminAccountCreateComponent } from './roleAndPermission/admin-account-create/admin-account-create.component';
 
 
 @NgModule({
@@ -106,6 +107,7 @@ import { StockUpdateModalComponent } from './product_management/stock-update-mod
     PriceDisplayInputComponent,
     ProductDetailComponent,
     StockUpdateModalComponent,
+    AdminAccountCreateComponent,
   ],
   imports: [
     CommonModule,

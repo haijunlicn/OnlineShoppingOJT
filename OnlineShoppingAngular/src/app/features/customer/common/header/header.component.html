@@ -6,8 +6,15 @@
         <div class="logo luxury-logo">
           <span class="logo-icon"><i class="fas fa-shopping-bag"></i></span>
           <span class="logo-main">Britium</span>
-          <span class="logo-sub">Luxury Bags</span>
+          <span class="logo-sub">Gallary</span>
         </div>
+      </div>
+
+      <!-- Move your existing category dropdown component here -->
+      <div class="col-auto d-none d-lg-block">
+        <app-category-dropdown [categories]="categories" (categorySelected)="onCategorySelected($event)"
+          (viewAllCategories)="onViewAllCategories()">
+        </app-category-dropdown>
       </div>
 
       <!-- Desktop Navigation -->
@@ -45,7 +52,6 @@
           </ng-container>
 
           <ng-container *ngIf="isLoggedIn && isCustomer && currentUser">
-
             <!-- Wishlist -->
             <button class="action-btn" (click)="onWishlist()">
               <i class="fas fa-heart"></i>
@@ -89,7 +95,6 @@
                     <i class="fas fa-shopping-bag"></i>
                     <span>My Orders</span>
                   </button>
-
                   <button class="profile-menu-item" (click)="onSettings()">
                     <i class="fas fa-cog"></i>
                     <span>Settings</span>
@@ -103,7 +108,6 @@
               </div>
             </div>
           </ng-container>
-
 
           <!-- Mobile Menu Toggle -->
           <button class="mobile-toggle d-lg-none" (click)="toggleMenu()">
@@ -128,21 +132,26 @@
     <div class="mobile-menu" [class.open]="isMenuOpen">
       <nav class="mobile-nav">
         <a routerLink="/customer/general/home" class="mobile-nav-item">Home</a>
-        <a href="#" class="mobile-nav-item">Shop</a>
-        <a href="#" class="mobile-nav-item">About</a>
-        <a href="#" class="mobile-nav-item">Contact</a>
+        <a routerLink="/customer/productList" class="mobile-nav-item">Shop</a>
+
+        <!-- Mobile Categories Link -->
+        <a routerLink="/customer/productList" class="mobile-category-link">
+          <i class="pi pi-th-large"></i>
+          Browse Categories
+        </a>
+
+        <a href="/customer/about" class="mobile-nav-item">About</a>
+        <a href="/customer/contact" class="mobile-nav-item">Contact</a>
       </nav>
 
       <!-- Mobile Auth Section -->
       <div class="mobile-auth">
         <ng-container *ngIf="!isLoggedIn || !isCustomer">
-          <!-- Not Logged In - Show Auth Buttons -->
           <button class="mobile-auth-btn outline" (click)="onRegister()">Register</button>
           <button class="mobile-auth-btn filled" (click)="onSignIn()">Sign In</button>
         </ng-container>
 
         <ng-container *ngIf="isLoggedIn && isCustomer && currentUser">
-          <!-- Logged In - Show Profile Section -->
           <div class="mobile-profile-section">
             <div class="mobile-profile-header">
               <div class="profile-avatar-large">
@@ -161,17 +170,14 @@
                 <i class="fas fa-user"></i>
                 <span>Profile</span>
               </button>
-
               <a class="mobile-profile-item" routerLink="/customer/orders">
                 <i class="fas fa-shopping-bag"></i>
                 <span>My Orders</span>
               </a>
-
               <button class="mobile-profile-item" (click)="onSettings()">
                 <i class="fas fa-cog"></i>
                 <span>Settings</span>
               </button>
-
               <button class="mobile-profile-item logout" (click)="onLogout()">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
@@ -179,7 +185,6 @@
             </div>
           </div>
         </ng-container>
-
       </div>
     </div>
   </div>

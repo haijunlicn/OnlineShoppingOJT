@@ -22,12 +22,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
 
     boolean existsByEmailAndRole(String email, RoleEntity role);
 
-//    @Query("SELECT u FROM UserEntity u JOIN u.role r WHERE u.email = :email AND r.name = :roleName")
-//    Optional<UserEntity> findByEmailAndRoleName(@Param("email") String email, @Param("roleName") String roleName);
-//
-//    @Query("SELECT u FROM UserEntity u JOIN u.role r WHERE u.email = :email AND r.name IN :roleNames")
-//    Optional<UserEntity> findByEmailAndRoleNameIn(@Param("email") String email, @Param("roleNames") List<String> roleNames);
-
     @Query("SELECT u FROM UserEntity u WHERE u.email = :email AND u.role.type = :roleType")
     Optional<UserEntity> findByEmailAndRoleType(@Param("email") String email, @Param("roleType") Integer roleType);
 

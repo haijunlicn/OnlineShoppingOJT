@@ -1,0 +1,26 @@
+<app-header></app-header>
+
+<main class="main-content py-3">
+    <div class="container-fluid py-2">
+        <h2>Order List</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Payment Status</th>
+                    <th>Total Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let order of orders">
+                    <td>{{ order.id }}</td>
+                    <td>{{ order.paymentStatus }}</td>
+                    <td>{{ order.totalAmount }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <button (click)="goToRefund()">Go to Refund Page</button>
+    </div>
+</main>
