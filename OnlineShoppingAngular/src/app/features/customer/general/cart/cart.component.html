@@ -1,59 +1,91 @@
 <app-header></app-header>
-<div class="cart-container">
-  <h2 class="cart-title">🛒 My Cart</h2>
-
-  <table *ngIf="cart.length > 0; else emptyCart">
-    <thead>
-      <tr>
-        <th>Product</th>
-        <th>Price</th>
-        <th>Quantity</th>
-        <th>Subtotal</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let item of cart">
-        <td class="product-cell">
-          <div class="product-info">
-            <img *ngIf="item.imgPath" [src]="item.imgPath" alt="{{ item.productName }}" class="product-img" />
-            <div class="product-name">
-              {{ item.productName }}
-              <span class="variant-sku">({{ item.variantSku }})</span>
-            </div>
-          </div>
-        </td>
-        <td>${{ item.price }}</td>
-        <td>
-          <button class="qty-btn" (click)="changeQty(item.productId, item.variantId, -1)">−</button>
-          <span class="qty-count">{{ item.quantity }}</span>
-          <button
-            class="qty-btn"
-            (click)="changeQty(item.productId, item.variantId, 1)"
-            [disabled]="item.quantity >= item.stock"
-          >+</button>
-        </td>
-        <td>${{ item.price * item.quantity }}</td>
-        <td>
-          <button class="remove-btn" (click)="removeItem(item.productId, item.variantId)">🗑 Remove</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-
-  <ng-template #emptyCart>
-    <p class="empty-message">🛍️ Your cart is empty.</p>
-  </ng-template>
-
-  <div *ngIf="cart.length > 0" class="cart-summary">
-    <h3>Total: ${{ getTotal() }}</h3>
-    <div class="cart-actions">
-      <button class="clear-btn" (click)="clearCart()">🧹 Clear Cart</button>
-      <button class="checkout-btn" (click)="proceedToCheckout()">🛒 Proceed to Checkout</button>
+<div class="cart-page">
+  <div class="cart-container">
+    <div class="cart-header">
+      <h1 class="cart-title">Your Shopping Cart</h1>
+      <button class="back-btn pill-btn" routerLink="/customer/productList" routerLinkActive="active">
+        Continue Shopping
+      </button>
     </div>
-  </div>
 
-  <button class="back-btn" routerLink="/customer/productList" routerLinkActive="active">
-    ⬅ Back to Product List
-  </button>
+    <div *ngIf="cart.length > 0; else emptyCart" class="cart-layout">
+      
+      <div class="cart-items">
+        <table>
+          <thead>
+            <tr>
+              <th class="product-col">Product</th>
+              <th class="price-col">Price</th>
+              <th class="quantity-col">Quantity</th>
+              <th class="total-col">Total</th>
+              <th class="action-col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of cart" class="cart-item">
+              <td class="product-col">
+                <div class="product-details">
+                  <img *ngIf="item.imgPath" [src]="item.imgPath" alt="{{ item.productName }}" class="product-image" />
+                  <div class="product-info">
+                    <p class="product-name">{{ item.productName }}</p>
+                    <p class="product-sku">SKU: {{ item.variantSku }}</p>
+                    <span class="mobile-price">${{ item.price | number:'1.2-2' }} each</span>
+                    <button class="remove-btn-mobile pill-btn" (click)="removeItem(item.productId, item.variantId)">
+                      Remove Item
+                    </button>
+                  </div>
+                </div>
+              </td>
+              <td class="price-col price">${{ item.price | number:'1.2-2' }}</td>
+              <td class="quantity-col">
+                <div class="quantity-selector">
+                  <button class="qty-btn qty-btn-minus pill-btn" (click)="changeQty(item.productId, item.variantId, -1)" [disabled]="item.quantity <= 1">-</button>
+                  <span class="qty-value">{{ item.quantity }}</span>
+                  <button class="qty-btn qty-btn-plus pill-btn" (click)="changeQty(item.productId, item.variantId, 1)" [disabled]="item.quantity >= item.stock">+</button>
+                </div>
+              </td>
+              <td class="total-col price">${{ (item.price * item.quantity) | number:'1.2-2' }}</td>
+              <td class="action-col">
+                 <button class="remove-btn pill-btn" (click)="removeItem(item.productId, item.variantId)" title="Remove item">
+                   ×
+                 </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="cart-footer">
+        <h3 class="summary-title">Order Summary</h3>
+        <div class="summary-row">
+          <span>Subtotal ({{ getItemCount() }} items)</span>
+          <span class="price">${{ getTotal() | number:'1.2-2' }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Shipping</span>
+          <span>Calculated at checkout</span>
+        </div>
+        <div class="summary-total">
+          <span>Estimated Total</span>
+          <span class="total-price">${{ getTotal() | number:'1.2-2' }}</span>
+        </div>
+        <button class="checkout-btn pill-btn" (click)="proceedToCheckout()">
+          Proceed to Checkout
+        </button>
+        <button class="clear-btn pill-btn" (click)="clearCart()">
+          Clear Cart
+        </button>
+      </div>
+    </div>
+
+    <ng-template #emptyCart>
+      <div class="empty-cart-container">
+          <h2 class="empty-cart-title">Your cart is empty</h2>
+          <p>Looks like you haven't added any items to your cart yet.</p>
+          <button class="back-btn pill-btn" routerLink="/customer/productList">
+              Start Shopping
+          </button>
+      </div>
+    </ng-template>
+  </div>
 </div>

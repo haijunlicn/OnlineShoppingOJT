@@ -11,6 +11,11 @@
       </div>
 
       <div>
+        <label>Description:</label>
+        <input type="text" [(ngModel)]="methodName" placeholder="Description" />
+      </div>
+
+      <div>
         <label>Upload QR Code:</label>
         <input type="file" (change)="onQRFileSelected($event)" accept="image/*" />
       </div>

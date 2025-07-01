@@ -1,0 +1,268 @@
+/* Container and Layout */
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 80vh;
+  padding: 32px 0;
+  background: #f7f8fa;
+}
+
+.content-wrapper {
+  display: flex;
+  width: 100%;
+  max-width: 1200px;
+  gap: 32px;
+}
+
+/* Left Section: Store List */
+.left-section {
+  flex: 0 0 300px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 24px 16px;
+  min-height: 600px;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.store-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.store-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.store-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.store-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.store-location {
+  font-size: 0.95rem;
+  color: #888;
+}
+
+.store-actions button {
+  margin-left: 8px;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 4px;
+  background: #e0e0e0;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.store-actions .edit-btn {
+  background: #1976d2;
+  color: #fff;
+}
+
+.store-actions .delete-btn {
+  background: #e53935;
+  color: #fff;
+}
+
+.store-actions button:hover {
+  opacity: 0.85;
+}
+
+/* Right Section: Form and Map */
+.right-section {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.address-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 32px 28px;
+  width: 100%;
+}
+
+.card-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px 0 0 6px;
+  font-size: 1rem;
+  outline: none;
+}
+
+.search-btn {
+  padding: 8px 14px;
+  border: none;
+  background: #1976d2;
+  color: #fff;
+  border-radius: 0 6px 6px 0;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: background 0.2s;
+}
+
+.search-btn:disabled {
+  background: #b0b0b0;
+  cursor: not-allowed;
+}
+
+.address-form {
+  margin-bottom: 18px;
+}
+
+.form-row {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 14px;
+}
+
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 0.98rem;
+  margin-bottom: 4px;
+  color: #555;
+}
+
+.form-input {
+  padding: 8px 10px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  font-size: 1rem;
+  outline: none;
+  background: #fafbfc;
+  transition: border 0.2s;
+}
+
+.form-input:focus {
+  border-color: #1976d2;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.locate-btn {
+  margin-left: 8px;
+  padding: 6px 10px;
+  border: none;
+  background: #43a047;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+.locate-btn:disabled {
+  background: #b0b0b0;
+  cursor: not-allowed;
+}
+
+.loading-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #fff;
+  border-top: 2px solid #43a047;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-left: 4px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.map-container {
+  width: 100%;
+  height: 320px;
+  margin: 18px 0 20px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  border-radius: 10px;
+}
+
+.save-btn, .cancel-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.save-btn {
+  background: #1976d2;
+  color: #fff;
+}
+
+.save-btn:disabled {
+  background: #b0b0b0;
+  cursor: not-allowed;
+}
+
+.cancel-btn {
+  background: #e0e0e0;
+  color: #333;
+}
+
+@media (max-width: 900px) {
+  .content-wrapper {
+    flex-direction: column;
+    gap: 18px;
+  }
+  .left-section, .right-section {
+    min-width: 0;
+    width: 100%;
+  }
+  .address-card {
+    padding: 18px 8px;
+  }
+}

@@ -49,6 +49,8 @@ public class SecurityConfig {
 
                               .requestMatchers("/auth/**").permitAll()
 
+                              .requestMatchers(HttpMethod.POST, "/orders/**").permitAll()
+                              .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                                 // 👉 အခြား request တွေ token လိုအပ်
                         .anyRequest().authenticated()

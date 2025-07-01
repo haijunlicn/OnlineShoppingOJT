@@ -34,6 +34,9 @@ import { ProductListComponent } from './product_display/product-list/product-lis
 import { ProductDetailComponent } from './product_display/product-detail/product-detail.component';
 import { OrderComponent } from './general/order/order.component';
 import { OrderManagementComponent } from './orderManagements/order-management/order-management.component';
+import { PaymentAcceptComponent } from './orderManagements/payment-accept/payment-accept.component';
+import { OrderDetailComponent } from './orderManagements/order-detail/order-detail.component';
+import { OrderListComponent } from './orderManagements/order-list/order-list.component';
 
 
 @NgModule({
@@ -62,7 +65,10 @@ import { OrderManagementComponent } from './orderManagements/order-management/or
     ProductListComponent,
     ProductDetailComponent,
     OrderComponent,
-    OrderManagementComponent
+    OrderManagementComponent,
+    PaymentAcceptComponent,
+    OrderDetailComponent,
+    OrderListComponent
 
   ],
   imports: [

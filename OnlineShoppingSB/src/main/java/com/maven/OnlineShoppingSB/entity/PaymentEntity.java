@@ -1,13 +1,9 @@
 package com.maven.OnlineShoppingSB.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,9 +29,18 @@ public class PaymentEntity {
     @Column(name = "status")
     private int status;
 
+    @Column(name = "description")
+    private String description;
+
+    @Column(name = "type", length = 50) // varchar(50) ဆိုပြီး size ပေးထားတာ
+    private String type;
+
     @Column(name = "created_date")
     private LocalDateTime createdDate;
 
     @Column(name = "updated_date")
     private LocalDateTime updatedDate;
+
+//    @OneToMany(mappedBy = "paymentMethod", cascade = CascadeType.ALL)
+//    private List<OrderEntity> orders;
 }

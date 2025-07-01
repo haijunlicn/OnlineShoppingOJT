@@ -23,6 +23,9 @@ import { NoAuthGuard } from '../../core/guards/no-auth.guard';
 import { AuthGuard } from '../../core/guards/auth.guard';
 import path from 'path';
 import { OrderManagementComponent } from './orderManagements/order-management/order-management.component';
+import { PaymentAcceptComponent } from './orderManagements/payment-accept/payment-accept.component';
+import { OrderDetailComponent } from './orderManagements/order-detail/order-detail.component';
+import { OrderListComponent } from './orderManagements/order-list/order-list.component';
 
 
 const routes: Routes = [
@@ -89,7 +92,10 @@ const routes: Routes = [
     path: 'product/:id',
     component: ProductDetailComponent
   },
-  {path:'order',component:OrderManagementComponent}
+  {path:'order',component:OrderManagementComponent},
+  {path:'payment',component:PaymentAcceptComponent},
+  {path:'orderDetail/:id',component:OrderDetailComponent, canActivate: [AuthGuard]},
+  {path:'orders',component:OrderListComponent, canActivate: [AuthGuard]}
 
 ];
 

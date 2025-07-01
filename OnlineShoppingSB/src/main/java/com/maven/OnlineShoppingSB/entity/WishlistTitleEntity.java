@@ -12,7 +12,6 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-@Data
 @Table(name = "wishlist_title")
 public class WishlistTitleEntity {
     @Id

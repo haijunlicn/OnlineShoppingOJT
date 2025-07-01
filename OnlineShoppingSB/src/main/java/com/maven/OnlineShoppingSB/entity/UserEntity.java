@@ -12,7 +12,6 @@ import java.util.List;
 @Table(name = "users")
 @Getter
 @Setter
-@Data
 public class UserEntity {
 
     @Id
