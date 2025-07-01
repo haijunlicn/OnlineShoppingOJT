@@ -206,12 +206,10 @@
   <div class="related-products-scroll" #scrollContainer>
     <div class="related-product-card" *ngFor="let product of relatedProducts">
       <div class="card h-100">
-<img [src]="getMainProductImage(product)" alt="Product Image" />
-
-
+        <img [src]="getMainProductImage(product)" alt="Product Image" />
         <div class="card-body">
-          <h5 class="card-title">{{ product?.name }}</h5>
-          <p class="card-text">${{ product?.basePrice }}</p>
+          <h5 class="card-title">{{ product.name }}</h5>
+          <p class="card-text">${{ product.basePrice }}</p>
         </div>
       </div>
     </div>

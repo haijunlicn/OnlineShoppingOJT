@@ -2,9 +2,11 @@ package com.maven.OnlineShoppingSB.service;
 
 import com.maven.OnlineShoppingSB.dto.PermissionDTO;
 import com.maven.OnlineShoppingSB.dto.RoleDTO;
+import com.maven.OnlineShoppingSB.dto.userDTO;
 import com.maven.OnlineShoppingSB.entity.PermissionEntity;
 import com.maven.OnlineShoppingSB.entity.RoleEntity;
 import com.maven.OnlineShoppingSB.entity.RolePermissionEntity;
+import com.maven.OnlineShoppingSB.entity.UserEntity;
 import com.maven.OnlineShoppingSB.repository.PermissionRepository;
 import com.maven.OnlineShoppingSB.repository.RolePermissionRepository;
 import com.maven.OnlineShoppingSB.repository.RoleRepository;
@@ -133,4 +135,27 @@ public class RoleService {
 
         return dto;
     }
+    public List<RoleDTO> getCustomerRolesWithUsers() {
+        List<RoleEntity> customerRoles = roleRepo.findByTypeAndDelFgWithUsers(0,1);
+
+        return customerRoles.stream()
+                .map(role -> {
+                    RoleDTO dto = convertToDTO(role);
+                    dto.setUsers(role.getUsers().stream()
+                            .map(this::convertUserToDTO)
+                            .collect(Collectors.toList()));
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+
+    private userDTO convertUserToDTO(UserEntity user) {
+        userDTO dto = new userDTO();
+        dto.setId(user.getId());
+        dto.setName(user.getName());
+        dto.setEmail(user.getEmail());
+        return dto;
+    }
+
 }

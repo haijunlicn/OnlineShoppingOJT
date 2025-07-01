@@ -1,0 +1,306 @@
+<app-admin-header></app-admin-header>
+
+<div class="d-flex" style="min-height: 100vh;">
+  <app-admin-sidebar></app-admin-sidebar>
+
+  <main class="flex-grow-1 bg-light py-3 px-3">
+    <div class="customer-analysis">
+      <!-- Header -->
+      <div class="analysis-header">
+        <div class="header-content">
+          <h1>📅 Daily Registration Analysis</h1>
+          <p>Track customer registrations by date and analyze growth patterns</p>
+        </div>
+        <button class="refresh-btn" (click)="refreshData()" [disabled]="isLoading">
+          <i class="fas fa-sync-alt" [class.spinning]="isLoading"></i>
+          <span>Refresh Data</span>
+        </button>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-container">
+        <div class="loading-animation">
+          <div class="loading-bar"></div>
+          <div class="loading-bar"></div>
+          <div class="loading-bar"></div>
+          <div class="loading-bar"></div>
+        </div>
+        <p>Loading registration data...</p>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="hasError" class="error-container">
+        <div class="error-content">
+          <i class="fas fa-exclamation-triangle"></i>
+          <h3>Oops! Something went wrong</h3>
+          <p>{{ errorMessage }}</p>
+          <button class="retry-btn" (click)="refreshData()">
+            <i class="fas fa-redo"></i>
+            Try Again
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div *ngIf="!isLoading && !hasError" class="analysis-content">
+        
+        <!-- Overview Statistics -->
+        <div class="overview-section">
+          <div class="stat-card primary">
+            <div class="stat-header">
+              <i class="fas fa-users"></i>
+              <span>Total Customers</span>
+            </div>
+            <div class="stat-value">{{ customerStats.totalCustomers }}</div>
+            <div class="stat-growth">
+              <i class="fas fa-arrow-up"></i>
+              <span>+{{ customerStats.growthRate }}% this month</span>
+            </div>
+          </div>
+
+          <div class="stat-card success">
+            <div class="stat-header">
+              <i class="fas fa-calendar-day"></i>
+              <span>Peak Registration Day</span>
+            </div>
+            <div class="stat-value" *ngIf="customerStats.peakRegistrationDay">
+              {{ customerStats.peakRegistrationDay.count }}
+            </div>
+            <div class="stat-percentage" *ngIf="customerStats.peakRegistrationDay">
+              {{ formatFullDate(customerStats.peakRegistrationDay.date) }}
+            </div>
+            <div class="stat-value" *ngIf="!customerStats.peakRegistrationDay">-</div>
+          </div>
+
+          <div class="stat-card warning">
+            <div class="stat-header">
+              <i class="fas fa-chart-line"></i>
+              <span>Daily Average</span>
+            </div>
+            <div class="stat-value">{{ getAverageDailyRegistrations() }}</div>
+            <div class="stat-percentage">registrations per day</div>
+          </div>
+
+          <div class="stat-card info">
+            <div class="stat-header">
+              <i class="fas fa-calendar-week"></i>
+              <span>Last 7 Days</span>
+            </div>
+            <div class="stat-value">{{ getTotalRegistrationsInRange(7) }}</div>
+            <div class="stat-percentage">new registrations</div>
+          </div>
+        </div>
+
+        <!-- Daily Registration Chart -->
+        <div class="chart-section">
+          <div class="chart-header">
+            <h2>📊 Daily Registration Distribution</h2>
+            <p>Number of new customer registrations per day (Last 30 days)</p>
+          </div>
+
+          <!-- Show message if no data -->
+          <div *ngIf="customerStats.dailyRegistrations.length === 0" class="no-chart-data">
+            <i class="fas fa-chart-bar"></i>
+            <h3>No Registration Data Available</h3>
+            <p>There are no daily registrations to display in the chart.</p>
+          </div>
+
+          <!-- Daily Registration Chart - only show if there's data -->
+          <div *ngIf="customerStats.dailyRegistrations.length > 0" class="simple-bar-chart">
+  
+            <!-- Debug Information -->
+            <div class="debug-info" style="background: #f8f9fa; padding: 10px; margin-bottom: 20px; border-radius: 5px; font-size: 12px;">
+              <strong>Debug Info:</strong> 
+              Total Days: {{ customerStats.dailyRegistrations.length }} | 
+              Max Value: {{ getMaxDailyValue() }} | 
+              Sample Data: {{ customerStats.dailyRegistrations[0]?.date }} - {{ customerStats.dailyRegistrations[0]?.count }} users
+            </div>
+
+            <!-- Chart Container -->
+            <div class="chart-container">
+              <!-- Y-Axis -->
+              <div class="y-axis">
+                <div class="y-axis-label">Number of registrations</div>
+                <div class="y-axis-values">
+                  <div *ngFor="let value of getDailyYAxisValues()" class="y-value">{{ value }}</div>
+                </div>
+              </div>
+
+              <!-- Chart Area -->
+              <div class="chart-area">
+                <!-- Grid Lines -->
+                <div class="grid-lines">
+                  <div *ngFor="let line of getGridLines()" class="grid-line" [style.bottom.%]="line"></div>
+                </div>
+
+                <!-- Daily Registration Bars -->
+                <div class="bars-container">
+                  <div *ngFor="let day of customerStats.dailyRegistrations; let i = index" 
+                       class="bar-item daily-bar-item"
+                       [style.animation-delay]="i * 0.05 + 's'">
+                    
+                    <div class="bar daily-bar"
+                         [style.height.%]="getDailyBarHeightPercentage(day.count)"
+                         [style.background-color]="day.color"
+                         [attr.data-value]="day.count"
+                         [attr.data-date]="day.date"
+                         [attr.data-height]="getDailyBarHeightPercentage(day.count)"
+                         [title]="formatFullDate(day.date) + ': ' + day.count + ' registrations'">
+                      
+                      <!-- Value label on top of bar -->
+                      <div class="bar-value">{{ day.count }}</div>
+                      
+                      <!-- Peak indicator -->
+                      <div class="peak-indicator" 
+                           *ngIf="customerStats.peakRegistrationDay && day.date === customerStats.peakRegistrationDay.date">
+                        <i class="fas fa-crown"></i>
+                      </div>
+                    </div>
+                    
+                    <!-- Date label -->
+                    <div class="bar-label date-label">
+                      <div class="date-short">{{ day.formattedDate }}</div>
+                      <div class="day-name">{{ formatDate(day.date).split(' ')[0] }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- X-Axis Label -->
+            <div class="x-axis-label">Registration Dates (Last 30 days)</div>
+
+            <!-- Chart Summary -->
+            <div class="chart-summary">
+              <div class="summary-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Total Days: {{ customerStats.dailyRegistrations.length }}</span>
+              </div>
+              <div class="summary-item">
+                <i class="fas fa-users-plus"></i>
+                <span>Total Registrations: {{ customerStats.totalCustomers }}</span>
+              </div>
+              <div class="summary-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Average per Day: {{ getAverageDailyRegistrations() }}</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Daily Registration Details -->
+        <div class="daily-details-section" *ngIf="customerStats.dailyRegistrations.length > 0">
+          <div class="section-header">
+            <h3>📅 Daily Registration Details</h3>
+          </div>
+
+          <div class="daily-grid">
+            <div *ngFor="let day of customerStats.dailyRegistrations.slice(-10); let i = index" 
+                 class="daily-card"
+                 [style.animation-delay]="i * 0.1 + 's'">
+              
+              <div class="daily-header">
+                <div class="daily-date">
+                  <div class="date-main">{{ day.formattedDate }}</div>
+                  <div class="date-full">{{ formatFullDate(day.date) }}</div>
+                </div>
+                <div class="daily-count" [style.background-color]="day.color">
+                  {{ day.count }}
+                </div>
+              </div>
+
+              <div class="daily-users" *ngIf="day.users.length > 0">
+                <div class="users-header">
+                  <i class="fas fa-users"></i>
+                  <span>Registered Users:</span>
+                </div>
+                <div class="users-list">
+                  <div *ngFor="let user of day.users.slice(0, 3)" class="user-item">
+                    <i class="fas fa-user-circle"></i>
+                    <span>{{ getUserDisplayName(user) }}</span>
+                    <small>({{ user.roleName }})</small>
+                  </div>
+                  <div *ngIf="day.users.length > 3" class="more-users">
+                    +{{ day.users.length - 3 }} more users
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Role Statistics Table -->
+        <div class="data-table-section" *ngIf="customerStats.roleAnalysis.length > 0">
+          <div class="section-header">
+            <h3>📋 Role Distribution Statistics</h3>
+          </div>
+          
+          <div class="data-table">
+            <div class="table-header">
+              <div class="col">Role Name</div>
+              <div class="col">Total Count</div>
+              <div class="col">Active</div>
+              <div class="col">Inactive</div>
+              <div class="col">Percentage</div>
+            </div>
+            
+            <div *ngFor="let role of customerStats.roleAnalysis" class="table-row">
+              <div class="col role-name">
+                <div class="role-indicator" [style.background-color]="role.color"></div>
+                {{ role.name }}
+              </div>
+              <div class="col total-count">{{ role.count }}</div>
+              <div class="col active-count">{{ role.activeCount }}</div>
+              <div class="col inactive-count">{{ role.inactiveCount }}</div>
+              <div class="col percentage">{{ role.percentage }}%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Customers -->
+        <div class="recent-customers-section" *ngIf="customerStats.recentCustomers.length > 0">
+          <div class="section-header">
+            <h3>🕒 Most Recent Registrations</h3>
+          </div>
+
+          <div class="customers-grid">
+            <div *ngFor="let customer of customerStats.recentCustomers; let i = index" 
+                 class="customer-card"
+                 [style.animation-delay]="i * 0.05 + 's'">
+              <div class="customer-avatar">
+                <i class="fas fa-user"></i>
+              </div>
+              <div class="customer-info">
+                <div class="customer-name">{{ getUserDisplayName(customer) }}</div>
+                <div class="customer-role">{{ customer.roleName || 'Unknown Role' }}</div>
+                <div class="customer-date" *ngIf="customer.createdDate">{{ formatDate(customer.createdDate) }}</div>
+              </div>
+              <div class="customer-status">
+                <span class="status-badge" [ngClass]="getStatusBadgeClass(customer.delFg)">
+                  {{ getStatusText(customer.delFg) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- No Data State -->
+        <div *ngIf="customerStats.totalCustomers === 0" class="no-data-container">
+          <div class="no-data-content">
+            <i class="fas fa-calendar-times"></i>
+            <h3>No Registration Data Available</h3>
+            <p>There are no customer registrations to analyze at the moment.</p>
+            <button class="refresh-btn" (click)="refreshData()">
+              <i class="fas fa-refresh"></i>
+              Refresh Data
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<app-admin-footer></app-admin-footer>

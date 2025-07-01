@@ -61,6 +61,7 @@ import { CategoryOptionsDialogComponent } from './attribute_management/category-
 import { PriceDisplayInputComponent } from './product_management/price-display-input/price-display-input.component';
 import { ProductDetailComponent } from './product_management/product-detail/product-detail.component';
 import { StockUpdateModalComponent } from './product_management/stock-update-modal/stock-update-modal.component';
+import { SaleAnalysisComponent } from './policy-management/sale-analysis/sale-analysis.component';
 
 
 @NgModule({
@@ -106,6 +107,7 @@ import { StockUpdateModalComponent } from './product_management/stock-update-mod
     PriceDisplayInputComponent,
     ProductDetailComponent,
     StockUpdateModalComponent,
+    SaleAnalysisComponent,
   ],
   imports: [
     CommonModule,

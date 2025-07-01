@@ -28,6 +28,7 @@ import { AdminAuthGuard } from '../../core/guards/admin-auth.guard';
 import { ProductAttributeComponent } from './attribute_management/product-attribute/product-attribute.component';
 import { ProductDetailComponent } from './product_management/product-detail/product-detail.component';
 import { ProductEditComponent } from './product_management/product-edit/product-edit.component';
+import { SaleAnalysisComponent } from './policy-management/sale-analysis/sale-analysis.component';
 
 
 const routes: Routes = [
@@ -90,7 +91,9 @@ const routes: Routes = [
   { path: 'payment-create', component: PaymentCreateComponent, canActivate: [AdminAuthGuard] },
   { path: 'payment-list', component: PaymentListComponent, canActivate: [AdminAuthGuard] },
   { path: 'payment-update/:id', component: PaymentUpdateComponent, canActivate: [AdminAuthGuard] },
-
+  {
+    path: 'sale-analysis', component: SaleAnalysisComponent, canActivate: [AdminAuthGuard]
+  },
 
   {
     path: 'productAttributes',
