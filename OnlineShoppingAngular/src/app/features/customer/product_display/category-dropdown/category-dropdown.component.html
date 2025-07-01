@@ -1,0 +1,120 @@
+<div class="category-dropdown-container">
+  <!-- Header-Specific Trigger Button -->
+  <button 
+    class="header-category-trigger"
+    (mouseenter)="openDropdown()"
+    (click)="openDropdown()"
+    [class.active]="isDropdownOpen">
+    <i class="pi pi-th-large"></i>
+    <span>Categories</span>
+    <i class="pi pi-chevron-down"></i>
+  </button>
+
+  <!-- Dropdown Menu -->
+  <div 
+    class="category-dropdown-menu"
+    [class.show]="isDropdownOpen"
+    (mouseleave)="closeDropdown()">
+    
+    <div class="dropdown-content">
+      <!-- Left Side - Root Categories -->
+      <div class="root-categories-panel">
+        <div class="panel-header">
+          <h6 class="mb-0">Categories</h6>
+        </div>
+        
+        <div class="root-categories-list">
+          <div 
+            *ngFor="let group of categoryGroups"
+            class="root-category-item"
+            [class.active]="selectedRootCategory?.id === group.root.id"
+            (mouseenter)="onRootCategoryHover(group.root)"
+            (click)="onCategoryClick(group.root)">
+            
+            <div class="d-flex align-items-center">
+              <div class="category-icon me-2">
+                <img 
+                  *ngIf="group.root.imgPath" 
+                  [src]="group.root.imgPath" 
+                  [alt]="group.root.name"
+                  class="root-category-img">
+                <i *ngIf="!group.root.imgPath" class="pi pi-box category-placeholder-icon"></i>
+              </div>
+              
+              <div class="category-info flex-grow-1">
+                <div class="category-name">{{ group.root.name }}</div>
+                <small class="text-muted">{{ group.subcategories.length }} subcategories</small>
+              </div>
+              
+              <i class="pi pi-angle-right text-muted"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- View All Categories Link -->
+        <div class="panel-footer">
+          <button 
+            class="btn btn-link btn-sm w-100 text-start p-2"
+            (click)="onViewAllCategories()">
+            <i class="pi pi-external-link me-2"></i>
+            View All Categories
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Side - Subcategories Grid -->
+      <div class="subcategories-panel">
+        <div class="panel-header" *ngIf="selectedRootCategory">
+          <h6 class="mb-0">{{ selectedRootCategory.name }}</h6>
+          <small class="text-muted">Choose a subcategory</small>
+        </div>
+
+        <div class="subcategories-grid" *ngIf="selectedSubcategories.length > 0">
+          <div 
+            *ngFor="let subcategory of selectedSubcategories"
+            class="subcategory-card"
+            (click)="onCategoryClick(subcategory)">
+            
+            <div class="subcategory-image">
+              <img 
+                *ngIf="subcategory.imgPath" 
+                [src]="subcategory.imgPath" 
+                [alt]="subcategory.name"
+                class="card-img">
+              <div *ngIf="!subcategory.imgPath" class="placeholder-img">
+                <i class="pi pi-image"></i>
+              </div>
+            </div>
+            
+            <div class="subcategory-info">
+              <div class="subcategory-name">{{ subcategory.name }}</div>
+              <small class="text-muted" *ngIf="subcategory.parentCategoryName">
+                {{ subcategory.parentCategoryName }}
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- No Subcategories Message -->
+        <div *ngIf="selectedSubcategories.length === 0" class="no-subcategories">
+          <div class="text-center py-4">
+            <i class="pi pi-info-circle text-muted mb-2" style="font-size: 2rem;"></i>
+            <p class="text-muted mb-0">No subcategories available</p>
+            <button 
+              class="btn btn-primary btn-sm mt-2"
+              (click)="onCategoryClick(selectedRootCategory!)">
+              Browse {{ selectedRootCategory?.name }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Backdrop -->
+  <div 
+    class="dropdown-backdrop d-md-none"
+    [class.show]="isDropdownOpen"
+    (click)="closeDropdown()">
+  </div>
+</div>

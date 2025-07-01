@@ -6,12 +6,14 @@ import { RegisterModalService } from '../../../../core/services/RegisterModalSer
 import { ForgotPasswordModalService } from '../../../../core/services/ForgotPasswordModalService';
 import { User } from '../../../../core/models/User';
 import { AuthService } from '../../../../core/services/auth.service';
+import { CategoryDTO } from '@app/core/models/category-dto';
+import { CategoryService } from '@app/core/services/category.service'; // Add this import
 
 @Component({
   selector: 'app-header',
   standalone: false,
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.css']  // ✅ Fixed typo
+  styleUrls: ['./header.component.css']
 })
 export class HeaderComponent implements OnInit {
   isWishlistDropdownVisible = false;
@@ -19,6 +21,10 @@ export class HeaderComponent implements OnInit {
   cartItemCount = 2;
   isMobileSearchOpen = false;
   isProfileDropdownOpen = false;
+
+  // Category dropdown properties
+  categories: CategoryDTO[] = [];
+  loadingCategories = false;
 
   // User state
   currentUser: User | null = null;
@@ -32,20 +38,9 @@ export class HeaderComponent implements OnInit {
     private loginModalService: LoginModalService,
     private registerModalService: RegisterModalService,
     private forgotModalService: ForgotPasswordModalService,
-    private authService: AuthService // Add this
+    private authService: AuthService,
+    private categoryService: CategoryService
   ) { }
-
-  get loginVisible$() {
-    return this.loginModalService.loginVisible$;
-  }
-
-  get registerVisible$() {
-    return this.registerModalService.registerVisible$;
-  }
-
-  get forgotVisible$() {
-    return this.forgotModalService.forgotVisible$;
-  }
 
   ngOnInit(): void {
     // ✅ Initialize cart count
@@ -66,6 +61,52 @@ export class HeaderComponent implements OnInit {
 
     // ✅ Initialize user from stored token if available
     this.authService.initializeUserFromToken();
+
+    // ✅ Load categories for dropdown
+    this.loadCategories();
+  }
+
+  // ===== CATEGORY DROPDOWN METHODS =====
+  loadCategories() {
+    this.loadingCategories = true;
+    this.categoryService.getAllPublicCategories().subscribe({
+      next: (categories) => {
+        this.categories = categories;
+        this.loadingCategories = false;
+        console.log("Header categories loaded:", this.categories);
+      },
+      error: (err) => {
+        console.error("Failed to load categories", err);
+        this.loadingCategories = false;
+      },
+    });
+  }
+
+  onCategorySelected(category: CategoryDTO) {
+    console.log("Selected category:", category);
+
+    // Navigate to product list with category filter
+    this.router.navigate(['/customer/productList'], {
+      queryParams: { category: category.id }
+    });
+  }
+
+  onViewAllCategories() {
+    // Navigate to product list
+    this.router.navigate(['/customer/productList']);
+  }
+
+  // ===== EXISTING METHODS =====
+  get loginVisible$() {
+    return this.loginModalService.loginVisible$;
+  }
+
+  get registerVisible$() {
+    return this.registerModalService.registerVisible$;
+  }
+
+  get forgotVisible$() {
+    return this.forgotModalService.forgotVisible$;
   }
 
   toggleMenu() {
@@ -95,8 +136,7 @@ export class HeaderComponent implements OnInit {
   }
 
   onProfile(): void {
-    // this.router.navigate(['/customer/profile']);
-    console.log("user id : " , this.authService.getCurrentUser()?.id);
+    console.log("user id : ", this.authService.getCurrentUser()?.id);
     this.isProfileDropdownOpen = false;
   }
 
@@ -108,7 +148,6 @@ export class HeaderComponent implements OnInit {
   onLogout(): void {
     this.authService.logout();
     this.isProfileDropdownOpen = false;
-    this.router.navigate(['/']);
     console.log('User logged out');
   }
 

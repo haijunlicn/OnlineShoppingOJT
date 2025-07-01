@@ -32,7 +32,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String method = request.getMethod();
 
         // ✅ GET method အားလုံးကို JWT token မစစ်ပဲ လွတ်ခွင့်ပြု
-        if (method.equalsIgnoreCase("GET")) {
+//        if (method.equalsIgnoreCase("GET")) {
+//            chain.doFilter(request, response);
+//            return;
+//        }
+
+        // Allow GET requests that contain 'public' in the URL without JWT check
+        if (method.equalsIgnoreCase("GET") && path.contains("public")) {
             chain.doFilter(request, response);
             return;
         }

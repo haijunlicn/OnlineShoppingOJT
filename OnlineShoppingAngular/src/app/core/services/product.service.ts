@@ -1,6 +1,6 @@
 import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { CreateProductRequestDTO, ProductCardItem, ProductListItemDTO, ProductVariantDTO } from '../models/product.model';
+import { CreateProductRequestDTO, ProductCardItem, ProductDTO, ProductListItemDTO, ProductVariantDTO } from '../models/product.model';
 import { catchError, Observable, throwError } from 'rxjs';
 
 @Injectable({
@@ -15,6 +15,17 @@ export class ProductService {
     return this.http.post(`${this.baseUrl}/create`, request, { responseType: 'text' });
   }
 
+  updateProduct(request: CreateProductRequestDTO): Observable<string> {
+    return this.http.put(`${this.baseUrl}/update`, request, { responseType: 'text' });
+  }
+
+  updateStock(productId: number, stockUpdates: { variantId: number; newStock: number }[]): Observable<string> {
+    return this.http.put(`${this.baseUrl}/update-stock`, {
+      productId,
+      stockUpdates
+    }, { responseType: 'text' });
+  }
+
   getProductList(): Observable<ProductListItemDTO[]> {
     return this.http.get<ProductListItemDTO[]>(`${this.baseUrl}/list`);
   }
@@ -22,6 +33,15 @@ export class ProductService {
   getProductById(id: number): Observable<ProductCardItem> {
     return this.http.get<ProductCardItem>(`${this.baseUrl}/${id}`);
   }
+
+  getPublicProductList(): Observable<ProductListItemDTO[]> {
+    return this.http.get<ProductListItemDTO[]>(`${this.baseUrl}/public-list`);
+  }
+
+  getPublicProductById(id: number): Observable<ProductCardItem> {
+    return this.http.get<ProductCardItem>(`${this.baseUrl}/public/${id}`);
+  }
+
 
   generateSku(productName: string, variant: ProductVariantDTO): string {
     const skuBase = productName.substring(0, 3).toUpperCase();
@@ -48,4 +68,9 @@ export class ProductService {
       observe: 'events'
     });
   }
+  getRelatedProducts(categoryId: number, productId: number) {
+    return this.http.get<ProductDTO[]>(`${this.baseUrl}/related?categoryId=${categoryId}&productId=${productId}`);
+  }
+
+
 }

@@ -1,0 +1,191 @@
+<div class="filter-sidebar" [class.visible]="isVisible">
+    <!-- Sidebar Header -->
+    <div class="sidebar-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold">
+                <i class="pi pi-filter me-2"></i>
+                Filters
+            </h6>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-primary" *ngIf="activeFilterCount > 0">
+                    {{ activeFilterCount }}
+                </span>
+                <button class="btn btn-link btn-sm p-0 text-decoration-none" (click)="clearAllFiltersLocal()"
+                    *ngIf="activeFilterCount > 0">
+                    Clear All
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Content -->
+    <div class="sidebar-content">
+
+        <!-- Categories Filter -->
+        <div class="filter-section">
+            <div class="filter-section-header" (click)="toggleSection('categories')">
+                <h6 class="mb-0">Categories</h6>
+                <i class="pi" [ngClass]="expandedSections.categories ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
+            </div>
+
+            <div class="filter-section-content" [class.expanded]="expandedSections.categories">
+                <!-- Category Search -->
+                <div class="search-box mb-3">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">
+                            <i class="pi pi-search"></i>
+                        </span>
+                        <input type="text" class="form-control" placeholder="Search categories..."
+                            [(ngModel)]="categorySearchTerm">
+                    </div>
+                </div>
+
+                <div class="category-tree">
+                    <ng-container *ngFor="let rootCategory of rootCategories">
+                        <ng-container
+                            *ngTemplateOutlet="categoryTemplate; context: { category: rootCategory, level: 0 }"></ng-container>
+                    </ng-container>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recursive Category Template -->
+        <ng-template #categoryTemplate let-category="category" let-level="level">
+            <div *ngIf="!categorySearchTerm || matchesSearch(category, categorySearchTerm)">
+                <!-- Category Item -->
+                <div class="category-item-clickable" [class.selected]="isCategorySelected(category.id!)"
+                    [style.margin-left.px]="level * 8" (click)="toggleCategory(category.id!)">
+                    <span class="category-label" [class.fw-medium]="level === 0">{{ category.name }}</span>
+                </div>
+
+                <ng-container *ngFor="let subCategory of getDirectChildren(category.id!)">
+                    <ng-container
+                        *ngTemplateOutlet="categoryTemplate; context: { category: subCategory, level: level + 1 }">
+                    </ng-container>
+                </ng-container>
+            </div>
+        </ng-template>
+
+        <!-- Brands Filter -->
+        <div class="filter-section">
+            <div class="filter-section-header" (click)="toggleSection('brands')">
+                <h6 class="mb-0">Brands</h6>
+                <i class="pi" [ngClass]="expandedSections.brands ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
+            </div>
+
+            <div class="filter-section-content" [class.expanded]="expandedSections.brands">
+                <!-- Brand Search -->
+                <div class="search-box mb-3">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">
+                            <i class="pi pi-search"></i>
+                        </span>
+                        <input type="text" class="form-control" placeholder="Search brands..."
+                            [(ngModel)]="brandSearchTerm">
+                    </div>
+                </div>
+
+                <div class="brands-list">
+                    <div *ngFor="let brand of filteredBrands" class="form-check brand-item"
+                        [class.selected]="isBrandSelected(brand.id)">
+                        <input class="form-check-input" type="checkbox" [id]="'brand-' + brand.id"
+                            [checked]="isBrandSelected(brand.id)" (change)="toggleBrand(brand.id)">
+                        <label class="form-check-label d-flex align-items-center" [for]="'brand-' + brand.id">
+                            <img *ngIf="brand.logo" [src]="brand.logo" [alt]="brand.name" class="brand-logo me-2"
+                                onerror="this.style.display='none'">
+                            <span class="brand-name">{{ brand.name }}</span>
+                        </label>
+                    </div>
+
+                    <!-- No brands found -->
+                    <div *ngIf="filteredBrands.length === 0" class="text-muted text-center py-2">
+                        <small>No brands found</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Price Filter -->
+        <div class="filter-section">
+            <div class="filter-section-header" (click)="toggleSection('price')">
+                <h6 class="mb-0">Price Range</h6>
+                <i class="pi" [ngClass]="expandedSections.price ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
+            </div>
+
+            <div class="filter-section-content" [class.expanded]="expandedSections.price">
+                <!-- Predefined Price Ranges -->
+                <div class="price-ranges mb-3">
+                    <div *ngFor="let range of priceRanges" class="form-check price-range-item">
+                        <input class="form-check-input" type="radio" name="priceRange"
+                            [id]="'price-' + range.min + '-' + range.max" [checked]="selectedPriceRange === range"
+                            (change)="selectPriceRange(range)">
+                        <label class="form-check-label" [for]="'price-' + range.min + '-' + range.max">
+                            {{ range.label }}
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Custom Price Range -->
+                <div class="custom-price-range">
+                    <label class="form-label small fw-medium">Custom Range</label>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <input type="number" class="form-control form-control-sm" placeholder="Min"
+                                [(ngModel)]="customPriceMin" (ngModelChange)="onCustomPriceChange()">
+                        </div>
+                        <div class="col-6">
+                            <input type="number" class="form-control form-control-sm" placeholder="Max"
+                                [(ngModel)]="customPriceMax" (ngModelChange)="onCustomPriceChange()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Availability Filter -->
+        <div class="filter-section">
+            <div class="filter-section-header" (click)="toggleSection('availability')">
+                <h6 class="mb-0">Availability</h6>
+                <i class="pi" [ngClass]="expandedSections.availability ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
+            </div>
+
+            <div class="filter-section-content" [class.expanded]="expandedSections.availability">
+                <div class="availability-item-clickable" [class.selected]="inStockOnly" (click)="toggleInStock()">
+                    <span class="availability-label">In Stock Only</span>
+                </div>
+
+                <div class="availability-item-clickable" [class.selected]="onSaleOnly" (click)="toggleOnSale()">
+                    <span class="availability-label">On Sale</span>
+                </div>
+
+                <div class="availability-item-clickable" [class.selected]="newItemsOnly" (click)="toggleNewItems()">
+                    <span class="availability-label">New Arrivals</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rating Filter -->
+        <div class="filter-section">
+            <div class="filter-section-header" (click)="toggleSection('rating')">
+                <h6 class="mb-0">Customer Rating</h6>
+                <i class="pi" [ngClass]="expandedSections.rating ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
+            </div>
+
+            <div class="filter-section-content" [class.expanded]="expandedSections.rating">
+                <div class="rating-options">
+                    <div *ngFor="let rating of [4, 3, 2, 1]" class="rating-option" (click)="setMinRating(rating)"
+                        [class.active]="minRating === rating">
+                        <div class="d-flex align-items-center">
+                            <div class="stars me-2">
+                                <i *ngFor="let star of [1,2,3,4,5]" class="pi pi-star"
+                                    [class.pi-star-fill]="star <= rating" [class.text-warning]="star <= rating"></i>
+                            </div>
+                            <span class="small">{{ rating }}+ Stars</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

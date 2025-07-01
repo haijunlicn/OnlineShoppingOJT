@@ -1,0 +1,143 @@
+<div class="admin-layout">
+  <app-admin-header></app-admin-header>
+  <div class="admin-main">
+    <app-admin-sidebar></app-admin-sidebar>
+    <main class="admin-content">
+      <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2>Permission Management</h2>
+          <div class="text-muted">
+            <small>View all system permissions</small>
+          </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="row mt-4">
+          <div class="col-md-3">
+            <div class="card text-center">
+              <div class="card-body">
+                <h3 class="text-primary">{{ permissions.length }}</h3>
+                <small class="text-muted">Total Permissions</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card text-center">
+              <div class="card-body">
+                <h3 class="text-info">{{ uniqueResources.length }}</h3>
+                <small class="text-muted">Resource Modules</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card text-center">
+              <div class="card-body">
+                <h3 class="text-success">{{ getReadPermissionsCount() }}</h3>
+                <small class="text-muted">Read Permissions</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card text-center">
+              <div class="card-body">
+                <h3 class="text-warning">{{ getManagePermissionsCount() }}</h3>
+                <small class="text-muted">Manage Permissions</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-8">
+                <input type="text" class="form-control"
+                  placeholder="Search permissions by code, description, or resource..." [(ngModel)]="searchTerm"
+                  [ngModelOptions]="{standalone: true}" (input)="filterPermissions()" />
+              </div>
+              <div class="col-md-4">
+                <select class="form-select" [(ngModel)]="selectedResource" [ngModelOptions]="{standalone: true}"
+                  (change)="filterPermissions()">
+                  <option value="">All Resources</option>
+                  <option *ngFor="let resource of uniqueResources" [value]="resource">
+                    {{ resource }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Permissions Display -->
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-0">System Permissions</h5>
+              <small class="text-muted">{{ filteredPermissions.length }} permissions found</small>
+            </div>
+            <div class="badge bg-info">
+              Read Only
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <!-- Permission Groups -->
+            <div class="accordion" id="permissionAccordion">
+              <div class="accordion-item" *ngFor="let group of groupedFilteredPermissions; let i = index">
+                <h2 class="accordion-header">
+                  <button class="accordion-button" type="button" [class.collapsed]="!group.expanded"
+                    (click)="toggleGroup(i)" [attr.aria-expanded]="group.expanded">
+                    <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                      <span>
+                        <i [class]="getModuleIcon(group.resource)" class="me-2"></i>
+                        {{ group.resource }}
+                      </span>
+                      <span class="badge bg-primary">
+                        {{ group.permissions.length }} permissions
+                      </span>
+                    </div>
+                  </button>
+                </h2>
+                <div class="accordion-collapse collapse" [class.show]="group.expanded">
+                  <div class="accordion-body">
+                    <div class="row">
+                      <div class="col-md-6" *ngFor="let perm of group.permissions">
+                        <div class="permission-item mb-3 p-3 border rounded">
+                          <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                              <h6 class="mb-1">{{ perm.description }}</h6>
+                              <small class="text-muted">
+                                <strong>Code:</strong> {{ perm.code }}
+                              </small>
+                              <br>
+                              <small class="text-muted">
+                                <strong>ID:</strong> {{ perm.id }}
+                              </small>
+                            </div>
+                            <div class="permission-status">
+                              <span class="badge bg-success">Active</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="text-center py-5" *ngIf="filteredPermissions.length === 0">
+              <i class="fas fa-search fa-3x text-muted mb-3"></i>
+              <h5 class="text-muted">No permissions found</h5>
+              <p class="text-muted">Try adjusting your search criteria</p>
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+    </main>
+  </div>
+
+  <app-admin-footer></app-admin-footer>

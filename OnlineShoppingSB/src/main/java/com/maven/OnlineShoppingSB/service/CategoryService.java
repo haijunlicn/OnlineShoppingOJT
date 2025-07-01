@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import com.maven.OnlineShoppingSB.dto.OptionDTO;
 import com.maven.OnlineShoppingSB.entity.CategoryOptionEntity;
-import com.maven.OnlineShoppingSB.entity.OptionEntity;
 import com.maven.OnlineShoppingSB.repository.CategoryOptionRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +78,7 @@ public class CategoryService {
 
     public List<CategoryDTO> getAllCategories() {
         List<CategoryEntity> cateList = repo.findByDelFg(1);
-        System.out.println("cate entity list : " + cateList);
+        // System.out.println("cate entity list : " + cateList);
         return cateList.stream()
                 .map(entity -> {
                     CategoryDTO dto = new CategoryDTO();

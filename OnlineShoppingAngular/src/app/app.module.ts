@@ -1,6 +1,5 @@
-
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { BrowserModule, provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -14,14 +13,14 @@ import { ForgetPasswordComponent } from './features/customer/auth/forget-passwor
 import { ResetPasswordComponent } from './features/customer/auth/reset-password/reset-password.component';
 import { GoogleMapsModule } from '@angular/google-maps';
 import { ToastrModule } from 'ngx-toastr';
-
-
+import { AuthService } from './core/services/auth.service';
+import { initializeAuth } from './core/init/auth-init.factory';
 
 
 @NgModule({
   declarations: [
     AppComponent,
-  
+
 
 
   ],
@@ -35,7 +34,7 @@ import { ToastrModule } from 'ngx-toastr';
     ReactiveFormsModule,
     HttpClientModule,
     GoogleMapsModule,
-    
+
   ],
   providers: [
     provideClientHydration(withEventReplay()),
@@ -44,8 +43,16 @@ import { ToastrModule } from 'ngx-toastr';
       useClass: AuthInterceptor,
       multi: true
     },
-
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeAuth,
+      deps: [AuthService],
+      multi: true
+    }
   ],
+
+
+  // ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

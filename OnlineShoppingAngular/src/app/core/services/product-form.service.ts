@@ -177,6 +177,42 @@ export class ProductFormService {
     }
   }
 
+  applyBulkStock(variantsFormArray: any, stockValue: number): void {
+    for (let i = 0; i < variantsFormArray.length; i++) {
+      variantsFormArray.at(i).get('stock')?.setValue(stockValue);
+    }
+  }
 
+  getSkuBase(productName: string, variantOptions: string[]): string {
+    const initials = productName
+      .split(/\s+/)
+      .filter((word) => word.length > 0)
+      .map((word) => word[0].toUpperCase())
+      .join('');
+
+    const namePart = initials || 'PRD';
+
+    const variantPart = variantOptions
+      .map((value) => {
+        const digitMatch = value.match(/\d+/g);
+        if (digitMatch) {
+          return digitMatch.join('');
+        }
+
+        return value
+          .split(/\s+/)
+          .filter((w) => w.length > 0)
+          .map((w) => w.substring(0, 3).toUpperCase())
+          .join('-');
+      })
+      .join('-');
+
+    return `${namePart}-${variantPart}`;
+  }
+
+  getSkuForVariant(productName: string, variant: any): string {
+    const variantOptionValues: string[] = variant.options.map((opt: any) => opt.valueName!);
+    return this.getSkuBase(productName, variantOptionValues);
+  }
 
 }

@@ -1,0 +1,417 @@
+.filter-sidebar {
+  width: 280px;
+  height: calc(100vh - 80px); /* Adjust based on header height */
+  position: fixed;
+  top: 80px; /* Position below header */
+  left: 0;
+  background: white;
+  border-right: 1px solid #e9ecef;
+  z-index: 1000;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.filter-sidebar.visible {
+  transform: translateX(0);
+}
+
+.sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid #e9ecef;
+  background: #f8f9fa;
+  flex-shrink: 0;
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.filter-section {
+  border-bottom: 1px solid #e9ecef;
+}
+
+.filter-section-header {
+  padding: 12px 16px;
+  background: #f8f9fa;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.filter-section-header:hover {
+  background: #e9ecef;
+}
+
+.filter-section-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  padding: 0 16px;
+}
+
+.filter-section-content.expanded {
+  max-height: 500px;
+  padding: 12px 16px;
+}
+
+/* Search Box Styles */
+.search-box .input-group-text {
+  background: #f8f9fa;
+  border-color: #e9ecef;
+  color: #6c757d;
+}
+
+.search-box .form-control {
+  border-color: #e9ecef;
+}
+
+.search-box .form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Category Styles */
+.category-tree {
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Category Clickable Items (no checkboxes) */
+.category-item-clickable {
+  margin-bottom: 2px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.category-item-clickable:hover {
+  background-color: #f8f9fa;
+  transform: translateX(2px);
+}
+
+.category-item-clickable.selected {
+  background-color: #e3f2fd;
+  border-left: 3px solid #007bff;
+  color: #0056b3;
+}
+
+.category-item-clickable.selected .category-label {
+  font-weight: 500;
+}
+
+.category-label {
+  font-size: 0.9rem;
+  display: block;
+  width: 100%;
+  line-height: 1.3;
+}
+
+/* Add visual hierarchy indicators */
+.category-item-clickable[style*="margin-left: 16px"]::before {
+  content: "└";
+  position: absolute;
+  left: 4px;
+  color: #dee2e6;
+  font-size: 0.8rem;
+}
+
+.category-item-clickable[style*="margin-left: 32px"]::before {
+  content: "  └";
+  position: absolute;
+  left: 4px;
+  color: #dee2e6;
+  font-size: 0.8rem;
+}
+
+.category-item-clickable[style*="margin-left: 48px"]::before {
+  content: "    └";
+  position: absolute;
+  left: 4px;
+  color: #dee2e6;
+  font-size: 0.8rem;
+}
+
+.category-section {
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 12px;
+}
+
+.category-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.section-title {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.category-tree {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.category-item {
+  margin-bottom: 4px;
+  padding: 4px 0;
+  transition: all 0.15s ease;
+}
+
+.category-item:hover {
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  padding: 4px 6px;
+  transform: translateX(1px);
+}
+
+.category-item .form-check-label {
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* Category Clickable Items (no checkboxes) */
+.category-item-clickable {
+  margin-bottom: 4px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.category-item-clickable:hover {
+  background-color: #f8f9fa;
+  transform: translateX(2px);
+}
+
+.category-item-clickable.selected {
+  background-color: #e3f2fd;
+  border-left: 3px solid #007bff;
+  color: #0056b3;
+}
+
+.category-item-clickable.selected .category-label {
+  font-weight: 500;
+}
+
+.category-label {
+  font-size: 0.9rem;
+  display: block;
+  width: 100%;
+}
+
+.subcategories {
+  border-left: 2px solid #e9ecef;
+  padding-left: 8px;
+  margin-top: 4px;
+}
+
+.subcategory {
+  position: relative;
+}
+
+.subcategory::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  width: 8px;
+  height: 1px;
+  background: #dee2e6;
+}
+
+/* Brand Styles */
+.brands-list {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.brand-item {
+  margin-bottom: 4px;
+  padding: 4px 0;
+  transition: all 0.15s ease;
+}
+
+.brand-item:hover {
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  padding: 4px 6px;
+  transform: translateX(1px);
+}
+
+.brand-item .form-check-label {
+  cursor: pointer;
+  width: 100%;
+}
+
+.brand-logo {
+  width: 24px; /* fixed width */
+  height: 24px; /* fixed height */
+  object-fit: contain; /* keep aspect ratio, no cropping */
+  border-radius: 4px; /* slightly rounded corners */
+  border: 1px solid #ddd; /* subtle border */
+  background-color: #fff; /* white background */
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Price Styles */
+.price-range-item {
+  margin-bottom: 6px;
+}
+
+.price-range-item .form-check-label {
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.custom-price-range {
+  padding-top: 12px;
+  border-top: 1px solid #e9ecef;
+}
+
+/* Availability Styles */
+.availability-item {
+  display: none; /* Hide old checkbox version */
+}
+
+/* Availability Clickable Items (no checkboxes) */
+.availability-item-clickable {
+  margin-bottom: 6px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.availability-item-clickable:hover {
+  background-color: #f8f9fa;
+  transform: translateX(2px);
+}
+
+.availability-item-clickable.selected {
+  background-color: #e3f2fd;
+  border-left: 3px solid #007bff;
+  color: #0056b3;
+}
+
+.availability-item-clickable.selected .availability-label {
+  font-weight: 500;
+}
+
+.availability-label {
+  font-size: 0.9rem;
+  display: block;
+}
+
+/* Rating Styles */
+.rating-option {
+  padding: 8px 12px;
+  margin: 4px 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rating-option:hover {
+  background: #f8f9fa;
+}
+
+.rating-option.active {
+  background: #e3f2fd;
+  border: 1px solid #2196f3;
+}
+
+.stars {
+  font-size: 0.8rem;
+}
+
+/* Scrollbar Styling */
+.sidebar-content::-webkit-scrollbar,
+.category-tree::-webkit-scrollbar,
+.brands-list::-webkit-scrollbar {
+  width: 3px;
+}
+
+.sidebar-content::-webkit-scrollbar-track,
+.category-tree::-webkit-scrollbar-track,
+.brands-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb,
+.category-tree::-webkit-scrollbar-thumb,
+.brands-list::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 1px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .filter-sidebar {
+    width: 100vw;
+    height: calc(100vh - 60px);
+    top: 60px;
+    z-index: 1050;
+  }
+}
+
+/* Form Control Adjustments */
+.form-check-input {
+  margin-top: 0.2em;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #dee2e6;
+  border-radius: 3px;
+}
+
+.form-check-input:checked {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.form-check-input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-check-label {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  cursor: pointer;
+  padding-left: 4px;
+}
+
+/* Selected Item Highlighting */
+.category-item.selected,
+.brand-item.selected {
+  background-color: #e3f2fd;
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin: 2px 0;
+  border-left: 3px solid #007bff;
+}
+
+.category-item.selected .form-check-label,
+.brand-item.selected .form-check-label {
+  color: #0056b3;
+  font-weight: 500;
+}
+
+.badge {
+  font-size: 0.7rem;
+}

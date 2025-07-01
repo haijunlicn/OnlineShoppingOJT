@@ -10,6 +10,7 @@ import Swal from 'sweetalert2';
 import { User } from '../models/User';
 import { jwtDecode } from 'jwt-decode';
 import { StorageService } from './StorageService';
+import { AccessControlService } from './AccessControl.service';
 
 
 @Injectable({
@@ -26,6 +27,7 @@ export class AuthService {
     private registerModalService: RegisterModalService,
     private alertService: AlertService,
     private storageService: StorageService,
+    private accessControlService: AccessControlService
   ) { }
 
   private userLoadedSubject = new BehaviorSubject<boolean>(false);
@@ -123,6 +125,7 @@ export class AuthService {
           delFg: res.delFg,
           createdDate: res.createdDate,
           updatedDate: res.updatedDate,
+          permissions: res.permissions
         };
 
         console.log("/me called : ", user);
@@ -132,6 +135,7 @@ export class AuthService {
       }),
       tap((user: User) => {
         this.userSubject.next(user);
+        this.accessControlService.setPermissions(user.permissions!);
       })
     );
   }

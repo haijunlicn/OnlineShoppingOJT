@@ -32,11 +32,16 @@ import { WishlistComponent } from './general/wishlist/wishlist.component';
 import { CartComponent } from './general/cart/cart.component';
 import { ProductListComponent } from './product_display/product-list/product-list.component';
 import { ProductDetailComponent } from './product_display/product-detail/product-detail.component';
+import { CategoryGridComponent } from './product_display/category-grid/category-grid.component';
+import { CategoryDropdownComponent } from './product_display/category-dropdown/category-dropdown.component';
+import { FilterSidebarComponent } from './common/filter-sidebar/filter-sidebar.component';
 import { OrderComponent } from './general/order/order.component';
 import { OrderManagementComponent } from './orderManagements/order-management/order-management.component';
 import { PaymentAcceptComponent } from './orderManagements/payment-accept/payment-accept.component';
 import { OrderDetailComponent } from './orderManagements/order-detail/order-detail.component';
 import { OrderListComponent } from './orderManagements/order-list/order-list.component';
+import { FileUploadComponent } from './refundManagements/file-upload/file-upload.component';
+import { RefundRequestFormComponent } from './refundManagements/refund-request-form/refund-request-form.component';
 
 
 @NgModule({
@@ -56,19 +61,24 @@ import { OrderListComponent } from './orderManagements/order-list/order-list.com
     WishlistComponent,
     CartComponent,
 
-       AboutComponent,
+    AboutComponent,
     ContactComponent,
     PrivacyPolicyComponent,
     TermsConditionsComponent,
     FaqComponent,
-
     ProductListComponent,
     ProductDetailComponent,
+    CategoryGridComponent,
+    CategoryDropdownComponent,
+    FilterSidebarComponent,
     OrderComponent,
     OrderManagementComponent,
     PaymentAcceptComponent,
     OrderDetailComponent,
-    OrderListComponent
+    OrderListComponent,
+    OrderListComponent,
+    FileUploadComponent,
+    RefundRequestFormComponent
 
   ],
   imports: [

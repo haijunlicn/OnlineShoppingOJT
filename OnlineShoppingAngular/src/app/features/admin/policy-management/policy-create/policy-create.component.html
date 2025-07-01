@@ -1,81 +1,67 @@
-<app-admin-header></app-admin-header>
-<div class="d-flex" style="min-height: 100vh;">
+<div class="admin-layout">
+  <app-admin-header></app-admin-header>
+  <div class="admin-main">
     <app-admin-sidebar></app-admin-sidebar>
-    <main class="flex-grow-1 bg-light py-3 px-3">
-<div class="policy-form-container">
-  <h2>Create New Policy</h2>
+    <main class="admin-content">
+      <div class="policy-form-container">
+        <h2>Create New Policy</h2>
 
-  <form [formGroup]="policyForm" (ngSubmit)="onSubmit()" class="policy-form">
-    <!-- Title Field -->
-    <div class="form-group">
-      <label for="title">Policy Title *</label>
-      <input 
-        type="text" 
-        id="title"
-        formControlName="title"
-        class="form-control"
-        [class.error]="title?.invalid && title?.touched"
-        placeholder="Enter policy title">
-      
-      <div class="error-message" *ngIf="title?.invalid && title?.touched">
-        <span *ngIf="title?.errors?.['required']">Title is required</span>
-        <span *ngIf="title?.errors?.['minlength']">Title must be at least 3 characters</span>
+        <form [formGroup]="policyForm" (ngSubmit)="onSubmit()" class="policy-form">
+          <!-- Title Field -->
+          <div class="form-group">
+            <label for="title">Policy Title *</label>
+            <input type="text" id="title" formControlName="title" class="form-control"
+              [class.error]="title?.invalid && title?.touched" placeholder="Enter policy title">
+
+            <div class="error-message" *ngIf="title?.invalid && title?.touched">
+              <span *ngIf="title?.errors?.['required']">Title is required</span>
+              <span *ngIf="title?.errors?.['minlength']">Title must be at least 3 characters</span>
+            </div>
+          </div>
+
+          <!-- Type Field -->
+          <div class="form-group">
+            <label for="type" class="form-label">Policy Type *</label>
+            <select id="type" formControlName="type" class="form-control" [class.is-invalid]="isFieldInvalid('type')">
+              <option value="">Select policy type</option>
+              <option *ngFor="let type of policyTypes" [value]="type.value">
+                {{ type.label }}
+              </option>
+            </select>
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('type')">
+              {{ getFieldError('type') }}
+            </div>
+          </div>
+
+          <!-- Description Field with Rich Text Editor -->
+          <div class="form-group">
+            <label for="description">Policy Description *</label>
+            <app-rich-text-editor formControlName="description"
+              placeholder="Enter policy description with formatting..."
+              [class.error]="description?.invalid && description?.touched">
+            </app-rich-text-editor>
+
+            <div class="error-message" *ngIf="description?.invalid && description?.touched">
+              <span *ngIf="description?.errors?.['required']">Description is required</span>
+              <span *ngIf="description?.errors?.['minlength']">Description must be at least 10 characters</span>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" [disabled]="isSubmitting || policyForm.invalid">
+              <span *ngIf="isSubmitting">Creating...</span>
+              <span *ngIf="!isSubmitting">Create Policy</span>
+            </button>
+          </div>
+
+          <!-- Success/Error Message -->
+          <div class="message" *ngIf="submitMessage" [class.success]="submitMessage.includes('successfully')"
+            [class.error]="submitMessage.includes('Error')">
+            {{ submitMessage }}
+          </div>
+        </form>
       </div>
-    </div>
-
-    <!-- Type Field -->
-    <div class="form-group">
-      <label for="type" class="form-label">Policy Type *</label>
-      <select
-        id="type"
-        formControlName="type"
-        class="form-control"
-        [class.is-invalid]="isFieldInvalid('type')"
-      >
-        <option value="">Select policy type</option>
-        <option *ngFor="let type of policyTypes" [value]="type.value">
-          {{ type.label }}
-        </option>
-      </select>
-      <div class="invalid-feedback" *ngIf="isFieldInvalid('type')">
-        {{ getFieldError('type') }}
-      </div>
-    </div>
-
-    <!-- Description Field with Rich Text Editor -->
-    <div class="form-group">
-      <label for="description">Policy Description *</label>
-      <app-rich-text-editor
-        formControlName="description"
-        placeholder="Enter policy description with formatting..."
-        [class.error]="description?.invalid && description?.touched">
-      </app-rich-text-editor>
-      
-      <div class="error-message" *ngIf="description?.invalid && description?.touched">
-        <span *ngIf="description?.errors?.['required']">Description is required</span>
-        <span *ngIf="description?.errors?.['minlength']">Description must be at least 10 characters</span>
-      </div>
-    </div>
-
-    <!-- Submit Button -->
-    <div class="form-actions">
-      <button 
-        type="submit" 
-        class="btn btn-primary"
-        [disabled]="isSubmitting || policyForm.invalid">
-        <span *ngIf="isSubmitting">Creating...</span>
-        <span *ngIf="!isSubmitting">Create Policy</span>
-      </button>
-    </div>
-
-    <!-- Success/Error Message -->
-    <div class="message" *ngIf="submitMessage" 
-         [class.success]="submitMessage.includes('successfully')"
-         [class.error]="submitMessage.includes('Error')">
-      {{ submitMessage }}
-    </div>
-  </form>
-</div>
-</main>
-</div>
-<app-admin-footer></app-admin-footer>
+    </main>
+  </div>
+  <app-admin-footer></app-admin-footer>

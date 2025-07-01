@@ -1,7 +1,8 @@
-import type { CategoryDTO } from "./category-dto"
-import type { OptionTypeDTO, OptionValueDTO } from "./option.model"
-import type { VariantOptionDTO } from "./variant.model"
+import type { CategoryDTO } from "./category-dto";
+import type { OptionTypeDTO, OptionValueDTO } from "./option.model";
+import type { VariantOptionDTO } from "./variant.model";
 
+// Product Variant
 export interface ProductVariantDTO {
   id?: number;
   options: VariantOptionDTO[]
@@ -11,83 +12,108 @@ export interface ProductVariantDTO {
   imgPath?: string
   priceHistory?: VariantPriceDTO[]
   displayLabel?: string
-  isDefault?: boolean // New: Mark default variants
+  isDefault?: boolean
   isRemovable?: boolean
+  isExisting?: boolean 
 }
 
+// Product Option
 export interface ProductOptionDTO {
-  id: number
-  name: string
-  optionValues: OptionValueDTO[]
+  id: number;
+  name: string;
+  optionValues: OptionValueDTO[];
 }
 
+// Basic Product DTO
 export interface ProductDTO {
-  id?: number
-  name: string
-  description: string
-  brandId: string
-  categoryId: string
-  basePrice: number
-  createdDate?: string
-  productImages?: ProductImageDTO[] // Multiple images for product
+  id?: number;
+  name: string;
+  description: string;
+  brandId: string;
+  brand?: BrandDTO;
+  category?: CategoryDTO;
+  categoryId: number | string;
+  basePrice: number;
+  createdDate?: string;
+  productImages?: ProductImageDTO[];
 }
 
+// Brand DTO
 export interface BrandDTO {
-  id: string
-  name: string
+  id: string;
+  name: string;
   logo: string;
 }
 
+// Create Product Request DTO
 export interface CreateProductRequestDTO {
-  product: ProductDTO
-  options: OptionTypeDTO[]
-  variants: ProductVariantDTO[]
-  productImages?: ProductImageDTO[] // Add product images
+  product: ProductDTO;
+  options: OptionTypeDTO[];
+  variants: ProductVariantDTO[];
+  productImages?: ProductImageDTO[];
+  
 }
 
+// Main product list item DTO used in list view
 export interface ProductListItemDTO {
-  id: number
-  product: ProductDTO
-  brand: BrandDTO
-  category: CategoryDTO
-  variants: ProductVariantDTO[]
-  options: ProductOptionDTO[]
+  id: number;
+  product: ProductDTO;
+  brand: BrandDTO;
+  category: CategoryDTO;
+  variants: ProductVariantDTO[];
+  options: ProductOptionDTO[];
 }
 
+// Price history per variant
 export interface VariantPriceDTO {
-  id: number
-  price: number
-  startDate: string
-  endDate?: string | null
+  id: number;
+  price: number;
+  startDate: string;
+  endDate?: string | null;
 }
 
+// Product Image
 export interface ProductImageDTO {
-  id?: number
-  productId?: number
-  imgPath?: string
-  // imageUrl?: string // For display purposes
-  displayOrder: number
-  mainImageStatus: boolean
-  altText?: string
-  createdDate?: string
+  id?: number;
+  productId?: number;
+  imgPath?: string;
+  displayOrder: number;
+  mainImageStatus: boolean;
+  altText?: string;
+  createdDate?: string;
 }
 
-export interface ImageUploadResponse {
-  imgPath?: string
-  imageUrl?: string
-}
-
+// Card item view of product (extends list item with a status badge)
 export interface ProductCardItem extends ProductListItemDTO {
   status: string;
 }
 
+// Image Pool Item (for image upload panel)
 export interface ImagePoolItem {
-  id: string
-  file: File
-  previewUrl: string
-  displayOrder: number
-  isMain: boolean
-  altText: string
-  uploaded?: boolean
-  uploadedUrl?: string
+  id: string;
+  file: File;
+  previewUrl: string;
+  displayOrder: number;
+  isMain: boolean;
+  altText: string;
+  uploaded?: boolean;
+  uploadedUrl?: string;
+}
+export interface ImageUploadResponse {
+  public_id: string;
+  version: number;
+  signature: string;
+  width: number;
+  height: number;
+  format: string;
+  resource_type: string;
+  created_at: string;
+  tags: string[];
+  bytes: number;
+  type: string;
+  etag: string;
+  placeholder: boolean;
+  url: string;
+  secure_url: string;
+  // add any other fields returned by your image upload response
 }

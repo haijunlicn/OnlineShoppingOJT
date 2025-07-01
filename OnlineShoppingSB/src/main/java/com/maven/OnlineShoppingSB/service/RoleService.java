@@ -11,6 +11,7 @@ import com.maven.OnlineShoppingSB.repository.RoleRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -68,12 +69,13 @@ public class RoleService {
         return roles.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
-    public RoleDTO getById(Integer id) {
+    public RoleDTO getById(Long id) {
         RoleEntity role = roleRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Role not found with id: " + id));
         return convertToDTO(role);
     }
 
+    @Transactional
     public RoleDTO updateRole(RoleDTO dto) {
         if (dto.getId() == null) {
             throw new IllegalArgumentException("Role ID must not be null for update");
@@ -106,7 +108,7 @@ public class RoleService {
         return convertToDTO(updated);
     }
 
-    public void deleteRole(Integer id) {
+    public void deleteRole(Long id) {
         if (id == CUSTOMER_ROLE_ID || id == SUPERADMIN_ROLE_ID) {
             throw new RuntimeException("Cannot delete system default roles.");
         }

@@ -1,0 +1,224 @@
+<app-header></app-header>
+
+<main class="main-content py-3">
+    <div class="container-fluid py-2">
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="d-flex justify-content-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ errorMessage }}
+            <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+        </div>
+
+        <!-- Main Form -->
+        <div *ngIf="!isLoading && order" class="container-lg">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h1 class="h2 mb-2">Return / Refund Request</h1>
+                    <p class="text-muted">Select items you wish to return, specify reasons, and upload proofs.</p>
+                </div>
+            </div>
+
+            <form [formGroup]="returnRequestForm" (ngSubmit)="onSubmit()" novalidate>
+                <!-- Section 1: Order Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Order Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-semibold">Order Number</label>
+                                <p class="form-control-plaintext">{{ order.orderNumber }}</p>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-semibold">Order Date</label>
+                                <p class="form-control-plaintext">{{ order.orderDate | date:'mediumDate' }}</p>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-semibold">Shipping Address</label>
+                                <p class="form-control-plaintext">{{ order.shippingAddress }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Return Items List -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Items to Return</h5>
+                    </div>
+                    <div class="card-body">
+                        <div formArrayName="items">
+                            <div *ngFor="let itemGroup of itemsFormArray.controls; let i = index" [formGroupName]="i"
+                                class="return-item-group mb-4 p-3 border rounded">
+
+                                <!-- Product Information -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <h6 class="fw-semibold">{{ order.items[i].productName }}</h6>
+                                        <small class="text-muted">SKU: {{ order.items[i].sku }}</small>
+                                    </div>
+                                    <div class="col-md-6 text-md-end">
+                                        <span class="badge bg-secondary">Max Return: {{ order.items[i].maxReturnQty
+                                            }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Return Quantity -->
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        <label [for]="'returnQty_' + i" class="form-label">Return Quantity</label>
+                                        <input type="number" [id]="'returnQty_' + i" class="form-control"
+                                            [class.is-invalid]="getItemError(i, 'returnQty')"
+                                            formControlName="returnQty" [min]="0" [max]="order.items[i].maxReturnQty"
+                                            (change)="onReturnQtyChange(i)">
+                                        <div class="invalid-feedback">
+                                            {{ getItemError(i, 'returnQty') }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Return Details (shown only when returnQty > 0) -->
+                                <div *ngIf="getItemFormGroup(i).get('returnQty')?.value > 0">
+                                    <!-- Return Reason -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label [for]="'reason_' + i" class="form-label">Return Reason *</label>
+                                            <select [id]="'reason_' + i" class="form-select"
+                                                [class.is-invalid]="getItemError(i, 'reasonId')"
+                                                formControlName="reasonId" (change)="onReasonChange(i)">
+                                                <option value="">Select a reason</option>
+                                                <option *ngFor="let reason of refundReasons" [value]="reason.id">
+                                                    {{ reason.label }}
+                                                </option>
+                                            </select>
+                                            <div class="invalid-feedback">
+                                                {{ getItemError(i, 'reasonId') }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Custom Reason Text (conditional) -->
+                                    <div *ngIf="shouldShowCustomReasonField(i)" class="row mb-3">
+                                        <div class="col-md-8">
+                                            <label [for]="'customReason_' + i" class="form-label">Please specify
+                                                *</label>
+                                            <textarea [id]="'customReason_' + i" class="form-control"
+                                                [class.is-invalid]="getItemError(i, 'customReasonText')"
+                                                formControlName="customReasonText" rows="2" maxlength="500"
+                                                placeholder="Please provide more details..."></textarea>
+                                            <div class="form-text">
+                                                {{ getItemFormGroup(i).get('customReasonText')?.value?.length || 0
+                                                }}/500 characters
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                {{ getItemError(i, 'customReasonText') }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Customer Note -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-8">
+                                            <label [for]="'note_' + i" class="form-label">Additional Notes
+                                                (Optional)</label>
+                                            <textarea [id]="'note_' + i" class="form-control"
+                                                formControlName="customerNote" rows="2" maxlength="500"
+                                                placeholder="Any additional information about this item..."></textarea>
+                                            <div class="form-text">
+                                                {{ getItemFormGroup(i).get('customerNote')?.value?.length || 0 }}/500
+                                                characters
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- File Upload -->
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <label class="form-label">Upload Proof Images (Optional)</label>
+                                            <app-file-upload [maxFiles]="5" [maxFileSize]="2097152"
+                                                [acceptedTypes]="['image/jpeg', 'image/png', 'image/jpg']"
+                                                (filesSelected)="onFilesSelected(i, $event)">
+                                            </app-file-upload>
+                                            <div class="form-text">
+                                                <i class="bi bi-info-circle me-1"></i>
+                                                Upload up to 5 images (JPEG, PNG only, max 2MB each)
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Item-level validation errors -->
+                                <div *ngIf="getItemFormGroup(i).touched && getItemFormGroup(i).errors"
+                                    class="alert alert-danger py-2">
+                                    <small>
+                                        <i class="bi bi-exclamation-triangle me-1"></i>
+                                        {{ getItemError(i, '') }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- No items selected message -->
+                        <div *ngIf="!hasSelectedReturnItems()" class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Please select at least one item to return by setting a return quantity greater than 0.
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Section 3: Overall Comments -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Additional Comments</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <label for="overallNote" class="form-label">Overall Notes (Optional)</label>
+                                <textarea id="overallNote" class="form-control"
+                                    [class.is-invalid]="returnRequestForm.get('overallNote')?.touched && returnRequestForm.get('overallNote')?.errors"
+                                    formControlName="overallNote" rows="3" maxlength="1000"
+                                    placeholder="Any general comments about your return request..."></textarea>
+                                <div class="form-text">
+                                    {{ returnRequestForm.get('overallNote')?.value?.length || 0 }}/1000 characters
+                                </div>
+                                <div *ngIf="returnRequestForm.get('overallNote')?.touched && returnRequestForm.get('overallNote')?.errors"
+                                    class="invalid-feedback">
+                                    Maximum length is 1000 characters
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Submit Buttons -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex gap-3 justify-content-end">
+                            <button type="button" class="btn btn-secondary" (click)="onCancel()"
+                                [disabled]="isSubmitting">
+                                <i class="bi bi-x-circle me-1"></i>
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary" [disabled]="!isFormValid() || isSubmitting">
+                                <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"
+                                    role="status"></span>
+                                <i *ngIf="!isSubmitting" class="bi bi-check-circle me-1"></i>
+                                {{ isSubmitting ? 'Submitting...' : 'Submit Request' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>

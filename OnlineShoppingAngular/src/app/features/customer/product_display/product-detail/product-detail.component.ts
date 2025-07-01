@@ -1,8 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { ProductListComponent } from '../product-list/product-list.component';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ProductCardItem, ProductImageDTO, ProductListItemDTO, ProductVariantDTO } from '../../../../core/models/product.model';
+import { ProductCardItem, ProductDTO, ProductImageDTO, ProductListItemDTO, ProductVariantDTO } from '../../../../core/models/product.model';
 import { ProductService } from '../../../../core/services/product.service';
 import Swal from 'sweetalert2';
 import { WishlistDialogComponent } from '../../general/wishlist-dialog/wishlist-dialog.component';
@@ -17,17 +17,44 @@ import { MatDialog } from '@angular/material/dialog';
   styleUrl: './product-detail.component.css'
 })
 export class ProductDetailComponent {
-  product!: ProductCardItem
-  mainImageUrl = ""
-  selectedOptions: { [optionId: number]: number } = {}
-  selectedVariant?: ProductVariantDTO
-  form!: FormGroup
-  allImages: Array<{ url: string; variantId?: string }> = []
-  quantity = 1
-  currentImageIndex = 0
+  product!: ProductCardItem;
+  mainImageUrl = "";
+  selectedOptions: { [optionId: number]: number } = {};
+  selectedVariant?: ProductVariantDTO;
+  form!: FormGroup;
+  allImages: Array<{ url: string; variantId?: string }> = [];
+  quantity = 1;
+  currentImageIndex = 0;
   wishList = new Set<number>();
   cartItems: { productId: number; variantId: number; quantity: number }[] = [];
 
+  @Input() categoryId!: number;
+  @Input() productId!: number;
+
+  relatedProducts: ProductDTO[] = [];  // <-- related products list
+
+   @ViewChild('scrollContainer', { static: false }) scrollContainer!: ElementRef;
+
+// Add these methods to your component
+scrollLeft(): void {
+  const container = this.scrollContainer.nativeElement;
+  const cardWidth = container.querySelector('.related-product-card')?.offsetWidth || 250;
+  const scrollAmount = (cardWidth + 16) * 4; // 4 cards + gap
+  container.scrollBy({
+    left: -scrollAmount,
+    behavior: 'smooth'
+  });
+}
+
+scrollRight(): void {
+  const container = this.scrollContainer.nativeElement;
+  const cardWidth = container.querySelector('.related-product-card')?.offsetWidth || 250;
+  const scrollAmount = (cardWidth + 16) * 4; // 4 cards + gap
+  container.scrollBy({
+    left: scrollAmount,
+    behavior: 'smooth'
+  });
+}
 
   constructor(
     private route: ActivatedRoute,
@@ -40,32 +67,33 @@ export class ProductDetailComponent {
   ) { }
 
   ngOnInit(): void {
-    this.fetchProductDetail()
+    this.fetchProductDetail();
   }
 
   fetchProductDetail(): void {
-    const id = this.route.snapshot.paramMap.get("id")
+    const id = this.route.snapshot.paramMap.get("id");
     if (id) {
-      this.productService.getProductById(+id).subscribe({
+      this.productService.getPublicProductById(+id).subscribe({
         next: (data) => {
-          this.product = data
-          this.initializeComponent()
-          console.log("product details : ", this.product)
+          this.product = data;
+          this.initializeComponent();
+          this.loadRelatedProducts();
+          console.log("product details : ", this.product);
         },
         error: () => {
-          this.router.navigate(["/customer/productList"])
+          this.router.navigate(["/customer/productList"]);
         },
-      })
+      });
     } else {
-      this.router.navigate(["/customer/productList"])
+      this.router.navigate(["/customer/productList"]);
     }
   }
 
   initializeComponent(): void {
-    this.initForm()
-    this.setDefaultSelections()
-    this.buildImagesList()
-    this.setDefaultMainImage()
+    this.initForm();
+    this.setDefaultSelections();
+    this.buildImagesList();
+    this.setDefaultMainImage();
   }
 
   initForm(): void {
@@ -80,6 +108,36 @@ export class ProductDetailComponent {
     })
 
     this.form = this.fb.group(group)
+  }
+ loadRelatedProducts(): void {
+  const categoryId = +this.product?.product?.categoryId;
+  const currentProductId = +this.product?.id;
+
+  if (!categoryId || !currentProductId) {
+    console.warn('Missing categoryId or productId');
+    return;
+  }
+
+  this.productService.getRelatedProducts(categoryId, currentProductId).subscribe({
+    next: (products) => {
+      this.relatedProducts = products;
+    },
+    error: (err) => {
+      console.error('Failed to load related products:', err);
+    }
+  });
+}
+getMainProductImage(product: ProductDTO): string {
+    if (product.productImages && product.productImages.length > 0) {
+      const mainImage = product.productImages.find((img: any) => img.mainImageStatus);
+
+      if (mainImage) {
+        return mainImage.imgPath!
+      } else if (product.productImages[0]) {
+        return product.productImages[0].imgPath!
+      }
+    }
+    return 'assets/images/placeholder.jpg'; // Fallback image
   }
 
   setDefaultSelections(): void {
