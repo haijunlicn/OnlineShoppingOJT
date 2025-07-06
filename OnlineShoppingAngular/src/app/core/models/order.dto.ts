@@ -11,8 +11,8 @@ export interface OrderItemRequestDTO {
 export interface OrderRequestDTO {
   userId: number;
   shippingAddressId: number;
-  paymentMethodId: number | null;
-  paymentType: string;
+  paymentMethodId?: number | null;
+  paymentType?: string;
   paymentStatus: 'PENDING' | 'PAID' | 'Payment Failed';
   totalAmount: number;
   shippingFee: number;

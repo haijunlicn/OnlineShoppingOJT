@@ -11,6 +11,9 @@ import { OrderService } from '../../../../core/services/order.service';
 import { OrderRequestDTO } from '../../../../core/models/order.dto';
 import { VariantService } from '../../../../core/services/variant.service';
 import Swal from 'sweetalert2';
+import { Observable } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { CanDeactivate } from '@angular/router';
 
 export interface CreditCardPayment {
   cardNumber: string;
@@ -36,13 +39,17 @@ export interface PaymentMethod {
   qrPath?: string;
 }
 
+export interface CanComponentDeactivate {
+  canDeactivate: () => Observable<boolean> | Promise<boolean> | boolean;
+}
+
 @Component({
   selector: 'app-payment-accept',
   standalone: false,
   templateUrl: './payment-accept.component.html',
   styleUrl: './payment-accept.component.css'
 })
-export class PaymentAcceptComponent implements OnInit, OnDestroy {
+export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDeactivate {
   // Browser check
   isBrowser: boolean = false;
   L: any; // Leaflet namespace
@@ -76,9 +83,11 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
   selectedQRMethod = '';
   showCreditCardForm = false;
   showQRCode = false;
+  selectedCreditMethod: string | number = '';
 
   // Available QR Payment Methods (dynamic)
-  qrPaymentMethods: PaymentMethod[] = [];
+  qrPaymentMethods: PaymentMethodDTO[] = [];
+  creditCardMethods: PaymentMethodDTO[] = [];
 
   creditCardData: CreditCardPayment = {
     cardNumber: '',
@@ -101,8 +110,8 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
 
   // Timer properties
   timer: any = null;
-  timeLeft: number = 10; // 5 minutes in seconds
-  timerDisplay: string = '00:10';
+  timeLeft: number = 600; // 10 minutes in seconds
+  timerDisplay: string = '10:00';
   timerExpired: boolean = false;
 
   stockReserved: boolean = false;
@@ -111,27 +120,9 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
 
   private subscriptions: Subscription[] = [];
 
-  private paymentMethodIconMap: { [key: string]: string } = {
-    kpay: 'fas fa-mobile-alt',
-    wavepay: 'fas fa-wave-square',
-    ayapay: 'fas fa-university',
-    cbpay: 'fas fa-credit-card',
-    uabpay: 'fas fa-building',
-    okdollar: 'fas fa-dollar-sign',
-    onepay: 'fas fa-wallet',
-    mpitesan: 'fas fa-money-bill-wave',
-  };
+  
 
-  private paymentMethodColorMap: { [key: string]: string } = {
-    kpay: '#ff6b35',
-    wavepay: '#00d4aa',
-    ayapay: '#1e88e5',
-    cbpay: '#4caf50',
-    uabpay: '#ff9800',
-    okdollar: '#9c27b0',
-    onepay: '#f44336',
-    mpitesan: '#607d8b',
-  };
+  paymentInProgress = true; // timer မပြည့်သေးရင် true
 
   constructor(
     private router: Router,
@@ -217,27 +208,40 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
 
     this.initPaymentAccept();
 
-    // Reserve stock when payment page is loaded
-    // if (this.orderItems && this.orderItems.length > 0) {
-    //   this.variantService.recudeStock(this.orderItems).subscribe({
-    //     next: (res) => {
-    //       this.stockReserved = true;
-    //       console.log('Stock reserved:', res);
-    //     },
-    //     error: (err) => {
-    //       this.stockReserved = false;
-    //       console.error('Failed to reserve stock:', err);
-    //     }
-    //   });
-    // }
+    this.paymentMethodService.getPaymentMethodsByType('qr').subscribe(methods => {
+      this.qrPaymentMethods = methods;
+      // Auto-select if only one method
+      if (this.qrPaymentMethods.length === 1) {
+        this.selectQRMethod((this.qrPaymentMethods[0].id ?? '').toString());
+      }
+    });
+    this.paymentMethodService.getPaymentMethodsByType('credit').subscribe(methods => {
+      this.creditCardMethods = methods;
+      // Auto-select if only one credit card method
+      if (this.creditCardMethods.length === 1) {
+        if (this.creditCardMethods[0].id !== undefined) {
+          this.selectedCreditMethod = String(this.creditCardMethods[0].id);
+        }
+      }
+    });
+
+    // Start global timer for payment
+    this.startGlobalTimer();
   }
 
   ngOnDestroy(): void {
+
+    console.log("on destroy called");
+    
+
   if (this.timer) clearInterval(this.timer);
   this.subscriptions.forEach(sub => sub.unsubscribe());
 
   // Auto rollback if payment not completed
-  if (!this.paymentSuccess && this.stockReserved && this.orderItems && this.orderItems.length > 0) {
+  if (!this.paymentSuccess
+    && !this.timerExpired
+    // && this.stockReserved && this.orderItems && this.orderItems.length > 0
+    ) {
     this.rollbackReservedStock(); // call rollback
   }
 }
@@ -253,16 +257,15 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
     this.paymentMethodService.getAllPaymentMethods().subscribe({
       next: (methods: PaymentMethodDTO[]) => {
         this.qrPaymentMethods = (methods || [])
-          .filter(m => m.status === 1) // Only active methods
-          .map(m => ({
-            id: m.id ? m.id.toString() : m.methodName.toLowerCase().replace(/\s/g, ''),
-            name: m.methodName,
-            icon: this.paymentMethodIconMap[m.methodName.toLowerCase()] || 'fas fa-qrcode',
-            color: this.paymentMethodColorMap[m.methodName.toLowerCase()] || '#007bff',
-            description: m.description || '',
-            logo: m.logo || '',
-            qrPath: m.qrPath || '',
-          }));
+          .filter(m => Number(m.status) === 1 && m.type === 'qr');
+        this.creditCardMethods = (methods || [])
+          .filter(m => Number(m.status) === 1 && m.type === 'credit');
+        // Auto-select if only one credit card method
+        if (this.creditCardMethods.length === 1) {
+          if (this.creditCardMethods[0].id !== undefined) {
+            this.selectedCreditMethod = String(this.creditCardMethods[0].id);
+          }
+        }
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -357,7 +360,8 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
       address.streetAddress,
       address.city,
       address.state,
-      address.postalCode
+      address.postalCode,
+      address.phoneNumber
     ].filter(part => part && part.trim());
     
     return parts.join(', ');
@@ -406,7 +410,7 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
         };
         this.isProcessing = false;
         this.cdr.detectChanges();
-        this.startTimer();
+        // No per-QR timer, only global timer
       } catch (error) {
         console.error('Error generating QR code:', error);
         this.isProcessing = false;
@@ -415,8 +419,20 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
   }
 
   processCreditCardPayment(): void {
+    if (this.timerExpired) {
+      this.paymentMessage = 'Payment time expired. Please try again.';
+      return;
+    }
     if (!this.isValidCreditCard()) {
       this.paymentMessage = 'Please fill in all required fields correctly.';
+      return;
+    }
+    if (!this.selectedCreditMethod) {
+      this.paymentMessage = 'Please select a credit card payment method.';
+      return;
+    }
+    if (!this.uploadedImage) {
+      this.paymentMessage = 'Please upload a payment proof image.';
       return;
     }
     if (this.isProcessing) return;
@@ -438,8 +454,15 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
   }
 
   verifyQRPayment(): void {
+    if (this.timerExpired) {
+      this.paymentMessage = 'Payment time expired. Please try again.';
+      return;
+    }
     if (!this.qrPaymentData || this.isProcessing) return;
-    
+    if (!this.uploadedImage) {
+      this.paymentMessage = 'Please upload a payment proof image.';
+      return;
+    }
     this.isProcessing = true;
     this.cdr.detectChanges();
     if (this.timer) clearInterval(this.timer);
@@ -459,10 +482,16 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
       return;
     }
 
+    let paymentMethodId: number | null = null;
+    if (this.selectedPaymentMethod === 'qr-payment') {
+      paymentMethodId = this.selectedQRMethod ? Number(this.selectedQRMethod) : null;
+    } else if (this.selectedPaymentMethod === 'credit-card') {
+      paymentMethodId = this.selectedCreditMethod ? Number(this.selectedCreditMethod) : null;
+    }
     const orderRequest: OrderRequestDTO = {
       userId: this.currentUserId,
       shippingAddressId: this.selectedAddress.id,
-      paymentMethodId: this.selectedQRMethod ? Number(this.selectedQRMethod) : null,
+      paymentMethodId: paymentMethodId,
       paymentType: this.selectedPaymentMethod,
       paymentStatus: paymentStatus,
       totalAmount: this.totalAmount,
@@ -494,13 +523,16 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
         this.isProcessing = false;
         this.paymentSuccess = true;
         this.paymentMessage = `Order placed successfully`;
-        this.orderStatus = response.paymentStatus;
+        
+        // Handle both direct response and ResponseEntity wrapper
+        const orderData = response.body || response;
+        this.orderStatus = orderData.paymentStatus || 'PENDING';
 
         // Show SweetAlert on success
         Swal.fire({
           icon: 'success',
           title: 'Payment Successful!',
-          text: `Your order #${response.trackingNumber || response.id} has been placed successfully. You will receive a confirmation email shortly.`,
+          text: `Your order #${orderData.trackingNumber || orderData.id} has been placed successfully. You will receive a confirmation email shortly.`,
           confirmButtonColor: '#3085d6',
           confirmButtonText: 'View Order Details',
           showCancelButton: true,
@@ -509,14 +541,14 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
         }).then((result) => {
           if (result.isConfirmed) {
             // Navigate to order detail page with the order ID
-            this.navigateToOrderDetail(response.id);
+            this.navigateToOrderDetail(orderData.id);
           } else if (result.dismiss === Swal.DismissReason.cancel) {
             // Navigate to home page to continue shopping
             this.router.navigate(['/customer/home']);
           } else {
             // If user closes the dialog, navigate to order detail after a delay
             setTimeout(() => {
-              this.navigateToOrderDetail(response.id);
+              this.navigateToOrderDetail(orderData.id);
             }, 2000);
           }
         });
@@ -530,8 +562,34 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.isProcessing = false;
         this.paymentSuccess = false;
-        this.paymentMessage = `Order failed: ${err?.error}`;
+        console.error('Order creation error:', err);
+        
+        // Handle different error response formats
+        let errorMessage = 'Order failed';
+        if (err.error) {
+          if (typeof err.error === 'string') {
+            errorMessage = err.error;
+          } else if (err.error.message) {
+            errorMessage = err.error.message;
+          } else if (err.message) {
+            errorMessage = err.message;
+          }
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+        
+        this.paymentMessage = `Order failed: ${errorMessage}`;
         this.orderStatus = 'Payment Failed';
+        
+        // Show error alert
+        Swal.fire({
+          icon: 'error',
+          title: 'Order Failed',
+          text: errorMessage,
+          confirmButtonColor: '#d33',
+          confirmButtonText: 'OK'
+        });
+        
         this.cdr.detectChanges();
       }
     });
@@ -610,23 +668,23 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
     }
   }
 
-  getPaymentMethodName(method: string): string {
+  getPaymentMethodName(method: string | number): string {
     if (!method) return '';
-    const qrMethod = this.qrPaymentMethods.find((m) => m.id === method);
-    if (qrMethod) return qrMethod.name;
+    const qrMethod = this.qrPaymentMethods.find((m) => m.id === Number(method));
+    if (qrMethod) return qrMethod.methodName;
     switch (method) {
       case 'credit-card':
         return 'Credit Card';
       default:
-        return method;
+        return String(method);
     }
   }
 
-  getSelectedQRMethod(): PaymentMethod | null {
-    return this.qrPaymentMethods.find((m) => m.id === this.selectedQRMethod) || null;
+  getSelectedQRMethod(): PaymentMethodDTO | null {
+    return this.qrPaymentMethods.find((m) => m.id === Number(this.selectedQRMethod)) || null;
   }
 
-  trackByMethodId(index: number, method: PaymentMethod): string {
+  trackByMethodId(index: number, method: PaymentMethodDTO): number | undefined {
     return method.id;
   }
 
@@ -636,59 +694,11 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
   }
 
   goBackToOrderManagement(): void {
-    this.rollbackReservedStock();
-    this.router.navigate(['/customer/home'], {
-      state: {
-        orderItems: this.orderItems,
-        selectedAddress: this.selectedAddress,
-        shippingFee: this.shippingFee,
-        totalAmount: this.totalAmount,
-        itemSubtotal: this.itemSubtotal,
-        uploadedImageUrl: this.uploadedImageUrl,
-        translatedText: this.translatedText,
-        selectedPaymentMethod: this.selectedPaymentMethod,
-        selectedQRMethod: this.selectedQRMethod,
-        creditCardData: this.creditCardData,
-        qrPaymentData: this.qrPaymentData,
-        selectedDeliveryMethod: this.selectedDeliveryMethod
-      }
-    });
+   
+    this.router.navigate(['/customer/home']);
   }
 
-  // Timer methods
-  startTimer() {
-    this.timeLeft = 10;
-    this.timerExpired = false;
-    this.updateTimerDisplay();
-    if (this.timer) clearInterval(this.timer);
-    this.timer = setInterval(() => {
-      if (this.timeLeft > 0) {
-        this.timeLeft--;
-        this.updateTimerDisplay();
-        this.cdr.detectChanges();
-      } else {
-        this.timerExpired = true;
-        clearInterval(this.timer);
-        this.handleTimerExpired();
-        this.cdr.detectChanges();
-      }
-    }, 1000);
-  }
-
-  updateTimerDisplay() {
-    const min = Math.floor(this.timeLeft / 60);
-    const sec = this.timeLeft % 60;
-    this.timerDisplay = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
-  }
-
-  handleTimerExpired() {
-    this.paymentMessage = 'QR code expired. Your reserved stock has been released.';
-    this.paymentSuccess = false;
-    this.orderStatus = 'Payment Failed';
-    this.rollbackReservedStock();
-  }
-
- rollbackReservedStock() {
+  rollbackReservedStock() {
   
   this.variantService.rollbackStock(this.orderItems).subscribe({
     next: (res) => {
@@ -733,4 +743,68 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
     this.router.navigate(['/customer/orderDetail', orderId]);
   }
 
+  get deliveryPhoneNumber(): string {
+    return this.selectedAddress && this.selectedAddress.phoneNumber ? this.selectedAddress.phoneNumber : '';
+  }
+
+  // Start a single global timer for the whole payment process
+  startGlobalTimer() {
+    this.timeLeft = 600;
+    this.timerExpired = false;
+    this.updateTimerDisplay();
+    if (this.timer) clearInterval(this.timer);
+    this.timer = setInterval(() => {
+      if (this.timeLeft > 0) {
+        this.timeLeft--;
+        this.updateTimerDisplay();
+        this.cdr.detectChanges();
+      } else {
+        this.timerExpired = true;
+        clearInterval(this.timer);
+        this.handleGlobalTimerExpired();
+        this.cdr.detectChanges();
+      }
+    }, 1000);
+  }
+
+  handleGlobalTimerExpired() {
+    this.timerExpired = true;
+    this.paymentInProgress = false;
+    Swal.fire({
+      icon: 'error',
+      title: 'Payment time expired',
+      text: 'Your reserved stock has been released. Please try again.',
+    }).then(() => {
+      this.router.navigate(['/customer/home']);
+    });
+    this.rollbackReservedStock();
+  }
+
+  selectCreditMethod(id: string | number): void {
+    this.selectedCreditMethod = id;
+    this.paymentMessage = '';
+  }
+
+  updateTimerDisplay() {
+    const min = Math.floor(this.timeLeft / 60);
+    const sec = this.timeLeft % 60;
+    this.timerDisplay = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+  }
+
+  canDeactivate(): Observable<boolean> | Promise<boolean> | boolean {
+    // If payment not finished and timer not expired, auto rollback stock
+    if (this.paymentInProgress && !this.timerExpired && !this.paymentSuccess) {
+      this.rollbackReservedStock();
+      return true; // Allow navigation away
+    }
+    return true; // Allow navigation away in all other cases
+  }
+
+}
+
+@Injectable({ providedIn: 'root' })
+export class PaymentAcceptGuard implements CanDeactivate<PaymentAcceptComponent> {
+  canDeactivate(component: PaymentAcceptComponent) {
+    return component.canDeactivate ? component.canDeactivate() : true;
+  }
 }

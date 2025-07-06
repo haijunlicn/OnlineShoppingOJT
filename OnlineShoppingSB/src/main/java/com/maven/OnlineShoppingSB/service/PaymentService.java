@@ -84,4 +84,11 @@ public class PaymentService {
         entity.setStatus(0); 
         repo.save(entity);
     }
+
+    public List<PaymentDTO> getPaymentMethodsByType(String type) {
+        List<PaymentEntity> list = repo.findByStatusAndType(1, type);
+        return list.stream()
+                .map(entity -> mapper.map(entity, PaymentDTO.class))
+                .collect(Collectors.toList());
+    }
 }

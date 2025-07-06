@@ -217,4 +217,33 @@ export class OrderListComponent implements OnInit, OnDestroy {
   getTotalAmount(): number {
     return this.orders.reduce((total, order) => total + order.totalAmount, 0);
   }
+
+  // Payment method display methods
+  getPaymentMethodName(order: OrderDetail): string {
+    return order.paymentMethod?.methodName || 'Not specified';
+  }
+
+  getPaymentMethodType(order: OrderDetail): string {
+    return order.paymentMethod?.type || order.paymentType || 'Unknown';
+  }
+
+  getPaymentMethodIcon(order: OrderDetail): string {
+    const type = this.getPaymentMethodType(order).toLowerCase();
+    if (type === 'qr' || type === 'mobile wallet') {
+      return 'fas fa-qrcode';
+    } else if (type === 'credit' || type === 'credit card') {
+      return 'fas fa-credit-card';
+    }
+    return 'fas fa-money-bill-wave';
+  }
+
+  getPaymentMethodClass(order: OrderDetail): string {
+    const type = this.getPaymentMethodType(order).toLowerCase();
+    if (type === 'qr' || type === 'mobile wallet') {
+      return 'payment-qr';
+    } else if (type === 'credit' || type === 'credit card') {
+      return 'payment-credit';
+    }
+    return 'payment-default';
+  }
 }

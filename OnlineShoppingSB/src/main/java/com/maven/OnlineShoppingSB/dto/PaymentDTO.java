@@ -13,4 +13,5 @@ public class PaymentDTO {
     private String logo;
     private String description;
     private int status;
+    private String type;
  }

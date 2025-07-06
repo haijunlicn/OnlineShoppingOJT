@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AuthService } from '@app/core/services/auth.service';
 
 export interface OrderDetail {
   id: number;
@@ -11,11 +12,24 @@ export interface OrderDetail {
   createdDate: string;
   updatedDate: string;
   paymentProofPath?: string;
+  
+  // Payment method information
+  paymentMethod?: {
+    id: number;
+    methodName: string;
+    description: string;
+    type: string;
+    logo?: string;
+    qrPath?: string;
+    status: number;
+  };
+  paymentType?: string;
+  
   user: {
     id: number;
     name: string;
     email: string;
-    phone: string;
+    // phone: string;
   };
   shippingAddress: {
     id: number;
@@ -26,6 +40,7 @@ export interface OrderDetail {
     country: string;
     lat: number;
     lng: number;
+    phoneNumber?: string;
   };
   deliveryMethod: {
     id: number;
@@ -74,7 +89,10 @@ export interface OrderStatusHistory {
 export class OrderService {
   private apiUrl = 'http://localhost:8080/orders';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) {}
 
   createOrderWithImage(formData: FormData): Observable<any> {
     return this.http.post(`${this.apiUrl}/create`, formData);
@@ -92,7 +110,7 @@ export class OrderService {
     return this.http.get<OrderDetail>(`${this.apiUrl}/${orderId}/details`);
   }
 
-   bulkUpdateOrderStatus(
+  bulkUpdateOrderStatus(
     orderIds: number[],
     statusId: number,
     note: string,
@@ -104,6 +122,16 @@ export class OrderService {
       note,
       updatedBy
     });
+  }
+
+  updateOrderStatus(
+    orderId: number,
+    statusId: number,
+    note: string,
+    updatedBy: number
+  ): Observable<any> {
+    // Use the bulk endpoint for a single order
+    return this.bulkUpdateOrderStatus([orderId], statusId, note, updatedBy);
   }
 
   getAllOrders(): Observable<OrderDetail[]> {

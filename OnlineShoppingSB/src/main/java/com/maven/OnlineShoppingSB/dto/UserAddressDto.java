@@ -23,4 +23,5 @@ public class UserAddressDto {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private Integer userId;
+    private String phoneNumber;
 }

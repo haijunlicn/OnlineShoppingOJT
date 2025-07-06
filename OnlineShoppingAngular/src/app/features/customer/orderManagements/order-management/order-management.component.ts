@@ -13,6 +13,7 @@ import { StoreLocationDto } from '../../../../core/models/storeLocationDto';
 import { VariantService, StockUpdateResponse } from '../../../../core/services/variant.service';
 import { DeliveryMethodService } from '../../../../core/services/delivery-method.service';
 import { DeliveryMethod } from '../../../../core/models/delivery-method.model';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-order-management',
@@ -83,7 +84,14 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
       zipCode: [''],
       country: ['', Validators.required],
       lat: [null, Validators.required],
-      lng: [null, Validators.required]
+      lng: [null, Validators.required],
+      phoneNumber: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern(/^09\d{7,9}$/)
+        ]
+      ]
     });
 
     this.searchControl = new FormControl('');
@@ -168,7 +176,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
         });
       } else {
         // No cart items, redirect back to cart
-        alert('No items in cart. Please add items before proceeding to checkout.');
+        Swal.fire('No items in cart. Please add items before proceeding to checkout.', '', 'warning');
         this.router.navigate(['/customer/cart']);
         return;
       }
@@ -198,7 +206,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
         });
       } else {
         // No cart data available, redirect back to cart
-        alert('No items in cart. Please add items before proceeding to checkout.');
+        Swal.fire('No items in cart. Please add items before proceeding to checkout.', '', 'warning');
         this.router.navigate(['/customer/cart']);
         return;
       }
@@ -220,6 +228,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
       zipCode: '',
       country: 'Myanmar',
       userId: this.currentUserId,
+      phoneNumber: ''
     };
   }
 
@@ -284,9 +293,17 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
       this.map.remove();
     }
 
+    // Myanmar bounds
+    const myanmarBounds = this.L.latLngBounds(
+      this.L.latLng(9.5, 92.2),   // Southwest
+      this.L.latLng(28.6, 101.2)  // Northeast
+    );
+
     this.map = this.L.map('address-map', {
       zoomControl: false,
-      attributionControl: false
+      attributionControl: false,
+      maxBounds: myanmarBounds,
+      maxBoundsViscosity: 1.0
     }).setView([20, 96], 5); // Myanmar center
 
     this.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -300,12 +317,27 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
       this.reverseGeocodeLocation(e.latlng.lat, e.latlng.lng);
     });
 
+    // Prevent panning outside Myanmar
+    this.map.on('drag', () => {
+      this.map.panInsideBounds(myanmarBounds, { animate: false });
+    });
+
     // Fix map rendering
     setTimeout(() => this.map.invalidateSize(), 100);
   }
 
   addMarker(latlng: any): void {
     if (!this.isBrowser || !this.L) return;
+
+    // Myanmar bounds
+    const myanmarBounds = this.L.latLngBounds(
+      this.L.latLng(9.5, 92.2),
+      this.L.latLng(28.6, 101.2)
+    );
+    if (!myanmarBounds.contains(latlng)) {
+      Swal.fire('Please select a location within Myanmar.', '', 'warning');
+      return;
+    }
 
     if (this.marker) {
       this.map.removeLayer(this.marker);
@@ -335,7 +367,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       },
       error: () => {
-        alert('Unable to retrieve your location.');
+        Swal.fire('Unable to retrieve your location.', '', 'error');
         this.isLoading = false;
       }
     });
@@ -377,7 +409,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
   onSearch(): void {
     const query = this.searchControl.value?.trim();
     if (!query) {
-      alert('Please enter a location to search.');
+      Swal.fire('Please enter a location to search.', '', 'info');
       return;
     }
 
@@ -386,7 +418,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     const searchSub = this.locationService.geocode(query).subscribe({
       next: (results: any[]) => {
         if (results.length === 0) {
-          alert('Location not found.');
+          Swal.fire('Location not found.', '', 'warning');
           this.isLoading = false;
           return;
         }
@@ -400,7 +432,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       },
       error: () => {
-        alert('Failed to search location.');
+        Swal.fire('Failed to search location.', '', 'error');
         this.isLoading = false;
       }
     });
@@ -410,12 +442,12 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
 
   saveAddress(): void {
     if (!this.currentLatLng) {
-      alert('Please select a location first!');
+      Swal.fire('Please select a location first!', '', 'warning');
       return;
     }
 
     if (this.addressForm.invalid) {
-      alert('Please fill in all required fields!');
+      Swal.fire('Please fill in all required fields!', '', 'warning');
       return;
     }
 
@@ -427,30 +459,31 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
       city: this.addressForm.get('city')?.value || '',
       zipCode: String(this.addressForm.get('zipCode')?.value) || '',
       country: this.addressForm.get('country')?.value || '',
-      userId: this.currentUserId
+      userId: this.currentUserId,
+      phoneNumber: this.addressForm.get('phoneNumber')?.value || ''
     };
 
     if (this.isEditing && this.newAddress.id) {
       location.id = this.newAddress.id;
       const updateSub = this.locationService.updateLocation(location).subscribe({
         next: () => {
-          alert('Address updated successfully!');
+          Swal.fire('Address updated successfully!', '', 'success');
           this.loadAddresses();
           this.showAddressForm = false;
           this.cleanupMap();
         },
-        error: () => alert('Failed to update address.')
+        error: () => Swal.fire('Failed to update address.', '', 'error')
       });
       this.subscriptions.push(updateSub);
     } else {
       const saveSub = this.locationService.saveLocation(location).subscribe({
         next: () => {
-          alert('Address saved successfully!');
+          Swal.fire('Address saved successfully!', '', 'success');
           this.loadAddresses();
           this.showAddressForm = false;
           this.cleanupMap();
         },
-        error: () => alert('Failed to save address.')
+        error: () => Swal.fire('Failed to save address.', '', 'error')
       });
       this.subscriptions.push(saveSub);
     }
@@ -461,11 +494,11 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     this.locationService.deleteLocation(id).subscribe({
       next: () => {
         this.loadAddresses();
-        alert('Address deleted successfully.');
+        Swal.fire('Address deleted successfully.', '', 'success');
       },
       error: (err: any) => {
         console.error('Error deleting address:', err);
-        alert('Failed to delete address.');
+        Swal.fire('Failed to delete address.', '', 'error');
       },
     });
   }
@@ -524,7 +557,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
 
   goToPaymentPage(): void {
     if (!this.selectedAddress || this.orderItems.length === 0) {
-      alert('Please select a delivery address and ensure your cart is not empty.');
+      Swal.fire('Please select a delivery address and ensure your cart is not empty.', '', 'warning');
       return;
     }
 
@@ -555,11 +588,11 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
             .filter(response => !response.success)
             .map(response => response.message)
             .join('\n');
-          alert(`Stock update failed for some items:\n${failedItems}`);
+          Swal.fire(`Stock update failed for some items:\n${failedItems}`, '', 'error');
         }
       },
       error: (error) => {
-        alert(`Stock update failed: ${error?.error || 'Server error'}`);
+        Swal.fire(`Stock update failed: ${error?.error || 'Server error'}`, '', 'error');
       }
     });
   }

@@ -190,6 +190,11 @@
                 <i class="fas fa-calendar-alt"></i>
                 {{ formatDate(order.createdDate) }}
               </p>
+              <!-- Payment Method Info -->
+              <p *ngIf="order.paymentMethod || order.paymentType" class="payment-info">
+                <i [class]="getPaymentMethodIcon(order)" [ngClass]="getPaymentMethodClass(order)"></i>
+                {{ getPaymentMethodName(order) }}
+              </p>
             </div>
             <div class="order-status">
               <span class="status-badge" [ngClass]="getOrderStatusClass(order.paymentStatus)">
@@ -204,8 +209,8 @@
               <div class="items-preview">
                 <div *ngFor="let item of order.items.slice(0, 4)" class="item-image">
                   <img 
-                    [src]="item.variant?.imgPath || item.product?.imgPath" 
-                    [alt]="item.product?.name"
+                    [src]="item.variant.imgPath || item.product.imgPath" 
+                    [alt]="item.product.name"
                     (error)="onImageError($event)">
                   <span class="item-qty">x{{ item.quantity }}</span>
                 </div>

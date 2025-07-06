@@ -24,106 +24,101 @@
   <!-- Order Details -->
   <div *ngIf="order && !loading" class="order-content">
     <!-- Header Section -->
-    <div class="order-receipt-card">
-      <div class="receipt-row">
-        <div class="receipt-info">
-          <div class="receipt-title">
+    <div class="improved-order-header-card">
+      <div class="order-header-row">
+        <div class="order-header-info">
+          <div class="order-header-title-row">
             <i class="fas fa-receipt"></i>
-            <span>Order #{{ order.trackingNumber }}</span>
+            <span class="order-header-title">Order #{{ order.trackingNumber }}</span>
           </div>
-          <div class="receipt-meta">
-            <span><i class="fas fa-calendar-alt"></i> {{ formatDate(order.createdDate) }}</span>
-            <span class="receipt-status" [ngClass]="getOrderStatusClass(order.paymentStatus)">
+          <div class="order-header-meta">
+            <span class="order-header-date">
+              <i class="fas fa-calendar-alt"></i>
+              {{ formatDate(order.createdDate) }}
+            </span>
+            <span class="order-header-status" [ngClass]="getOrderStatusClass(order.paymentStatus)">
               <i [class]="getOrderStatusIcon(order.paymentStatus)"></i>
               {{ order.paymentStatus }}
             </span>
           </div>
         </div>
-        <div class="receipt-amount">
-          <div class="amount-label">Total</div>
-          <div class="amount-value">{{ formatCurrency(order.totalAmount) }}</div>
+        <div class="order-header-breadcrumb">
+          <a routerLink="/customer/orders" class="order-header-link">
+            <i class="fas fa-arrow-left"></i> My Orders
+          </a>
+          <span class="order-header-separator">/</span>
+          <span class="order-header-current">Order Details</span>
         </div>
-      </div>
-      <div class="receipt-breadcrumb">
-        <a routerLink="/customer/orders"><i class="fas fa-arrow-left"></i> My Orders</a>
-        <span>/</span>
-        <span>Order Details</span>
       </div>
     </div>
 
     <!-- Clean Inline Timeline -->
-    <div class="inline-timeline">
-      <div class="timeline-header">
-        <h3><i class="fas fa-clock"></i> Order Status</h3>
-      </div>
-      <div class="timeline-container">
-        <div class="progress-bar-bg">
-          <div class="progress-bar-fill" [style.width.%]="getProgressPercent()"></div>
-        </div>
-        <div class="progress-steps">
-          <div *ngFor="let step of getTimelineItems(); let i = index" class="progress-step" [ngClass]="step.status">
-            <div class="step-icon">
-              <i [class]="step.icon"></i>
-            </div>
-            <div class="step-label">{{ step.title }}</div>
+    <div class="order-stepper">
+      <div class="stepper-track">
+        <div *ngFor="let step of getTimelineItems(); let i = index" class="stepper-step" [ngClass]="step.status">
+          <div class="stepper-circle">
+            <i [class]="step.icon"></i>
           </div>
+          <div class="stepper-label">{{ step.title }}</div>
+          <div *ngIf="i < getTimelineItems().length - 1" class="stepper-line" [ngClass]="{'active': step.status === 'completed'}"></div>
         </div>
       </div>
     </div>
 
     <!-- Main Content Grid -->
-    <div class="order-grid">
-      <!-- Left Column - Order Items & Summary -->
-      <div class="order-main">
-        <!-- Order Items -->
-        <div class="order-items-card">
-          <div class="card-header">
-            <h2><i class="fas fa-shopping-bag"></i> Order Items</h2>
-            <span class="item-count">{{ getTotalItems() }} items</span>
-          </div>
-          <div class="items-list">
-            <div *ngFor="let item of order.items" class="item-card">
-              <div class="item-image">
-                <img [src]="item.variant.imgPath || item.product.imgPath" 
-                     [alt]="item.product.name"
-                     (error)="onImageError($event)">
-              </div>
-              <div class="item-details">
-                <h3 class="item-name">{{ item.product.name }}</h3>
-                <div class="item-meta">
-                  <span class="item-sku">SKU: {{ item.variant.sku }}</span>
-                  <span *ngIf="item.variant.variantName" class="item-variant">{{ item.variant.variantName }}</span>
+    <div class="order-grid compact-order-grid">
+      <!-- Left Column - Order Items & Summary (side by side, compact) -->
+      <div class="order-main compact-order-main">
+        <div class="order-items-summary-row">
+          <!-- Order Items (left) -->
+          <div class="order-items-card compact-card">
+            <div class="card-header">
+              <h2><i class="fas fa-shopping-bag"></i> Order Items</h2>
+              <span class="item-count">{{ getTotalItems() }} items</span>
+            </div>
+            <div class="items-list">
+              <div *ngFor="let item of order.items" class="item-card">
+                <div class="item-image">
+                  <img [src]="item.variant.imgPath || item.product.imgPath" 
+                       [alt]="item.product.name"
+                       (error)="onImageError($event)">
                 </div>
-                <div class="item-price">
-                  <span class="price">{{ formatCurrency(item.price) }}</span>
-                  <span class="quantity">x{{ item.quantity }}</span>
+                <div class="item-details">
+                  <h3 class="item-name">{{ item.product.name }}</h3>
+                  <div class="item-meta">
+                    <span class="item-sku">SKU: {{ item.variant.sku }}</span>
+                    <span *ngIf="item.variant.variantName" class="item-variant">{{ item.variant.variantName }}</span>
+                  </div>
+                  <div class="item-price">
+                    <span class="price">{{ formatCurrency(item.price) }}</span>
+                    <span class="quantity">x{{ item.quantity }}</span>
+                  </div>
+                </div>
+                <div class="item-total">
+                  <span class="total-price">{{ formatCurrency(calculateItemTotal(item)) }}</span>
                 </div>
               </div>
-              <div class="item-total">
-                <span class="total-price">{{ formatCurrency(calculateItemTotal(item)) }}</span>
+            </div>
+          </div>
+          <!-- Order Summary (right) -->
+          <div class="order-summary-card compact-card">
+            <div class="card-header">
+              <h2><i class="fas fa-calculator"></i> Order Summary</h2>
+            </div>
+            <div class="summary-content">
+              <div class="summary-row">
+                <span>Subtotal</span>
+                <span>{{ formatCurrency(getSubtotal()) }}</span>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Order Summary -->
-        <div class="order-summary-card">
-          <div class="card-header">
-            <h2><i class="fas fa-calculator"></i> Order Summary</h2>
-          </div>
-          <div class="summary-content">
-            <div class="summary-row">
-              <span>Subtotal</span>
-              <span>{{ formatCurrency(getSubtotal()) }}</span>
-            </div>
-            <div class="summary-row">
-              <span>Shipping Fee</span>
-              <span>{{ formatCurrency(order.shippingFee) }}</span>
-            </div>
-            <div class="summary-divider"></div>
-            <div class="summary-row total-row">
-              <span>Total</span>
-              <span class="final-total">{{ formatCurrency(order.totalAmount) }}</span>
+              <div class="summary-row">
+                <span>Shipping Fee</span>
+                <span>{{ formatCurrency(order.shippingFee) }}</span>
+              </div>
+              <div class="summary-divider"></div>
+              <div class="summary-row total-row">
+                <span>Total</span>
+                <span class="final-total">{{ formatCurrency(order.totalAmount) }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -131,70 +126,75 @@
 
       <!-- Right Column - Customer Info & Actions -->
       <div class="order-sidebar">
-        <!-- Customer Information -->
-        <div class="info-card">
-          <div class="card-header">
-            <h3><i class="fas fa-user"></i> Customer Information</h3>
+        <!-- Combined Customer & Delivery Information Card -->
+        <div class="og-customer-delivery-card improved-customer-card">
+          <div class="improved-card-header">
+            <i class="fas fa-user"></i>
+            <span>Customer & Delivery Information</span>
           </div>
-          <div class="info-content">
-            <div class="info-item">
-              <label>Name</label>
-              <span>{{ order.user.name }}</span>
+          <div class="improved-card-content">
+            <div class="improved-info-row">
+              <span class="improved-label"><i class="fas fa-user"></i> Name:</span>
+              <span class="improved-value">{{ order.user.name }}</span>
             </div>
-            <div class="info-item">
-              <label>Email</label>
-              <span>{{ order.user.email }}</span>
+            <div class="improved-info-row">
+              <span class="improved-label"><i class="fas fa-envelope"></i> Email:</span>
+              <span class="improved-value">{{ order.user.email }}</span>
             </div>
-            <div class="info-item">
-              <label>Phone</label>
-              <span>{{ order.user.phone || 'Not provided' }}</span>
+            <div class="improved-info-row">
+              <span class="improved-label"><i class="fas fa-phone"></i> Delivery Phone:</span>
+              <span class="improved-value">{{ order.shippingAddress.phoneNumber }}</span>
+            </div>
+            <div class="improved-info-row">
+              <span class="improved-label"><i class="fas fa-map-marker-alt"></i> Address:</span>
+              <span class="improved-value">
+                {{ order.shippingAddress.address }}
+                <span *ngIf="order.shippingAddress.township"> ({{ order.shippingAddress.township }})</span>,
+                {{ order.shippingAddress.city }}, {{ order.shippingAddress.zipCode }}
+              </span>
+            </div>
+            <div class="improved-info-row">
+              <span class="improved-label"><i class="fas fa-truck"></i> Delivery Method:</span>
+              <span class="improved-value delivery-method-badge">
+                <i [ngClass]="getDeliveryMethodIcon(order.deliveryMethod.name)"></i>
+                {{ order.deliveryMethod.name }}
+              </span>
             </div>
           </div>
         </div>
-
-        <!-- Shipping Information -->
-        <div class="info-card">
+        
+        <!-- Payment Information -->
+        <div *ngIf="order.paymentMethod || order.paymentType || order.paymentProofPath" class="info-card">
           <div class="card-header">
-            <h3><i class="fas fa-map-marker-alt"></i> Shipping Address</h3>
+            <h3><i class="fas fa-credit-card"></i> Payment Information</h3>
           </div>
           <div class="info-content">
-            <div class="address-content">
-              <p>{{ order.shippingAddress.address }}</p>
-              <p>{{ order.shippingAddress.township }}, {{ order.shippingAddress.city }}</p>
-              <p>{{ order.shippingAddress.zipCode }}, {{ order.shippingAddress.country }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Delivery Method -->
-        <div class="info-card">
-          <div class="card-header">
-            <h3><i class="fas fa-shipping-fast"></i> Delivery Method</h3>
-          </div>
-          <div class="info-content">
-            <div class="delivery-method">
-              <div class="delivery-icon">
-                <i [class]="getDeliveryMethodIcon(order.deliveryMethod.name)"></i>
+            <!-- Payment Method Section -->
+            <div *ngIf="order.paymentMethod || order.paymentType" class="info-section">
+              <div class="info-section-title">
+                <i class="fas fa-credit-card"></i> Payment Method
               </div>
-              <div class="delivery-details">
-                <h4>{{ order.deliveryMethod.name }}</h4>
-                <p>Base Fee: {{ formatCurrency(order.deliveryMethod.baseFee) }}</p>
-                <p>Per KM: {{ formatCurrency(order.deliveryMethod.feePerKm) }}</p>
+              <div class="payment-method">
+                <div class="payment-icon" [ngClass]="getPaymentMethodClass()">
+                  <i [class]="getPaymentMethodIcon()"></i>
+                </div>
+                <div class="payment-details">
+                  <h4>{{ getPaymentMethodName() }}</h4>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        <!-- Payment Proof -->
-        <div *ngIf="order.paymentProofPath" class="info-card">
-          <div class="card-header">
-            <h3><i class="fas fa-credit-card"></i> Payment Proof</h3>
-          </div>
-          <div class="info-content">
-            <div class="payment-proof">
-              <img [src]="order.paymentProofPath" 
-                   alt="Payment Proof" 
-                   class="proof-image">
+            
+            <!-- Payment Proof Section -->
+            <div *ngIf="order.paymentProofPath" class="info-section">
+              <div *ngIf="order.paymentMethod || order.paymentType" class="info-divider"></div>
+              <div class="info-section-title">
+                <i class="fas fa-image"></i> Payment Proof
+              </div>
+              <div class="payment-proof">
+                <img [src]="order.paymentProofPath" 
+                     alt="Payment Proof" 
+                     class="proof-image">
+              </div>
             </div>
           </div>
         </div>

@@ -200,10 +200,24 @@ const routes: Routes = [
   },
 
 {path:'storelocation',component:StoreAddressComponent},
-  {path:'AdminOrder',component:AdminOrdersControlComponent},
+
+  {path:'AdminOrder',component:AdminOrdersControlComponent,
+    canActivate: [AdminAuthGuard, PermissionGuard],
+    data: {
+      permissionGroups: [
+        ['SUPERADMIN_PERMISSION']
+      ]
+    }
+  },
   {
-  path: 'admin/orderDetailAdmin/:id',
-  component: AdminOrdersDetailComponent
+  path: 'orderDetailAdmin/:id',
+  component: AdminOrdersDetailComponent,
+  canActivate: [AdminAuthGuard, PermissionGuard],
+    data: {
+      permissionGroups: [
+        ['SUPERADMIN_PERMISSION']
+      ]
+    }
 }
 
 ];
