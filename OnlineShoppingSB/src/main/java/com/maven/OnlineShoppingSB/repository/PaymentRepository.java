@@ -12,4 +12,5 @@ public interface PaymentRepository extends JpaRepository<PaymentEntity, Integer>
 
     Optional<PaymentEntity> findByMethodName(String methodName);
     List<PaymentEntity> findByStatus(int status);
+    List<PaymentEntity> findByStatusAndType(int status, String type);
 }

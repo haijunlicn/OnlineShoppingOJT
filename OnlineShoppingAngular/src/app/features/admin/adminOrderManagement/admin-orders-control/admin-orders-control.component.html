@@ -1,3 +1,8 @@
+<div class="admin-layout">
+  <app-admin-header></app-admin-header>
+  <div class="admin-main">
+    <app-admin-sidebar></app-admin-sidebar>
+    <main class="admin-content">
 <div class="min-h-screen bg-gradient">
   <!-- Header -->
   <div class="header">
@@ -110,8 +115,8 @@
 
     <!-- Filters -->
     <div class="filter-card">
-      <div class="filter-content">
-        <div class="search-container">
+      <div class="filter-content" style="display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;">
+        <div class="search-container" style="flex: 1 1 250px;">
           <svg class="search-icon" fill="currentColor" viewBox="0 0 24 24">
             <path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"/>
           </svg>
@@ -123,92 +128,172 @@
             (input)="filterOrders()"
           />
         </div>
-        <div class="filter-selects">
+        <div class="filter-selects" style="display: flex; gap: 0.75rem; align-items: center;">
           <select class="filter-select" [(ngModel)]="statusFilter" (change)="filterOrders()">
             <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="processing">Processing</option>
-            <option value="shipped">Shipped</option>
-            <option value="delivered">Delivered</option>
-            <option value="cancelled">Cancelled</option>
+            <option *ngFor="let s of uniqueStatuses" [value]="s" [ngStyle]="s === 'cancelled' ? {'color': '#dc2626', 'font-weight': 'bold'} : {}">{{ getStatusLabel(s) }}</option>
           </select>
           <select class="filter-select" [(ngModel)]="priorityFilter" (change)="filterOrders()">
             <option value="all">All Priority</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
+            <option *ngFor="let p of uniquePriorities" [value]="p">{{ p | titlecase }}</option>
           </select>
+          <button type="button" (click)="clearFilters()" style="margin-left: 0.5rem; padding: 0.5rem 1rem; border-radius: 0.375rem; border: 1px solid #e2e8f0; background: #fff; color: #222; font-weight: 500; cursor: pointer;">Clear Filters</button>
         </div>
       </div>
     </div>
 
-    <!-- Orders List -->
-    <div class="orders-list">
-      <div 
-        *ngFor="let order of filteredOrders" 
-        class="order-card"
-        [ngClass]="getPriorityClass(order.priority)"
-      >
-        <div class="order-content">
-          <div class="order-left">
-            <div class="avatar">
-              {{ order.avatar }}
-            </div>
-            <div class="order-info">
-              <div class="order-header">
-                <h3 class="customer-name">{{ order.customer }}</h3>
-                <span class="order-id">{{ order.id }}</span>
-              </div>
-              <p class="customer-email">{{ order.email }}</p>
-              <div class="order-meta">
-                <span>{{ order.date }} at {{ order.time }}</span>
-                <span>•</span>
-                <span>{{ order.items }} items</span>
-                <span>•</span>
-                <span>{{ order.paymentMethod }}</span>
-              </div>
-            </div>
-          </div>
+    <!-- Order Status Update Section -->
+    <div *ngIf="selectedOrderIds.length > 0" class="order-status-update-section" style="margin: 1rem 0; display: flex; align-items: center; gap: 1rem; background: #fff; border-radius: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); padding: 1rem;">
+      <span style="font-weight: 500;">{{ selectedOrderIds.length }} selected</span>
+      <label style="margin: 0 0.5rem 0 0;">
+        <select [(ngModel)]="bulkStatus">
+          <option value="">Select status</option>
+          
+          <option value="order_confirmed">Order Confirmed</option>
+          <option value="packed">Packed</option>
+          <option value="out_for_delivery">Out for Delivery</option>
+          <option value="delivered">Delivered</option>
+          <option value="cancelled" style="color: #dc2626; font-weight: bold;">Cancelled</option>
+        </select>
+      </label>
+      <label style="flex: 1; margin: 0 0.5rem;">
+        <input [(ngModel)]="bulkNote" placeholder="Note (optional)" style="width: 100%; padding: 0.5rem; border-radius: 0.375rem; border: 1px solid #e2e8f0;" />
+      </label>
+      <button (click)="confirmBulkStatusUpdate()" [disabled]="!bulkStatus || bulkStatusLoading" style="padding: 0.5rem 1.5rem; border-radius: 0.375rem; background: #2563eb; color: #fff; border: none; font-weight: 500; cursor: pointer;">Update Status</button>
+      <span *ngIf="bulkStatusLoading" style="margin-left: 1rem; color: #64748b;">Updating...</span>
+      <span *ngIf="bulkStatusError" style="margin-left: 1rem; color: #dc2626;">{{ bulkStatusError }}</span>
+    </div>
 
-          <div class="order-right">
-            <div class="order-summary">
-              <p class="order-total">${{ order.total.toFixed(2) }}</p>
-              <div class="status-badge" [ngClass]="getStatusClass(order.status)">
-                <div class="status-dot" [ngClass]="getStatusDotClass(order.status)"></div>
-                <span>{{ getStatusLabel(order.status) }}</span>
-              </div>
-            </div>
-
-            <div class="dropdown" [class.open]="openDropdown === order.id">
-              <button class="dropdown-trigger" (click)="toggleDropdown(order.id)">
-                <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z"/>
-                </svg>
-              </button>
-              <div class="dropdown-menu" *ngIf="openDropdown === order.id">
-                <div class="dropdown-label">Actions</div>
-                <button class="dropdown-item" (click)="viewOrder(order)">
-                  <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"/>
-                  </svg>
-                  View Details
-                </button>
-                <button class="dropdown-item" (click)="editOrder(order)">
-                  <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
-                  </svg>
-                  Edit Order
-                </button>
-                <div class="dropdown-separator"></div>
-                <button class="dropdown-item" (click)="updateStatus(order)">Update Status</button>
-                <button class="dropdown-item" (click)="sendEmail(order)">Send Email</button>
-                <button class="dropdown-item" (click)="printInvoice(order)">Print Invoice</button>
-                <div class="dropdown-separator"></div>
-                <button class="dropdown-item danger" (click)="cancelOrder(order)">Cancel Order</button>
-              </div>
-            </div>
-          </div>
+    <!-- Orders Table -->
+    <div class="table-container">
+      <div class="table-header">
+        <h3 class="table-title">Orders</h3>
+        <div class="table-actions">
+          <span class="table-count">{{ filteredOrders.length }} orders</span>
         </div>
+      </div>
+      
+      <div class="table-wrapper">
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th class="table-header-cell">
+                <input type="checkbox" [checked]="isAllSelected()" (change)="toggleSelectAll($event)" />
+              </th>
+              <th class="table-header-cell">
+                <div class="header-content">
+                  <span>Order ID</span>
+                  <svg class="sort-icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M7,10L12,15L17,10H7Z"/>
+                  </svg>
+                </div>
+              </th>
+              <th class="table-header-cell">
+                <div class="header-content">
+                  <span>Customer</span>
+                </div>
+              </th>
+              <th class="table-header-cell">
+                <div class="header-content">
+                  <span>Date</span>
+                </div>
+              </th>
+              <th class="table-header-cell">
+                <div class="header-content">
+                  <span>Status</span>
+                </div>
+              </th>
+              <th class="table-header-cell">
+                <div class="header-content">
+                  <span>Items</span>
+                </div>
+              </th>
+              <th class="table-header-cell">
+                <div class="header-content">
+                  <span>Total</span>
+                </div>
+              </th>
+              <th class="table-header-cell">
+                <div class="header-content">
+                  <span>Priority</span>
+                </div>
+              </th>
+              <th class="table-header-cell">
+                <div class="header-content">
+                  <span>Actions</span>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr 
+              *ngFor="let order of filteredOrders" 
+              class="table-row"
+              [ngClass]="getPriorityClass(order.priority)"
+            >
+              <td class="table-cell">
+                <input type="checkbox" [checked]="isSelected(order)" (change)="toggleSelectOrder(order, $event)" />
+              </td>
+              <td class="table-cell">
+                <div class="order-id-cell">
+                  <span class="order-id-text">{{ order.id }}</span>
+                </div>
+              </td>
+              <td class="table-cell">
+                <div class="customer-cell">
+                  <div class="avatar-small">
+                    {{ order.avatar }}
+                  </div>
+                  <div class="customer-info">
+                    <div class="customer-name">{{ order.customer }}</div>
+                    <div class="customer-email">{{ order.email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="table-cell">
+                <div class="date-cell">
+                  <div class="date-text">{{ order.date }}</div>
+                  <div class="time-text">{{ order.time }}</div>
+                </div>
+              </td>
+              <td class="table-cell">
+                <div class="status-cell">
+                  <div class="status-badge" [ngClass]="getStatusClass(order.status)">
+                    <div class="status-dot" [ngClass]="getStatusDotClass(order.status)"></div>
+                    <span>{{ getStatusLabel(order.status) }}</span>
+                  </div>
+                </div>
+              </td>
+              <td class="table-cell">
+                <div class="items-cell">
+                  <span class="items-count">{{ order.items }} items</span>
+                </div>
+              </td>
+              <td class="table-cell">
+                <div class="total-cell">
+                  <span class="total-amount">${{ order.total.toFixed(2) }}</span>
+                </div>
+              </td>
+              <td class="table-cell">
+                <div class="priority-cell">
+                  <span class="priority-badge" [ngClass]="getPriorityClass(order.priority)">
+                    {{ order.priority }}
+                  </span>
+                </div>
+              </td>
+              <td class="table-cell">
+                <div class="actions-cell">
+                  <button class="view-details-btn" (click)="viewOrder(order)" title="View Details">
+                    <svg class="view-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -241,5 +326,36 @@
         </button>
       </div>
     </div>
+
+    <!-- Single Status Update Modal -->
+    <div class="modal-backdrop" *ngIf="showSingleStatusModal">
+      <div class="modal">
+        <h3>Update Order Status</h3>
+        <label>Status:
+          <select [(ngModel)]="singleStatus">
+            <option value="">Select status</option>
+            <option *ngFor="let s of statusList"
+                    [value]="s"
+                    [disabled]="!allowedTransitions[selectedOrderForStatus?.status || 'pending'].includes(s)"
+                    [ngStyle]="s === 'cancelled' ? {'color': '#dc2626', 'font-weight': 'bold'} : {}">
+              {{ getStatusLabel(s) }}
+            </option>
+          </select>
+        </label>
+        <label>Note:
+          <textarea [(ngModel)]="singleNote" rows="2"></textarea>
+        </label>
+        <div class="modal-actions">
+          <button (click)="confirmSingleStatusUpdate()" [disabled]="!singleStatus">Update</button>
+          <button (click)="closeSingleStatusModal()">Cancel</button>
+        </div>
+        <div *ngIf="singleStatusLoading">Updating...</div>
+        <div *ngIf="singleStatusError" class="error">{{ singleStatusError }}</div>
+      </div>
+    </div>
   </div>
 </div>
+</main>
+  </div>
+
+  <app-admin-footer></app-admin-footer>

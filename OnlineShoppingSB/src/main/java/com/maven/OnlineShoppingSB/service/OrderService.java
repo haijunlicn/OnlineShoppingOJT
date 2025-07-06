@@ -10,6 +10,7 @@ import com.maven.OnlineShoppingSB.repository.UserRepository;
 import com.maven.OnlineShoppingSB.repository.DeliveryMethodRepository;
 import com.maven.OnlineShoppingSB.repository.OrderStatusTypeRepository;
 import com.maven.OnlineShoppingSB.repository.OrderStatusHistoryRepository;
+import com.maven.OnlineShoppingSB.repository.PaymentMethodRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -49,6 +50,9 @@ public class OrderService {
     @Autowired
     private OrderStatusHistoryRepository orderStatusHistoryRepository;
 
+    @Autowired
+    private PaymentMethodRepository paymentMethodRepository;
+
     public OrderEntity createOrder(OrderDto dto, MultipartFile paymentProof) throws Exception {
         OrderEntity order = new OrderEntity();
         UserEntity user = userRepository.findById(dto.getUserId())
@@ -67,10 +71,37 @@ public class OrderService {
         order.setDeliveryMethod(deliveryMethod);
         order.setUpdatedDate(LocalDateTime.now());
 
+        // Handle payment proof upload with error handling
         if (paymentProof != null && !paymentProof.isEmpty()) {
-            String imageUrl = cloudinaryService.uploadFile(paymentProof);
-            order.setPaymentProofPath(imageUrl);
+            try {
+                String imageUrl = cloudinaryService.uploadFile(paymentProof);
+                order.setPaymentProofPath(imageUrl);
+                System.out.println("Payment proof uploaded successfully: " + imageUrl);
+            } catch (Exception e) {
+                System.err.println("Failed to upload payment proof to Cloudinary: " + e.getMessage());
+                // Fallback: save locally or continue without payment proof
+                try {
+                    // Save to local directory as fallback
+                    String fileName = "payment_proof_" + System.currentTimeMillis() + ".jpg";
+                    String localPath = "uploads/payment_proofs/" + fileName;
+                    java.nio.file.Files.createDirectories(java.nio.file.Paths.get("uploads/payment_proofs"));
+                    java.nio.file.Files.write(java.nio.file.Paths.get(localPath), paymentProof.getBytes());
+                    order.setPaymentProofPath("file://" + localPath);
+                    System.out.println("Payment proof saved locally: " + localPath);
+                } catch (Exception localError) {
+                    System.err.println("Failed to save payment proof locally: " + localError.getMessage());
+                    // Continue without payment proof - don't fail the entire order
+                    order.setPaymentProofPath(null);
+                }
+            }
         }
+
+        if (dto.getPaymentMethodId() != null) {
+            PaymentEntity paymentMethod = paymentMethodRepository.findById(dto.getPaymentMethodId().intValue())
+                .orElseThrow(() -> new RuntimeException("Payment method not found"));
+            order.setPaymentMethod(paymentMethod);
+        }
+
         System.out.println("Order Data "+order);
         List<OrderItemEntity> items = dto.getItems().stream().map(itemDto -> {
             OrderItemEntity item = new OrderItemEntity();
@@ -117,6 +148,19 @@ public class OrderService {
         dto.setUpdatedDate(order.getUpdatedDate());
         dto.setPaymentProofPath(order.getPaymentProofPath());
 
+        // Convert payment method if exists
+        if (order.getPaymentMethod() != null) {
+            PaymentDTO paymentDto = new PaymentDTO();
+            paymentDto.setId(order.getPaymentMethod().getId());
+            paymentDto.setMethodName(order.getPaymentMethod().getMethodName());
+            paymentDto.setDescription(order.getPaymentMethod().getDescription());
+            paymentDto.setType(order.getPaymentMethod().getType());
+            paymentDto.setLogo(order.getPaymentMethod().getLogo());
+            paymentDto.setQrPath(order.getPaymentMethod().getQrPath());
+            paymentDto.setStatus(order.getPaymentMethod().getStatus());
+            dto.setPaymentMethod(paymentDto);
+        }
+
         // Convert user
         userDTO userDto = new userDTO();
         userDto.setId(order.getUser().getId());
@@ -135,6 +179,7 @@ public class OrderService {
         addressDto.setCountry(order.getUserAddress().getCountry());
         addressDto.setLatitude(order.getUserAddress().getLatitude());
         addressDto.setLongitude(order.getUserAddress().getLongitude());
+        addressDto.setPhoneNumber(order.getUserAddress().getPhoneNumber());
         dto.setShippingAddress(addressDto);
 
         // Convert delivery method
@@ -209,12 +254,12 @@ public class OrderService {
         return dto;
     }
 
-    public void bulkUpdateOrderStatus(BulkOrderStatusUpdateRequest request) {
+    public List<OrderEntity> bulkUpdateOrderStatus(BulkOrderStatusUpdateRequest request) {
+        List<OrderEntity> updatedOrders = new ArrayList<>();
         for (Long orderId : request.getOrderIds()) {
             OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
 
-            // Update order status (e.g., paymentStatus field)
             OrderStatusTypeEntity statusType = orderStatusTypeRepository.findById(request.getStatusId())
                 .orElseThrow(() -> new RuntimeException("Status not found: " + request.getStatusId()));
             order.setPaymentStatus(statusType.getCode());
@@ -229,7 +274,10 @@ public class OrderService {
             history.setCreatedAt(java.time.LocalDateTime.now());
             history.setUpdatedBy(request.getUpdatedBy());
             orderStatusHistoryRepository.save(history);
+
+            updatedOrders.add(order);
         }
+        return updatedOrders;
     }
 
     // New method to fetch all orders for admin

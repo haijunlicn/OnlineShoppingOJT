@@ -1,24 +1,179 @@
-<div *ngIf="loading">Loading...</div>
-<div *ngIf="error && !loading">{{ error }}</div>
-<div *ngIf="order && !loading">
-  <h2>Order #{{ order.trackingNumber }}</h2>
-  <div>Status: <span [ngClass]="getOrderStatusClass(order.paymentStatus)">{{ order.paymentStatus }}</span></div>
-  <div>Total: {{ formatCurrency(order.totalAmount) }}</div>
-  <div>Created: {{ formatDate(order.createdDate) }}</div>
-  <!-- ... more order details ... -->
+<div class="admin-layout">
+  <app-admin-header></app-admin-header>
+  <div class="admin-main">
+    <app-admin-sidebar></app-admin-sidebar>
+    <main class="admin-content">
+<div *ngIf="loading" class="loading">Loading...</div>
+<div *ngIf="error && !loading" class="error">{{ error }}</div>
+<div *ngIf="order && !loading" class="order-detail-container">
+  <!-- Back Button -->
+  <div class="back-button-container">
+    <button class="back-button" (click)="goBack()">
+      <i class="fas fa-arrow-left"></i>
+      <span>Back to Orders</span>
+    </button>
+  </div>
 
-  <!-- Status Update Section -->
-  <div>
-    <label>Change Status:</label>
-    <select #statusSel>
-      <option [value]="1">Pending</option>
-      <option [value]="2">Processing</option>
-      <option [value]="3">Shipped</option>
-      <option [value]="4">Delivered</option>
-      <option [value]="5">Cancelled</option>
-    </select>
-    <button (click)="updateOrderStatus(+statusSel.value)">Update Status</button>
-    <span *ngIf="updatingStatus">Updating...</span>
-    <span *ngIf="updateStatusError">{{ updateStatusError }}</span>
+  <!-- Order Overview Card -->
+  <div class="order-overview-card">
+    <div class="overview-row">
+      <div class="overview-main">
+        <div class="overview-title">Order #{{ order.trackingNumber }}</div>
+        <div class="overview-date"><i class="fas fa-calendar-alt"></i> {{ formatDate(order.createdDate) }}</div>
+      </div>
+      <div class="overview-status">
+        <span class="status-badge" [ngClass]="getOrderStatusClass(order.paymentStatus)">
+          <i [class]="getOrderStatusIcon(order.paymentStatus)"></i> {{ order.paymentStatus }}
+        </span>
+      </div>
+      <div class="overview-total">
+        <div class="total-label">Total</div>
+        <div class="total-value">{{ formatCurrency(order.totalAmount) }}</div>
+      </div>
+      <!-- Optional: Action buttons -->
+      <!-- <div class="overview-actions">
+        <button class="btn-action"><i class="fas fa-print"></i> Print</button>
+        <button class="btn-action"><i class="fas fa-download"></i> Invoice</button>
+      </div> -->
+    </div>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="main-content-grid">
+    <!-- Left: Stepper, Items, Summary -->
+    <div class="main-left">
+      <!-- Stepper -->
+      <div class="order-stepper">
+        <div class="stepper-track">
+          <div *ngFor="let step of getTimelineItems(); let i = index" class="stepper-step" [ngClass]="step.status">
+            <div class="stepper-circle">
+              <i [class]="step.icon"></i>
+            </div>
+            <div class="stepper-label">{{ step.title }}</div>
+            <div *ngIf="i < getTimelineItems().length - 1" class="stepper-line" [ngClass]="{'active': step.status === 'completed'}"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Update Status Card (moved below stepper, horizontal layout) -->
+      <div class="info-card status-update-card horizontal-status-card">
+        <div class="info-content">
+          <label for="statusSel">Change Status:</label>
+          <select id="statusSel" [(ngModel)]="selectedStatus" [disabled]="updatingStatus" aria-label="Change order status">
+            <option *ngFor="let s of allowedTransitions[getCurrentUiStatus()]" [ngValue]="s"
+                    [ngStyle]="s === 'cancelled' ? {'color': '#dc2626', 'font-weight': 'bold'} : {}">
+              {{ getStatusLabel(s) }}
+            </option>
+          </select>
+          <button (click)="confirmStatusUpdate()" [disabled]="updatingStatus || !selectedStatus">
+            Update Status
+          </button>
+          <span *ngIf="updatingStatus" class="updating">Updating...</span>
+          <span *ngIf="updateStatusError" class="error">{{ updateStatusError }}</span>
+        </div>
+      </div>
+      <!-- Order Items Table -->
+      <div class="order-items-card">
+        <div class="card-header">
+          <h2><i class="fas fa-shopping-bag"></i> Order Items</h2>
+        </div>
+        <div class="items-table-wrapper">
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Name</th>
+                <th>SKU</th>
+                
+                <th>Price</th>
+                <th>Qty</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of order.items">
+                <td><img [src]="item.variant.imgPath || item.product.imgPath" [alt]="item.product.name" (error)="onImageError($event)" class="item-table-img"></td>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.variant.sku }}</td>
+                
+                <td>{{ formatCurrency(item.price) }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ formatCurrency(calculateItemTotal(item)) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- Order Summary Card -->
+      <div class="order-summary-card">
+        <div class="card-header">
+          <h2><i class="fas fa-calculator"></i> Order Summary</h2>
+        </div>
+        <div class="summary-content">
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span>{{ formatCurrency(getSubtotal()) }}</span>
+          </div>
+          <div class="summary-row">
+            <span>Shipping Fee</span>
+            <span>{{ formatCurrency(order.shippingFee) }}</span>
+          </div>
+          <div class="summary-divider"></div>
+          <div class="summary-row total-row">
+            <span>Total</span>
+            <span class="final-total">{{ formatCurrency(order.totalAmount) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Right: Sidebar Cards -->
+    <div class="main-right">
+      <!-- Combined Info Card: Customer, Shipping, Delivery -->
+      <div class="info-card improved-info-card">
+        <div class="improved-header">
+          <i class="fas fa-user"></i>
+          <span>Customer, Shipping & Delivery</span>
+        </div>
+        <div class="improved-section">
+          <div class="section-title"><i class="fas fa-user-circle"></i> Customer Information</div>
+          <div class="info-row"><span class="label">Name:</span> <span class="value">{{ order.user.name }}</span></div>
+          <div class="info-row"><i class="fas fa-envelope"></i> <span class="value">{{ order.user.email }}</span></div>
+          <div class="info-row"><i class="fas fa-phone"></i> <span class="value">{{ order.shippingAddress.phoneNumber }}</span></div>
+        </div>
+        <div class="divider"></div>
+        <div class="improved-section">
+          <div class="section-title"><i class="fas fa-map-marker-alt"></i> Shipping Address</div>
+          <div class="info-row address-block">{{ order.shippingAddress.address }}, {{ order.shippingAddress.township }}, {{ order.shippingAddress.city }}, {{ order.shippingAddress.zipCode }}, {{ order.shippingAddress.country }}</div>
+        </div>
+        <div class="divider"></div>
+        <div class="improved-section">
+          <div class="section-title"><i class="fas fa-truck"></i> Delivery Method</div>
+          <div class="delivery-method-box">
+            <i [class]="getDeliveryMethodIcon(order.deliveryMethod.name)"></i>
+            <div>
+              <div class="delivery-title">{{ order.deliveryMethod.name }}</div>
+              <div class="delivery-fee">Base Fee: {{ formatCurrency(order.deliveryMethod.baseFee) }}</div>
+              <div class="delivery-fee">Per KM: {{ formatCurrency(order.deliveryMethod.feePerKm) }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Payment Proof Card -->
+      <div *ngIf="order.paymentProofPath" class="info-card">
+        <div class="card-header">
+          <h3><i class="fas fa-credit-card"></i> Payment Proof</h3>
+        </div>
+        <div class="info-content">
+          <div class="payment-proof">
+            <img [src]="order.paymentProofPath"
+                 alt="Payment Proof"
+                 class="proof-image">
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
+</main>
+  </div>
+
+  <app-admin-footer></app-admin-footer>

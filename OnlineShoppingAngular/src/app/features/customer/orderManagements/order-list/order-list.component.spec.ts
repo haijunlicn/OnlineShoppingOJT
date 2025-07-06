@@ -25,8 +25,7 @@ describe('OrderListComponent', () => {
       user: {
         id: 1,
         name: 'John Doe',
-        email: 'john@example.com',
-        phone: '1234567890'
+        email: 'john@example.com'
       },
       shippingAddress: {
         id: 1,
@@ -82,7 +81,7 @@ describe('OrderListComponent', () => {
         id: 1,
         name: 'John Doe',
         email: 'john@example.com',
-        phone: '1234567890'
+      
       },
       shippingAddress: {
         id: 1,

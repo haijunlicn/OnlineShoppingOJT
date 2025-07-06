@@ -220,6 +220,22 @@ const routes: Routes = [
     path: 'refundRequestList',
     component: RefundRequestListComponent,
     canActivate: [AdminAuthGuard, PermissionGuard],
+  },
+  { path: 'storelocation', component: StoreAddressComponent },
+
+  {
+    path: 'AdminOrder', component: AdminOrdersControlComponent,
+    canActivate: [AdminAuthGuard, PermissionGuard],
+    data: {
+      permissionGroups: [
+        ['SUPERADMIN_PERMISSION']
+      ]
+    }
+  },
+  {
+    path: 'orderDetailAdmin/:id',
+    component: AdminOrdersDetailComponent,
+    canActivate: [AdminAuthGuard, PermissionGuard],
     data: {
       permissionGroups: [
         ['SUPERADMIN_PERMISSION']

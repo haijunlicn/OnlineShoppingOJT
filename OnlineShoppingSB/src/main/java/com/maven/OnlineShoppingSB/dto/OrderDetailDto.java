@@ -21,6 +21,10 @@ public class OrderDetailDto {
     private LocalDateTime updatedDate;
     private String paymentProofPath;
     
+    // Payment method information
+    private PaymentDTO paymentMethod;
+    private String paymentType;
+    
     // User information
     private userDTO user;
     

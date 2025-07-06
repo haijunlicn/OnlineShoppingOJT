@@ -4,6 +4,9 @@ import { Subscription } from 'rxjs';
 import { OrderService, OrderDetail } from '../../../../core/services/order.service';
 import { AuthService } from '../../../../core/services/auth.service';
 
+// Define all possible order statuses for user
+export type OrderStatus = 'pending' | 'order_confirmed' | 'packed' | 'out_for_delivery' | 'delivered' | 'cancelled';
+
 @Component({
   selector: 'app-order-detail',
   standalone: false,
@@ -27,6 +30,11 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
+    // Initialize user ID
+    // this.authService.initializeUserFromToken();
+    // const user = this.authService.getCurrentUser();
+    // this.currentUserId = user ? user.id : 0;
+
     const sub = this.authService.user$.subscribe(user => {
       this.currentUserId = user ? user.id : 0;
       console.log('Current userId from subscription:', this.currentUserId);
@@ -57,7 +65,6 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
       next: (order: OrderDetail) => {
         this.order = order;
         this.loading = false;
-        console.log("Order details loaded:", this.order);
       },
       error: (err) => {
         console.error('Error loading order details:', err);
@@ -113,23 +120,31 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   formatDate(dateString: string | null | undefined): string {
     if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return '';
+    }
   }
 
   formatCurrency(amount: number | null | undefined): string {
     if (amount === null || amount === undefined) return '0 MMK';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'MMK',
-      minimumFractionDigits: 0
-    }).format(amount);
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'MMK',
+        minimumFractionDigits: 0
+      }).format(amount);
+    } catch (error) {
+      return '0 MMK';
+    }
   }
 
   getDeliveryMethodIcon(methodName: string | null | undefined): string {
@@ -149,21 +164,29 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   calculateItemTotal(item: any): number {
     if (!item || !item.quantity || !item.price) return 0;
-    return item.quantity * item.price;
+    try {
+      return (item.quantity || 0) * (item.price || 0);
+    } catch (error) {
+      return 0;
+    }
   }
 
   getEstimatedDeliveryDate(): string {
     if (!this.order?.createdDate) return '';
 
-    const orderDate = new Date(this.order.createdDate);
-    const deliveryDate = new Date(orderDate);
-    deliveryDate.setDate(deliveryDate.getDate() + 5); // 5 days from order date
+    try {
+      const orderDate = new Date(this.order.createdDate);
+      const deliveryDate = new Date(orderDate);
+      deliveryDate.setDate(deliveryDate.getDate() + 5); // 5 days from order date
 
-    return deliveryDate.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+      return deliveryDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (error) {
+      return '';
+    }
   }
 
   goBackToOrders(): void {
@@ -192,282 +215,190 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   getTotalItems(): number {
     if (!this.order?.items) return 0;
-    return this.order.items.reduce((total, item) => total + (item.quantity || 0), 0);
+    try {
+      return this.order.items.reduce((total, item) => total + (item?.quantity || 0), 0);
+    } catch (error) {
+      return 0;
+    }
   }
 
   getSubtotal(): number {
     if (!this.order?.items) return 0;
-    return this.order.items.reduce((total, item) => total + this.calculateItemTotal(item), 0);
+    try {
+      return this.order.items.reduce((total, item) => total + this.calculateItemTotal(item), 0);
+    } catch (error) {
+      return 0;
+    }
   }
 
   // Method to handle image errors safely
   onImageError(event: Event): void {
-    const target = event.target as HTMLImageElement;
-    if (target) {
-      target.src = 'assets/img/default-product.jpg';
+    try {
+      const target = event.target as HTMLImageElement;
+      if (target) {
+        target.src = 'assets/img/default-product.jpg';
+      }
+    } catch (error) {
+      console.error('Error handling image error:', error);
     }
   }
 
-  // Timeline Methods
+  // --- ORDER STATUS STEPPER/PROGRESS BAR LOGIC (copied and adapted from AdminOrdersDetailComponent) ---
+  allowedTransitions: Record<OrderStatus, OrderStatus[]> = {
+    pending: ['order_confirmed'],
+    order_confirmed: ['packed'],
+    packed: ['out_for_delivery'],
+    out_for_delivery: ['delivered'],
+    delivered: [],
+    cancelled: []
+  };
+
+  statusList: OrderStatus[] = [
+    'pending',
+    'order_confirmed',
+    'packed',
+    'out_for_delivery',
+    'delivered',
+    'cancelled'
+  ];
+
+  statusMap: Record<OrderStatus, number> = {
+    pending: 0,
+    order_confirmed: 1,
+    packed: 2,
+    out_for_delivery: 3,
+    delivered: 4,
+    cancelled: 5
+  };
+
+  statusIdToCode: Record<number, string> = {
+    0: 'PENDING',
+    1: 'ORDER_CONFIRMED',
+    2: 'PACKED',
+    3: 'OUT_FOR_DELIVERY',
+    4: 'DELIVERED',
+    5: 'CANCELLED'
+  };
+
+  dbToUiStatus: Record<string, OrderStatus> = {
+    PENDING: 'pending',
+    ORDER_CONFIRMED: 'order_confirmed',
+    PACKED: 'packed',
+    OUT_FOR_DELIVERY: 'out_for_delivery',
+    DELIVERED: 'delivered',
+    CANCELLED: 'cancelled'
+  };
+
+  getCurrentUiStatus(): OrderStatus {
+    let statusId = this.order?.statusHistory?.length
+      ? this.order.statusHistory[this.order.statusHistory.length - 1].statusId
+      : undefined;
+
+    let code = statusId !== undefined
+      ? this.statusIdToCode[statusId]
+      : (this.order?.paymentStatus?.toUpperCase() || undefined);
+
+    let uiStatus = code ? this.dbToUiStatus[code] : undefined;
+
+    const validStatuses: OrderStatus[] = [
+      'pending',
+      'order_confirmed',
+      'packed',
+      'out_for_delivery',
+      'delivered',
+      'cancelled'
+    ];
+
+    if (uiStatus && validStatuses.includes(uiStatus)) {
+      return uiStatus;
+    }
+    return 'pending';
+  }
+
   getTimelineItems(): any[] {
     const timelineItems = [];
-    const currentStatus = this.getCurrentOrderStatus();
-
-    // Step 1: Order Placed (Always completed)
+    const currentStatus = this.getCurrentUiStatus();
+    // Step 1: Pending
     timelineItems.push({
-      id: 'order-placed',
-      title: 'Order Placed',
-      description: 'Your order has been successfully placed',
-      date: this.order?.createdDate,
-      icon: 'fas fa-shopping-cart',
-      status: 'completed',
-      isFirst: true
+      id: 'pending',
+      title: 'Pending',
+      icon: 'fas fa-hourglass-start',
+      status: ['pending', 'order_confirmed', 'packed', 'out_for_delivery', 'delivered'].includes(currentStatus) ? 'completed' : (currentStatus === 'cancelled' ? 'cancelled' : 'pending')
     });
-
     // Step 2: Order Confirmed
-    const confirmedStatus = currentStatus === 'pending' || currentStatus === 'paid' ||
-      currentStatus === 'shipped' || currentStatus === 'delivered' ? 'completed' : 'pending';
     timelineItems.push({
-      id: 'order-confirmed',
+      id: 'order_confirmed',
       title: 'Order Confirmed',
-      description: 'Your order has been confirmed and is being prepared',
-      date: this.order?.createdDate,
       icon: 'fas fa-check-circle',
-      status: confirmedStatus
+      status: ['order_confirmed', 'packed', 'out_for_delivery', 'delivered'].includes(currentStatus) ? 'completed' : (currentStatus === 'cancelled' ? 'cancelled' : 'pending')
     });
-
     // Step 3: Packed
-    const packedStatus = currentStatus === 'paid' || currentStatus === 'shipped' ||
-      currentStatus === 'delivered' ? 'completed' : 'pending';
     timelineItems.push({
-      id: 'order-packed',
+      id: 'packed',
       title: 'Packed',
-      description: 'Your order has been packed and is ready for shipping',
-      date: this.order?.updatedDate || this.order?.createdDate,
       icon: 'fas fa-box',
-      status: packedStatus
+      status: ['packed', 'out_for_delivery', 'delivered'].includes(currentStatus) ? 'completed' : (currentStatus === 'cancelled' ? 'cancelled' : 'pending')
     });
-
     // Step 4: Out for Delivery
-    const outForDeliveryStatus = currentStatus === 'shipped' || currentStatus === 'delivered' ? 'completed' : 'pending';
     timelineItems.push({
-      id: 'out-for-delivery',
+      id: 'out_for_delivery',
       title: 'Out for Delivery',
-      description: 'Your order is out for delivery',
-      date: this.order?.updatedDate || this.order?.createdDate,
       icon: 'fas fa-truck',
-      status: outForDeliveryStatus
+      status: ['out_for_delivery', 'delivered'].includes(currentStatus) ? 'completed' : (currentStatus === 'cancelled' ? 'cancelled' : 'pending')
     });
-
     // Step 5: Delivered
-    const deliveredStatus = currentStatus === 'delivered' ? 'completed' : 'pending';
     timelineItems.push({
-      id: 'order-delivered',
+      id: 'delivered',
       title: 'Delivered',
-      description: 'Your order has been successfully delivered',
-      date: this.order?.updatedDate || this.getEstimatedDeliveryDate(),
       icon: 'fas fa-home',
-      status: deliveredStatus,
-      isLast: true
+      status: currentStatus === 'delivered' ? 'completed' : (currentStatus === 'cancelled' ? 'cancelled' : 'pending')
     });
-
+    // If cancelled, mark all as cancelled after the current status
+    if (currentStatus === 'cancelled') {
+      let found = false;
+      for (const item of timelineItems) {
+        if (item.id === this.getCurrentUiStatus()) found = true;
+        if (found) item.status = 'cancelled';
+      }
+    }
     return timelineItems;
   }
 
-  getCurrentOrderStatus(): string {
-    return this.order?.paymentStatus?.toLowerCase() || 'pending';
+  getProgressPercent(): number {
+    const currentStatus = this.getCurrentUiStatus();
+    const steps = ['pending', 'order_confirmed', 'packed', 'out_for_delivery', 'delivered'];
+    if (currentStatus === 'cancelled') return 0;
+    const idx = steps.indexOf(currentStatus);
+    if (idx === -1) return 0;
+    return ((idx + 1) / steps.length) * 100;
   }
 
-  getStatusLabelFromPaymentStatus(status: string): string {
-    const statusMap: { [key: string]: string } = {
-      'pending': 'Order Confirmed',
-      'paid': 'Payment Received',
-      'shipped': 'Order Shipped',
-      'delivered': 'Order Delivered',
-      'cancelled': 'Order Cancelled',
-      'payment failed': 'Payment Failed'
-    };
-    return statusMap[status] || 'Order Status Updated';
+  // --- Payment method display methods (for payment info card) ---
+  getPaymentMethodName(): string {
+    return this.order?.paymentMethod?.methodName || this.order?.paymentType || 'Not specified';
   }
 
-  getStatusDescriptionFromPaymentStatus(status: string): string {
-    const descriptionMap: { [key: string]: string } = {
-      'pending': 'Your order has been confirmed and is awaiting payment',
-      'paid': 'Payment has been successfully received and order is being processed',
-      'shipped': 'Your order has been shipped and is on its way',
-      'delivered': 'Your order has been successfully delivered',
-      'cancelled': 'Your order has been cancelled',
-      'payment failed': 'Payment processing failed. Please try again.'
-    };
-    return descriptionMap[status] || 'Order status has been updated';
+  getPaymentMethodType(): string {
+    return this.order?.paymentMethod?.type || this.order?.paymentType || 'Unknown';
   }
 
-  getStatusIconFromPaymentStatus(status: string): string {
-    const iconMap: { [key: string]: string } = {
-      'pending': 'fas fa-clock',
-      'paid': 'fas fa-credit-card',
-      'shipped': 'fas fa-shipping-fast',
-      'delivered': 'fas fa-box-open',
-      'cancelled': 'fas fa-ban',
-      'payment failed': 'fas fa-times-circle'
-    };
-    return iconMap[status] || 'fas fa-info-circle';
-  }
-
-  getStatusClassFromPaymentStatus(status: string): string {
-    const classMap: { [key: string]: string } = {
-      'pending': 'processing',
-      'paid': 'completed',
-      'shipped': 'completed',
-      'delivered': 'completed',
-      'cancelled': 'cancelled',
-      'payment failed': 'failed'
-    };
-    return classMap[status] || 'pending';
-  }
-
-  getStatusLabel(statusId: number): string {
-    // Map status IDs to human-readable labels
-    const statusMap: { [key: number]: string } = {
-      1: 'Order Confirmed',
-      2: 'Payment Received',
-      3: 'Processing',
-      4: 'Shipped',
-      5: 'Out for Delivery',
-      6: 'Delivered',
-      7: 'Cancelled',
-      8: 'Payment Failed'
-    };
-    return statusMap[statusId] || 'Status Updated';
-  }
-
-  getStatusDescription(statusId: number): string {
-    // Map status IDs to descriptions
-    const descriptionMap: { [key: number]: string } = {
-      1: 'Your order has been confirmed and is being prepared',
-      2: 'Payment has been successfully received',
-      3: 'Your order is being processed and prepared for shipping',
-      4: 'Your order has been shipped and is on its way',
-      5: 'Your order is out for delivery',
-      6: 'Your order has been successfully delivered',
-      7: 'Your order has been cancelled',
-      8: 'Payment processing failed'
-    };
-    return descriptionMap[statusId] || 'Order status has been updated';
-  }
-
-  getStatusIcon(statusId: number): string {
-    // Map status IDs to icons
-    const iconMap: { [key: number]: string } = {
-      1: 'fas fa-check-circle',
-      2: 'fas fa-credit-card',
-      3: 'fas fa-cog',
-      4: 'fas fa-shipping-fast',
-      5: 'fas fa-truck',
-      6: 'fas fa-box-open',
-      7: 'fas fa-ban',
-      8: 'fas fa-times-circle'
-    };
-    return iconMap[statusId] || 'fas fa-info-circle';
-  }
-
-  getStatusClass(statusId: number): string {
-    // Map status IDs to CSS classes
-    const classMap: { [key: number]: string } = {
-      1: 'completed',
-      2: 'completed',
-      3: 'processing',
-      4: 'completed',
-      5: 'processing',
-      6: 'completed',
-      7: 'cancelled',
-      8: 'failed'
-    };
-    return classMap[statusId] || 'pending';
-  }
-
-  isTimelineItemCompleted(item: any): boolean {
-    return item.status === 'completed';
-  }
-
-  isTimelineItemProcessing(item: any): boolean {
-    return item.status === 'processing';
-  }
-
-  isTimelineItemFailed(item: any): boolean {
-    return item.status === 'failed' || item.status === 'cancelled';
-  }
-
-  getTimelineItemClass(item: any): string {
-    let classes = 'timeline-item';
-    if (this.isTimelineItemCompleted(item)) {
-      classes += ' completed';
-    } else if (this.isTimelineItemProcessing(item)) {
-      classes += ' processing';
-    } else if (this.isTimelineItemFailed(item)) {
-      classes += ' failed';
+  getPaymentMethodIcon(): string {
+    const type = this.getPaymentMethodType().toLowerCase();
+    if (type === 'qr' || type === 'mobile wallet') {
+      return 'fas fa-qrcode';
+    } else if (type === 'credit' || type === 'credit card') {
+      return 'fas fa-credit-card';
     }
-    return classes;
+    return 'fas fa-money-bill-wave';
   }
 
-  getTimelineIconClass(item: any): string {
-    let classes = 'timeline-icon';
-    if (this.isTimelineItemCompleted(item)) {
-      classes += ' completed';
-    } else if (this.isTimelineItemProcessing(item)) {
-      classes += ' processing';
-    } else if (this.isTimelineItemFailed(item)) {
-      classes += ' failed';
+  getPaymentMethodClass(): string {
+    const type = this.getPaymentMethodType().toLowerCase();
+    if (type === 'qr' || type === 'mobile wallet') {
+      return 'payment-qr';
+    } else if (type === 'credit' || type === 'credit card') {
+      return 'payment-credit';
     }
-    return classes;
+    return 'payment-default';
   }
-
-  trackByTimelineItem(index: number, item: any): string {
-    return item.id;
-  }
-
-  getProgressSteps() {
-    // Example, adjust logic for your real statuses
-    return [
-      { label: 'Confirmed', icon: 'fas fa-check', completed: true, active: false },
-      { label: 'Packed', icon: 'fas fa-box', completed: true, active: false },
-      { label: 'Shipped', icon: 'fas fa-truck', completed: false, active: true },
-      { label: 'Delivered', icon: 'fas fa-home', completed: false, active: false }
-    ];
-  }
-  getProgressPercent() {
-    const currentStatus = this.getCurrentOrderStatus();
-
-    // Calculate progress based on the 5-step timeline
-    switch (currentStatus) {
-      case 'pending':
-        return 40; // Order Placed (100%) + Order Confirmed (40%) = 40%
-      case 'paid':
-        return 60; // Order Placed (100%) + Order Confirmed (100%) + Packed (60%) = 60%
-      case 'shipped':
-        return 80; // Order Placed (100%) + Order Confirmed (100%) + Packed (100%) + Out for Delivery (80%) = 80%
-      case 'delivered':
-        return 100; // All steps completed
-      case 'cancelled':
-      case 'payment failed':
-        return 20; // Only Order Placed completed
-      default:
-        return 20; // Default to Order Placed only
-    }
-  }
-
-  canRequestRefund(): boolean {
-    if (!this.order) return false;
-    
-    
-    const createdDate = new Date(this.order.createdDate);
-    const today = new Date();
-    const daysSinceOrder = (today.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
-    const refundWindowDays = 7;
-
-    // Refund allowed only within 7 days from order creation for now
-    return daysSinceOrder <= refundWindowDays;
-  }
-
-
 }

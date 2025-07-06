@@ -47,6 +47,9 @@ private UserEntity user;
     @JsonProperty("zipCode")
     private String zipcode;
 
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
+
     @Column(name = "created_date")
     private LocalDateTime createdDate;
 

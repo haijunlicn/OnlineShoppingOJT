@@ -190,6 +190,11 @@
                 <i class="fas fa-calendar-alt"></i>
                 {{ formatDate(order.createdDate) }}
               </p>
+              <!-- Payment Method Info -->
+              <p *ngIf="order.paymentMethod || order.paymentType" class="payment-info">
+                <i [class]="getPaymentMethodIcon(order)" [ngClass]="getPaymentMethodClass(order)"></i>
+                {{ getPaymentMethodName(order) }}
+              </p>
             </div>
             <div class="order-status">
               <span class="status-badge" [ngClass]="getOrderStatusClass(order.paymentStatus)">

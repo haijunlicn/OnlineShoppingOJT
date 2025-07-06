@@ -15,56 +15,93 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/orders")
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = {"http://localhost:4200", "http://127.0.0.1:4200"}, 
+             allowedHeaders = "*", 
+             methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 public class OrderController {
 
     @Autowired
     private OrderService orderService;
 
     @PostMapping("/create")
-    public OrderEntity createOrder(
+    public ResponseEntity<?> createOrder(
             @RequestPart("order") OrderDto dto,
             @RequestPart(value = "paymentImage", required = false) MultipartFile paymentImage
-    ) throws Exception {
-        System.out.println("order req : " + dto);
-        return orderService.createOrder(dto, paymentImage);
+    ) {
+        try {
+            System.out.println("order req : " + dto);
+            OrderEntity order = orderService.createOrder(dto, paymentImage);
+            return ResponseEntity.ok(order);
+        } catch (Exception e) {
+            System.err.println("Error creating order: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error creating order: " + e.getMessage());
+        }
     }
 
     @GetMapping("/user/{userId}")
-    public List<OrderDetailDto> getOrdersByUserId(@PathVariable Long userId) {
-        List<OrderEntity> orders = orderService.getOrdersByUserId(userId);
-        System.out.println("user Id : " + userId);
-        List<OrderDetailDto> orderListDTO = orders.stream()
-                .map(orderService::convertToOrderDetailDto)
-                .collect(Collectors.toList());
-        System.out.println("orders : " + orderListDTO);
-        return orderListDTO;
+    public ResponseEntity<List<OrderDetailDto>> getOrdersByUserId(@PathVariable Long userId) {
+        try {
+            List<OrderEntity> orders = orderService.getOrdersByUserId(userId);
+            System.out.println("user Id : " + userId);
+            List<OrderDetailDto> orderListDTO = orders.stream()
+                    .map(orderService::convertToOrderDetailDto)
+                    .collect(Collectors.toList());
+            System.out.println("orders : " + orderListDTO);
+            return ResponseEntity.ok(orderListDTO);
+        } catch (Exception e) {
+            System.err.println("Error getting orders: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @GetMapping("/{orderId}")
-    public OrderDetailDto getOrderById(@PathVariable Long orderId) {
-        OrderEntity order = orderService.getOrderById(orderId);
-        return orderService.convertToOrderDetailDto(order);
+    public ResponseEntity<OrderDetailDto> getOrderById(@PathVariable Integer orderId) {
+        try {
+            OrderEntity order = orderService.getOrderById(orderId);
+            return ResponseEntity.ok(orderService.convertToOrderDetailDto(order));
+        } catch (Exception e) {
+            System.err.println("Error getting order: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @GetMapping("/{orderId}/details")
-    public OrderDetailDto getOrderByIdWithDetails(@PathVariable Long orderId) {
-        OrderEntity order = orderService.getOrderByIdWithDetails(orderId);
-        System.out.println("order detail : " + orderService.convertToOrderDetailDto(order));
-        return orderService.convertToOrderDetailDto(order);
+    public ResponseEntity<OrderDetailDto> getOrderByIdWithDetails(@PathVariable Integer orderId) {
+        try {
+            OrderEntity order = orderService.getOrderByIdWithDetails(orderId);
+            return ResponseEntity.ok(orderService.convertToOrderDetailDto(order));
+        } catch (Exception e) {
+            System.err.println("Error getting order details: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PostMapping("/admin/bulk-status")
-    public ResponseEntity<?> bulkUpdateOrderStatus(@RequestBody BulkOrderStatusUpdateRequest request) {
-        orderService.bulkUpdateOrderStatus(request);
-        return ResponseEntity.ok("Order statuses updated successfully");
+    public ResponseEntity<List<OrderDetailDto>> bulkUpdateOrderStatus(@RequestBody BulkOrderStatusUpdateRequest request) {
+        try {
+            List<OrderEntity> updatedOrders = orderService.bulkUpdateOrderStatus(request);
+            List<OrderDetailDto> updatedOrderDtos = updatedOrders.stream()
+                .map(orderService::convertToOrderDetailDto)
+                .collect(Collectors.toList());
+            return ResponseEntity.ok(updatedOrderDtos);
+        } catch (Exception e) {
+            System.err.println("Error updating order status: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @GetMapping("")
-    public List<OrderDetailDto> getAllOrders() {
-        List<OrderEntity> orders = orderService.getAllOrders();
-        return orders.stream()
-                .map(orderService::convertToOrderDetailDto)
-                .collect(Collectors.toList());
+    public ResponseEntity<List<OrderDetailDto>> getAllOrders() {
+        try {
+            List<OrderEntity> orders = orderService.getAllOrders();
+            List<OrderDetailDto> orderDtos = orders.stream()
+                    .map(orderService::convertToOrderDetailDto)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(orderDtos);
+        } catch (Exception e) {
+            System.err.println("Error getting all orders: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
     }
 }
