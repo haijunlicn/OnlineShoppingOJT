@@ -56,7 +56,7 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<OrderDetailDto> getOrderById(@PathVariable Integer orderId) {
+    public ResponseEntity<OrderDetailDto> getOrderById(@PathVariable Long orderId) {
         try {
             OrderEntity order = orderService.getOrderById(orderId);
             return ResponseEntity.ok(orderService.convertToOrderDetailDto(order));
@@ -67,7 +67,7 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}/details")
-    public ResponseEntity<OrderDetailDto> getOrderByIdWithDetails(@PathVariable Integer orderId) {
+    public ResponseEntity<OrderDetailDto> getOrderByIdWithDetails(@PathVariable Long orderId) {
         try {
             OrderEntity order = orderService.getOrderByIdWithDetails(orderId);
             return ResponseEntity.ok(orderService.convertToOrderDetailDto(order));

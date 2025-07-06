@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class UserAddressDto {
-    private Integer id;
+    private Long id;
     private String address;
     private String township;
     @JsonProperty("lng")
@@ -22,6 +22,6 @@ public class UserAddressDto {
     private String zipcode;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
-    private Integer userId;
+    private Long userId;
     private String phoneNumber;
 }

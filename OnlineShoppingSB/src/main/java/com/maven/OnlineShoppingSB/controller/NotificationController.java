@@ -77,5 +77,4 @@ public class NotificationController {
         return userNotificationService.getInAppNotificationsForUser(userId);
     }
 
-
 }

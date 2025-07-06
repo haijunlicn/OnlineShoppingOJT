@@ -14,13 +14,13 @@ import java.time.LocalDateTime;
 public class UserAddressEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
 
-@ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "user_id", nullable = false,
-        columnDefinition = "INT(11)")
-private UserEntity user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false,
+            columnDefinition = "INT(11)")
+    private UserEntity user;
 
 
     @Column(name = "address", length = 255, nullable = false)

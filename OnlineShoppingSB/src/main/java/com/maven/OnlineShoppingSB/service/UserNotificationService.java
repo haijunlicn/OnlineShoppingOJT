@@ -49,10 +49,14 @@ public class UserNotificationService {
         dto.setReadAt(entity.getReadAt());
         dto.setMethod(entity.getMethod());
 
-        if (entity.getNotification() != null) {
-            dto.setTitle(entity.getNotification().getType().getTitleTemplate());
-            dto.setMessage(entity.getNotification().getType().getMessageTemplate());
-            dto.setMetadata(entity.getNotification().getMetadata()); // if exists
+        NotificationEntity notification = entity.getNotification();
+        if (notification != null) {
+            NotificationTypeEntity type = notification.getType();
+            Map<String, Object> metadata = jsonService.fromJson(notification.getMetadata());
+
+            dto.setTitle(jsonService.renderTemplate(type.getTitleTemplate(), metadata));
+            dto.setMessage(jsonService.renderTemplate(type.getMessageTemplate(), metadata));
+            dto.setMetadata(notification.getMetadata());
         }
 
         return dto;
