@@ -26,7 +26,7 @@ import { PaymentAcceptComponent } from './orderManagements/payment-accept/paymen
 import { OrderDetailComponent } from './orderManagements/order-detail/order-detail.component';
 import { OrderListComponent } from './orderManagements/order-list/order-list.component';
 import { RefundRequestFormComponent } from './refundManagements/refund-request-form/refund-request-form.component';
-
+import { NotificationListComponent } from './notification/notification-list/notification-list.component';
 
 const routes: Routes = [
 
@@ -45,17 +45,16 @@ const routes: Routes = [
   {
     path: 'auth/login',
     component: LoginComponent,
-
   },
   {
     path: 'auth/forgetPass',
     component: ForgetPasswordComponent,
   },
-  { path: 'about', component: AboutComponent, canActivate: [NoAuthGuard] },
-  { path: 'contact', component: ContactComponent, canActivate: [NoAuthGuard] },
-  { path: 'policy/privacy', component: PrivacyPolicyComponent, canActivate: [NoAuthGuard] },
-  { path: 'policy/terms-conditions', component: TermsConditionsComponent, canActivate: [NoAuthGuard] },
-  { path: 'policy/faq', component: FaqComponent, canActivate: [NoAuthGuard] },
+  { path: 'about', component: AboutComponent },
+  { path: 'contact', component: ContactComponent },
+  { path: 'policy/privacy', component: PrivacyPolicyComponent },
+  { path: 'policy/terms-conditions', component: TermsConditionsComponent },
+  { path: 'policy/faq', component: FaqComponent },
   // {
   //   path: 'customer/auth/verify/:id',
   //   component: VerifyComponent,canActivate: [NoAuthGuard],
@@ -92,13 +91,13 @@ const routes: Routes = [
     path: 'product/:id',
     component: ProductDetailComponent
   },
-  {path:'order',component:OrderManagementComponent},
-  {path:'payment',component:PaymentAcceptComponent},
-  {path:'orderDetail/:id',component:OrderDetailComponent, canActivate: [AuthGuard]},
-  {path:'orders',component:OrderListComponent, canActivate: [AuthGuard]},
   { path: 'order', component: OrderManagementComponent },
-  { path: 'refundRequest', component: RefundRequestFormComponent }
-
+  { path: 'payment', component: PaymentAcceptComponent },
+  { path: 'orderDetail/:id', component: OrderDetailComponent, canActivate: [AuthGuard] },
+  { path: 'orders', component: OrderListComponent, canActivate: [AuthGuard] },
+  { path: 'order', component: OrderManagementComponent, canActivate: [AuthGuard] },
+  { path: 'refundRequest/:orderId', component: RefundRequestFormComponent, canActivate: [AuthGuard] },
+  { path: 'notifications', component: NotificationListComponent, canActivate: [AuthGuard] },
 ];
 
 @NgModule({

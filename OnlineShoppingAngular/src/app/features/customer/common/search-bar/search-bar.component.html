@@ -1,0 +1,11 @@
+<div class="search-bar-container">
+    <form class="search-form" (submit)="$event.preventDefault(); onSearch()">
+        <div class="search-input-group">
+            <input type="text" class="search-input" [(ngModel)]="searchQuery" (keypress)="onKeyPress($event)"
+                placeholder="Search for products, brands, and more..." aria-label="Search">
+            <button type="submit" class="search-btn">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </form>
+</div>

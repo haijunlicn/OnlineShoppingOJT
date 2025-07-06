@@ -42,14 +42,15 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    public OrderDetailDto getOrderById(@PathVariable Integer orderId) {
+    public OrderDetailDto getOrderById(@PathVariable Long orderId) {
         OrderEntity order = orderService.getOrderById(orderId);
         return orderService.convertToOrderDetailDto(order);
     }
 
     @GetMapping("/{orderId}/details")
-    public OrderDetailDto getOrderByIdWithDetails(@PathVariable Integer orderId) {
+    public OrderDetailDto getOrderByIdWithDetails(@PathVariable Long orderId) {
         OrderEntity order = orderService.getOrderByIdWithDetails(orderId);
+        System.out.println("order detail : " + orderService.convertToOrderDetailDto(order));
         return orderService.convertToOrderDetailDto(order);
     }
 

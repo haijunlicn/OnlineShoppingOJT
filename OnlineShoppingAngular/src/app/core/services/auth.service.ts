@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, catchError, map, Observable, switchMap, tap, throwError } from 'rxjs';
 import { OtpDTO } from '../models/otpDTO';
-import { Router } from '@angular/router';
+import { Route, Router } from '@angular/router';
 import { LoginModalService } from './LoginModalService';
 import { RegisterModalService } from './RegisterModalService';
 import { AlertService } from './alert.service';
@@ -11,6 +11,7 @@ import { User } from '../models/User';
 import { jwtDecode } from 'jwt-decode';
 import { StorageService } from './StorageService';
 import { AccessControlService } from './AccessControl.service';
+import { AuthGuard } from '../guards/auth.guard';
 
 
 @Injectable({
@@ -55,7 +56,8 @@ export class AuthService {
       const email = decoded.sub;
       const roleType = decoded.roleType;
 
-      this.getCurrentUserByEmailAndRoleType(email, roleType).subscribe({
+      // this.getCurrentUserByEmailAndRoleType(email, roleType).subscribe({
+      this.fetchCurrentUser().subscribe({
         next: () => {
           this.userLoadedSubject.next(true); // ✅ Done
         },
@@ -93,6 +95,7 @@ export class AuthService {
       params: { userId: userId.toString() }
     });
   }
+
   login(email: string, password: string, rememberMe: boolean, roleType: number): Observable<User> {
     return this.http.post<any>(`${this.apiUrl}/login`, { email, password, rememberMe, roleType }).pipe(
       switchMap((res) => {
@@ -107,7 +110,8 @@ export class AuthService {
         sessionStorage.removeItem('token');
         this.storageService.setItem('token', token, rememberMe ? 'local' : 'session');
 
-        return this.getCurrentUserByEmailAndRoleType(email, 0); // return user observable
+        return this.fetchCurrentUser();
+        // return this.getCurrentUserByEmailAndRoleType(email, 0); // return user observable
       })
     );
   }
@@ -129,7 +133,7 @@ export class AuthService {
         };
 
         console.log("/me called : ", user);
-        
+
 
         return user;
       }),
@@ -140,9 +144,45 @@ export class AuthService {
     );
   }
 
+  fetchCurrentUser(): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/me`).pipe(
+      map((res: any) => {
+        const user: User = {
+          id: res.id,
+          email: res.email,
+          name: res.name,
+          phone: res.phone,
+          roleName: res.roleName,
+          isVerified: res.isVerified,
+          delFg: res.delFg,
+          createdDate: res.createdDate,
+          updatedDate: res.updatedDate,
+          permissions: res.permissions
+        };
+        return user;
+      }),
+      tap((user: User) => {
+        this.userSubject.next(user);
+        this.accessControlService.setPermissions(user.permissions!);
+      })
+    );
+  }
+
+
   logout() {
+    console.log('[Logout] Start logout process');
+
     this.storageService.removeItem('token');
     this.userSubject.next(null);
+    console.log('[Logout] Token removed and userSubject cleared');
+
+    const currentUrl = this.router.url;
+    console.log('[Logout] Redirecting back to current URL:', currentUrl);
+
+    // Redirect to the current URL to trigger AuthGuard
+    this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+      this.router.navigateByUrl(currentUrl);
+    });
   }
 
   // Optional: get current user snapshot
@@ -202,7 +242,8 @@ export class AuthService {
         const userEmail = decodedToken.sub;
 
         // ✅ Wait for user fetch to complete
-        return this.getCurrentUserByEmailAndRoleType(userEmail, 1);
+        // return this.getCurrentUserByEmailAndRoleType(userEmail, 1);
+        return this.fetchCurrentUser();
       }),
       catchError((error) => throwError(() => error))
     );

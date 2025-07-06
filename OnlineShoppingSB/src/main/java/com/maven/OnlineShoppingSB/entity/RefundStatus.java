@@ -1,12 +1,8 @@
 package com.maven.OnlineShoppingSB.entity;
 
 public enum RefundStatus {
-    REQUESTED,
-    APPROVED_PENDING_RETURN,
-    RETURN_IN_TRANSIT,
-    RETURN_RECEIVED,
-    RETURN_VERIFIED,
-    PARTIALLY_REFUNDED,
-    REFUNDED,
-    REJECTED
+    REQUESTED,             // Initial state, customer just submitted
+    IN_PROGRESS,           // Admin approved some or all, process ongoing
+    COMPLETED,             // All items processed (refunded, replaced, or rejected)
+    REJECTED               // All items rejected (optional — or can be merged into COMPLETED)
 }

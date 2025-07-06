@@ -39,6 +39,10 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
       ],
     },
     {
+      heading: "Refund Management",
+      items: [{ label: "Refund Requests", route: "/admin/refundRequestList", icon: "fas fa-credit-card" }],
+    },
+    {
       heading: "Policy Management",
       items: [
         { label: "Privacy and Terms & Condition", route: "/admin/policy/policy-list", icon: "fas fa-file-contract" },
@@ -51,7 +55,7 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
     },
   ]
 
-  constructor() {}
+  constructor() { }
 
   ngOnInit() {
     this.checkScreenSize()

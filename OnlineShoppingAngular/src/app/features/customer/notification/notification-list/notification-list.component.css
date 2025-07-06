@@ -1,0 +1,25 @@
+.notification-list {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.notification-list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.notification-list li {
+  padding: 1rem;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.notification-list li.unread {
+  background-color: #eef6ff;
+  font-weight: bold;
+}
+
+.notification-list li:hover {
+  background-color: #f5f5f5;
+}

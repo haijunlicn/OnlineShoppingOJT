@@ -204,8 +204,8 @@
               <div class="items-preview">
                 <div *ngFor="let item of order.items.slice(0, 4)" class="item-image">
                   <img 
-                    [src]="item.variant?.imgPath || item.product?.imgPath" 
-                    [alt]="item.product?.name"
+                    [src]="item.variant.imgPath || item.product.imgPath" 
+                    [alt]="item.product.name"
                     (error)="onImageError($event)">
                   <span class="item-qty">x{{ item.quantity }}</span>
                 </div>

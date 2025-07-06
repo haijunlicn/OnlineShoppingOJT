@@ -24,15 +24,10 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     private router: Router,
     private orderService: OrderService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    // Initialize user ID
-    // this.authService.initializeUserFromToken();
-    // const user = this.authService.getCurrentUser();
-    // this.currentUserId = user ? user.id : 0;
-
-        const sub = this.authService.user$.subscribe(user => {
+    const sub = this.authService.user$.subscribe(user => {
       this.currentUserId = user ? user.id : 0;
       console.log('Current userId from subscription:', this.currentUserId);
     });
@@ -62,6 +57,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
       next: (order: OrderDetail) => {
         this.order = order;
         this.loading = false;
+        console.log("Order details loaded:", this.order);
       },
       error: (err) => {
         console.error('Error loading order details:', err);
@@ -75,7 +71,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   getOrderStatusClass(status: string | null | undefined): string {
     if (!status) return 'badge-primary';
-    
+
     switch (status.toLowerCase()) {
       case 'paid':
         return 'badge-success';
@@ -96,7 +92,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   getOrderStatusIcon(status: string | null | undefined): string {
     if (!status) return 'fas fa-info-circle';
-    
+
     switch (status.toLowerCase()) {
       case 'paid':
         return 'fas fa-check-circle';
@@ -138,7 +134,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   getDeliveryMethodIcon(methodName: string | null | undefined): string {
     if (!methodName) return 'fas fa-shipping-fast';
-    
+
     const name = methodName.toLowerCase();
     if (name.includes('bike') || name.includes('bicycle')) {
       return 'fas fa-bicycle';
@@ -158,11 +154,11 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   getEstimatedDeliveryDate(): string {
     if (!this.order?.createdDate) return '';
-    
+
     const orderDate = new Date(this.order.createdDate);
     const deliveryDate = new Date(orderDate);
     deliveryDate.setDate(deliveryDate.getDate() + 5); // 5 days from order date
-    
+
     return deliveryDate.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -189,6 +185,11 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     console.log('Contact support for order:', this.orderId);
   }
 
+  goToRefundForm(): void {
+    if (!this.order?.id) return; // Safety check
+    this.router.navigate(['/customer/refundRequest', this.order.id]);
+  }
+
   getTotalItems(): number {
     if (!this.order?.items) return 0;
     return this.order.items.reduce((total, item) => total + (item.quantity || 0), 0);
@@ -211,7 +212,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   getTimelineItems(): any[] {
     const timelineItems = [];
     const currentStatus = this.getCurrentOrderStatus();
-    
+
     // Step 1: Order Placed (Always completed)
     timelineItems.push({
       id: 'order-placed',
@@ -224,8 +225,8 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     });
 
     // Step 2: Order Confirmed
-    const confirmedStatus = currentStatus === 'pending' || currentStatus === 'paid' || 
-                           currentStatus === 'shipped' || currentStatus === 'delivered' ? 'completed' : 'pending';
+    const confirmedStatus = currentStatus === 'pending' || currentStatus === 'paid' ||
+      currentStatus === 'shipped' || currentStatus === 'delivered' ? 'completed' : 'pending';
     timelineItems.push({
       id: 'order-confirmed',
       title: 'Order Confirmed',
@@ -236,8 +237,8 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     });
 
     // Step 3: Packed
-    const packedStatus = currentStatus === 'paid' || currentStatus === 'shipped' || 
-                        currentStatus === 'delivered' ? 'completed' : 'pending';
+    const packedStatus = currentStatus === 'paid' || currentStatus === 'shipped' ||
+      currentStatus === 'delivered' ? 'completed' : 'pending';
     timelineItems.push({
       id: 'order-packed',
       title: 'Packed',
@@ -436,7 +437,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   }
   getProgressPercent() {
     const currentStatus = this.getCurrentOrderStatus();
-    
+
     // Calculate progress based on the 5-step timeline
     switch (currentStatus) {
       case 'pending':
@@ -454,4 +455,19 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
         return 20; // Default to Order Placed only
     }
   }
+
+  canRequestRefund(): boolean {
+    if (!this.order) return false;
+    
+    
+    const createdDate = new Date(this.order.createdDate);
+    const today = new Date();
+    const daysSinceOrder = (today.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
+    const refundWindowDays = 7;
+
+    // Refund allowed only within 7 days from order creation for now
+    return daysSinceOrder <= refundWindowDays;
+  }
+
+
 }

@@ -9,6 +9,7 @@
     ]
   },
   "files": [
+    "src/polyfills.ts",
     "src/main.ts",
     "src/main.server.ts",
     "src/server.ts"

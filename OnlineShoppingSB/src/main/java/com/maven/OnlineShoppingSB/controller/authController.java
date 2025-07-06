@@ -6,13 +6,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.maven.OnlineShoppingSB.config.CustomUserDetails;
 import com.maven.OnlineShoppingSB.dto.userDTO;
 import com.maven.OnlineShoppingSB.entity.UserEntity;
 import com.maven.OnlineShoppingSB.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -180,61 +183,49 @@ public class authController {
         try {
             System.out.println("[DEBUG] Received login request: " + loginRequest);
 
-            Integer requestedRoleType = loginRequest.getRoleType();
-            System.out.println("[DEBUG] Requested roleType: " + requestedRoleType);
-            if (requestedRoleType == null) {
-                System.out.println("[DEBUG] Role type is null - returning BAD_REQUEST");
-                return ResponseEntity.badRequest().body(Map.of("message", "Role type must be provided."));
+            // Load user by email only
+            UserDetails userDetails = customUserDetailsService.loadUserByUsername(loginRequest.getEmail());
+
+            if (!(userDetails instanceof CustomUserDetails)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("message", "Invalid user details"));
             }
 
-            Optional<UserEntity> optionalUser = userRepo.findByEmailAndRoleType(loginRequest.getEmail(), requestedRoleType);
-            System.out.println("[DEBUG] User lookup by email and roleType done");
+            UserEntity user = ((CustomUserDetails) userDetails).getUser();
 
-            if (optionalUser.isEmpty()) {
-                System.out.println("[DEBUG] User not found with email and roleType - returning NOT_FOUND");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("message", "User not found with this email and role type."));
+            // Check roleType matches request
+            if (!user.getRole().getType().equals(loginRequest.getRoleType())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("message", "User role mismatch"));
             }
-
-            System.out.println("looked up user : " + optionalUser);
-
-            UserEntity user = optionalUser.get();
-            System.out.println("[DEBUG] Found user: " + user);
 
             if (Boolean.FALSE.equals(user.getIsVerified())) {
-                System.out.println("[DEBUG] User email not verified - returning UNAUTHORIZED");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Map.of("message", "Email is not verified.", "id", user.getId()));
             }
-
-            System.out.println("[DEBUG] Authenticating user");
-//            Authentication auth = authManager.authenticate(
-//                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
-//            );
-
-            UserDetails userDetails = customUserDetailsService.loadUserByUsernameAndRoleType(
-                    loginRequest.getEmail(),
-                    loginRequest.getRoleType()
-            );
 
             if (!passwordEncoder.matches(loginRequest.getPassword(), userDetails.getPassword())) {
                 throw new BadCredentialsException("Invalid credentials");
             }
 
-            Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, loginRequest.getPassword(), userDetails.getAuthorities());
+            Authentication auth = new UsernamePasswordAuthenticationToken(
+                    userDetails,
+                    null,
+                    userDetails.getAuthorities()
+            );
             SecurityContextHolder.getContext().setAuthentication(auth);
-
 
             System.out.println("[DEBUG] Authentication successful");
-
-            SecurityContextHolder.getContext().setAuthentication(auth);
-            System.out.println("[DEBUG] SecurityContext updated with authentication");
 
             String token = jwtService.generateTokenWithUserDetails(user);
             System.out.println("[DEBUG] JWT token generated");
 
             return ResponseEntity.ok(Map.of("token", token));
 
+        } catch (UsernameNotFoundException e) {
+            System.out.println("[DEBUG] User not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "User not found."));
         } catch (BadCredentialsException e) {
             System.out.println("[DEBUG] BadCredentialsException caught: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -246,33 +237,291 @@ public class authController {
         }
     }
 
+
+//    @PostMapping("/login")
+//    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+//        try {
+//            System.out.println("[DEBUG] Received login request: " + loginRequest);
+//
+//            // Load UserDetails by email only (no roleType)
+//            UserDetails userDetails = customUserDetailsService.loadUserByUsername(loginRequest.getEmail());
+//
+//            // Extract UserEntity from CustomUserDetails to check verified flag and for token generation
+//            UserEntity user;
+//            if (userDetails instanceof CustomUserDetails) {
+//                user = ((CustomUserDetails) userDetails).getUser();
+//            } else {
+//                // If not your CustomUserDetails (should not happen), reject
+//                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                        .body(Map.of("message", "Invalid user details"));
+//            }
+//
+//            // Check if user email is verified
+//            if (Boolean.FALSE.equals(user.getIsVerified())) {
+//                System.out.println("[DEBUG] User email not verified - returning UNAUTHORIZED");
+//                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                        .body(Map.of("message", "Email is not verified.", "id", user.getId()));
+//            }
+//
+//            // Check password matches
+//            if (!passwordEncoder.matches(loginRequest.getPassword(), userDetails.getPassword())) {
+//                throw new BadCredentialsException("Invalid credentials");
+//            }
+//
+//            // Create Authentication token and set in context
+//            Authentication auth = new UsernamePasswordAuthenticationToken(
+//                    userDetails,
+//                    null,  // credentials null after auth
+//                    userDetails.getAuthorities()
+//            );
+//            SecurityContextHolder.getContext().setAuthentication(auth);
+//
+//            System.out.println("[DEBUG] Authentication successful");
+//
+//            // Generate JWT token using the full user entity
+//            String token = jwtService.generateTokenWithUserDetails(user);
+//            System.out.println("[DEBUG] JWT token generated");
+//
+//            return ResponseEntity.ok(Map.of("token", token));
+//
+//        } catch (UsernameNotFoundException e) {
+//            System.out.println("[DEBUG] User not found: " + e.getMessage());
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//                    .body(Map.of("message", "User not found."));
+//        } catch (BadCredentialsException e) {
+//            System.out.println("[DEBUG] BadCredentialsException caught: " + e.getMessage());
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                    .body(Map.of("message", "Invalid credentials."));
+//        } catch (Exception e) {
+//            System.out.println("[DEBUG] Exception caught: " + e.getMessage());
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                    .body(Map.of("message", "An error occurred: " + e.getMessage()));
+//        }
+//    }
+
+
+//    @PostMapping("/login")
+//    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+//        try {
+//            System.out.println("[DEBUG] Received login request: " + loginRequest);
+//
+//            Integer requestedRoleType = loginRequest.getRoleType();
+//            System.out.println("[DEBUG] Requested roleType: " + requestedRoleType);
+//            if (requestedRoleType == null) {
+//                System.out.println("[DEBUG] Role type is null - returning BAD_REQUEST");
+//                return ResponseEntity.badRequest().body(Map.of("message", "Role type must be provided."));
+//            }
+//
+//            Optional<UserEntity> optionalUser = userRepo.findByEmailAndRoleType(loginRequest.getEmail(), requestedRoleType);
+//            System.out.println("[DEBUG] User lookup by email and roleType done");
+//
+//            if (optionalUser.isEmpty()) {
+//                System.out.println("[DEBUG] User not found with email and roleType - returning NOT_FOUND");
+//                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//                        .body(Map.of("message", "User not found with this email and role type."));
+//            }
+//
+//            System.out.println("looked up user : " + optionalUser);
+//
+//            UserEntity user = optionalUser.get();
+//            System.out.println("[DEBUG] Found user: " + user);
+//
+//            if (Boolean.FALSE.equals(user.getIsVerified())) {
+//                System.out.println("[DEBUG] User email not verified - returning UNAUTHORIZED");
+//                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                        .body(Map.of("message", "Email is not verified.", "id", user.getId()));
+//            }
+//
+//            System.out.println("[DEBUG] Authenticating user");
+
+    /// /            Authentication auth = authManager.authenticate(
+    /// /                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
+    /// /            );
+//
+//            UserDetails userDetails = customUserDetailsService.loadUserByUsernameAndRoleType(
+//                    loginRequest.getEmail(),
+//                    loginRequest.getRoleType()
+//            );
+//
+//            if (!passwordEncoder.matches(loginRequest.getPassword(), userDetails.getPassword())) {
+//                throw new BadCredentialsException("Invalid credentials");
+//            }
+//
+//            Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, loginRequest.getPassword(), userDetails.getAuthorities());
+//            SecurityContextHolder.getContext().setAuthentication(auth);
+//
+//
+//            System.out.println("[DEBUG] Authentication successful");
+//
+//            SecurityContextHolder.getContext().setAuthentication(auth);
+//            System.out.println("[DEBUG] SecurityContext updated with authentication");
+//
+//            String token = jwtService.generateTokenWithUserDetails(user);
+//            System.out.println("[DEBUG] JWT token generated");
+//
+//            return ResponseEntity.ok(Map.of("token", token));
+//
+//        } catch (BadCredentialsException e) {
+//            System.out.println("[DEBUG] BadCredentialsException caught: " + e.getMessage());
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                    .body(Map.of("message", "Invalid credentials."));
+//        } catch (Exception e) {
+//            System.out.println("[DEBUG] Exception caught: " + e.getMessage());
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                    .body(Map.of("message", "An error occurred: " + e.getMessage()));
+//        }
+//    }
+
+//    @GetMapping("/me")
+//    public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal CustomUserDetails principal) {
+//        System.out.println("[DEBUG] /me called");
+//
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//        System.out.println("[DEBUG] SecurityContext authentication: " + auth);
+//        if (auth != null) {
+//            System.out.println("[DEBUG] Auth principal: " + auth.getPrincipal());
+//        }
+//
+//
+//        if (principal == null) {
+//            System.out.println("[DEBUG] principal is null - Unauthorized");
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+//        }
+//
+//        System.out.println("[DEBUG] principal found: " + principal);
+//
+//        UserEntity user = principal.getUser();
+//        if (user == null) {
+//            System.out.println("[DEBUG] user from principal is null");
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized - user missing");
+//        }
+//
+//        System.out.println("[DEBUG] user entity: " + user);
+//
+//        userDTO userDTO = new userDTO();
+//        try {
+//            userDTO.setId(user.getId());
+//            userDTO.setEmail(user.getEmail());
+//            userDTO.setName(user.getName());
+//            userDTO.setPhone(user.getPhone());
+//            userDTO.setIsVerified(user.getIsVerified());
+//            userDTO.setDelFg(user.getDelFg());
+//            userDTO.setCreatedDate(user.getCreatedDate());
+//            userDTO.setUpdatedDate(user.getUpdatedDate());
+//            userDTO.setRoleName(user.getRole() != null ? user.getRole().getName() : null);
+//
+//            System.out.println("[DEBUG] userDTO basic fields set");
+//
+//            if (user.getRole() != null && user.getRole().getPermissions() != null) {
+//                List<String> permissionNames = user.getRole().getPermissions()
+//                        .stream()
+//                        .map(p -> p.getCode())
+//                        .toList();
+//                userDTO.setPermissions(permissionNames);
+//                System.out.println("[DEBUG] permissions set: " + permissionNames);
+//            } else {
+//                System.out.println("[DEBUG] role or permissions null");
+//            }
+//        } catch (Exception e) {
+//            System.out.println("[ERROR] Exception building userDTO: " + e.getMessage());
+//            e.printStackTrace();
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error preparing user data");
+//        }
+//
+//        System.out.println("[DEBUG] returning userDTO: " + userDTO);
+//        return ResponseEntity.ok(userDTO);
+//    }
+    @Transactional(readOnly = true)
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(@RequestParam String email, @RequestParam Integer roleType) {
-        UserEntity user = userRepo.findByEmailAndRoleType(email, roleType)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    public ResponseEntity<?> getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("[DEBUG] Authentication in /me: " + auth);
 
-        userDTO userDTO = new userDTO();
-        userDTO.setId(user.getId());
-        userDTO.setEmail(user.getEmail());
-        userDTO.setName(user.getName());
-        userDTO.setPhone(user.getPhone());
-        userDTO.setIsVerified(user.getIsVerified());
-        userDTO.setDelFg(user.getDelFg());
-        userDTO.setCreatedDate(user.getCreatedDate());
-        userDTO.setUpdatedDate(user.getUpdatedDate());
-        userDTO.setRoleName(user.getRole() != null ? user.getRole().getName() : null);
-
-        // 🟩 NEW: Set permissions from role
-        if (user.getRole() != null && user.getRole().getPermissions() != null) {
-            List<String> permissionNames = user.getRole().getPermissions()
-                    .stream()
-                    .map(p -> p.getCode())
-                    .toList();
-            userDTO.setPermissions(permissionNames); // ensure this field exists in userDTO
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal() == "anonymousUser") {
+            System.out.println("[DEBUG] User is not authenticated or principal is anonymousUser");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         }
 
+        Object principalObj = auth.getPrincipal();
+        if (!(principalObj instanceof CustomUserDetails)) {
+            System.out.println("[DEBUG] Principal is NOT an instance of CustomUserDetails but " + principalObj.getClass().getName());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized - invalid principal");
+        }
+
+        CustomUserDetails principal = (CustomUserDetails) principalObj;
+
+        // Then build userDTO as before...
+
+        UserEntity user = principal.getUser();
+        if (user == null) {
+            System.out.println("[DEBUG] user from principal is null");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized - user missing");
+        }
+
+        System.out.println("[DEBUG] user entity: " + user);
+
+        userDTO userDTO = new userDTO();
+        try {
+            userDTO.setId(user.getId());
+            userDTO.setEmail(user.getEmail());
+            userDTO.setName(user.getName());
+            userDTO.setPhone(user.getPhone());
+            userDTO.setIsVerified(user.getIsVerified());
+            userDTO.setDelFg(user.getDelFg());
+            userDTO.setCreatedDate(user.getCreatedDate());
+            userDTO.setUpdatedDate(user.getUpdatedDate());
+            userDTO.setRoleName(user.getRole() != null ? user.getRole().getName() : null);
+
+            System.out.println("[DEBUG] userDTO basic fields set");
+
+            if (user.getRole() != null && user.getRole().getPermissions() != null) {
+                List<String> permissionNames = user.getRole().getPermissions()
+                        .stream()
+                        .map(p -> p.getCode())
+                        .toList();
+                userDTO.setPermissions(permissionNames);
+                System.out.println("[DEBUG] permissions set: " + permissionNames);
+            } else {
+                System.out.println("[DEBUG] role or permissions null");
+            }
+        } catch (Exception e) {
+            System.out.println("[ERROR] Exception building userDTO: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error preparing user data");
+        }
+
+        System.out.println("[DEBUG] returning userDTO: " + userDTO);
         return ResponseEntity.ok(userDTO);
     }
+
+
+//    @GetMapping("/me")
+//    public ResponseEntity<?> getCurrentUser(@RequestParam String email, @RequestParam Integer roleType) {
+//        UserEntity user = userRepo.findByEmailAndRoleType(email, roleType)
+//                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+//
+//        userDTO userDTO = new userDTO();
+//        userDTO.setId(user.getId());
+//        userDTO.setEmail(user.getEmail());
+//        userDTO.setName(user.getName());
+//        userDTO.setPhone(user.getPhone());
+//        userDTO.setIsVerified(user.getIsVerified());
+//        userDTO.setDelFg(user.getDelFg());
+//        userDTO.setCreatedDate(user.getCreatedDate());
+//        userDTO.setUpdatedDate(user.getUpdatedDate());
+//        userDTO.setRoleName(user.getRole() != null ? user.getRole().getName() : null);
+//
+//        // 🟩 NEW: Set permissions from role
+//        if (user.getRole() != null && user.getRole().getPermissions() != null) {
+//            List<String> permissionNames = user.getRole().getPermissions()
+//                    .stream()
+//                    .map(p -> p.getCode())
+//                    .toList();
+//            userDTO.setPermissions(permissionNames); // ensure this field exists in userDTO
+//        }
+//
+//        return ResponseEntity.ok(userDTO);
+//    }
 
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@RequestBody Map<String, String> body) {

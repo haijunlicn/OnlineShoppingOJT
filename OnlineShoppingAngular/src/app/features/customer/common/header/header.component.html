@@ -6,37 +6,31 @@
         <div class="logo luxury-logo">
           <span class="logo-icon"><i class="fas fa-shopping-bag"></i></span>
           <span class="logo-main">Britium</span>
-          <span class="logo-sub">Gallary</span>
+          <span class="logo-sub">Gallery</span>
         </div>
       </div>
 
-      <!-- Move your existing category dropdown component here -->
-      <div class="col-auto d-none d-lg-block">
-        <app-category-dropdown [categories]="categories" (categorySelected)="onCategorySelected($event)"
-          (viewAllCategories)="onViewAllCategories()">
-        </app-category-dropdown>
-      </div>
-
-      <!-- Desktop Navigation -->
+      <!-- Desktop Navigation with Shop Dropdown -->
       <div class="col d-none d-lg-block">
         <nav class="main-nav">
           <a routerLink="/customer/general/home" class="nav-item">Home</a>
-          <a routerLink="/customer/productList" class="nav-item">Shop</a>
+          
+          <!-- Shop Dropdown Component -->
+          <app-category-dropdown 
+            [categories]="categories" 
+            (categorySelected)="onCategorySelected($event)"
+            (viewAllCategories)="onViewAllCategories()">
+          </app-category-dropdown>
+          
           <a href="/customer/about" class="nav-item">About</a>
           <a href="/customer/contact" class="nav-item">Contact</a>
         </nav>
       </div>
 
-      <!-- Search Bar (centered, desktop only) -->
-      <div class="col d-none d-lg-block">
-        <form class="header-search-form" (submit)="$event.preventDefault(); onSearch()">
-          <input #searchInput type="text" class="header-search-input"
-            placeholder="Search for products, brands, and more..." aria-label="Search">
-          <button type="submit" class="header-search-btn"><i class="fas fa-search"></i></button>
-        </form>
-      </div>
+      <!-- Spacer for better distribution -->
+      <div class="col d-none d-lg-block"></div>
 
-      <!-- Action Buttons -->
+      <!-- Action Buttons - More Spaced Out -->
       <div class="col-auto">
         <div class="header-actions">
           <!-- Search Icon (mobile only) -->
@@ -47,35 +41,43 @@
           <!-- Auth Section - Conditional Rendering -->
           <ng-container *ngIf="!isLoggedIn || !isCustomer">
             <!-- Not Logged In - Show Auth Buttons -->
-            <button class="auth-btn auth-btn-outline d-none d-md-inline-block" (click)="onRegister()">Register</button>
-            <button class="auth-btn auth-btn-filled d-none d-md-inline-block" (click)="onSignIn()">Sign In</button>
+            <button class="auth-btn auth-btn-outline d-none d-md-inline-block" (click)="onRegister()">
+              Register
+            </button>
+            <button class="auth-btn auth-btn-filled d-none d-md-inline-block" (click)="onSignIn()">
+              Sign In
+            </button>
           </ng-container>
 
           <ng-container *ngIf="isLoggedIn && isCustomer && currentUser">
             <!-- Wishlist -->
-            <button class="action-btn" (click)="onWishlist()">
+            <button class="action-btn" (click)="onWishlist()" title="Wishlist">
               <i class="fas fa-heart"></i>
             </button>
 
             <!-- Cart -->
-            <button class="action-btn cart-btn" (click)="onCart()">
+            <button class="action-btn cart-btn" (click)="onCart()" title="Shopping Cart">
               <i class="fas fa-shopping-bag"></i>
               <span class="cart-count" *ngIf="cartItemCount > 0">{{ cartItemCount }}</span>
             </button>
 
+            <!-- Notifications -->
+            <app-notification-bell></app-notification-bell>
+
+            <!-- Profile Dropdown -->
             <div class="profile-dropdown-container">
               <button class="profile-btn d-none d-md-flex" (click)="toggleProfileDropdown()">
-                <div class="profile-avatar bg-primary text-white">
+                <div class="profile-avatar">
                   {{ getUserInitials(currentUser.name) }}
                 </div>
-                <span class="profile-name ms-2">{{ currentUser.name.split(' ')[0] }}</span>
-                <i class="fas fa-chevron-down profile-chevron ms-1" [class.rotated]="isProfileDropdownOpen"></i>
+                <span class="profile-name">{{ currentUser.name.split(' ')[0] }}</span>
+                <i class="fas fa-chevron-down profile-chevron" [class.rotated]="isProfileDropdownOpen"></i>
               </button>
 
-              <!-- Profile Dropdown -->
+              <!-- Profile Dropdown Menu -->
               <div class="profile-dropdown" [class.show]="isProfileDropdownOpen">
                 <div class="profile-dropdown-header">
-                  <div class="profile-avatar-large bg-primary text-white">
+                  <div class="profile-avatar-large">
                     {{ getUserInitials(currentUser.name) }}
                   </div>
                   <div class="profile-info">
@@ -91,7 +93,7 @@
                     <i class="fas fa-user"></i>
                     <span>Profile</span>
                   </button>
-                  <button class="profile-menu-item">
+                  <button class="profile-menu-item" (click)="goToOrderList()">
                     <i class="fas fa-shopping-bag"></i>
                     <span>My Orders</span>
                   </button>
@@ -120,44 +122,51 @@
     </div>
 
     <!-- Mobile Search Bar -->
-    <div class="mobile-search-bar d-lg-none" *ngIf="isMobileSearchOpen">
-      <form class="header-search-form" (submit)="$event.preventDefault(); onSearch()">
-        <input #mobileSearchInput type="text" class="header-search-input"
-          placeholder="Search for products, brands, and more..." aria-label="Search">
-        <button type="submit" class="header-search-btn"><i class="fas fa-search"></i></button>
-      </form>
+    <div class="mobile-search-container d-lg-none" *ngIf="isMobileSearchOpen">
+      <app-search-bar (search)="onSearch($event)"></app-search-bar>
     </div>
 
     <!-- Mobile Navigation -->
     <div class="mobile-menu" [class.open]="isMenuOpen">
       <nav class="mobile-nav">
-        <a routerLink="/customer/general/home" class="mobile-nav-item">Home</a>
-        <a routerLink="/customer/productList" class="mobile-nav-item">Shop</a>
-
+        <a routerLink="/customer/general/home" class="mobile-nav-item" (click)="toggleMenu()">
+          <i class="fas fa-home"></i>
+          Home
+        </a>
+        
         <!-- Mobile Categories Link -->
-        <a routerLink="/customer/productList" class="mobile-category-link">
-          <i class="pi pi-th-large"></i>
-          Browse Categories
+        <a routerLink="/customer/productList" class="mobile-nav-item" (click)="toggleMenu()">
+          <i class="fas fa-store"></i>
+          Shop
         </a>
 
-        <a href="/customer/about" class="mobile-nav-item">About</a>
-        <a href="/customer/contact" class="mobile-nav-item">Contact</a>
+        <a href="/customer/about" class="mobile-nav-item" (click)="toggleMenu()">
+          <i class="fas fa-info-circle"></i>
+          About
+        </a>
+        
+        <a href="/customer/contact" class="mobile-nav-item" (click)="toggleMenu()">
+          <i class="fas fa-envelope"></i>
+          Contact
+        </a>
       </nav>
 
       <!-- Mobile Auth Section -->
       <div class="mobile-auth">
         <ng-container *ngIf="!isLoggedIn || !isCustomer">
-          <button class="mobile-auth-btn outline" (click)="onRegister()">Register</button>
-          <button class="mobile-auth-btn filled" (click)="onSignIn()">Sign In</button>
+          <button class="mobile-auth-btn outline" (click)="onRegister(); toggleMenu()">
+            Register
+          </button>
+          <button class="mobile-auth-btn filled" (click)="onSignIn(); toggleMenu()">
+            Sign In
+          </button>
         </ng-container>
 
         <ng-container *ngIf="isLoggedIn && isCustomer && currentUser">
           <div class="mobile-profile-section">
             <div class="mobile-profile-header">
               <div class="profile-avatar-large">
-                <div class="avatar-initials">
-                  {{ getUserInitials(currentUser.name) }}
-                </div>
+                {{ getUserInitials(currentUser.name) }}
               </div>
               <div class="profile-info">
                 <div class="profile-name-full">{{ currentUser.name }}</div>
@@ -166,19 +175,19 @@
             </div>
 
             <div class="mobile-profile-menu">
-              <button class="mobile-profile-item" (click)="onProfile()">
+              <button class="mobile-profile-item" (click)="onProfile(); toggleMenu()">
                 <i class="fas fa-user"></i>
                 <span>Profile</span>
               </button>
-              <a class="mobile-profile-item" routerLink="/customer/orders">
+              <a class="mobile-profile-item" routerLink="/customer/orders" (click)="toggleMenu()">
                 <i class="fas fa-shopping-bag"></i>
                 <span>My Orders</span>
               </a>
-              <button class="mobile-profile-item" (click)="onSettings()">
+              <button class="mobile-profile-item" (click)="onSettings(); toggleMenu()">
                 <i class="fas fa-cog"></i>
                 <span>Settings</span>
               </button>
-              <button class="mobile-profile-item logout" (click)="onLogout()">
+              <button class="mobile-profile-item logout" (click)="onLogout(); toggleMenu()">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
               </button>

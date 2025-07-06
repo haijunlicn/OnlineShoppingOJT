@@ -67,6 +67,8 @@ import { ProductDetailComponent } from './product_management/product-detail/prod
 import { StockUpdateModalComponent } from './product_management/stock-update-modal/stock-update-modal.component';
 import { SaleAnalysisComponent } from './policy-management/sale-analysis/sale-analysis.component';
 import { AdminAccountCreateComponent } from './roleAndPermission/admin-account-create/admin-account-create.component';
+import { RefundRequestListComponent } from './RefundManagement/refund-request-list/refund-request-list.component';
+import { RefundRequestDetailComponent } from './RefundManagement/refund-request-detail/refund-request-detail.component';
 
 
 @NgModule({
@@ -117,6 +119,8 @@ import { AdminAccountCreateComponent } from './roleAndPermission/admin-account-c
     StockUpdateModalComponent,
     SaleAnalysisComponent,
     AdminAccountCreateComponent,
+    RefundRequestListComponent,
+    RefundRequestDetailComponent,
   ],
   imports: [
     CommonModule,

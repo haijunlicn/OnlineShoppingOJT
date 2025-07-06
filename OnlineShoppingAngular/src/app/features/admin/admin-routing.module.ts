@@ -34,6 +34,8 @@ import { ProductEditComponent } from './product_management/product-edit/product-
 import { SaleAnalysisComponent } from './policy-management/sale-analysis/sale-analysis.component';
 import { PermissionGuard } from '@app/core/guards/permission.guard';
 import { AdminAccountCreateComponent } from './roleAndPermission/admin-account-create/admin-account-create.component';
+import { RefundRequestListComponent } from './RefundManagement/refund-request-list/refund-request-list.component';
+import { RefundRequestDetailComponent } from './RefundManagement/refund-request-detail/refund-request-detail.component';
 
 
 const routes: Routes = [
@@ -208,12 +210,32 @@ const routes: Routes = [
     }
   },
 
-{path:'storelocation',component:StoreAddressComponent},
-  {path:'AdminOrder',component:AdminOrdersControlComponent},
+  { path: 'storelocation', component: StoreAddressComponent },
+  { path: 'AdminOrder', component: AdminOrdersControlComponent },
   {
-  path: 'admin/orderDetailAdmin/:id',
-  component: AdminOrdersDetailComponent
-}
+    path: 'admin/orderDetailAdmin/:id',
+    component: AdminOrdersDetailComponent
+  },
+  {
+    path: 'refundRequestList',
+    component: RefundRequestListComponent,
+    canActivate: [AdminAuthGuard, PermissionGuard],
+    data: {
+      permissionGroups: [
+        ['SUPERADMIN_PERMISSION']
+      ]
+    }
+  },
+  {
+    path: 'refundRequestDetail/:id',
+    component: RefundRequestDetailComponent,
+    canActivate: [AdminAuthGuard, PermissionGuard],
+    data: {
+      permissionGroups: [
+        ['SUPERADMIN_PERMISSION']
+      ]
+    }
+  },
 
 ];
 

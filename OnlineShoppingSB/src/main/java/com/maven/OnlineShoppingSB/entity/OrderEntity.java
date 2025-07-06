@@ -17,7 +17,7 @@ public class OrderEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     // Order belongs to a user
     @ManyToOne(fetch = FetchType.LAZY)

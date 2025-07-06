@@ -84,9 +84,8 @@
           <div class="items-list">
             <div *ngFor="let item of order.items" class="item-card">
               <div class="item-image">
-                <img [src]="item.variant.imgPath || item.product.imgPath" 
-                     [alt]="item.product.name"
-                     (error)="onImageError($event)">
+                <img [src]="item.variant.imgPath || item.product.imgPath" [alt]="item.product.name"
+                  (error)="onImageError($event)">
               </div>
               <div class="item-details">
                 <h3 class="item-name">{{ item.product.name }}</h3>
@@ -192,9 +191,7 @@
           </div>
           <div class="info-content">
             <div class="payment-proof">
-              <img [src]="order.paymentProofPath" 
-                   alt="Payment Proof" 
-                   class="proof-image">
+              <img [src]="order.paymentProofPath" alt="Payment Proof" class="proof-image">
             </div>
           </div>
         </div>
@@ -210,7 +207,11 @@
           <button class="btn-outline" (click)="contactSupport()">
             <i class="fas fa-headset"></i> Contact Support
           </button>
+          <button class="btn-danger" (click)="goToRefundForm()">
+            <i class="fas fa-undo-alt"></i> Request Refund
+          </button>
         </div>
+
       </div>
     </div>
   </div>

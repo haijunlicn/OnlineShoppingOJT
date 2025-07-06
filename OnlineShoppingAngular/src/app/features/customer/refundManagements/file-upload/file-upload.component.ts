@@ -17,6 +17,7 @@ export class FileUploadComponent {
   selectedFiles: File[] = []
   dragOver = false
   errorMessage = ""
+  filePreviewCache = new Map<File, string>();
 
   onFileSelect(event: Event): void {
     const input = event.target as HTMLInputElement
@@ -74,19 +75,45 @@ export class FileUploadComponent {
   }
 
   removeFile(index: number): void {
-    this.selectedFiles.splice(index, 1)
-    this.filesSelected.emit(this.selectedFiles)
-    this.errorMessage = ""
+    const removed = this.selectedFiles.splice(index, 1)[0];
+    const url = this.filePreviewCache.get(removed);
+    if (url) {
+      URL.revokeObjectURL(url);
+      this.filePreviewCache.delete(removed);
+    }
+    this.filesSelected.emit(this.selectedFiles);
+    this.errorMessage = "";
   }
 
   clearAll(): void {
-    this.selectedFiles = []
-    this.filesSelected.emit(this.selectedFiles)
-    this.errorMessage = ""
+    for (const file of this.selectedFiles) {
+      const url = this.filePreviewCache.get(file);
+      if (url) URL.revokeObjectURL(url);
+    }
+    this.filePreviewCache.clear();
+    this.selectedFiles = [];
+    this.filesSelected.emit(this.selectedFiles);
+    this.errorMessage = "";
     if (this.fileInput) {
-      this.fileInput.nativeElement.value = ""
+      this.fileInput.nativeElement.value = "";
     }
   }
+
+
+  // removeFile(index: number): void {
+  //   this.selectedFiles.splice(index, 1)
+  //   this.filesSelected.emit(this.selectedFiles)
+  //   this.errorMessage = ""
+  // }
+
+  // clearAll(): void {
+  //   this.selectedFiles = []
+  //   this.filesSelected.emit(this.selectedFiles)
+  //   this.errorMessage = ""
+  //   if (this.fileInput) {
+  //     this.fileInput.nativeElement.value = ""
+  //   }
+  // }
 
   formatFileSize(bytes: number): string {
     if (bytes === 0) return "0 Bytes"
@@ -97,6 +124,14 @@ export class FileUploadComponent {
   }
 
   getFilePreview(file: File): string {
-    return URL.createObjectURL(file)
+    if (!this.filePreviewCache.has(file)) {
+      this.filePreviewCache.set(file, URL.createObjectURL(file));
+    }
+    return this.filePreviewCache.get(file)!;
   }
+
+
+  // getFilePreview(file: File): string {
+  //   return URL.createObjectURL(file)
+  // }
 }

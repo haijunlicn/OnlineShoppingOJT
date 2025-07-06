@@ -57,6 +57,7 @@ export interface OrderItemDetail {
     imgPath: string;
     sku: string;
   };
+  maxReturnQty?: number;
 }
 
 export interface OrderStatusHistory {
@@ -74,7 +75,7 @@ export interface OrderStatusHistory {
 export class OrderService {
   private apiUrl = 'http://localhost:8080/orders';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   createOrderWithImage(formData: FormData): Observable<any> {
     return this.http.post(`${this.apiUrl}/create`, formData);
@@ -92,7 +93,7 @@ export class OrderService {
     return this.http.get<OrderDetail>(`${this.apiUrl}/${orderId}/details`);
   }
 
-   bulkUpdateOrderStatus(
+  bulkUpdateOrderStatus(
     orderIds: number[],
     statusId: number,
     note: string,
@@ -108,7 +109,5 @@ export class OrderService {
 
   getAllOrders(): Observable<OrderDetail[]> {
     return this.http.get<OrderDetail[]>(`${this.apiUrl}`);
-    // If you have a dedicated admin endpoint, use it here:
-    // return this.http.get<OrderDetail[]>(`${this.apiUrl}/admin/list`);
   }
 }

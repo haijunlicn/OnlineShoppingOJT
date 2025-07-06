@@ -34,7 +34,6 @@ public class ProductController {
     @Autowired
     private ExcelTemplateService excelService;
 
-    // POST /products - create new product with options and variants
 
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('PRODUCT_CREATE') or hasRole('SUPERADMIN')")

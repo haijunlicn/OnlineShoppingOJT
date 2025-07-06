@@ -51,7 +51,7 @@ public class OrderService {
 
     public OrderEntity createOrder(OrderDto dto, MultipartFile paymentProof) throws Exception {
         OrderEntity order = new OrderEntity();
-        UserEntity user = userRepository.findById(dto.getUserId().intValue())
+        UserEntity user = userRepository.findById(dto.getUserId())
             .orElseThrow(() -> new RuntimeException("User not found"));
         UserAddressEntity address = addressRepository.findById(dto.getShippingAddressId())
             .orElseThrow(() -> new RuntimeException("Address not found"));
@@ -94,13 +94,13 @@ public class OrderService {
     }
 
     // Get order by ID
-    public OrderEntity getOrderById(Integer orderId) {
+    public OrderEntity getOrderById(Long orderId) {
         return orderRepository.findById(orderId)
             .orElseThrow(() -> new RuntimeException("Order not found"));
     }
 
     // Get order by ID with all details
-    public OrderEntity getOrderByIdWithDetails(Integer orderId) {
+    public OrderEntity getOrderByIdWithDetails(Long orderId) {
         return orderRepository.findById(orderId)
             .orElseThrow(() -> new RuntimeException("Order not found"));
     }
@@ -211,7 +211,7 @@ public class OrderService {
 
     public void bulkUpdateOrderStatus(BulkOrderStatusUpdateRequest request) {
         for (Long orderId : request.getOrderIds()) {
-            OrderEntity order = orderRepository.findById(orderId.intValue())
+            OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
 
             // Update order status (e.g., paymentStatus field)
