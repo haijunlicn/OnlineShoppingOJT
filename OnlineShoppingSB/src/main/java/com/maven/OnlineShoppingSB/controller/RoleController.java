@@ -47,4 +47,9 @@ public class RoleController {
         roleService.deleteRole(id);
         return ResponseEntity.ok("Role deleted successfully!");
     }
+    @GetMapping("/customers")
+    public ResponseEntity<List<RoleDTO>> getCustomerRoles() {
+        List<RoleDTO> customerRoles = roleService.getCustomerRolesWithUsers();
+        return ResponseEntity.ok(customerRoles);
+    }
 }

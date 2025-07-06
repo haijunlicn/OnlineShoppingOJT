@@ -31,6 +31,7 @@ import { AdminOrdersControlComponent } from './adminOrderManagement/admin-orders
 import { AdminOrdersDetailComponent } from './adminOrderManagement/admin-orders-detail/admin-orders-detail.component';
 import { ProductDetailComponent } from './product_management/product-detail/product-detail.component';
 import { ProductEditComponent } from './product_management/product-edit/product-edit.component';
+import { SaleAnalysisComponent } from './policy-management/sale-analysis/sale-analysis.component';
 import { PermissionGuard } from '@app/core/guards/permission.guard';
 import { AdminAccountCreateComponent } from './roleAndPermission/admin-account-create/admin-account-create.component';
 
@@ -143,6 +144,14 @@ const routes: Routes = [
     component: PaymentUpdateComponent,
     canActivate: [AdminAuthGuard]
   },
+  { path: 'permission-update/:id', component: PermissionUpdateComponent, canActivate: [AdminAuthGuard] },
+  { path: 'payment-create', component: PaymentCreateComponent, canActivate: [AdminAuthGuard] },
+  { path: 'payment-list', component: PaymentListComponent, canActivate: [AdminAuthGuard] },
+  { path: 'payment-update/:id', component: PaymentUpdateComponent, canActivate: [AdminAuthGuard] },
+  {
+    path: 'sale-analysis', component: SaleAnalysisComponent, canActivate: [AdminAuthGuard]
+  },
+
   {
     path: 'productAttributes',
     component: ProductAttributeComponent,

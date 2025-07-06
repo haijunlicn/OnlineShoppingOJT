@@ -109,14 +109,14 @@ scrollRight(): void {
 
     this.form = this.fb.group(group)
   }
- loadRelatedProducts(): void {
-  const categoryId = +this.product?.product?.categoryId;
-  const currentProductId = +this.product?.id;
-
-  if (!categoryId || !currentProductId) {
-    console.warn('Missing categoryId or productId');
+loadRelatedProducts(): void {
+  if (!this.product || !this.product.product || !this.product.id || !this.product.product.categoryId) {
+    console.warn('Missing product or category data');
     return;
   }
+
+  const categoryId = +this.product.product.categoryId;
+  const currentProductId = +this.product.id;
 
   this.productService.getRelatedProducts(categoryId, currentProductId).subscribe({
     next: (products) => {
@@ -127,6 +127,7 @@ scrollRight(): void {
     }
   });
 }
+
 getMainProductImage(product: ProductDTO): string {
     if (product.productImages && product.productImages.length > 0) {
       const mainImage = product.productImages.find((img: any) => img.mainImageStatus);

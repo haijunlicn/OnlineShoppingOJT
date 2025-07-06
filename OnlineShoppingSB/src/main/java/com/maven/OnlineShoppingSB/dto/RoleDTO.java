@@ -24,6 +24,7 @@ public class RoleDTO {
     private Integer type; 
 
     private Integer delFg; 
+    private List<userDTO> users;
 
     private LocalDateTime createdDate;
 

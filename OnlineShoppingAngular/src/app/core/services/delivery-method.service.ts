@@ -10,6 +10,8 @@ export class DeliveryMethodService {
   constructor(private http: HttpClient) {}
 
   getAvailableMethods(distance: number): Observable<DeliveryMethod[]> {
+    console.log("going to fetch inside service!");
+    
     return this.http.get<DeliveryMethod[]>(`${this.apiUrl}/available`, { params: { distance } });
   }
 } 

@@ -65,6 +65,7 @@ import { AdminOrdersControlComponent } from './adminOrderManagement/admin-orders
 import { AdminOrdersDetailComponent } from './adminOrderManagement/admin-orders-detail/admin-orders-detail.component';
 import { ProductDetailComponent } from './product_management/product-detail/product-detail.component';
 import { StockUpdateModalComponent } from './product_management/stock-update-modal/stock-update-modal.component';
+import { SaleAnalysisComponent } from './policy-management/sale-analysis/sale-analysis.component';
 import { AdminAccountCreateComponent } from './roleAndPermission/admin-account-create/admin-account-create.component';
 
 
@@ -114,6 +115,7 @@ import { AdminAccountCreateComponent } from './roleAndPermission/admin-account-c
     AdminOrdersDetailComponent,
     ProductDetailComponent,
     StockUpdateModalComponent,
+    SaleAnalysisComponent,
     AdminAccountCreateComponent,
   ],
   imports: [
