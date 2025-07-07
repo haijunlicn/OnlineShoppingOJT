@@ -1,0 +1,419 @@
+<app-header></app-header>
+<div class="account-container main-content">
+  <!-- Sidebar Navigation - Full Height -->
+  <div class="sidebar main-content">
+    <div class="sidebar-content">
+      
+      <div class="sidebar-menu">
+        <div class="menu-item"
+             [class.active]="activeSection === 'profile'"
+             (click)="setActiveSection('profile')">
+          <i class="fas fa-user"></i>
+          <span>Profile Information</span>
+        </div>
+        
+        <div class="menu-item"
+             [class.active]="activeSection === 'security'"
+             (click)="setActiveSection('security')">
+          <i class="fas fa-shield-alt"></i>
+          <span>Account Security</span>
+        </div>
+        
+        <div class="menu-item"
+             [class.active]="activeSection === 'preferences'"
+             (click)="setActiveSection('preferences')">
+          <i class="fas fa-cog"></i>
+          <span>Preferences</span>
+        </div>
+        
+        <div class="menu-item"
+             [class.active]="activeSection === 'notifications'"
+             (click)="setActiveSection('notifications')">
+          <i class="fas fa-bell"></i>
+          <span>Notifications</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="main-content-area">   
+
+    <!-- Content -->
+    <div class="content-wrapper">
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-section">
+        <div class="spinner"></div>
+        <p>Loading account information...</p>
+      </div>
+
+      <!-- Profile Information Section -->
+      <div *ngIf="!isLoading && activeSection === 'profile'" class="content-section">
+        <div class="section-header">
+          <h2>Profile Information</h2>
+          <p>Manage your personal information</p>
+        </div>
+
+        <!-- Profile Photo Card -->
+        <div class="info-card">
+          <div class="card-header">
+            <h3>Profile Photo</h3>
+            <button class="edit-btn" (click)="openPhotoModal()">
+              <i class="fas fa-edit"></i>
+              Change Photo
+            </button>
+          </div>
+          <div class="photo-section">
+            <img [src]="currentUser?.avatar" alt="Profile Photo" class="profile-avatar">
+            <div class="photo-info">
+              <p>Upload a professional photo to help others recognize you</p>
+              <small>Recommended: Square image, at least 200x200 pixels</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Basic Information Card -->
+        <div class="info-card">
+          <div class="card-header">
+            <h3>Basic Information</h3>
+            <button class="edit-btn" (click)="openProfileModal()">
+              <i class="fas fa-edit"></i>
+              Edit
+            </button>
+          </div>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Your Name</label>
+              <span>{{ currentUser?.name }}</span>
+            </div>
+            <div class="info-item">
+              <label>Email Address</label>
+              <span>{{ currentUser?.email }}</span>
+            </div>
+            <div class="info-item">
+              <label>Mobile Number</label>
+              <span>{{ currentUser?.phone || 'Not provided' }}</span>
+            </div>
+            <div class="info-item">
+              <label>Member ID</label>
+              <span>{{ currentUser?.id }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security Section -->
+      <div *ngIf="activeSection === 'security'" class="content-section">
+        <div class="section-header">
+          <h2>Account Security</h2>
+          <p>Manage your account security settings</p>
+        </div>
+
+        <div class="info-card">
+          <div class="card-header">
+            <h3>Password</h3>
+            <button class="edit-btn" (click)="openPasswordModal()">
+              <i class="fas fa-key"></i>
+              Change Password
+            </button>
+          </div>
+          <div class="security-info">
+            <p>Last updated: 30 days ago</p>
+            <small>Use a strong password to protect your account</small>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="card-header">
+            <h3>Two-Factor Authentication</h3>
+            <button class="edit-btn">
+              <i class="fas fa-mobile-alt"></i>
+              Setup
+            </button>
+          </div>
+          <div class="security-info">
+            <p>Status: Not enabled</p>
+            <small>Add an extra layer of security to your account</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preferences Section -->
+      <div *ngIf="activeSection === 'preferences'" class="content-section">
+        <div class="section-header">
+          <h2>Preferences</h2>
+          <p>Customize your account preferences</p>
+        </div>
+
+        <div class="info-card">
+          <div class="card-header">
+            <h3>Language & Region</h3>
+          </div>
+          <div class="preferences-content">
+            <div class="preference-item">
+              <label>Language</label>
+              <select class="form-control">
+                <option value="en">English</option>
+                <option value="my">Myanmar</option>
+                <option value="zh">Chinese</option>
+              </select>
+            </div>
+            <div class="preference-item">
+              <label>Time Zone</label>
+              <select class="form-control">
+                <option value="asia/yangon">Asia/Yangon</option>
+                <option value="asia/bangkok">Asia/Bangkok</option>
+                <option value="asia/singapore">Asia/Singapore</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="card-header">
+            <h3>Privacy Settings</h3>
+          </div>
+          <div class="preferences-content">
+            <div class="preference-toggle">
+              <div class="toggle-info">
+                <h4>Profile Visibility</h4>
+                <p>Make your profile visible to other users</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="preference-toggle">
+              <div class="toggle-info">
+                <h4>Show Online Status</h4>
+                <p>Let others see when you're online</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications Section -->
+      <div *ngIf="activeSection === 'notifications'" class="content-section">
+        <div class="section-header">
+          <h2>Notifications</h2>
+          <p>Manage your notification preferences</p>
+        </div>
+
+        <div class="info-card">
+          <div class="card-header">
+            <h3>Email Notifications</h3>
+          </div>
+          <div class="preferences-content">
+            <div class="preference-toggle">
+              <div class="toggle-info">
+                <h4>Account Updates</h4>
+                <p>Receive emails about account changes</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="preference-toggle">
+              <div class="toggle-info">
+                <h4>Security Alerts</h4>
+                <p>Get notified about security events</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="preference-toggle">
+              <div class="toggle-info">
+                <h4>Marketing Emails</h4>
+                <p>Receive promotional emails and offers</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="card-header">
+            <h3>Push Notifications</h3>
+          </div>
+          <div class="preferences-content">
+            <div class="preference-toggle">
+              <div class="toggle-info">
+                <h4>Browser Notifications</h4>
+                <p>Show notifications in your browser</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="preference-toggle">
+              <div class="toggle-info">
+                <h4>Mobile Push</h4>
+                <p>Send notifications to your mobile device</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Edit Modal -->
+  <div class="modal-overlay" *ngIf="showProfileModal" (click)="closeModals()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Edit Profile Information</h3>
+        <button class="close-btn" (click)="closeModals()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <form [formGroup]="profileForm" (ngSubmit)="onProfileSubmit()">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="name">Your Name *</label>
+            <input type="text" id="name" formControlName="name" class="form-control">
+            <div class="error-message" *ngIf="getFieldError(profileForm, 'name')">
+              {{ getFieldError(profileForm, 'name') }}
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="email">Email Address *</label>
+            <input type="email" id="email" formControlName="email" class="form-control">
+            <div class="error-message" *ngIf="getFieldError(profileForm, 'email')">
+              {{ getFieldError(profileForm, 'email') }}
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="phone">Mobile Number</label>
+            <input type="tel" id="phone" formControlName="phone" class="form-control">
+            <div class="error-message" *ngIf="getFieldError(profileForm, 'phone')">
+              {{ getFieldError(profileForm, 'phone') }}
+            </div>
+          </div>
+          
+          <div class="message success-message" *ngIf="successMessage">
+            <i class="fas fa-check-circle"></i>
+            {{ successMessage }}
+          </div>
+          
+          <div class="message error-message" *ngIf="errorMessage">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ errorMessage }}
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModals()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="!profileForm.valid || isUpdating">
+            <span *ngIf="isUpdating" class="spinner"></span>
+            {{ isUpdating ? 'Saving...' : 'Save Changes' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Password Change Modal -->
+  <div class="modal-overlay" *ngIf="showPasswordModal" (click)="closeModals()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Change Password</h3>
+        <button class="close-btn" (click)="closeModals()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <form [formGroup]="passwordForm" (ngSubmit)="onPasswordSubmit()">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="currentPassword">Current Password *</label>
+            <input type="password" id="currentPassword" formControlName="currentPassword" class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label for="newPassword">New Password *</label>
+            <input type="password" id="newPassword" formControlName="newPassword" class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label for="confirmPassword">Confirm New Password *</label>
+            <input type="password" id="confirmPassword" formControlName="confirmPassword" class="form-control">
+          </div>
+          
+          <div class="message success-message" *ngIf="successMessage">
+            <i class="fas fa-check-circle"></i>
+            {{ successMessage }}
+          </div>
+          
+          <div class="message error-message" *ngIf="errorMessage">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ errorMessage }}
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModals()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="!passwordForm.valid || isUpdating">
+            <span *ngIf="isUpdating" class="spinner"></span>
+            {{ isUpdating ? 'Updating...' : 'Update Password' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Photo Upload Modal -->
+  <div class="modal-overlay" *ngIf="showPhotoModal" (click)="closeModals()">
+    <div class="modal-content photo-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Change Profile Photo</h3>
+        <button class="close-btn" (click)="closeModals()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="photo-upload-area">
+          <img [src]="currentUser?.avatar" alt="Current Photo" class="current-photo">
+          <div class="upload-section">
+            <label for="photo-input" class="upload-btn">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <span>Choose New Photo</span>
+            </label>
+            <input type="file" id="photo-input" accept="image/*" (change)="onFileSelected($event)" style="display: none;">
+            <p>Recommended: Square image, at least 200x200 pixels</p>
+          </div>
+        </div>
+        
+        <div class="message success-message" *ngIf="successMessage">
+          <i class="fas fa-check-circle"></i>
+          {{ successMessage }}
+        </div>
+        
+        <div class="message error-message" *ngIf="errorMessage">
+          <i class="fas fa-exclamation-circle"></i>
+          {{ errorMessage }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

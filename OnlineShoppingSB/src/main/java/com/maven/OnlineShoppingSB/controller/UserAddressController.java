@@ -1,6 +1,8 @@
 package com.maven.OnlineShoppingSB.controller;
 
 import com.maven.OnlineShoppingSB.dto.UserAddressDto;
+import com.maven.OnlineShoppingSB.dto.userDTO;
+import com.maven.OnlineShoppingSB.service.CustomUserDetailsService;
 import com.maven.OnlineShoppingSB.service.UserAddressService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,9 @@ public class UserAddressController {
 
     @Autowired
     private UserAddressService userAddressService;
+    
+    @Autowired
+    private CustomUserDetailsService cudservice;
 
     @PostMapping("/save")
     public ResponseEntity<UserAddressDto> saveUserAddress(@RequestBody UserAddressDto dto) {
@@ -70,4 +75,22 @@ public ResponseEntity<List<UserAddressDto>> getUserLocations(@RequestParam Integ
             return ResponseEntity.status(404).body(ex.getMessage());
         }
     }
+    @GetMapping("/{email}/{roleType}")
+    public ResponseEntity<userDTO> getProfile(
+            @PathVariable String email,
+            @PathVariable Integer roleType) {
+        userDTO profile = cudservice.getProfile(email, roleType);
+        return ResponseEntity.ok(profile);
+    }
+
+    @PutMapping("/update/{email}/{roleType}")
+    public ResponseEntity<userDTO> updateProfile(
+            @PathVariable String email,
+            @PathVariable Integer roleType,
+            @RequestBody userDTO updatedProfile) {
+        userDTO updated = cudservice.updateProfile(email, roleType, updatedProfile);
+        return ResponseEntity.ok(updated);
+    }
+
+
 }

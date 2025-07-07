@@ -135,13 +135,13 @@ export class HeaderComponent implements OnInit {
     console.log('Login clicked');
   }
 
-  onProfile(): void {
-    console.log("user id : ", this.authService.getCurrentUser()?.id);
+   onProfile(): void {
+    this.router.navigate(['/customer/profile-update']); 
     this.isProfileDropdownOpen = false;
-  }
+}
 
   onSettings(): void {
-    this.router.navigate(['/customer/settings']);
+    this.router.navigate(['/customer/account-settings']);
     this.isProfileDropdownOpen = false;
   }
 

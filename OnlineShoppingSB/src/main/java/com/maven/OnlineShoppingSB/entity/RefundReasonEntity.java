@@ -1,5 +1,7 @@
 package com.maven.OnlineShoppingSB.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,7 +18,26 @@ public class RefundReasonEntity {
 
     @Column(name = "label", nullable = false, unique = true)
     private String label;
-
+    
     @Column(name = "allow_custom_text", nullable = false)
-    private boolean allowCustomText;
+    private Boolean allowCustomText;
+
+    @Column(name = "del_fg", nullable = false)
+    private Integer delFg = 1;
+
+    @Column(name = "created_date", updatable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime createdDate;
+
+    @Column(name = "updated_date", columnDefinition = "DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP")
+    private LocalDateTime updatedDate;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdDate = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedDate = LocalDateTime.now();
+    }
 }
