@@ -3,9 +3,10 @@ export interface LocationDto {
   lat: number;
   lng: number;
   address: string;
-  township:string;
+  township: string;
   city: string;
-  zipCode: String;
+  zipCode: string;
   country: string;
-  userId:number;
+  userId: number;
+  phoneNumber: string;
 }

@@ -38,6 +38,9 @@ import { RefundReasonListComponent } from './policy-management/refund-reason-lis
 import { RefundReasonFormComponent } from './policy-management/refund-reason-form/refund-reason.component';
 import { RejectionReasonListComponent } from './policy-management/rejection-reason-list/rejection-reason-list.component';
 import { RejectionReasonFormComponent } from './policy-management/rejection-reason-form/rejection-reason-form.component';
+import { RefundRequestListComponent } from './RefundManagement/refund-request-list/refund-request-list.component';
+import { RefundRequestDetailComponent } from './RefundManagement/refund-request-detail/refund-request-detail.component';
+
 
 const routes: Routes = [
   {
@@ -215,12 +218,48 @@ const routes: Routes = [
     }
   },
 
-{path:'storelocation',component:StoreAddressComponent},
-  {path:'AdminOrder',component:AdminOrdersControlComponent},
+  { path: 'storelocation', component: StoreAddressComponent },
+  { path: 'AdminOrder', component: AdminOrdersControlComponent },
   {
-  path: 'admin/orderDetailAdmin/:id',
-  component: AdminOrdersDetailComponent
-}
+    path: 'admin/orderDetailAdmin/:id',
+    component: AdminOrdersDetailComponent
+  },
+  {
+    path: 'refundRequestList',
+    component: RefundRequestListComponent,
+    canActivate: [AdminAuthGuard, PermissionGuard],
+  },
+  { path: 'storelocation', component: StoreAddressComponent },
+
+  {
+    path: 'AdminOrder', component: AdminOrdersControlComponent,
+    canActivate: [AdminAuthGuard, PermissionGuard],
+    data: {
+      permissionGroups: [
+        ['SUPERADMIN_PERMISSION']
+      ]
+    }
+  },
+  {
+    path: 'orderDetailAdmin/:id',
+    component: AdminOrdersDetailComponent,
+    canActivate: [AdminAuthGuard, PermissionGuard],
+    data: {
+      permissionGroups: [
+        ['SUPERADMIN_PERMISSION']
+      ]
+    }
+  },
+  {
+    path: 'refundRequestDetail/:id',
+    component: RefundRequestDetailComponent,
+    canActivate: [AdminAuthGuard, PermissionGuard],
+    data: {
+      permissionGroups: [
+        ['SUPERADMIN_PERMISSION']
+      ]
+    }
+  },
 
 ];
 

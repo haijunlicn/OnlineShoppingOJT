@@ -10,7 +10,7 @@ import com.maven.OnlineShoppingSB.entity.OtpEntity;
 @Repository
 public interface OtpRepository extends JpaRepository<OtpEntity, Long> {
 
-	Optional<OtpEntity> findTopByUserIdAndOtpCodeOrderByCreatedDateDesc(Integer userId, String otpCode);
+	Optional<OtpEntity> findTopByUserIdAndOtpCodeOrderByCreatedDateDesc(Long userId, String otpCode);
 
     // Optional: For OTP resend logic - get all OTPs for this user and purpose if needed
     //List<Otp> findAllByUserIdAndPurpose(Integer userId);

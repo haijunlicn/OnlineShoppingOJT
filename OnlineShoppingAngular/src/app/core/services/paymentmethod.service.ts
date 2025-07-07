@@ -36,12 +36,17 @@ export class PaymentMethodService {
   deletePaymentMethod(id: number): Observable<string> {
     return this.http.delete(`${this.baseUrl}/delete/${id}`, { responseType: 'text' });
   }
+
   uploadImage(file: File): Observable<string> {
-  const formData = new FormData();
-  formData.append('file', file);
-  return this.http.post('http://localhost:8080/api/cloudinary/upload', formData, {
-    responseType: 'text',
-  });
-}
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post('http://localhost:8080/api/cloudinary/upload', formData, {
+      responseType: 'text',
+    });
+  }
+
+  getPaymentMethodsByType(type: string): Observable<PaymentMethodDTO[]> {
+    return this.http.get<PaymentMethodDTO[]>(`${this.baseUrl}/list?type=${type}`);
+  }
 
 }

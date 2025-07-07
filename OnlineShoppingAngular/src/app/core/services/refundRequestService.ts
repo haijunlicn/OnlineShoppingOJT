@@ -1,66 +1,100 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map, Observable, of } from 'rxjs';
-import { CategoryDTO, CategoryNode } from '../models/category-dto';
-import { Order, RefundReason, ReturnRequestPayload } from '../models/refund.model';
+import { catchError, map, Observable, throwError } from 'rxjs';
+import { RefundRequestDTO, ReturnRequestPayload, ReturnRequestResponse } from '../models/refund.model';
+import { OrderDetail } from './order.service';
+import { RefundReasonDTO } from '../models/refund-reason';
+import { StatusUpdateRequest } from '@app/features/admin/RefundManagement/refund-request-detail/refund-request-detail.component';
 
 @Injectable({
-  providedIn: 'root' // <== This registers it globally
+  providedIn: 'root'
 })
 
 export class RefundRequestService {
-  private apiUrl = "/api"
+  private apiUrl = "http://localhost:8080/refund-requests" // base API path
 
   constructor(private http: HttpClient) { }
 
-  getRefundReasons(): Observable<RefundReason[]> {
-    // Mock data - replace with actual API call
-    return of([
-      { id: 1, label: "Defective/Damaged", allowCustomText: false },
-      { id: 2, label: "Wrong Size", allowCustomText: false },
-      { id: 3, label: "Not as Described", allowCustomText: true },
-      { id: 4, label: "Changed Mind", allowCustomText: false },
-      { id: 5, label: "Other", allowCustomText: true },
-    ])
+  getOrderDetails(orderId: number): Observable<OrderDetail> {
+    return this.http.get<OrderDetail>(`http://localhost:8080/orders/${orderId}/details`).pipe(
+      map((order) => ({
+        ...order,
+        items: order.items.map((item) => ({
+          ...item,
+          maxReturnQty: this.calculateMaxReturnQty(item),
+        })),
+      })),
+      catchError(this.handleError),
+    )
   }
 
-  getOrderDetails(orderId: number): Observable<Order> {
-    // Mock data - replace with actual API call
-    return of({
-      id: orderId,
-      orderNumber: "ORD-2024-001234",
-      orderDate: new Date("2024-01-15"),
-      shippingAddress: "123 Main St, City, State 12345",
-      items: [
-        {
-          id: 1,
-          productName: "Premium Cotton T-Shirt",
-          sku: "TSH-001-BLK-L",
-          quantity: 2,
-          deliveredQty: 2,
-          maxReturnQty: 2,
-          price: 29.99,
-        },
-        {
-          id: 2,
-          productName: "Denim Jeans",
-          sku: "JNS-002-BLU-32",
-          quantity: 1,
-          deliveredQty: 1,
-          maxReturnQty: 1,
-          price: 79.99,
-        },
-      ],
-    })
+  submitReturnRequest(request: ReturnRequestPayload): Observable<ReturnRequestResponse> {
+    return this.http
+      .post<ReturnRequestResponse>(`${this.apiUrl}/create`, request)
+      .pipe(catchError(this.handleError))
   }
 
-  submitReturnRequest(request: ReturnRequestPayload): Observable<any> {
-    return this.http.post(`${this.apiUrl}/return-requests`, request)
+  getRefundRequestDetail(id: number): Observable<RefundRequestDTO> {
+    return this.http.get<RefundRequestDTO>(`${this.apiUrl}/${id}`).pipe(catchError(this.handleError))
   }
 
-  uploadProofImages(refundItemId: number, files: File[]): Observable<any> {
-    const formData = new FormData()
-    files.forEach((file) => formData.append("proofs", file))
-    return this.http.post(`${this.apiUrl}/return-requests/items/${refundItemId}/proofs`, formData)
+  getRefundRequestList(): Observable<RefundRequestDTO[]> {
+    return this.http.get<RefundRequestDTO[]>(`${this.apiUrl}/list`);
   }
+
+  submitBatchItemDecisions(payload: {
+    refundRequestId: number
+    itemDecisions: {
+      itemId: number
+      action: string
+      rejectionReasonId?: number
+      comment?: string
+      adminId?: number
+    }[]
+  }): Observable<void> {
+    return this.http
+      .post<void>(`${this.apiUrl}/review-items`, payload)
+      .pipe(catchError(this.handleError))
+  }
+
+  updateItemStatus(request: StatusUpdateRequest): Observable<void> {
+    return this.http
+      .post<void>(`${this.apiUrl}/update-status`, request)
+      .pipe(catchError(this.handleError))
+  }
+
+  private calculateMaxReturnQty(item: any): number {
+    return item.quantity - (item.returnedQty || 0)
+  }
+
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    let errorMessage = "An unknown error occurred"
+
+    if (error.error instanceof ErrorEvent) {
+      // Client-side error
+      errorMessage = `Error: ${error.error.message}`
+    } else {
+      // Server-side error
+      errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`
+
+      // Handle specific error cases
+      switch (error.status) {
+        case 404:
+          errorMessage = "Order not found or not eligible for return"
+          break
+        case 400:
+          errorMessage = "Invalid request data"
+          break
+        case 403:
+          errorMessage = "You are not authorized to return this order"
+          break
+        case 500:
+          errorMessage = "Server error. Please try again later"
+          break
+      }
+    }
+
+    return throwError(() => new Error(errorMessage))
+  }
+
 }

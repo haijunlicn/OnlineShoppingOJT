@@ -25,8 +25,13 @@ public class PaymentController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<List<PaymentDTO>> getAllPaymentMethods() {
-        List<PaymentDTO> dtoList = paymentService.getAllPaymentMethods();
+    public ResponseEntity<List<PaymentDTO>> getAllPaymentMethods(@RequestParam(required = false) String type) {
+        List<PaymentDTO> dtoList;
+        if (type != null) {
+            dtoList = paymentService.getPaymentMethodsByType(type);
+        } else {
+            dtoList = paymentService.getAllPaymentMethods();
+        }
         return ResponseEntity.ok(dtoList);
     }
 

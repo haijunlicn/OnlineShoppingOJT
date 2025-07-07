@@ -20,13 +20,19 @@ public class RefundReasonController {
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('REFUND_REASON_MANAGE') or hasRole('SUPERADMIN')")
     public ResponseEntity<String> create(@RequestBody RefundReasonDTO dto) {
-    	System.out.println("create reason is running");
+        System.out.println("create reason is running");
         service.insert(dto);
         return ResponseEntity.ok("Refund reason created successfully!");
     }
 
     @GetMapping("/list")
     public ResponseEntity<List<RefundReasonDTO>> list() {
+        return ResponseEntity.ok(service.getAll());
+    }
+
+    @GetMapping("/public/list")
+    public ResponseEntity<List<RefundReasonDTO>> publicList() {
+        System.out.println("public reasons : " + service.getAll());
         return ResponseEntity.ok(service.getAll());
     }
 
@@ -37,8 +43,8 @@ public class RefundReasonController {
 
     @PutMapping("/update")
     public ResponseEntity<String> update(@RequestBody RefundReasonDTO dto) {
-    	
-    	System.out.println("update reason is running");
+
+        System.out.println("update reason is running");
         service.update(dto);
         return ResponseEntity.ok("Refund reason updated successfully!");
     }

@@ -6,7 +6,9 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -33,20 +35,17 @@ public class RefundRequestEntity {
     @Column(length = 100)
     private String returnTrackingCode; // Provided by admin
 
-    @Column(length = 100)
-    private String customerTrackingCode; // Optional entry by customer
-
-    private LocalDateTime receivedDate;
-
-    private LocalDateTime refundedDate;
-
-    @Column(columnDefinition = "TEXT")
-    private String adminComment;
-
     private LocalDateTime createdAt = LocalDateTime.now();
-
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "refundRequest", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RefundItemEntity> items = new ArrayList<>();
+    private Set<RefundItemEntity> items = new HashSet<>();
+
+
+    @OneToMany(mappedBy = "refundRequest", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RefundStatusHistoryEntity> statusHistoryList = new ArrayList<>();
+
+    private LocalDateTime receivedDate;
+    private LocalDateTime refundedDate;
+
 }

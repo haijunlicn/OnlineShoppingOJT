@@ -10,26 +10,26 @@ import { CategoryDTO } from '@app/core/models/category-dto';
 import { CategoryService } from '@app/core/services/category.service'; // Add this import
 
 @Component({
-  selector: 'app-header',
+  selector: "app-header",
   standalone: false,
-  templateUrl: './header.component.html',
-  styleUrls: ['./header.component.css']
+  templateUrl: "./header.component.html",
+  styleUrls: ["./header.component.css"],
 })
 export class HeaderComponent implements OnInit {
-  isWishlistDropdownVisible = false;
-  isMenuOpen = false;
-  cartItemCount = 2;
-  isMobileSearchOpen = false;
-  isProfileDropdownOpen = false;
+  isWishlistDropdownVisible = false
+  isMenuOpen = false
+  cartItemCount = 2
+  isMobileSearchOpen = false
+  isProfileDropdownOpen = false
 
   // Category dropdown properties
-  categories: CategoryDTO[] = [];
-  loadingCategories = false;
+  categories: CategoryDTO[] = []
+  loadingCategories = false
 
   // User state
-  currentUser: User | null = null;
-  isLoggedIn = false;
-  isCustomer = false;
+  currentUser: User | null = null
+  isLoggedIn = false
+  isCustomer = false
 
   constructor(
     private router: Router,
@@ -39,100 +39,107 @@ export class HeaderComponent implements OnInit {
     private registerModalService: RegisterModalService,
     private forgotModalService: ForgotPasswordModalService,
     private authService: AuthService,
-    private categoryService: CategoryService
+    private categoryService: CategoryService,
   ) { }
 
   ngOnInit(): void {
-    // ✅ Initialize cart count
-    this.cartItemCount = this.cartService.getCart()
-      .reduce((sum, item) => sum + item.quantity, 0);
+    // Initialize cart count
+    this.cartItemCount = this.cartService.getCart().reduce((sum, item) => sum + item.quantity, 0)
 
-    // ✅ Listen to cart changes
-    this.cartService.cartCount$.subscribe(count => {
-      this.cartItemCount = count;
-    });
+    // Listen to cart changes
+    this.cartService.cartCount$.subscribe((count) => {
+      this.cartItemCount = count
+    })
 
-    // ✅ Listen to auth changes (reactively tracks login/logout)
+    // Listen to auth changes
     this.authService.user$.subscribe((user: User | null) => {
-      this.currentUser = user;
-      this.isLoggedIn = !!user;
-      this.isCustomer = this.authService.isCustomer();
-    });
+      this.currentUser = user
+      this.isLoggedIn = !!user
+      this.isCustomer = this.authService.isCustomer()
+    })
 
-    // ✅ Initialize user from stored token if available
-    this.authService.initializeUserFromToken();
+    // Initialize user from stored token
+    this.authService.initializeUserFromToken()
 
-    // ✅ Load categories for dropdown
-    this.loadCategories();
+    // Load categories for dropdown
+    this.loadCategories()
   }
 
-  // ===== CATEGORY DROPDOWN METHODS =====
+  // Category dropdown methods
   loadCategories() {
-    this.loadingCategories = true;
+    this.loadingCategories = true
     this.categoryService.getAllPublicCategories().subscribe({
       next: (categories) => {
-        this.categories = categories;
-        this.loadingCategories = false;
-        console.log("Header categories loaded:", this.categories);
+        this.categories = categories
+        this.loadingCategories = false
+        console.log("Header categories loaded:", this.categories)
       },
       error: (err) => {
-        console.error("Failed to load categories", err);
-        this.loadingCategories = false;
+        console.error("Failed to load categories", err)
+        this.loadingCategories = false
       },
-    });
+    })
   }
 
   onCategorySelected(category: CategoryDTO) {
-    console.log("Selected category:", category);
-
-    // Navigate to product list with category filter
-    this.router.navigate(['/customer/productList'], {
-      queryParams: { category: category.id }
-    });
+    console.log("Selected category:", category)
+    this.router.navigate(["/customer/productList"], {
+      queryParams: { category: category.id },
+    })
   }
 
   onViewAllCategories() {
-    // Navigate to product list
-    this.router.navigate(['/customer/productList']);
+    this.router.navigate(["/customer/productList"])
   }
 
-  // ===== EXISTING METHODS =====
+  // Search method
+  onSearch(query?: string) {
+    if (query) {
+      console.log("Searching for:", query)
+      this.router.navigate(["/customer/productList"], {
+        queryParams: { search: query },
+      })
+    } else {
+      console.log("Search clicked without query")
+    }
+
+    // Close mobile search if open
+    this.isMobileSearchOpen = false
+  }
+
+  // Existing methods
   get loginVisible$() {
-    return this.loginModalService.loginVisible$;
+    return this.loginModalService.loginVisible$
   }
 
   get registerVisible$() {
-    return this.registerModalService.registerVisible$;
+    return this.registerModalService.registerVisible$
   }
 
   get forgotVisible$() {
-    return this.forgotModalService.forgotVisible$;
+    return this.forgotModalService.forgotVisible$
   }
 
   toggleMenu() {
-    this.isMenuOpen = !this.isMenuOpen;
+    this.isMenuOpen = !this.isMenuOpen
   }
 
   toggleProfileDropdown() {
-    this.isProfileDropdownOpen = !this.isProfileDropdownOpen;
-  }
-
-  onSearch() {
-    console.log("Search clicked");
+    this.isProfileDropdownOpen = !this.isProfileDropdownOpen
   }
 
   onWishlist() {
-    this.router.navigate(['/customer/general/wishlist']);
+    this.router.navigate(["/customer/general/wishlist"])
   }
 
   onRegister(): void {
-    this.registerModalService.show();
-    console.log('Register clicked');
+    this.registerModalService.show()
+    console.log("Register clicked")
   }
 
   onSignIn(): void {
-    this.loginModalService.show();
-    console.log('Login clicked');
+    this.loginModalService.show()
+    console.log("Login clicked")
   }
 
    onProfile(): void {
@@ -140,45 +147,45 @@ export class HeaderComponent implements OnInit {
     this.isProfileDropdownOpen = false;
 }
 
+  
+
   onSettings(): void {
-    this.router.navigate(['/customer/account-settings']);
-    this.isProfileDropdownOpen = false;
+    this.router.navigate(["/customer/settings"])
+    this.isProfileDropdownOpen = false
   }
 
   onLogout(): void {
-    this.authService.logout();
-    this.isProfileDropdownOpen = false;
-    console.log('User logged out');
+    this.authService.logout()
+    this.isProfileDropdownOpen = false
+    console.log("User logged out")
   }
 
   toggleMobileSearch(): void {
-    this.isMobileSearchOpen = !this.isMobileSearchOpen;
-    setTimeout(() => {
-      if (this.isMobileSearchOpen) {
-        const input = document.querySelector('.mobile-search-bar input') as HTMLInputElement | null;
-        input?.focus();
-      }
-    }, 100);
+    this.isMobileSearchOpen = !this.isMobileSearchOpen
   }
 
   getUserInitials(name: string): string {
     return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
       .toUpperCase()
-      .slice(0, 2);
+      .slice(0, 2)
   }
 
-  @HostListener('document:click', ['$event'])
+  @HostListener("document:click", ["$event"])
   onDocumentClick(event: MouseEvent) {
     if (!this.elementRef.nativeElement.contains(event.target)) {
-      this.isWishlistDropdownVisible = false;
-      this.isProfileDropdownOpen = false;
+      this.isWishlistDropdownVisible = false
+      this.isProfileDropdownOpen = false
     }
   }
 
   onCart(): void {
-    this.router.navigate(['/customer/cart']);
+    this.router.navigate(["/customer/cart"])
+  }
+
+  goToOrderList(): void {
+    this.router.navigate(["/customer/orders"])
   }
 }

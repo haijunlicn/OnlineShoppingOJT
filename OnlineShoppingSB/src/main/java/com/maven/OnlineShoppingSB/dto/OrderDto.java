@@ -25,5 +25,7 @@ public class OrderDto {
     private List<OrderItemRequestDTO> items;
     private List<OrderStatusHistoryDto> statusHistoryList;
     private DeliveryMethodDto deliveryMethod;
-//    private PaymentDTO paymentMethod;
+    private PaymentDTO paymentMethod;
+    private Long paymentMethodId;
+    private String paymentType;
 }

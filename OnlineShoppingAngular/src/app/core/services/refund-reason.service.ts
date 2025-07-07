@@ -9,7 +9,7 @@ import { RefundReasonDTO } from '../models/refund-reason';
 export class RefundReasonService {
   private baseUrl = 'http://localhost:8080/refund-reason';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   create(reason: RefundReasonDTO): Observable<string> {
     return this.http.post(`${this.baseUrl}/create`, reason, { responseType: 'text' });
@@ -17,6 +17,10 @@ export class RefundReasonService {
 
   getAll(): Observable<RefundReasonDTO[]> {
     return this.http.get<RefundReasonDTO[]>(`${this.baseUrl}/list`);
+  }
+
+  getAllPublicRefundReasons(): Observable<RefundReasonDTO[]> {
+    return this.http.get<RefundReasonDTO[]>(`${this.baseUrl}/public/list`);
   }
 
   getById(id: number): Observable<RefundReasonDTO> {

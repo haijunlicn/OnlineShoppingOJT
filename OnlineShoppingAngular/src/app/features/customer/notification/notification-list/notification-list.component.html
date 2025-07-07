@@ -1,0 +1,12 @@
+<div class="notification-list">
+  <h2>Your Notifications</h2>
+  <ul>
+    <li *ngFor="let noti of notifications" [class.unread]="!noti.read" >
+      <h3>{{ noti.title }}</h3>
+      <p>{{ noti.message }}</p>
+      <small>{{ noti.deliveredAt | date:'medium' }}</small>
+    </li>
+  </ul>
+  <div *ngIf="notifications.length === 0">No notifications found.</div>
+</div>
+u

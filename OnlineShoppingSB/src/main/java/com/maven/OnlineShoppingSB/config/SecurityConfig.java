@@ -1,4 +1,5 @@
 package com.maven.OnlineShoppingSB.config;
+
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
@@ -46,18 +47,16 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // 👉 Token မလို GET method အားလုံးကို allow
-                        .requestMatchers(HttpMethod.GET, "/**").permitAll()
-
-                              .requestMatchers("/auth/**").permitAll()
-
-                              .requestMatchers(HttpMethod.POST, "/orders/**").permitAll()
-
+                                // ✅ Always allow the WebSocket handshake & transport paths
+                                .requestMatchers("/ws-notifications/**").permitAll()
+                                // 👉 Token မလို GET method အားလုံးကို allow
+                                .requestMatchers(HttpMethod.GET, "/**").permitAll()
+                                .requestMatchers("/auth/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/orders/**").permitAll()
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
                                 // 👉 အခြား request တွေ token လိုအပ်
-                        .anyRequest().authenticated()
-                              //  .anyRequest().permitAll()
+                                .anyRequest().authenticated()
+                        //  .anyRequest().permitAll()
                 )
                 .exceptionHandling(ex -> ex
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
@@ -87,6 +86,7 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
+
     @Bean
     public AuthenticationProvider daoAuthProvider() {
         DaoAuthenticationProvider auth = new DaoAuthenticationProvider();
@@ -94,6 +94,7 @@ public class SecurityConfig {
         auth.setPasswordEncoder(passwordEncoder());
         return auth;
     }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

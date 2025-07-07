@@ -1,0 +1,20 @@
+<div class="notification-bell-container">
+    <button class="bell-btn" (click)="toggleDropdown()" title="Notifications">
+        <i class="fas fa-bell"></i>
+        <span *ngIf="unreadCount > 0" class="badge">{{ unreadCount }}</span>
+    </button>
+
+    <div class="dropdown" [class.show]="showDropdown">
+        <div *ngIf="notifications.length === 0" class="empty">
+            <i class="fas fa-bell-slash"></i>
+            <p>No notifications</p>
+        </div>
+        <ul *ngIf="notifications.length > 0">
+            <li *ngFor="let noti of notifications" (click)="markAsRead(noti)" [class.unread]="!noti.read">
+                <strong>{{ noti.title }}</strong>
+                <p>{{ noti.message }}</p>
+                <small>{{ noti.deliveredAt | date:'short' }}</small>
+            </li>
+        </ul>
+    </div>
+</div>

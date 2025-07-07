@@ -1,0 +1,276 @@
+<div class="admin-layout">
+    <app-admin-header></app-admin-header>
+    <div class="admin-main">
+        <app-admin-sidebar></app-admin-sidebar>
+        <main class="admin-content">
+            <div class="container">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="fw-bold mb-1">Refund Requests</h2>
+                        <p class="text-muted mb-0">Manage and track customer refund requests</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-outline-secondary btn-sm" (click)="refreshData()" [disabled]="isLoading">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                        </button>
+                        <!-- <span class="text-muted small">{{ totalItems }} total</span> -->
+                    </div>
+                </div>
+
+                <!-- Filter/Search Controls -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="row g-3 align-items-end">
+                            <!-- Search -->
+                            <div class="col-12 col-md-4">
+                                <label for="searchInput" class="form-label">Search</label>
+                                <input id="searchInput" type="text" class="form-control"
+                                    [(ngModel)]="filterParams.search" (input)="onSearchChange()"
+                                    placeholder="Search all fields...">
+                            </div>
+
+                            <!-- Status Filter -->
+
+                            <div class="col-6 col-md-2">
+                                <label for="statusFilter" class="form-label">Status</label>
+                                <select id="statusFilter" class="form-select" [(ngModel)]="filterParams.status"
+                                    (change)="onStatusChange()">
+                                    <option value="">All Status</option>
+                                    <option value="REQUESTED">Requested</option>
+                                    <option value="IN_PROGRESS">In Progress</option>
+                                    <option value="COMPLETED">Completed</option>
+                                    <option value="REJECTED">Rejected</option>
+                                </select>
+                            </div>
+
+                            <!-- Date Range -->
+                            <div class="col-6 col-md-2">
+                                <label for="dateFrom" class="form-label">From Date</label>
+                                <input id="dateFrom" type="date" class="form-control"
+                                    [(ngModel)]="filterParams.dateFrom" (change)="onDateFromChange()">
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <label for="dateTo" class="form-label">To Date</label>
+                                <input id="dateTo" type="date" class="form-control" [(ngModel)]="filterParams.dateTo"
+                                    (change)="onDateToChange()">
+                            </div>
+
+                            <!-- Items per page -->
+                            <div class="col-6 col-md-1">
+                                <label for="itemsPerPage" class="form-label">Show</label>
+                                <select id="itemsPerPage" class="form-select form-select-sm" [(ngModel)]="itemsPerPage"
+                                    (change)="onItemsPerPageChange()">
+                                    <option *ngFor="let option of getItemsPerPageOptions()" [value]="option">
+                                        {{ option }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Reset Button -->
+                            <div class="col-12 col-md-1">
+                                <button type="button" class="btn btn-outline-secondary w-100" (click)="onReset()">
+                                    <i class="bi bi-x-circle me-1"></i>Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error Message -->
+                <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>{{ errorMessage }}
+                    <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+                </div>
+
+                <!-- Refund Requests Table -->
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">Refund Requests</h5>
+                            <small class="text-muted">{{ filteredRequests.length }} of {{ refundRequests.length }}
+                                requests</small>
+                        </div>
+                        <div class="d-flex align-items-center gap-2" *ngIf="!isLoading">
+                            <small class="text-muted">
+                                Page {{ currentPage }} of {{ totalPages }}
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-0">
+                        <!-- Loading State -->
+                        <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center py-5">
+                            <div class="spinner-border text-primary me-3" role="status"></div>
+                            <span class="text-muted">Loading refund requests...</span>
+                        </div>
+
+                        <!-- Table -->
+                        <div *ngIf="!isLoading" class="table-responsive">
+                            <table class="table table-hover mb-0 align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="sortable" (click)="sort('id')">
+                                            <div class="d-flex align-items-center">
+                                                Refund ID
+                                                <i class="bi ms-1" [class]="getSortIcon('id')"></i>
+                                            </div>
+                                        </th>
+                                        <th class="sortable" (click)="sort('orderId')">
+                                            <div class="d-flex align-items-center">
+                                                Order ID
+                                                <i class="bi ms-1" [class]="getSortIcon('orderId')"></i>
+                                            </div>
+                                        </th>
+                                        <th class="sortable" (click)="sort('userId')">
+                                            <div class="d-flex align-items-center">
+                                                User ID
+                                                <i class="bi ms-1" [class]="getSortIcon('userId')"></i>
+                                            </div>
+                                        </th>
+                                        <th class="sortable" (click)="sort('itemCount')">
+                                            <div class="d-flex align-items-center">
+                                                Items
+                                                <i class="bi ms-1" [class]="getSortIcon('itemCount')"></i>
+                                            </div>
+                                        </th>
+                                        <th class="sortable" (click)="sort('status')">
+                                            <div class="d-flex align-items-center">
+                                                Status
+                                                <i class="bi ms-1" [class]="getSortIcon('status')"></i>
+                                            </div>
+                                        </th>
+                                        <th class="sortable" (click)="sort('createdAt')">
+                                            <div class="d-flex align-items-center">
+                                                Created Date
+                                                <i class="bi ms-1" [class]="getSortIcon('createdAt')"></i>
+                                            </div>
+                                        </th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let request of paginatedRequests; trackBy: trackByRequestId"
+                                        class="table-row-hover">
+                                        <td>
+                                            <span class="fw-semibold text-primary">#{{ request.id }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-dark">{{ request.orderId }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted">{{ request.userId }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border">
+                                                {{ request.items.length || 0 }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span [class]="getStatusBadgeClass(request.status || '')">
+                                                {{ getStatusDisplayText(request.status || '') }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <span class="text-dark">{{ request.createdAt | date:'MMM d, y' }}</span>
+                                                <br>
+                                                <small class="text-muted">{{ request.createdAt | date:'h:mm a'
+                                                    }}</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-outline-primary btn-sm"
+                                                    (click)="viewDetails(request.id!)" title="View Details">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                <button
+                                                    class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split"
+                                                    data-bs-toggle="dropdown" aria-expanded="false"
+                                                    title="More Actions">
+                                                    <span class="visually-hidden">Toggle Dropdown</span>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li>
+                                                        <a class="dropdown-item" (click)="viewDetails(request.id!)">
+                                                            <i class="bi bi-eye me-2"></i>View Details
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <hr class="dropdown-divider">
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item text-muted" href="#"
+                                                            onclick="return false;">
+                                                            <i class="bi bi-download me-2"></i>Export
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div *ngIf="!isLoading && paginatedRequests.length === 0" class="text-center py-5">
+                            <div class="empty-state">
+                                <i class="bi bi-inbox display-1 text-muted mb-3"></i>
+                                <h5 class="text-muted">No refund requests found</h5>
+                                <p class="text-muted mb-3">
+                                    <span
+                                        *ngIf="filterParams.status || filterParams.dateFrom || filterParams.dateTo || filterParams.search.trim()">
+                                        No requests match your current filters. Try adjusting your search criteria.
+                                    </span>
+                                    <span
+                                        *ngIf="!filterParams.status && !filterParams.dateFrom && !filterParams.dateTo && !filterParams.search.trim()">
+                                        No refund requests have been submitted yet.
+                                    </span>
+                                </p>
+                                <button class="btn btn-outline-primary" (click)="onReset()"
+                                    *ngIf="filterParams.status || filterParams.dateFrom || filterParams.dateTo || filterParams.search.trim()">
+                                    <i class="bi bi-arrow-clockwise me-1"></i>Clear All Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="card-footer bg-light" *ngIf="!isLoading && totalPages > 1">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="text-muted small">
+                                Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
+                                {{ Math.min(currentPage * itemsPerPage, totalItems) }} of {{ totalItems }} entries
+                            </div>
+                            <nav aria-label="Refund requests pagination">
+                                <ul class="pagination pagination-sm mb-0">
+                                    <li class="page-item" [class.disabled]="currentPage === 1">
+                                        <button class="page-link" (click)="goToPreviousPage()"
+                                            [disabled]="currentPage === 1">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </button>
+                                    </li>
+
+                                    <li *ngFor="let page of getPageNumbers()" class="page-item"
+                                        [class.active]="page === currentPage">
+                                        <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+                                    </li>
+
+                                    <li class="page-item" [class.disabled]="currentPage === totalPages">
+                                        <button class="page-link" (click)="goToNextPage()"
+                                            [disabled]="currentPage === totalPages">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <app-admin-footer></app-admin-footer>
+</div>

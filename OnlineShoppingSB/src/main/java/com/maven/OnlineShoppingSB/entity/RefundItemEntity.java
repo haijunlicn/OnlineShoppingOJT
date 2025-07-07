@@ -6,7 +6,9 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -50,7 +52,14 @@ public class RefundItemEntity {
 
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    // Add this to link refund item to its proof images
     @OneToMany(mappedBy = "refundItem", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RefundItemImageEntity> images = new ArrayList<>();
+    private Set<RefundItemImageEntity> images = new HashSet<>();
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "requested_action", nullable = false)
+    private RequestedRefundAction requestedAction;
+
+    @OneToMany(mappedBy = "refundItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RefundItemStatusHistoryEntity> statusHistoryList = new ArrayList<>();
+
 }

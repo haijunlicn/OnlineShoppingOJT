@@ -40,50 +40,102 @@ public class AuthService {
     private PasswordEncoder passwordEncoder;
 
 
+//    public String registerUser(UserEntity userInput) {
+//
+//        // Step 1: Get customer role
+//        RoleEntity customerRole = roleRepo.findByName("customer")
+//                .orElseThrow(() -> new RuntimeException("Role not found"));
+//
+//        // Step 2: Check duplicate email for CUSTOMER only
+//        boolean emailExistsForCustomer = userRepo.existsByEmailAndRole(userInput.getEmail(), customerRole);
+//        if (emailExistsForCustomer) {
+//            return "Email already exists for a customer account";
+//        }
+//
+//        // Step 3: Set role and default values
+//        String encryptedPassword = passwordEncoder.encode(userInput.getPassword());
+//
+//        userInput.setPassword(encryptedPassword);
+//        userInput.setRole(customerRole);
+//        userInput.setIsVerified(false);
+//        userInput.setDelFg(false);
+//        userInput.setCreatedDate(LocalDateTime.now());
+//        userInput.setUpdatedDate(LocalDateTime.now());
+//
+//        // Step 4: Save user
+//        UserEntity savedUser = userRepo.save(userInput);
+//        System.out.println("//////////////////////////////////////////////////////////something fuck");
+//        Long userId = savedUser.getId();
+//        System.out.println("//////////////////////////////////////////////////////////something fuck" + userId);
+//
+//        // Step 5: Generate 6-digit OTP
+//        int otpNum = new Random().nextInt(900000) + 100000;
+//        String otpCode = String.valueOf(otpNum);
+//        System.out.println(otpNum);
+//        LocalDateTime now = LocalDateTime.now();
+//        LocalDateTime expiryTime = now.plusMinutes(2);
+//
+//        System.out.println("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH");
+//        OtpEntity otp = new OtpEntity();
+//        otp.setUser(savedUser);
+//        otp.setOtpCode(otpCode);
+//        otp.setIsUsed(false);
+//        otp.setCreatedDate(now);
+//        otp.setExpiryTime(expiryTime);
+//        otpRepo.save(otp);
+//        System.out.println("Fuck");
+//
+//        // Step 7: Send OTP email
+//        boolean emailSent = emailService.sendOtpEmail(savedUser.getEmail(), otpCode);
+//
+//        if (emailSent) {
+//            return "Email sent successfully. User ID: " + userId;
+//        } else {
+//            return "Failed to send email.";
+//        }
+//
+//
+//    }
+
     public String registerUser(UserEntity userInput) {
 
-        // Step 1: Get customer role
+        // Step 1: Check if email already exists globally (for any role)
+        boolean emailExists = userRepo.existsByEmail(userInput.getEmail());
+        if (emailExists) {
+            return "Email already exists";
+        }
+
+        // Step 2: Get customer role (assuming default role is "customer")
         RoleEntity customerRole = roleRepo.findByName("customer")
                 .orElseThrow(() -> new RuntimeException("Role not found"));
 
-        // Step 2: Check duplicate email for CUSTOMER only
-        boolean emailExistsForCustomer = userRepo.existsByEmailAndRole(userInput.getEmail(), customerRole);
-        if (emailExistsForCustomer) {
-            return "Email already exists for a customer account";
-        }
-
-        // Step 3: Set role and default values
+        // Step 3: Encrypt password and set default fields
         String encryptedPassword = passwordEncoder.encode(userInput.getPassword());
 
         userInput.setPassword(encryptedPassword);
         userInput.setRole(customerRole);
         userInput.setIsVerified(false);
         userInput.setDelFg(false);
-        userInput.setCreatedDate(LocalDateTime.now());
-        userInput.setUpdatedDate(LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+        userInput.setCreatedDate(now);
+        userInput.setUpdatedDate(now);
 
-        // Step 4: Save user
+        // Step 4: Save user to database
         UserEntity savedUser = userRepo.save(userInput);
-        System.out.println("//////////////////////////////////////////////////////////something fuck");
         Long userId = savedUser.getId();
-        System.out.println("//////////////////////////////////////////////////////////something fuck" + userId);
 
         // Step 5: Generate 6-digit OTP
         int otpNum = new Random().nextInt(900000) + 100000;
         String otpCode = String.valueOf(otpNum);
-        System.out.println(otpNum);
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime expiryTime = now.plusMinutes(2);
 
-        System.out.println("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH");
+        // Step 6: Prepare OTP entity
         OtpEntity otp = new OtpEntity();
         otp.setUser(savedUser);
         otp.setOtpCode(otpCode);
         otp.setIsUsed(false);
         otp.setCreatedDate(now);
-        otp.setExpiryTime(expiryTime);
+        otp.setExpiryTime(now.plusMinutes(2));
         otpRepo.save(otp);
-        System.out.println("Fuck");
 
         // Step 7: Send OTP email
         boolean emailSent = emailService.sendOtpEmail(savedUser.getEmail(), otpCode);
@@ -93,10 +145,7 @@ public class AuthService {
         } else {
             return "Failed to send email.";
         }
-
-
     }
-
 
     public void sendResetLink(String email) {
         try {

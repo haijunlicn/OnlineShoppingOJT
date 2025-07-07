@@ -71,6 +71,9 @@ import { RefundReasonFormComponent } from './policy-management/refund-reason-for
 import { RejectionReasonFormComponent } from './policy-management/rejection-reason-form/rejection-reason-form.component';
 import { RejectionReasonListComponent } from './policy-management/rejection-reason-list/rejection-reason-list.component';
 import { RefundReasonListComponent } from './policy-management/refund-reason-list/refund-reason-list.component';
+import { RefundRequestListComponent } from './RefundManagement/refund-request-list/refund-request-list.component';
+import { RefundRequestDetailComponent } from './RefundManagement/refund-request-detail/refund-request-detail.component';
+
 
 @NgModule({
   declarations: [
@@ -123,8 +126,10 @@ import { RefundReasonListComponent } from './policy-management/refund-reason-lis
     RefundReasonFormComponent,
     RejectionReasonFormComponent,
     RejectionReasonListComponent,
-    RefundReasonListComponent
+    RefundReasonListComponent,
     
+    RefundRequestListComponent,
+    RefundRequestDetailComponent,
   ],
   imports: [
     CommonModule,

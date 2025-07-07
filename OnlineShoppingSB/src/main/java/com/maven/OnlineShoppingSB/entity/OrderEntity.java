@@ -17,7 +17,7 @@ public class OrderEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     // Order belongs to a user
     @ManyToOne(fetch = FetchType.LAZY)
@@ -65,7 +65,7 @@ public class OrderEntity {
     @JoinColumn(name = "delivery_method_id", nullable = false)
     private DeliveryMethodEntity deliveryMethod;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "payment_method_id", nullable = false)
-//    private PaymentEntity paymentMethod;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_method_id", nullable = true)
+    private PaymentEntity paymentMethod;
 }

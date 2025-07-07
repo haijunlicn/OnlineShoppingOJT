@@ -510,7 +510,7 @@
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 8px;
   margin-bottom: 20px;
 }
 .input-wrapper {
@@ -1038,7 +1038,7 @@
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 8px;
 }
 
 .form-group {
@@ -1065,6 +1065,20 @@
 .form-input:focus {
   border-color: #007bff;
   box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
+}
+
+/* Error message styling */
+.error {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.error span {
+  color: #dc3545;
 }
 
 /* Input wrapper for address with locate button */
@@ -1479,4 +1493,10 @@
   font-size: 18px;
   vertical-align: middle;
   color: #007bff;
+}
+
+.address-helper {
+  color: #1976d2;
+  font-size: 13px;
+  font-style: italic;
 }

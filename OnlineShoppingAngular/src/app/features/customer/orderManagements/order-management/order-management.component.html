@@ -214,6 +214,9 @@
                     <div *ngIf="isLoading" class="loading-spinner"></div>
                   </button>
                 </div>
+                <div class="address-helper">
+                  You can enter your complete address here
+                </div>
               </div>
 
               <div class="form-group">
@@ -247,7 +250,9 @@
                   class="form-input"
                 />
               </div>
+            </div>
 
+            <div class="form-row">
               <div class="form-group">
                 <label>Country</label>
                 <input 
@@ -256,6 +261,21 @@
                   placeholder="Country"
                   class="form-input"
                 />
+              </div>
+
+              <div class="form-group">
+                <label>Phone Number</label>
+                <input
+                  type="text"
+                  formControlName="phoneNumber"
+                  placeholder="eg - 09123456789"
+                  class="form-input"
+                  maxlength="13"
+                />
+                <div *ngIf="addressForm.get('phoneNumber')?.invalid && addressForm.get('phoneNumber')?.touched" class="error">
+                  <span *ngIf="addressForm.get('phoneNumber')?.errors?.['required']">Please enter your phone number</span>
+                  <span *ngIf="addressForm.get('phoneNumber')?.errors?.['pattern']">Myanmar Phone Number (eg - 09123456789)</span>
+                </div>
               </div>
             </div>
 

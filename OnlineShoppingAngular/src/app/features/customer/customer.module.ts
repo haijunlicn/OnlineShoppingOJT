@@ -44,6 +44,9 @@ import { FileUploadComponent } from './refundManagements/file-upload/file-upload
 import { RefundRequestFormComponent } from './refundManagements/refund-request-form/refund-request-form.component';
 import { AccountSettingsComponent } from './common/account-settings/account-settings.component';
 
+import { NotificationBellComponent } from './notification/notification-bell/notification-bell.component';
+import { NotificationListComponent } from './notification/notification-list/notification-list.component';
+import { SearchBarComponent } from './common/search-bar/search-bar.component';
 
 @NgModule({
   declarations: [
@@ -61,7 +64,6 @@ import { AccountSettingsComponent } from './common/account-settings/account-sett
     UserproductListComponent,
     WishlistComponent,
     CartComponent,
-
     AboutComponent,
     ContactComponent,
     PrivacyPolicyComponent,
@@ -80,8 +82,11 @@ import { AccountSettingsComponent } from './common/account-settings/account-sett
     OrderListComponent,
     FileUploadComponent,
     RefundRequestFormComponent,
-    AccountSettingsComponent
+    AccountSettingsComponent,
 
+    NotificationBellComponent,
+    NotificationListComponent,
+    SearchBarComponent
   ],
   imports: [
     CommonModule,

@@ -11,23 +11,23 @@ export class RejectionReasonService {
 
   constructor(private http: HttpClient) {}
 
-  create(reason: RejectionReasonDTO): Observable<string> {
+  createRejectionReason(reason: RejectionReasonDTO): Observable<string> {
     return this.http.post(`${this.baseUrl}/create`, reason, { responseType: 'text' });
   }
 
-  getAll(): Observable<RejectionReasonDTO[]> {
+  getAllRejectionReasons(): Observable<RejectionReasonDTO[]> {
     return this.http.get<RejectionReasonDTO[]>(`${this.baseUrl}/list`);
   }
 
-  getById(id: number): Observable<RejectionReasonDTO> {
-    return this.http.get<RejectionReasonDTO>(`${this.baseUrl}/getbyid/${id}`);
+  getRejectionReasonById(id: number): Observable<RejectionReasonDTO> {
+    return this.http.get<RejectionReasonDTO>(`${this.baseUrl}/${id}`);
   }
 
-  update(reason: RejectionReasonDTO): Observable<string> {
-    return this.http.put(`${this.baseUrl}/update/${reason.id}`, reason, { responseType: 'text' });
+  updateRejectionReason(reason: RejectionReasonDTO): Observable<string> {
+    return this.http.put(`${this.baseUrl}/update`, reason, { responseType: 'text' });
   }
 
-  delete(id: number): Observable<string> {
+  deleteRejectionReason(id: number): Observable<string> {
     return this.http.delete(`${this.baseUrl}/delete/${id}`, { responseType: 'text' });
   }
 }
