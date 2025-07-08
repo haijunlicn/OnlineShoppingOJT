@@ -1,6 +1,7 @@
 package com.maven.OnlineShoppingSB.service;
 
 import com.maven.OnlineShoppingSB.config.CustomUserDetails;
+import com.maven.OnlineShoppingSB.dto.userDTO;
 import com.maven.OnlineShoppingSB.entity.PermissionEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;

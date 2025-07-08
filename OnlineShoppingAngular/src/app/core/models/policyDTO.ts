@@ -1,8 +1,10 @@
 export interface PolicyDTO {
-  id: number;
-  title: string;
-  description: string;
-  type: string;
-  icon: string;
-  
+  id?: number
+  title: string
+  type: string
+  description: string
+  icon?: string
+  createdDate?: string
+  updatedDate?: string
+  isActive?: boolean
 }

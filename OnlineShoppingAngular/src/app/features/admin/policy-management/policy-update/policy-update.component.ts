@@ -1,20 +1,40 @@
 import { Component, OnInit } from "@angular/core"
 import { FormBuilder, FormGroup, Validators } from "@angular/forms"
-import { Router } from "@angular/router"
+import { ActivatedRoute, Router } from "@angular/router"
 import { PolicyDTO } from "@app/core/models/policyDTO"
 import { PolicyService } from "@app/core/services/policy.service"
 
 
+declare var bootstrap: any
+
 @Component({
-  selector: "app-policy-create",
+  selector: "app-policy-update",
   standalone: false,
-  templateUrl: "./policy-create.component.html",
-  styleUrls: ["./policy-create.component.css"],
+  templateUrl: "./policy-update.component.html",
+  styleUrls: ["./policy-update.component.css"],
 })
-export class PolicyCreateComponent implements OnInit {
+export class PolicyUpdateComponent implements OnInit {
   policyForm!: FormGroup
-  isSubmitting = false
+  policyId!: number
+  policy: PolicyDTO = {
+    id: 0,
+    title: "",
+    type: "",
+    description: "",
+    icon: "",
+  }
+  originalPolicy: PolicyDTO = {
+    id: 0,
+    title: "",
+    type: "",
+    description: "",
+    icon: "",
+  }
+
+  // Component state
   message = ""
+  isSubmitting = false
+  isLoading = false
 
   policyTypes = [
     { value: "privacy", label: "Privacy Policy" },
@@ -28,12 +48,14 @@ export class PolicyCreateComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private policyService: PolicyService,
+    private route: ActivatedRoute,
     private router: Router,
+    private policyService: PolicyService,
   ) {}
 
   ngOnInit(): void {
     this.initializeForm()
+    this.loadPolicy()
   }
 
   private initializeForm(): void {
@@ -45,6 +67,40 @@ export class PolicyCreateComponent implements OnInit {
       type: ["", Validators.required],
       description: ["", [Validators.required, Validators.minLength(10), this.noWhitespaceValidator]],
     })
+  }
+
+  private loadPolicy(): void {
+    this.policyId = Number(this.route.snapshot.paramMap.get("id"))
+    if (!this.policyId) {
+      this.message = "Invalid policy ID"
+      return
+    }
+
+    this.isLoading = true
+    this.policyService.getPolicyById(this.policyId).subscribe({
+      next: (data) => {
+        this.policy = { ...data }
+        this.originalPolicy = { ...data }
+        this.populateForm()
+        this.isLoading = false
+      },
+      error: (err) => {
+        console.error("Load error:", err)
+        this.message = "Failed to load policy: " + (err.message || "Unknown error")
+        this.isLoading = false
+      },
+    })
+  }
+
+  private populateForm(): void {
+    this.policyForm.patchValue({
+      title: this.policy.title || "",
+      type: this.policy.type || "",
+      description: this.policy.description || "",
+    })
+
+    // Mark form as pristine after loading data
+    this.policyForm.markAsPristine()
   }
 
   // Custom validator to prevent only whitespace
@@ -62,6 +118,11 @@ export class PolicyCreateComponent implements OnInit {
       return
     }
 
+    if (!this.hasChanges()) {
+      this.message = "No changes detected."
+      return
+    }
+
     if (this.isSubmitting) {
       return
     }
@@ -69,25 +130,25 @@ export class PolicyCreateComponent implements OnInit {
     this.isSubmitting = true
     this.clearMessage()
 
-    const policyData: PolicyDTO = {
-      id: 0, // Provide default id
+    const updatedPolicy: PolicyDTO = {
+      ...this.policy,
       title: this.policyForm.value.title.trim(),
       type: this.policyForm.value.type,
       description: this.policyForm.value.description.trim(),
-      icon: this.getTypeIcon(this.policyForm.value.type), // Add icon based on type
-      isActive: true, // Default to active
+      icon: this.getTypeIcon(this.policyForm.value.type), // Update icon based on type
+      updatedDate: new Date().toISOString(),
     }
 
-    this.policyService.createPolicy(policyData).subscribe({
+    this.policyService.updatePolicy(updatedPolicy).subscribe({
       next: () => {
-        this.showTemporaryMessage("Policy created successfully!", "success")
+        this.showTemporaryMessage("Policy updated successfully!", "success")
         setTimeout(() => {
           this.router.navigate(["/admin/policy/policy-list"])
         }, 1500)
       },
       error: (err) => {
-        console.error("Error creating policy:", err)
-        this.message = "Failed to create policy: " + (err.message || "Unknown error")
+        console.error("Update error:", err)
+        this.message = "Failed to update policy: " + (err.message || "Unknown error")
         this.isSubmitting = false
       },
     })
@@ -113,21 +174,51 @@ export class PolicyCreateComponent implements OnInit {
   }
 
   resetForm(): void {
-    this.policyForm.reset({
-      title: "",
-      type: "",
-      description: "",
-    })
+    this.populateForm()
     this.clearMessage()
+  }
 
-    // Reset form validation state
-    Object.keys(this.policyForm.controls).forEach((key) => {
-      const control = this.policyForm.get(key)
-      if (control) {
-        control.markAsUntouched()
-        control.markAsPristine()
-      }
-    })
+  onStatusChange(): void {
+    // This method can be used for additional logic when status changes
+    this.policyForm.markAsDirty()
+  }
+
+  // Change detection methods
+  hasChanges(): boolean {
+    if (!this.originalPolicy) return false
+
+    const currentTitle = this.policyForm.get("title")?.value?.trim() || ""
+    const currentType = this.policyForm.get("type")?.value || ""
+    const currentDescription = this.policyForm.get("description")?.value?.trim() || ""
+
+    return (
+      currentTitle !== (this.originalPolicy.title || "") ||
+      currentType !== (this.originalPolicy.type || "") ||
+      currentDescription !== (this.originalPolicy.description || "")
+    )
+  }
+
+  isTitleChanged(): boolean {
+    if (!this.originalPolicy) return false
+    const currentTitle = this.policyForm.get("title")?.value?.trim() || ""
+    return currentTitle !== (this.originalPolicy.title || "")
+  }
+
+  isTypeChanged(): boolean {
+    if (!this.originalPolicy) return false
+    const currentType = this.policyForm.get("type")?.value || ""
+    return currentType !== (this.originalPolicy.type || "")
+  }
+
+  isDescriptionChanged(): boolean {
+    if (!this.originalPolicy) return false
+    const currentDescription = this.policyForm.get("description")?.value?.trim() || ""
+    return currentDescription !== (this.originalPolicy.description || "")
+  }
+
+  isStatusChanged(): boolean {
+    // Always return false since isActive is not in PolicyDTO
+    return false
   }
 
   // Validation helper methods
@@ -224,6 +315,18 @@ export class PolicyCreateComponent implements OnInit {
     }
   }
 
+  // Preview functionality
+  viewPreview(): void {
+    if (this.policyForm.invalid) {
+      this.markFormGroupTouched()
+      this.message = "Please fix form errors before previewing."
+      return
+    }
+
+    const modal = new bootstrap.Modal(document.getElementById("previewModal"))
+    modal.show()
+  }
+
   // Getter methods for form controls
   get title() {
     return this.policyForm.get("title")
@@ -237,12 +340,17 @@ export class PolicyCreateComponent implements OnInit {
     return this.policyForm.get("description")
   }
 
+  get isActive() {
+    return this.policyForm.get("isActive")
+  }
+
   // Message handling
   clearMessage(): void {
     this.message = ""
   }
 
   private showTemporaryMessage(message: string, type: "success" | "error" = "success"): void {
+    // Create and show a temporary success message
     const alertDiv = document.createElement("div")
     alertDiv.className = `alert alert-${type === "success" ? "success" : "danger"} alert-dismissible fade show`
     alertDiv.innerHTML = `
@@ -251,7 +359,7 @@ export class PolicyCreateComponent implements OnInit {
       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `
 
-    const container = document.querySelector(".policy-create-container")
+    const container = document.querySelector(".policy-update-container")
     if (container) {
       container.insertBefore(alertDiv, container.firstChild)
 
@@ -274,7 +382,7 @@ export class PolicyCreateComponent implements OnInit {
   }
 
   hasUnsavedChanges(): boolean {
-    return this.policyForm.dirty && !this.isSubmitting
+    return this.hasChanges() && !this.isSubmitting
   }
 
   // Navigation helper
@@ -282,13 +390,12 @@ export class PolicyCreateComponent implements OnInit {
     this.router.navigate(["/admin/policy/policy-list"])
   }
 
-  // Rich text editor change handler
-  onDescriptionChange(content: string): void {
-    this.policyForm.patchValue({ description: content })
-    this.policyForm.get("description")?.markAsTouched()
+  // Utility methods
+  canSave(): boolean {
+    return this.policyForm.valid && this.hasChanges() && !this.isSubmitting
   }
 
-  get descriptionValue(): string {
-    return this.policyForm.get("description")?.value || ""
+  canReset(): boolean {
+    return this.hasChanges()
   }
 }

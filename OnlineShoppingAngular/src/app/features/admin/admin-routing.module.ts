@@ -40,6 +40,7 @@ import { RejectionReasonListComponent } from './policy-management/rejection-reas
 import { RejectionReasonFormComponent } from './policy-management/rejection-reason-form/rejection-reason-form.component';
 import { RefundRequestListComponent } from './RefundManagement/refund-request-list/refund-request-list.component';
 import { RefundRequestDetailComponent } from './RefundManagement/refund-request-detail/refund-request-detail.component';
+import { PolicyUpdateComponent } from './policy-management/policy-update/policy-update.component';
 
 
 const routes: Routes = [
@@ -88,6 +89,11 @@ const routes: Routes = [
   {
     path: 'policy/policy-list',
     component: PolicyListComponent,
+    canActivate: [AdminAuthGuard]
+  },
+   {
+    path: 'policy/policy-update',
+    component: PolicyUpdateComponent,
     canActivate: [AdminAuthGuard]
   },
   {
@@ -228,6 +234,11 @@ const routes: Routes = [
     path: 'refundRequestList',
     component: RefundRequestListComponent,
     canActivate: [AdminAuthGuard, PermissionGuard],
+    data: {
+      permissionGroups: [
+        ['SUPERADMIN_PERMISSION']
+      ]
+    }
   },
   { path: 'storelocation', component: StoreAddressComponent },
 

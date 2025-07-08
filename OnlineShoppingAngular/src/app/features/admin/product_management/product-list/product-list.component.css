@@ -1,604 +1,819 @@
-/* Premium Table Styling */
-:host ::ng-deep .p-datatable-products {
-  --primary-color: var(--color-primary, #1a1a1a);
-  --accent-color: var(--color-accent, #2e4a3f);
-  --highlight-color: var(--color-highlight, #c9b87c);
-  --background-color: var(--color-background, #f9f8f6);
-  --border-color: var(--color-border, #e0e0e0);
+/* Base Styles */
+.admin-content {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  padding: 20px;
 }
 
-/* Table Container */
-:host ::ng-deep .p-datatable {
-  border-radius: 14px;
-  overflow: hidden;
-  background: #fcfcfd;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+.container-fluid {
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-/* Table Header */
-:host ::ng-deep .p-datatable .p-datatable-thead > tr > th {
-  background: #f4f6fa;
-  color: #222;
-  border: none;
-  padding: 0.7rem 1rem;
-  font-weight: 700;
-  font-size: 0.92rem;
-  text-transform: none;
-  letter-spacing: 0.2px;
-  border-bottom: 2px solid #e5e7eb;
-}
-
-/* Filter Row */
-:host ::ng-deep .p-datatable .p-datatable-thead > tr:nth-child(2) > th {
-  background: #f9fafb;
-  padding: 0.5rem 1rem;
-  border-bottom: 1px solid #ececec;
-  font-size: 0.9rem;
-}
-
-/* Sort Icons */
-:host ::ng-deep .p-datatable .p-sortable-column .p-sortable-column-icon {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.8rem;
-}
-
-/* Product Image */
-.product-image {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
-  background: #f4f4f4;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.product-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
-/* Product Name */
-.product-name {
-  font-weight: 600;
-  color: #222;
-  margin-bottom: 0.15rem;
-  font-size: 0.92rem;
-}
-
-/* Category Badge */
-.category-badge {
-  background: #e6f4ea;
-  color: #2e4a3f;
-  padding: 0.25em 0.7em;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 500;
-  text-transform: capitalize;
-  border: none;
-}
-
-/* Price Amount */
-.price-amount {
-  font-weight: 700;
-  font-size: 0.98rem;
-  color: #2e4a3f;
-}
-
-/* Status Badge */
-.status-badge {
-  padding: 0.25em 0.7em;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  min-width: 70px;
-  display: inline-block;
-  text-align: center;
-}
-
-.status-active {
-  background: #e6fbe8;
-  color: #16a34a;
-}
-
-.status-low {
-  background-color: #fff3cd;
-  color: #856404;
-}
-
-.status-inactive {
-  background: #fbeaea;
-  color: #ef4444;
-}
-
-/* Paginator */
-:host ::ng-deep .p-paginator {
-  background: #f9fafb;
-  border: none;
-  padding: 1rem;
-}
-
-:host ::ng-deep .p-paginator .p-paginator-pages .p-paginator-page {
-  border-radius: 4px;
-  min-width: 1.7rem;
-  height: 1.7rem;
-  font-size: 0.95rem;
-}
-
-:host ::ng-deep .p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
-  background: #c9b87c;
-  color: #1a1a1a;
-  font-weight: 600;
-}
-
-/* Button Styling */
-:host ::ng-deep .p-button {
-  border-radius: 5px;
-  font-weight: 600;
-  font-size: 0.92rem;
-  padding: 0.3em 0.8em;
-}
-:host ::ng-deep .p-button.p-button-success {
-  background: #2e4a3f;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 0.35em 0.9em;
-  font-size: 0.92rem;
-  transition: background 0.2s;
-}
-:host ::ng-deep .p-button.p-button-success:hover {
-  background: #c9b87c;
-  color: #1a1a1a;
-}
-
-/* Empty Message */
-:host
-  ::ng-deep
-  .p-datatable
-  .p-datatable-tbody
-  > tr.p-datatable-emptymessage
-  > td {
+/* Page Header */
+.page-header {
   background: white;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-  :host ::ng-deep .p-datatable .p-datatable-thead > tr > th,
-  :host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
-    padding: 0.5rem 0.5rem;
-    font-size: 0.9rem;
-  }
-
-  .product-name {
-    font-size: 0.88rem;
-  }
-
-  .price-amount {
-    font-size: 0.9rem;
-  }
-}
-
-.card {
-  background: #fff;
-  border: none;
-}
-
-/* --- Compact Modern Admin Product List Table --- */
-
-:host ::ng-deep .p-datatable-products {
-  --primary-color: var(--color-primary, #1a1a1a);
-  --accent-color: var(--color-accent, #2e4a3f);
-  --highlight-color: var(--color-highlight, #c9b87c);
-  --background-color: var(--color-background, #f9f8f6);
-  --border-color: var(--color-border, #e0e0e0);
-  border-radius: 0.7rem;
-  overflow: hidden;
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
-  background: #fff;
-}
-
-:host ::ng-deep .p-datatable-products .p-datatable-thead > tr > th {
-  background: #f8f9fa;
-  color: #343a40;
-  font-weight: 600;
-  border-bottom: 1px solid #e9ecef;
-  padding: 0.5rem 0.7rem;
-  font-size: 0.92rem;
-  text-transform: none;
-}
-
-:host ::ng-deep .p-datatable-products .filter-row > th {
-  background: #f4f6fa;
-  border-bottom: 1px solid #ececec;
-  font-size: 0.91rem;
-  padding: 0.35rem 0.7rem;
-}
-
-:host ::ng-deep .p-datatable-products .p-datatable-tbody > tr > td {
-  border-bottom: 1px solid #f1f3f6;
-  padding: 0.5rem 0.7rem;
-  font-size: 0.92rem;
-  vertical-align: middle;
-}
-
-:host ::ng-deep .p-datatable-products .p-datatable-tbody > tr:hover {
-  background: #eef1f5;
-  box-shadow: inset 0 0 0 1px #d0d7de;
-  transition: background 0.2s ease, box-shadow 0.2s ease;
-  cursor: pointer;
-}
-
-:host ::ng-deep .p-datatable-products .p-paginator {
-  background: #fff;
-  border: none;
-  padding: 0.5rem 0.2rem;
-}
-
-/* Badges */
-.category-badge {
-  background-color: #e1f5fe;
-  color: #0288d1;
-  border-radius: 4px;
-  padding: 0.13rem 0.4rem;
-  font-size: 0.72rem;
-  font-weight: 500;
-}
-.brand-badge {
-  background-color: #e8f5e9;
-  color: #2e7d32;
-  border-radius: 4px;
-  padding: 0.13rem 0.4rem;
-  font-size: 0.72rem;
-  font-weight: 500;
-}
-.status-badge {
-  border-radius: 4px;
-  padding: 0.13rem 0.5rem;
-  font-size: 0.72rem;
-  font-weight: 500;
-  text-transform: uppercase;
-}
-.status-active {
-  background-color: #d4edda;
-  color: #155724;
-}
-.status-inactive {
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-/* Product Image (if used) */
-.product-image {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
-  background: #f4f4f4;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.product-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
-/* Action buttons styling */
-.action-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 0.15rem;
-}
-.action-btn {
-  width: 1.5rem !important;
-  height: 1.5rem !important;
-  font-size: 0.72rem !important;
-  padding: 0 !important;
-}
-.action-btn:hover {
-  background-color: rgba(0, 0, 0, 0.04) !important;
-  transform: translateY(-1px);
-  transition: transform 0.15s ease;
-}
-
-/* Make sure the action column doesn't wrap */
-p-table th:last-child,
-p-table td:last-child {
-  white-space: nowrap;
-}
-
-/* Responsive adjustments for small screens */
-@media (max-width: 768px) {
-  .action-buttons {
-    flex-direction: column;
-    gap: 0.3rem;
-  }
-  .action-btn {
-    width: 1.2rem !important;
-    height: 1.2rem !important;
-    font-size: 0.65rem !important;
-  }
-  :host ::ng-deep .p-datatable-products .p-datatable-thead > tr > th,
-  :host ::ng-deep .p-datatable-products .p-datatable-tbody > tr > td {
-    padding: 0.35rem 0.3rem;
-    font-size: 0.85rem;
-  }
-}
-
-/* Card and Main Layout */
-.card {
-  background: #fff;
-  border: none;
-}
-
-main {
-  /* min-height: 100vh; */
-  background: #f6f8fa;
-}
-
-/* Bootstrap Dropdown Styling for Product List */
-.bootstrap-dropdown .dropdown-toggle {
-  text-align: left;
-  background: white;
-  font-size: 0.85rem;
-  min-height: 32px;
-  cursor: pointer;
-  position: relative;
-  padding-right: 2rem;
-  border: 1px solid #ced4da;
-}
-
-.bootstrap-dropdown .dropdown-toggle::after {
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.bootstrap-dropdown .dropdown-menu {
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  padding: 0.5rem 0;
-  max-height: 250px;
-  overflow-y: auto;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   border: 1px solid #e9ecef;
 }
 
-.bootstrap-dropdown .dropdown-item {
-  font-size: 0.85rem;
-  padding: 0.6rem 1rem;
-  display: flex;
-  align-items: center;
-  transition: all 0.15s ease;
-  color: #495057;
-}
-
-.bootstrap-dropdown .dropdown-item:hover {
-  background-color: #f0f7ff;
-  transform: translateX(3px);
-  color: #212529;
-}
-
-.bootstrap-dropdown .dropdown-item i {
-  margin-right: 0.5rem;
-  font-size: 0.8rem;
-}
-
-.bootstrap-dropdown .dropdown-divider {
-  margin: 0.25rem 0;
-}
-
-/* Filter row specific styling */
-.filter-row .bootstrap-dropdown .dropdown-toggle {
-  font-size: 0.8rem;
-  min-height: 30px;
-  padding: 0.25rem 2rem 0.25rem 0.5rem;
-}
-
-.filter-row .bootstrap-dropdown .dropdown-toggle::after {
-  right: 0.5rem;
-}
-
-/* Option 1: Inline Range */
-.price-filter-container {
-  min-width: 140px;
-}
-
-.price-range-display {
+.header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.75rem;
-  font-weight: 600;
 }
 
-.price-label {
+.header-info .page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0 0 4px 0;
+}
+
+.header-info .page-subtitle {
+  color: #6c757d;
+  margin: 0;
+  font-size: 16px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #0056b3, #004085);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.4);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+  color: white;
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #1e7e34, #155724);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.4);
+}
+
+.btn-outline-primary {
+  background: white;
+  color: #007bff;
+  border: 1px solid #007bff;
+}
+
+.btn-outline-primary:hover {
+  background: #007bff;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.btn-outline-secondary {
+  background: white;
+  color: #6c757d;
+  border: 1px solid #dee2e6;
+}
+
+.btn-outline-secondary:hover {
+  background: #6c757d;
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Table Card */
+.table-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e9ecef;
+  overflow: hidden;
+}
+
+.table-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #f1f3f4;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+.table-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.table-title h4 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.product-count {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Filters Section */
+.filters-section {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  padding: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.filters-section.show {
+  padding: 20px 24px;
+  max-height: 200px;
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  align-items: end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-label {
+  font-size: 12px;
+  font-weight: 600;
   color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+/* Search Input */
+.search-input {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.search-input .form-control {
+  padding-left: 36px;
+}
+
+/* Custom Dropdown */
+.custom-dropdown {
+  position: relative;
+}
+
+.dropdown-btn {
+  width: 100%;
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.dropdown-btn:hover {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+.dropdown-text {
+  flex: 1;
+  text-align: left;
+  color: #495057;
+}
+
+.dropdown-arrow {
+  color: #6c757d;
+  font-size: 12px;
+  transition: transform 0.2s ease;
+}
+
+.dropdown-btn[aria-expanded="true"] .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e9ecef;
+  padding: 8px 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  color: #495057;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background: #f8f9fa;
+  color: #2c3e50;
+}
+
+.dropdown-item i {
+  font-size: 12px;
+  width: 16px;
+}
+
+/* Price Range */
+.price-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.price-input {
+  flex: 1;
+  min-width: 0;
 }
 
 .price-separator {
   color: #6c757d;
-  font-weight: 400;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
-.price-inputs {
+/* Form Controls */
+.form-control {
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+  outline: none;
+}
+
+/* Table Container */
+.table-container {
+  overflow-x: auto;
+}
+
+/* Multi-Sort Header for Brand/Category */
+.multi-sort-header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.price-inputs input {
-  width: 60px;
-  font-size: 0.75rem;
+.sort-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  font-weight: 600;
 }
 
-.input-separator {
-  font-size: 0.75rem;
+.sort-item:hover {
+  background: rgba(0, 123, 255, 0.1);
+  color: #007bff;
+}
+
+.separator {
   color: #6c757d;
-  white-space: nowrap;
+  font-weight: 400;
+  font-size: 12px;
 }
 
-/* Option 2: Compact Row */
-.price-filter-compact {
-  min-width: 200px;
+/* PrimeNG Table Overrides */
+:host ::ng-deep .custom-table {
+  border: none;
 }
 
-.price-input {
-  width: 50px;
-  font-size: 0.75rem;
+:host ::ng-deep .custom-table .p-datatable-thead > tr > th {
+  background: #f8f9fa;
+  color: #495057;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 16px 12px;
+  border-bottom: 2px solid #e9ecef;
+  border-top: none;
+  border-left: none;
+  border-right: none;
 }
 
-.slider-container {
-  margin: 0 0.5rem;
+:host ::ng-deep .custom-table .p-datatable-tbody > tr > td {
+  padding: 16px 12px;
+  border-bottom: 1px solid #f1f3f4;
+  border-left: none;
+  border-right: none;
+  vertical-align: middle;
 }
 
-.price-display {
-  font-size: 0.7rem;
-  margin-top: 0.25rem;
+:host ::ng-deep .custom-table .p-datatable-tbody > tr:hover {
+  background: #f8f9fa;
+  transition: background 0.2s ease;
 }
 
-/* Option 3: Input Group */
-.price-filter-group {
-  min-width: 160px;
+:host ::ng-deep .custom-table .p-datatable-tbody > tr:last-child > td {
+  border-bottom: none;
 }
 
-.price-filter-group .input-group-text {
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
+/* Sort Icons Enhancement */
+:host ::ng-deep .p-sortable-column .p-sortable-column-icon {
+  color: #6c757d;
+  margin-left: 4px;
+  font-size: 12px;
+  transition: all 0.2s ease;
 }
 
-.price-filter-group .form-control {
-  font-size: 0.75rem;
+:host ::ng-deep .p-sortable-column:hover .p-sortable-column-icon {
+  color: #007bff;
 }
 
-/* Option 4: Dropdown Style */
-.price-filter-dropdown {
-  min-width: 250px;
+:host ::ng-deep .p-sortable-column.p-highlight .p-sortable-column-icon {
+  color: #007bff;
 }
 
-.price-presets .btn {
-  font-size: 0.7rem;
-  padding: 0.2rem 0.5rem;
+/* Column Widths */
+.image-col {
+  width: 80px;
+}
+.name-col {
+  width: 250px;
+}
+.brand-category-col {
+  width: 220px;
+}
+.price-col {
+  width: 120px;
+}
+.status-col {
+  width: 140px;
+}
+.date-col {
+  width: 120px;
+}
+.actions-col {
+  width: 120px;
 }
 
-/* General slider styling improvements */
-:host ::ng-deep .p-slider {
-  height: 4px;
+/* Table Cells */
+.image-cell {
+  text-align: center;
 }
 
-:host ::ng-deep .p-slider .p-slider-handle {
-  width: 14px;
-  height: 14px;
-  margin-top: -5px;
-  border: 2px solid #3b82f6;
-  background: #ffffff;
-  border-radius: 50%;
+.product-image {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 0 auto;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
 }
 
-:host ::ng-deep .p-slider .p-slider-range {
-  background: #3b82f6;
+.product-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .price-filter-container,
-  .price-filter-compact,
-  .price-filter-group {
-    min-width: 120px;
-  }
-
-  .price-inputs input,
-  .price-input {
-    width: 45px;
-    font-size: 0.7rem;
-  }
-}
-::ng-deep .p-datatable-products th,
-::ng-deep .p-datatable-products td {
-  min-width: 120px; /* Adjust as needed */
-  white-space: nowrap;
+.name-cell .product-name {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
-.product-image-cell {
+.brand-category-cell .brand-category-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.brand-name {
   display: flex;
   align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  color: #495057;
+  font-size: 14px;
+}
+
+.brand-icon {
+  color: #28a745;
+  font-size: 12px;
+}
+
+.category-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.category-icon {
+  color: #007bff;
+  font-size: 12px;
+}
+
+.price-cell .price-amount {
+  font-weight: 700;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.date-cell .date-info {
+  font-size: 13px;
+  color: #6c757d;
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-active {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-low {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-inactive {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.status-icon {
+  font-size: 8px;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 4px;
   justify-content: center;
 }
 
-.product-thumbnail {
-  width: 40px;
-  height: 40px;
+.action-btn {
+  width: 32px;
+  height: 32px;
   border-radius: 6px;
-  object-fit: cover;
-  border: 1px solid #e9ecef;
-  background: #f8f9fa;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  transition: all 0.2s ease;
 }
 
-/* --- Responsive Table Improvements --- */
-@media (max-width: 600px) {
-  /* Hide Brand/Category, Created, and Actions columns */
-  ::ng-deep .p-datatable-products th:nth-child(3),
-  ::ng-deep .p-datatable-products td:nth-child(3),
-  ::ng-deep .p-datatable-products th:nth-child(6),
-  ::ng-deep .p-datatable-products td:nth-child(6),
-  ::ng-deep .p-datatable-products th:nth-child(7),
-  ::ng-deep .p-datatable-products td:nth-child(7) {
+.view-btn {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.view-btn:hover {
+  background: #1976d2;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.edit-btn {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.edit-btn:hover {
+  background: #f57c00;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.delete-btn {
+  background: #ffebee;
+  color: #d32f2f;
+}
+
+.delete-btn:hover {
+  background: #d32f2f;
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.empty-icon i {
+  font-size: 32px;
+  color: #6c757d;
+  opacity: 0.5;
+}
+
+.empty-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.empty-text {
+  color: #6c757d;
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Paginator */
+:host ::ng-deep .p-paginator {
+  background: #f8f9fa;
+  border: none;
+  padding: 16px 20px;
+  border-top: 1px solid #e9ecef;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-pages .p-paginator-page {
+  border-radius: 6px;
+  min-width: 32px;
+  height: 32px;
+  margin: 0 2px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-first,
+:host ::ng-deep .p-paginator .p-paginator-prev,
+:host ::ng-deep .p-paginator .p-paginator-next,
+:host ::ng-deep .p-paginator .p-paginator-last {
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  margin: 0 2px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .filters-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .multi-sort-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .separator {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-content {
+    padding: 12px;
+  }
+
+  .page-header {
+    padding: 16px;
+  }
+
+  .header-content {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .header-actions {
+    justify-content: center;
+  }
+
+  .filters-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .filters-section.show {
+    max-height: 400px;
+  }
+
+  /* Hide some columns on mobile */
+  .brand-category-col,
+  .date-col {
+    display: none;
+  }
+
+  :host ::ng-deep .custom-table .p-datatable-thead > tr > th:nth-child(3),
+  :host ::ng-deep .custom-table .p-datatable-thead > tr > th:nth-child(6),
+  :host ::ng-deep .custom-table .p-datatable-tbody > tr > td:nth-child(3),
+  :host ::ng-deep .custom-table .p-datatable-tbody > tr > td:nth-child(6) {
+    display: none;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .action-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+  }
+
+  .multi-sort-header {
+    font-size: 11px;
+  }
+
+  .sort-item {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .table-container {
+    margin: 0 -12px;
+  }
+
+  :host ::ng-deep .custom-table .p-datatable-thead > tr > th,
+  :host ::ng-deep .custom-table .p-datatable-tbody > tr > td {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+
+  .product-image {
+    width: 36px;
+    height: 36px;
+  }
+
+  .status-badge {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+}
+
+/* Loading States */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Animations */
+.table-row {
+  transition: all 0.2s ease;
+}
+
+.filters-section {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Print Styles */
+@media print {
+  .header-actions,
+  .filters-section,
+  .action-buttons,
+  :host ::ng-deep .p-paginator {
     display: none !important;
   }
 
-  /* Reduce padding and font size */
-  ::ng-deep .p-datatable-products th,
-  ::ng-deep .p-datatable-products td {
-    padding: 0.3rem 0.2rem;
-    font-size: 0.78rem;
+  .table-card {
+    box-shadow: none;
+    border: 1px solid #ddd;
   }
 
-  /* Make table horizontally scrollable */
-  ::ng-deep .p-datatable-products {
-    display: block;
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  ::ng-deep .p-datatable-products table {
-    min-width: 600px;
-  }
-
-  /* Filter row: stack controls vertically and full width */
-  .filter-row th {
-    display: block;
-    width: 100%;
-    margin-bottom: 0.5rem;
-  }
-  .filter-row .bootstrap-dropdown,
-  .filter-row .price-filter-group {
-    width: 100%;
-  }
-  .filter-row input[type="text"],
-  .filter-row input[type="number"] {
-    width: 100%;
-    margin-bottom: 0.3rem;
-  }
-
-  /* Action buttons: larger and spaced */
-  .action-buttons {
-    flex-direction: row;
-    gap: 0.4rem;
-    justify-content: flex-start;
-  }
-  .action-btn {
-    width: 2rem !important;
-    height: 2rem !important;
-    font-size: 1rem !important;
+  .admin-content {
+    background: white;
+    padding: 0;
   }
 }

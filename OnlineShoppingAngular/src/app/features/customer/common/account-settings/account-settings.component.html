@@ -1,44 +1,102 @@
 <app-header></app-header>
 <div class="account-container main-content">
-  <!-- Sidebar Navigation - Full Height -->
+  <!-- Modern Sidebar Navigation -->
   <div class="sidebar main-content">
     <div class="sidebar-content">
-      
+      <!-- Sidebar Header -->
+      <div class="sidebar-header">
+        <div class="user-info">
+          <div class="user-details">
+            <h4>{{ currentUser?.name || 'User' }}</h4>
+            <p>Account Settings</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Menu -->
       <div class="sidebar-menu">
-        <div class="menu-item"
-             [class.active]="activeSection === 'profile'"
-             (click)="setActiveSection('profile')">
-          <i class="fas fa-user"></i>
-          <span>Profile Information</span>
+        <div class="menu-section">
+          <div class="section-title">Personal</div>
+          <div class="menu-item"
+               [class.active]="activeSection === 'profile'"
+               (click)="setActiveSection('profile')">
+            <div class="menu-icon">
+              <i class="bi bi-person"></i>
+            </div>
+            <div class="menu-content">
+              <span class="menu-title">Profile Information</span>
+              <span class="menu-subtitle">Manage your personal details</span>
+            </div>
+            <div class="menu-arrow">
+              <i class="bi bi-chevron-right"></i>
+            </div>
+          </div>
+
+          <div class="menu-item"
+               [class.active]="activeSection === 'security'"
+               (click)="setActiveSection('security')">
+            <div class="menu-icon">
+              <i class="bi bi-shield-check"></i>
+            </div>
+            <div class="menu-content">
+              <span class="menu-title">Account Security</span>
+              <span class="menu-subtitle">Password & authentication</span>
+            </div>
+            <div class="menu-arrow">
+              <i class="bi bi-chevron-right"></i>
+            </div>
+          </div>
         </div>
-        
-        <div class="menu-item"
-             [class.active]="activeSection === 'security'"
-             (click)="setActiveSection('security')">
-          <i class="fas fa-shield-alt"></i>
-          <span>Account Security</span>
+
+        <div class="menu-section">
+          <div class="section-title">Preferences</div>
+          <div class="menu-item"
+               [class.active]="activeSection === 'preferences'"
+               (click)="setActiveSection('preferences')">
+            <div class="menu-icon">
+              <i class="bi bi-gear"></i>
+            </div>
+            <div class="menu-content">
+              <span class="menu-title">Preferences</span>
+              <span class="menu-subtitle">Language & privacy settings</span>
+            </div>
+            <div class="menu-arrow">
+              <i class="bi bi-chevron-right"></i>
+            </div>
+          </div>
+
+          <div class="menu-item"
+               [class.active]="activeSection === 'notifications'"
+               (click)="setActiveSection('notifications')">
+            <div class="menu-icon">
+              <i class="bi bi-bell"></i>
+            </div>
+            <div class="menu-content">
+              <span class="menu-title">Notifications</span>
+              <span class="menu-subtitle">Email & push notifications</span>
+            </div>
+            <div class="menu-arrow">
+              <i class="bi bi-chevron-right"></i>
+            </div>
+          </div>
         </div>
-        
-        <div class="menu-item"
-             [class.active]="activeSection === 'preferences'"
-             (click)="setActiveSection('preferences')">
-          <i class="fas fa-cog"></i>
-          <span>Preferences</span>
-        </div>
-        
-        <div class="menu-item"
-             [class.active]="activeSection === 'notifications'"
-             (click)="setActiveSection('notifications')">
-          <i class="fas fa-bell"></i>
-          <span>Notifications</span>
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="help-section">
+          <i class="bi bi-question-circle"></i>
+          <div class="help-content">
+            <span>Need Help?</span>
+            <small>Contact support</small>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Main Content Area -->
-  <div class="main-content-area">   
-
+  <div class="main-content-area">
     <!-- Content -->
     <div class="content-wrapper">
       <!-- Loading State -->
@@ -59,7 +117,7 @@
           <div class="card-header">
             <h3>Profile Photo</h3>
             <button class="edit-btn" (click)="openPhotoModal()">
-              <i class="fas fa-edit"></i>
+              <i class="bi bi-camera"></i>
               Change Photo
             </button>
           </div>
@@ -77,7 +135,7 @@
           <div class="card-header">
             <h3>Basic Information</h3>
             <button class="edit-btn" (click)="openProfileModal()">
-              <i class="fas fa-edit"></i>
+              <i class="bi bi-pencil"></i>
               Edit
             </button>
           </div>
@@ -108,12 +166,11 @@
           <h2>Account Security</h2>
           <p>Manage your account security settings</p>
         </div>
-
         <div class="info-card">
           <div class="card-header">
             <h3>Password</h3>
             <button class="edit-btn" (click)="openPasswordModal()">
-              <i class="fas fa-key"></i>
+              <i class="bi bi-key"></i>
               Change Password
             </button>
           </div>
@@ -122,12 +179,11 @@
             <small>Use a strong password to protect your account</small>
           </div>
         </div>
-
         <div class="info-card">
           <div class="card-header">
             <h3>Two-Factor Authentication</h3>
             <button class="edit-btn">
-              <i class="fas fa-mobile-alt"></i>
+              <i class="bi bi-phone"></i>
               Setup
             </button>
           </div>
@@ -144,7 +200,6 @@
           <h2>Preferences</h2>
           <p>Customize your account preferences</p>
         </div>
-
         <div class="info-card">
           <div class="card-header">
             <h3>Language & Region</h3>
@@ -168,7 +223,6 @@
             </div>
           </div>
         </div>
-
         <div class="info-card">
           <div class="card-header">
             <h3>Privacy Settings</h3>
@@ -204,7 +258,6 @@
           <h2>Notifications</h2>
           <p>Manage your notification preferences</p>
         </div>
-
         <div class="info-card">
           <div class="card-header">
             <h3>Email Notifications</h3>
@@ -242,7 +295,6 @@
             </div>
           </div>
         </div>
-
         <div class="info-card">
           <div class="card-header">
             <h3>Push Notifications</h3>
@@ -280,7 +332,7 @@
       <div class="modal-header">
         <h3>Edit Profile Information</h3>
         <button class="close-btn" (click)="closeModals()">
-          <i class="fas fa-times"></i>
+          <i class="bi bi-x"></i>
         </button>
       </div>
       
@@ -311,12 +363,12 @@
           </div>
           
           <div class="message success-message" *ngIf="successMessage">
-            <i class="fas fa-check-circle"></i>
+            <i class="bi bi-check-circle"></i>
             {{ successMessage }}
           </div>
           
           <div class="message error-message" *ngIf="errorMessage">
-            <i class="fas fa-exclamation-circle"></i>
+            <i class="bi bi-exclamation-circle"></i>
             {{ errorMessage }}
           </div>
         </div>
@@ -338,7 +390,7 @@
       <div class="modal-header">
         <h3>Change Password</h3>
         <button class="close-btn" (click)="closeModals()">
-          <i class="fas fa-times"></i>
+          <i class="bi bi-x"></i>
         </button>
       </div>
       
@@ -360,12 +412,12 @@
           </div>
           
           <div class="message success-message" *ngIf="successMessage">
-            <i class="fas fa-check-circle"></i>
+            <i class="bi bi-check-circle"></i>
             {{ successMessage }}
           </div>
           
           <div class="message error-message" *ngIf="errorMessage">
-            <i class="fas fa-exclamation-circle"></i>
+            <i class="bi bi-exclamation-circle"></i>
             {{ errorMessage }}
           </div>
         </div>
@@ -387,7 +439,7 @@
       <div class="modal-header">
         <h3>Change Profile Photo</h3>
         <button class="close-btn" (click)="closeModals()">
-          <i class="fas fa-times"></i>
+          <i class="bi bi-x"></i>
         </button>
       </div>
       
@@ -396,7 +448,7 @@
           <img [src]="currentUser?.avatar" alt="Current Photo" class="current-photo">
           <div class="upload-section">
             <label for="photo-input" class="upload-btn">
-              <i class="fas fa-cloud-upload-alt"></i>
+              <i class="bi bi-cloud-upload"></i>
               <span>Choose New Photo</span>
             </label>
             <input type="file" id="photo-input" accept="image/*" (change)="onFileSelected($event)" style="display: none;">
@@ -405,12 +457,12 @@
         </div>
         
         <div class="message success-message" *ngIf="successMessage">
-          <i class="fas fa-check-circle"></i>
+          <i class="bi bi-check-circle"></i>
           {{ successMessage }}
         </div>
         
         <div class="message error-message" *ngIf="errorMessage">
-          <i class="fas fa-exclamation-circle"></i>
+          <i class="bi bi-exclamation-circle"></i>
           {{ errorMessage }}
         </div>
       </div>

@@ -4,41 +4,325 @@
     <app-admin-sidebar></app-admin-sidebar>
     <main class="admin-content">
       <div class="payment-update-container">
-        <h2>Update Payment Method</h2>
-
-        <div>
-          <label>Method Name:</label>
-          <input type="text" [(ngModel)]="paymentMethod.methodName" placeholder="Enter method name" />
+        <!-- Page Header -->
+        <div class="page-header mb-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h2 class="mb-1">Update Payment Method</h2>
+              <p class="text-muted mb-0">Modify payment method details and settings</p>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-secondary" [routerLink]="['/admin/payment-list']">
+                <i class="bi bi-arrow-left me-2"></i>Back to List
+              </button>
+              <button class="btn btn-outline-info" (click)="viewDetails()" *ngIf="paymentMethod.id">
+                <i class="bi bi-eye me-2"></i>View Details
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div>
-          <label>Upload New QR Code:</label>
-          <input type="file" (change)="onQRFileSelected($event)" accept="image/*" />
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center py-5">
+          <div class="spinner-border text-primary me-3" role="status"></div>
+          <span class="text-muted">Loading payment method...</span>
         </div>
 
-        <div *ngIf="paymentMethod.qrPath">
-          <p>Current QR Code:</p>
-          <img [src]="paymentMethod.qrPath" alt="QR Code" width="150" />
-        </div>
-
-        <div>
-          <label>Upload New Logo:</label>
-          <input type="file" (change)="onLogoFileSelected($event)" accept="image/*" />
-        </div>
-
-        <div *ngIf="paymentMethod.logo">
-          <p>Current Logo:</p>
-          <img [src]="paymentMethod.logo" alt="Logo" width="150" />
-        </div>
-
-        <div *ngIf="uploading">Uploading...</div>
-
-        <button (click)="updateAndSave()">Update Payment Method</button>
-
-        <div *ngIf="message" class="error-message">
+        <!-- Alert Messages -->
+        <div *ngIf="message" class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="bi bi-exclamation-triangle me-2"></i>
           {{ message }}
+          <button type="button" class="btn-close" (click)="clearMessage()" aria-label="Close"></button>
+        </div>
+
+        <!-- Main Form Card -->
+        <div *ngIf="!isLoading" class="card shadow-sm">
+          <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">
+                <i class="bi bi-pencil-square me-2"></i>Payment Method Details
+              </h5>
+              <div class="d-flex align-items-center gap-2">
+                <small class="text-muted">ID: #{{ paymentMethod.id }}</small>
+                <span class="badge" [class]="getStatusBadgeClass()">
+                  <i class="bi" [class]="getStatusIcon()" class="me-1"></i>
+                  {{ getStatusDisplayText() }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <form #paymentForm="ngForm" (ngSubmit)="updateAndSave()">
+              <div class="row">
+                <!-- Left Column - Basic Information -->
+                <div class="col-lg-6">
+                  <div class="form-section">
+                    <h6 class="form-section-title">Basic Information</h6>
+                    
+                    <!-- Method Name -->
+                    <div class="mb-3">
+                      <label for="methodName" class="form-label required">Method Name</label>
+                      <input 
+                        type="text" 
+                        id="methodName"
+                        class="form-control"
+                        [(ngModel)]="paymentMethod.methodName" 
+                        name="methodName"
+                        placeholder="Enter payment method name"
+                        required
+                        maxlength="100"
+                        #methodNameInput="ngModel"
+                        [class.is-invalid]="methodNameInput.invalid && methodNameInput.touched">
+                      <div class="invalid-feedback" *ngIf="methodNameInput.invalid && methodNameInput.touched">
+                        <div *ngIf="methodNameInput.errors?.['required']">Method name is required</div>
+                      </div>
+                      <div class="form-text">Enter a descriptive name for the payment method</div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                      <label for="description" class="form-label">Description</label>
+                      <textarea 
+                        id="description"
+                        class="form-control"
+                        [(ngModel)]="paymentMethod.description" 
+                        name="description"
+                        placeholder="Enter description (optional)"
+                        rows="3"
+                        maxlength="500"></textarea>
+                      <div class="form-text">Provide additional details about this payment method</div>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="mb-3">
+                      <label class="form-label">Status</label>
+                      <div class="form-check form-switch">
+                        <input 
+                          class="form-check-input" 
+                          type="checkbox" 
+                          id="statusSwitch"
+                          [(ngModel)]="isActive"
+                          name="status"
+                          (change)="onStatusChange()">
+                        <label class="form-check-label" for="statusSwitch">
+                          <span class="badge" [class]="isActive ? 'bg-success' : 'bg-secondary'">
+                            <i class="bi" [class]="isActive ? 'bi-check-circle' : 'bi-x-circle'" class="me-1"></i>
+                            {{ isActive ? 'Active' : 'Inactive' }}
+                          </span>
+                        </label>
+                      </div>
+                      <div class="form-text">Enable or disable this payment method</div>
+                    </div>
+
+                    <!-- Metadata -->
+                    <div class="metadata-section">
+                      <h6 class="text-muted mb-2">Metadata</h6>
+                      <div class="row">
+                        <div class="col-6">
+                          <small class="text-muted d-block">Created Date</small>
+                          <span class="fw-semibold">{{ paymentMethod.createdDate | date:'MMM d, y' }}</span>
+                        </div>
+                        <div class="col-6" *ngIf="paymentMethod.updatedDate">
+                          <small class="text-muted d-block">Last Updated</small>
+                          <span class="fw-semibold">{{ paymentMethod.updatedDate | date:'MMM d, y' }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right Column - File Uploads -->
+                <div class="col-lg-6">
+                  <div class="form-section">
+                    <h6 class="form-section-title">Images & Assets</h6>
+                    
+                    <!-- QR Code Upload -->
+                    <div class="mb-4">
+                      <label class="form-label">QR Code</label>
+                      
+                      <!-- Current QR Code -->
+                      <div *ngIf="paymentMethod.qrPath && !qrPreview" class="current-image-section mb-3">
+                        <div class="current-image-header">
+                          <small class="text-muted">Current QR Code</small>
+                          <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeCurrentQR()">
+                            <i class="bi bi-trash"></i> Remove
+                          </button>
+                        </div>
+                        <div class="current-image-preview">
+                          <img [src]="paymentMethod.qrPath" alt="Current QR Code" class="current-image">
+                        </div>
+                      </div>
+
+                      <!-- Upload New QR Code -->
+                      <div class="file-upload-area" 
+                           [class.dragover]="isDragOverQR"
+                           (dragover)="onDragOver($event, 'qr')"
+                           (dragleave)="onDragLeave($event, 'qr')"
+                           (drop)="onDrop($event, 'qr')">
+                        <div *ngIf="!selectedQRFile && !qrPreview" class="upload-placeholder">
+                          <i class="bi bi-qr-code display-4 text-muted mb-2"></i>
+                          <p class="mb-2">{{ paymentMethod.qrPath ? 'Upload new QR code' : 'Drag & drop QR code image here' }}</p>
+                          <p class="text-muted small mb-3">or</p>
+                          <button type="button" class="btn btn-outline-primary btn-sm" (click)="triggerQRFileInput()">
+                            <i class="bi bi-upload me-1"></i>Choose File
+                          </button>
+                          <input #qrFileInput type="file" class="d-none" (change)="onQRFileSelected($event)" accept="image/*">
+                        </div>
+                        <div *ngIf="selectedQRFile || qrPreview" class="upload-preview">
+                          <img [src]="qrPreview" alt="New QR Code Preview" class="preview-image">
+                          <div class="preview-overlay">
+                            <button type="button" class="btn btn-sm btn-outline-light" (click)="removeQRFile()">
+                              <i class="bi bi-trash"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-light" (click)="triggerQRFileInput()">
+                              <i class="bi bi-pencil"></i>
+                            </button>
+                          </div>
+                          <div class="preview-info">
+                            <small class="text-success">New QR Code: {{ selectedQRFile?.name }}</small>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="form-text">Upload a new QR code image (PNG, JPG, max 5MB)</div>
+                    </div>
+
+                    <!-- Logo Upload -->
+                    <div class="mb-3">
+                      <label class="form-label">Logo</label>
+                      
+                      <!-- Current Logo -->
+                      <div *ngIf="paymentMethod.logo && !logoPreview" class="current-image-section mb-3">
+                        <div class="current-image-header">
+                          <small class="text-muted">Current Logo</small>
+                          <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeCurrentLogo()">
+                            <i class="bi bi-trash"></i> Remove
+                          </button>
+                        </div>
+                        <div class="current-image-preview">
+                          <img [src]="paymentMethod.logo" alt="Current Logo" class="current-image">
+                        </div>
+                      </div>
+
+                      <!-- Upload New Logo -->
+                      <div class="file-upload-area" 
+                           [class.dragover]="isDragOverLogo"
+                           (dragover)="onDragOver($event, 'logo')"
+                           (dragleave)="onDragLeave($event, 'logo')"
+                           (drop)="onDrop($event, 'logo')">
+                        <div *ngIf="!selectedLogoFile && !logoPreview" class="upload-placeholder">
+                          <i class="bi bi-image display-4 text-muted mb-2"></i>
+                          <p class="mb-2">{{ paymentMethod.logo ? 'Upload new logo' : 'Drag & drop logo image here' }}</p>
+                          <p class="text-muted small mb-3">or</p>
+                          <button type="button" class="btn btn-outline-primary btn-sm" (click)="triggerLogoFileInput()">
+                            <i class="bi bi-upload me-1"></i>Choose File
+                          </button>
+                          <input #logoFileInput type="file" class="d-none" (change)="onLogoFileSelected($event)" accept="image/*">
+                        </div>
+                        <div *ngIf="selectedLogoFile || logoPreview" class="upload-preview">
+                          <img [src]="logoPreview" alt="New Logo Preview" class="preview-image">
+                          <div class="preview-overlay">
+                            <button type="button" class="btn btn-sm btn-outline-light" (click)="removeLogoFile()">
+                              <i class="bi bi-trash"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-light" (click)="triggerLogoFileInput()">
+                              <i class="bi bi-pencil"></i>
+                            </button>
+                          </div>
+                          <div class="preview-info">
+                            <small class="text-success">New Logo: {{ selectedLogoFile?.name }}</small>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="form-text">Upload a new logo image (PNG, JPG, max 5MB)</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Card Footer with Actions -->
+          <div class="card-footer bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="form-text">
+                <i class="bi bi-info-circle me-1"></i>
+                {{ hasChanges() ? 'You have unsaved changes' : 'No changes detected' }}
+              </div>
+              <div class="btn-group">
+                <button type="button" class="btn btn-outline-secondary" (click)="resetForm()">
+                  <i class="bi bi-arrow-clockwise me-1"></i>Reset
+                </button>
+                <button type="button" class="btn btn-outline-secondary" [routerLink]="['/admin/payment-list']">
+                  <i class="bi bi-x-lg me-1"></i>Cancel
+                </button>
+                <button 
+                  type="button" 
+                  class="btn btn-primary"
+                  (click)="updateAndSave()"
+                  [disabled]="uploading || !isFormValid() || !hasChanges()">
+                  <span *ngIf="uploading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                  <i *ngIf="!uploading" class="bi bi-check-lg me-1"></i>
+                  {{ uploading ? 'Updating...' : 'Update Payment Method' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upload Progress -->
+        <div *ngIf="uploading" class="card shadow-sm mt-3">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="spinner-border text-primary me-3" role="status"></div>
+              <div class="flex-grow-1">
+                <h6 class="mb-1">{{ uploadStatus }}</h6>
+                <div class="progress">
+                  <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                       role="progressbar" 
+                       [style.width.%]="uploadProgress">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Changes Summary -->
+        <div *ngIf="hasChanges() && !uploading" class="card shadow-sm mt-3 border-warning">
+          <div class="card-header bg-warning bg-opacity-10">
+            <h6 class="mb-0 text-warning">
+              <i class="bi bi-exclamation-triangle me-2"></i>Pending Changes
+            </h6>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6" *ngIf="getChangedFields().length > 0">
+                <h6 class="text-muted mb-2">Modified Fields</h6>
+                <ul class="list-unstyled mb-0">
+                  <li *ngFor="let field of getChangedFields()" class="mb-1">
+                    <i class="bi bi-dot text-warning"></i>
+                    <span class="fw-semibold">{{ field }}</span>
+                  </li>
+                </ul>
+              </div>
+              <div class="col-md-6" *ngIf="selectedQRFile || selectedLogoFile">
+                <h6 class="text-muted mb-2">New Files</h6>
+                <ul class="list-unstyled mb-0">
+                  <li *ngIf="selectedQRFile" class="mb-1">
+                    <i class="bi bi-dot text-success"></i>
+                    <span class="fw-semibold">QR Code: {{ selectedQRFile.name }}</span>
+                  </li>
+                  <li *ngIf="selectedLogoFile" class="mb-1">
+                    <i class="bi bi-dot text-success"></i>
+                    <span class="fw-semibold">Logo: {{ selectedLogoFile.name }}</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </main>
   </div>
   <app-admin-footer></app-admin-footer>
+</div>

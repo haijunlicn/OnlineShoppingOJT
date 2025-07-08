@@ -1,4 +1,4 @@
-.policy-create-container {
+.policy-update-container {
   padding: 1.5rem;
   background-color: #f8f9fa;
   min-height: calc(100vh - 120px);
@@ -158,6 +158,14 @@
   font-weight: 600;
 }
 
+/* Metadata Section */
+.metadata-section {
+  background-color: #f1f3f4;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  margin-top: 1rem;
+}
+
 /* Type Badges */
 .badge {
   font-size: 0.75rem;
@@ -240,7 +248,7 @@
   border-left: 4px solid #dc3545;
 }
 
-/* Validation Summary */
+/* Changes Summary */
 .border-warning {
   border-color: #ffc107 !important;
 }
@@ -251,6 +259,53 @@
 
 .text-warning {
   color: #856404 !important;
+}
+
+.border-danger {
+  border-color: #dc3545 !important;
+}
+
+.bg-danger.bg-opacity-10 {
+  background-color: rgba(220, 53, 69, 0.1) !important;
+}
+
+/* Loading State */
+.spinner-border {
+  width: 2rem;
+  height: 2rem;
+}
+
+/* Modal Enhancements */
+.modal-content {
+  border: none;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+  border-bottom: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+}
+
+.modal-footer {
+  border-top: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+}
+
+.policy-content {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  border: 1px solid #dee2e6;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.policy-content p {
+  margin-bottom: 0.5rem;
+}
+
+.policy-content p:last-child {
+  margin-bottom: 0;
 }
 
 /* Character Counter */
@@ -268,7 +323,7 @@
 }
 
 @media (max-width: 768px) {
-  .policy-create-container {
+  .policy-update-container {
     padding: 1rem;
   }
 
@@ -317,7 +372,8 @@
     font-size: 1rem;
   }
 
-  .policy-preview {
+  .policy-preview,
+  .policy-content {
     padding: 1rem;
     max-height: 200px;
   }
@@ -345,20 +401,24 @@
 }
 
 /* Custom scrollbar for preview */
-.policy-preview::-webkit-scrollbar {
+.policy-preview::-webkit-scrollbar,
+.policy-content::-webkit-scrollbar {
   width: 6px;
 }
 
-.policy-preview::-webkit-scrollbar-track {
+.policy-preview::-webkit-scrollbar-track,
+.policy-content::-webkit-scrollbar-track {
   background: #f1f1f1;
   border-radius: 3px;
 }
 
-.policy-preview::-webkit-scrollbar-thumb {
+.policy-preview::-webkit-scrollbar-thumb,
+.policy-content::-webkit-scrollbar-thumb {
   background: #c1c1c1;
   border-radius: 3px;
 }
 
-.policy-preview::-webkit-scrollbar-thumb:hover {
+.policy-preview::-webkit-scrollbar-thumb:hover,
+.policy-content::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }

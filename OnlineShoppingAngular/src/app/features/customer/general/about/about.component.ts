@@ -85,11 +85,11 @@ export class AboutComponent {
   // CTA Button Actions
   shopNow() {
     // Example: Navigate to shop page
-    window.location.href = '/shop';
+    window.location.href = '/customer/productList';
   }
 
   contactUs() {
     // Example: Navigate to contact page
-    window.location.href = '/contact';
+    window.location.href = '/customer/contact';
   }
 }
