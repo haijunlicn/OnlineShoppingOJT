@@ -26,7 +26,7 @@ export class RejectionReasonFormComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.isEdit = true;
-      this.rejectionService.getById(+id).subscribe(data => {
+      this.rejectionService.getRejectionReasonById(+id).subscribe(data => {
         this.reason = data;
       });
     }
@@ -34,11 +34,11 @@ export class RejectionReasonFormComponent implements OnInit {
 
   onSubmit() {
     if (this.isEdit) {
-      this.rejectionService.update(this.reason).subscribe(() => {
+      this.rejectionService.updateRejectionReason(this.reason).subscribe(() => {
         this.router.navigate(['/admin/rejection-reason/list']);
       });
     } else {
-      this.rejectionService.create(this.reason).subscribe(() => {
+      this.rejectionService.createRejectionReason(this.reason).subscribe(() => {
         this.router.navigate(['/admin/rejection-reason/list']);
       });
     }

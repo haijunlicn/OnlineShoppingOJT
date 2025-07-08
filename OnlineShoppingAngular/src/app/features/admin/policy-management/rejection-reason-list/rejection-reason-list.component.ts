@@ -22,7 +22,7 @@ export class RejectionReasonListComponent implements OnInit {
   }
 
   loadReasons(): void {
-    this.rejectionService.getAll().subscribe(data => {
+    this.rejectionService.getAllRejectionReasons().subscribe(data => {
       this.reasons = data;
     });
   }
@@ -33,7 +33,7 @@ export class RejectionReasonListComponent implements OnInit {
 
   delete(id: number): void {
     if (confirm('Are you sure you want to delete this reason?')) {
-      this.rejectionService.delete(id).subscribe(() => {
+      this.rejectionService.deleteRejectionReason(id).subscribe(() => {
         this.loadReasons(); // refresh list after delete
       });
     }
