@@ -12,7 +12,7 @@ export interface OrderDetail {
   createdDate: string;
   updatedDate: string;
   paymentProofPath?: string;
-  
+
   // Payment method information
   paymentMethod?: {
     id: number;
@@ -24,7 +24,7 @@ export interface OrderDetail {
     status: number;
   };
   paymentType?: string;
-  
+
   user: {
     id: number;
     name: string;
@@ -93,7 +93,7 @@ export class OrderService {
   constructor(
     private http: HttpClient,
     private authService: AuthService
-  ) {}
+  ) { }
 
   createOrderWithImage(formData: FormData): Observable<any> {
     return this.http.post(`${this.apiUrl}/create`, formData);
@@ -110,6 +110,23 @@ export class OrderService {
   getOrderDetails(orderId: number): Observable<OrderDetail> {
     return this.http.get<OrderDetail>(`${this.apiUrl}/${orderId}/details`);
   }
+
+  updatePaymentStatus(orderId: number, newStatus: 'PAID' | 'FAILED'): Observable<OrderDetail> {
+    return this.http.put<OrderDetail>(`${this.apiUrl}/${orderId}/payment-status`, {
+      status: newStatus
+    });
+  }
+
+  rejectPaymentWithReason(
+    orderId: number,
+    payload: { reasonId: number; customReason?: string }
+  ): Observable<OrderDetail> {
+    return this.http.put<OrderDetail>(
+      `${this.apiUrl}/${orderId}/reject-payment`,
+      payload
+    );
+  }
+
 
   bulkUpdateOrderStatus(
     orderIds: number[],

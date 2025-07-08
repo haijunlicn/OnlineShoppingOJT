@@ -1,12 +1,148 @@
-<div class="notification-list">
-  <h2>Your Notifications</h2>
-  <ul>
-    <li *ngFor="let noti of notifications" [class.unread]="!noti.read" >
-      <h3>{{ noti.title }}</h3>
-      <p>{{ noti.message }}</p>
-      <small>{{ noti.deliveredAt | date:'medium' }}</small>
-    </li>
-  </ul>
-  <div *ngIf="notifications.length === 0">No notifications found.</div>
-</div>
-u
+<app-header></app-header>
+
+<main class="main-content py-3">
+  <div class="notifications-page">
+    <div class="container-fluid py-4">
+      <!-- Clean Header with Integrated Stats -->
+      <div class="page-header mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-4">
+            <div>
+              <h2 class="page-title mb-1">
+                <i class="fas fa-bell me-2"></i>
+                Notifications
+              </h2>
+              <p class="page-subtitle mb-0">Stay updated with your latest activities</p>
+            </div>
+            <!-- Inline Stats -->
+            <div class="header-stats d-flex align-items-center gap-3">
+              <span class="stat-item">
+                <span class="stat-number">{{ totalNotifications }}</span>
+                <span class="stat-text">Total</span>
+              </span>
+              <span class="stat-divider">|</span>
+              <span class="stat-item unread">
+                <span class="stat-number">{{ unreadCount }}</span>
+                <span class="stat-text">Unread</span>
+              </span>
+              <span class="stat-divider">|</span>
+              <span class="stat-item">
+                <span class="stat-number">{{ todayCount }}</span>
+                <span class="stat-text">Today</span>
+              </span>
+            </div>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-outline-secondary me-2" (click)="markAllAsRead()" [disabled]="unreadCount === 0">
+              <i class="fas fa-check-double me-1"></i>
+              Mark All Read
+            </button>
+            <div class="dropdown">
+              <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-filter me-1"></i>
+                Filter
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" (click)="setFilter('all')" [class.active]="currentFilter === 'all'">All Notifications</a></li>
+                <li><a class="dropdown-item" (click)="setFilter('unread')" [class.active]="currentFilter === 'unread'">Unread Only</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" (click)="setFilter('ORDER_PLACED')" [class.active]="currentFilter === 'ORDER_PLACED'">Orders</a></li>
+                <li><a class="dropdown-item" (click)="setFilter('PROMOTION_OFFER')" [class.active]="currentFilter === 'PROMOTION_OFFER'">Promotions</a></li>
+                <li><a class="dropdown-item" (click)="setFilter('ADMIN_MESSAGE')" [class.active]="currentFilter === 'ADMIN_MESSAGE'">Admin Messages</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clean Notifications List -->
+      <div class="notifications-container">
+        <div class="card">
+          <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+              <h6 class="mb-0 fw-medium">
+                {{ getFilterTitle() }}
+                <span class="badge bg-light text-dark ms-2">{{ filteredNotifications.length }}</span>
+              </h6>
+              <div class="sort-controls">
+                <select class="form-select form-select-sm" [(ngModel)]="sortBy" (change)="applySorting()">
+                  <option value="date-desc">Newest First</option>
+                  <option value="date-asc">Oldest First</option>
+                  <option value="unread-first">Unread First</option>
+                  <option value="type">By Type</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-body p-0">
+            <!-- Loading State -->
+            <div *ngIf="loading" class="text-center py-5">
+              <div class="spinner-border text-secondary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="mt-2 text-muted small">Loading notifications...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="!loading && filteredNotifications.length === 0" class="empty-state">
+              <i class="fas fa-bell-slash text-muted"></i>
+              <h6 class="mt-3 text-muted">No notifications found</h6>
+              <p class="text-muted small">{{ getEmptyStateMessage() }}</p>
+            </div>
+
+            <!-- Notifications List -->
+            <div *ngIf="!loading && filteredNotifications.length > 0" class="notifications-list">
+              <div *ngFor="let notification of paginatedNotifications; trackBy: trackByNotificationId"
+                class="notification-item" [class.unread]="!notification.read"
+                (click)="openNotificationDetail(notification)">
+
+                <div class="notification-icon">
+                  <i [class]="getNotificationIcon(notification.type)"></i>
+                </div>
+
+                <div class="notification-content">
+                  <div class="notification-header">
+                    <h6 class="notification-title">{{ notification.title }}</h6>
+                    <div class="notification-meta">
+                      <span class="notification-type-badge" [ngClass]="'badge-' + notification.type">
+                        {{ getTypeLabel(notification.type) }}
+                      </span>
+                      <span class="notification-time">{{ getTimeAgo(notification.deliveredAt) }}</span>
+                    </div>
+                  </div>
+
+                  <p class="notification-message">{{ notification.message }}</p>
+
+                  <div class="notification-footer">
+                    <span class="notification-date">{{ notification.deliveredAt | date:'MMM d, y' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Simple Pagination -->
+          <div *ngIf="totalPages > 1" class="card-footer">
+            <nav aria-label="Notification pages">
+              <ul class="pagination pagination-sm justify-content-center mb-0">
+                <li class="page-item" [class.disabled]="currentPage === 1">
+                  <a class="page-link" (click)="changePage(currentPage - 1)">Previous</a>
+                </li>
+                <li class="page-item" *ngFor="let page of getVisiblePages()" [class.active]="page === currentPage">
+                  <a class="page-link" (click)="changePage(page)">{{ page }}</a>
+                </li>
+                <li class="page-item" [class.disabled]="currentPage === totalPages">
+                  <a class="page-link" (click)="changePage(currentPage + 1)">Next</a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Notification Detail Modal -->
+<app-notification-detail [notification]="notificationModalService.getCurrentNotification()"></app-notification-detail>

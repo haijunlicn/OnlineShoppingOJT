@@ -44,9 +44,10 @@ import { RefundRequestFormComponent } from './refundManagements/refund-request-f
 import { AccountSettingsComponent } from './common/account-settings/account-settings.component';
 
 import { NotificationBellComponent } from './notification/notification-bell/notification-bell.component';
-import { NotificationListComponent } from './notification/notification-list/notification-list.component';
 import { SearchBarComponent } from './common/search-bar/search-bar.component';
 import { LocationCardComponent } from './account/location-card/location-card.component';
+import { NotificationDetailComponent } from './notification/notification-detail/notification-detail.component';
+import { NotificationListComponent } from './notification/notification-list/notification-list.component';
 
 @NgModule({
   declarations: [
@@ -86,7 +87,9 @@ import { LocationCardComponent } from './account/location-card/location-card.com
     NotificationBellComponent,
     NotificationListComponent,
     SearchBarComponent,
-    LocationCardComponent
+    LocationCardComponent,
+    NotificationDetailComponent,
+    NotificationListComponent
   ],
   imports: [
     CommonModule,
@@ -102,7 +105,6 @@ import { LocationCardComponent } from './account/location-card/location-card.com
     MatInputModule,
     MatButtonModule,
     FormsModule,
-
     HttpClientModule,
   ]
 })

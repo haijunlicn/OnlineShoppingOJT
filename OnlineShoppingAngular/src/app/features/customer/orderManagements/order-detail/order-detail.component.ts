@@ -30,10 +30,6 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    // Initialize user ID
-    // this.authService.initializeUserFromToken();
-    // const user = this.authService.getCurrentUser();
-    // this.currentUserId = user ? user.id : 0;
 
     const sub = this.authService.user$.subscribe(user => {
       this.currentUserId = user ? user.id : 0;
@@ -65,6 +61,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
       next: (order: OrderDetail) => {
         this.order = order;
         this.loading = false;
+        console.log("order details:", this.order);
       },
       error: (err) => {
         console.error('Error loading order details:', err);
@@ -213,6 +210,27 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     this.router.navigate(['/customer/refundRequest', this.order.id]);
   }
 
+  copyTrackingNumber(): void {
+    if (this.order?.trackingNumber) {
+      navigator.clipboard.writeText(this.order.trackingNumber).then(() => {
+        console.log('Tracking number copied to clipboard');
+      });
+    }
+  }
+
+  formatShortDate(dateString: string | null | undefined): string {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (error) {
+      return '';
+    }
+  }
+
   getTotalItems(): number {
     if (!this.order?.items) return 0;
     try {
@@ -231,7 +249,6 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Method to handle image errors safely
   onImageError(event: Event): void {
     try {
       const target = event.target as HTMLImageElement;
@@ -243,162 +260,112 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  // --- ORDER STATUS STEPPER/PROGRESS BAR LOGIC (copied and adapted from AdminOrdersDetailComponent) ---
-  allowedTransitions: Record<OrderStatus, OrderStatus[]> = {
-    pending: ['order_confirmed'],
-    order_confirmed: ['packed'],
-    packed: ['out_for_delivery'],
-    out_for_delivery: ['delivered'],
-    delivered: [],
-    cancelled: []
-  };
-
-  statusList: OrderStatus[] = [
-    'pending',
-    'order_confirmed',
-    'packed',
-    'out_for_delivery',
-    'delivered',
-    'cancelled'
-  ];
-
-  statusMap: Record<OrderStatus, number> = {
-    pending: 0,
-    order_confirmed: 1,
-    packed: 2,
-    out_for_delivery: 3,
-    delivered: 4,
-    cancelled: 5
-  };
-
-  statusIdToCode: Record<number, string> = {
-    0: 'PENDING',
-    1: 'ORDER_CONFIRMED',
-    2: 'PACKED',
-    3: 'OUT_FOR_DELIVERY',
-    4: 'DELIVERED',
-    5: 'CANCELLED'
-  };
-
-  dbToUiStatus: Record<string, OrderStatus> = {
-    PENDING: 'pending',
-    ORDER_CONFIRMED: 'order_confirmed',
-    PACKED: 'packed',
-    OUT_FOR_DELIVERY: 'out_for_delivery',
-    DELIVERED: 'delivered',
-    CANCELLED: 'cancelled'
-  };
-
-  getCurrentUiStatus(): OrderStatus {
-    let statusId = this.order?.statusHistory?.length
-      ? this.order.statusHistory[this.order.statusHistory.length - 1].statusId
-      : undefined;
-
-    let code = statusId !== undefined
-      ? this.statusIdToCode[statusId]
-      : (this.order?.paymentStatus?.toUpperCase() || undefined);
-
-    let uiStatus = code ? this.dbToUiStatus[code] : undefined;
-
-    const validStatuses: OrderStatus[] = [
-      'pending',
-      'order_confirmed',
-      'packed',
-      'out_for_delivery',
-      'delivered',
-      'cancelled'
-    ];
-
-    if (uiStatus && validStatuses.includes(uiStatus)) {
-      return uiStatus;
+  onPaymentLogoError(event: Event): void {
+    try {
+      const target = event.target as HTMLImageElement;
+      if (target) {
+        target.style.display = 'none';
+        const parent = target.parentElement;
+        if (parent) {
+          parent.innerHTML = '<i class="fas fa-credit-card"></i>';
+        }
+      }
+    } catch (error) {
+      console.error('Error handling payment logo error:', error);
     }
-    return 'pending';
   }
 
-  getTimelineItems(): any[] {
-    const timelineItems = [];
-    const currentStatus = this.getCurrentUiStatus();
-    // Step 1: Pending
-    timelineItems.push({
-      id: 'pending',
-      title: 'Pending',
-      icon: 'fas fa-hourglass-start',
-      status: ['pending', 'order_confirmed', 'packed', 'out_for_delivery', 'delivered'].includes(currentStatus) ? 'completed' : (currentStatus === 'cancelled' ? 'cancelled' : 'pending')
-    });
-    // Step 2: Order Confirmed
-    timelineItems.push({
-      id: 'order_confirmed',
-      title: 'Order Confirmed',
-      icon: 'fas fa-check-circle',
-      status: ['order_confirmed', 'packed', 'out_for_delivery', 'delivered'].includes(currentStatus) ? 'completed' : (currentStatus === 'cancelled' ? 'cancelled' : 'pending')
-    });
-    // Step 3: Packed
-    timelineItems.push({
-      id: 'packed',
-      title: 'Packed',
-      icon: 'fas fa-box',
-      status: ['packed', 'out_for_delivery', 'delivered'].includes(currentStatus) ? 'completed' : (currentStatus === 'cancelled' ? 'cancelled' : 'pending')
-    });
-    // Step 4: Out for Delivery
-    timelineItems.push({
-      id: 'out_for_delivery',
-      title: 'Out for Delivery',
-      icon: 'fas fa-truck',
-      status: ['out_for_delivery', 'delivered'].includes(currentStatus) ? 'completed' : (currentStatus === 'cancelled' ? 'cancelled' : 'pending')
-    });
-    // Step 5: Delivered
-    timelineItems.push({
-      id: 'delivered',
-      title: 'Delivered',
-      icon: 'fas fa-home',
-      status: currentStatus === 'delivered' ? 'completed' : (currentStatus === 'cancelled' ? 'cancelled' : 'pending')
-    });
-    // If cancelled, mark all as cancelled after the current status
-    if (currentStatus === 'cancelled') {
-      let found = false;
-      for (const item of timelineItems) {
-        if (item.id === this.getCurrentUiStatus()) found = true;
-        if (found) item.status = 'cancelled';
-      }
+  viewPaymentProof(): void {
+    if (this.order?.paymentProofPath) {
+      window.open(this.order.paymentProofPath, '_blank');
     }
-    return timelineItems;
+  }
+
+  // Status bar methods
+  getStatusSteps(): any[] {
+    const currentStatus = this.order?.paymentStatus || 'PENDING';
+    const steps = [
+      { label: 'Order Placed', icon: 'fas fa-shopping-cart', status: 'PENDING' },
+      { label: 'Payment Confirmed', icon: 'fas fa-credit-card', status: 'PAID' },
+      { label: 'Processing', icon: 'fas fa-cog', status: 'PROCESSING' },
+      { label: 'Shipped', icon: 'fas fa-truck', status: 'SHIPPED' },
+      { label: 'Delivered', icon: 'fas fa-check-circle', status: 'DELIVERED' }
+    ];
+
+    const statusOrder = ['PENDING', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED'];
+    const currentIndex = statusOrder.indexOf(currentStatus);
+
+    return steps.map((step, index) => {
+      let stepClass = 'pending';
+      let connectorClass = 'pending';
+
+      if (index < currentIndex) {
+        stepClass = 'completed';
+        connectorClass = 'completed';
+      } else if (index === currentIndex) {
+        stepClass = 'current';
+        connectorClass = 'pending';
+      }
+
+      if (currentStatus === 'CANCELLED') {
+        stepClass = index === 0 ? 'completed' : 'cancelled';
+        connectorClass = 'cancelled';
+      }
+
+      return {
+        ...step,
+        class: stepClass,
+        connectorClass: connectorClass
+      };
+    });
   }
 
   getProgressPercent(): number {
-    const currentStatus = this.getCurrentUiStatus();
-    const steps = ['pending', 'order_confirmed', 'packed', 'out_for_delivery', 'delivered'];
-    if (currentStatus === 'cancelled') return 0;
-    const idx = steps.indexOf(currentStatus);
-    if (idx === -1) return 0;
-    return ((idx + 1) / steps.length) * 100;
+    const currentStatus = this.order?.paymentStatus || 'PENDING';
+    const statusOrder = ['PENDING', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED'];
+    const currentIndex = statusOrder.indexOf(currentStatus);
+    
+    if (currentStatus === 'CANCELLED') return 0;
+    if (currentIndex === -1) return 0;
+    
+    return ((currentIndex + 1) / statusOrder.length) * 100;
   }
 
-  // --- Payment method display methods (for payment info card) ---
-  getPaymentMethodName(): string {
-    return this.order?.paymentMethod?.methodName || this.order?.paymentType || 'Not specified';
-  }
-
-  getPaymentMethodType(): string {
-    return this.order?.paymentMethod?.type || this.order?.paymentType || 'Unknown';
-  }
-
-  getPaymentMethodIcon(): string {
-    const type = this.getPaymentMethodType().toLowerCase();
-    if (type === 'qr' || type === 'mobile wallet') {
-      return 'fas fa-qrcode';
-    } else if (type === 'credit' || type === 'credit card') {
-      return 'fas fa-credit-card';
+  getStatusIcon(status: string): string {
+    switch (status?.toUpperCase()) {
+      case 'PENDING':
+        return 'fas fa-clock';
+      case 'PAID':
+        return 'fas fa-check-circle';
+      case 'PROCESSING':
+        return 'fas fa-cog';
+      case 'SHIPPED':
+        return 'fas fa-truck';
+      case 'DELIVERED':
+        return 'fas fa-box-open';
+      case 'CANCELLED':
+        return 'fas fa-times-circle';
+      default:
+        return 'fas fa-info-circle';
     }
-    return 'fas fa-money-bill-wave';
   }
 
-  getPaymentMethodClass(): string {
-    const type = this.getPaymentMethodType().toLowerCase();
-    if (type === 'qr' || type === 'mobile wallet') {
-      return 'payment-qr';
-    } else if (type === 'credit' || type === 'credit card') {
-      return 'payment-credit';
+  getStatusMessage(status: string): string {
+    switch (status?.toUpperCase()) {
+      case 'PENDING':
+        return 'Order is being processed';
+      case 'PAID':
+        return 'Payment confirmed, preparing your order';
+      case 'PROCESSING':
+        return 'Your order is being prepared';
+      case 'SHIPPED':
+        return 'Your order is on the way!';
+      case 'DELIVERED':
+        return 'Order delivered successfully';
+      case 'CANCELLED':
+        return 'Order has been cancelled';
+      default:
+        return 'Order status unknown';
     }
-    return 'payment-default';
   }
 }

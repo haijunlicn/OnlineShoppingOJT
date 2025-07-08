@@ -10,5 +10,11 @@ import java.util.List;
 
 @Repository
 public interface UserNotificationRepository extends JpaRepository<UserNotificationEntity, Long> {
+
     List<UserNotificationEntity> findByUserIdAndMethodOrderByDeliveredAtDesc(Long userId, NotiMethod method);
+
+    boolean existsByUserIdAndNotificationIdAndMethod(Long userId, Long notificationId, NotiMethod method);
+
+    List<UserNotificationEntity> findAllByUserIdAndReadIsFalse(Long userId);
+
 }

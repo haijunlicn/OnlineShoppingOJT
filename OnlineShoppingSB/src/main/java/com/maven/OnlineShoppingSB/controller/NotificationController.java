@@ -36,15 +36,6 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
-    @PutMapping("/{id}/read")
-    public ResponseEntity<?> markAsRead(
-            @PathVariable Long id,
-            @AuthenticationPrincipal UserEntity user
-    ) {
-        notificationService.markAsRead(id, user.getId());
-        return ResponseEntity.ok().build();
-    }
-
     @PostMapping("/test")
     public ResponseEntity<NotificationDTO.MessageResponse> testNotify(@RequestBody NotificationDTO.TestNotificationRequest request) {
         Map<String, Object> metadataMap = jsonService.fromJson(request.getMetadata());
@@ -76,5 +67,23 @@ public class NotificationController {
     public List<UserNotificationDTO> getInAppNotifications(@PathVariable Long userId) {
         return userNotificationService.getInAppNotificationsForUser(userId);
     }
+
+    @PutMapping("/{id}/read")
+    public ResponseEntity<?> markAsRead(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        UserEntity user = userDetails.getUser();
+        notificationService.markAsRead(id, user.getId());
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/mark-all-read")
+    public ResponseEntity<?> markAllAsRead(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        UserEntity user = userDetails.getUser();
+        notificationService.markAllAsRead(user.getId());
+        return ResponseEntity.ok().build();
+    }
+
 
 }

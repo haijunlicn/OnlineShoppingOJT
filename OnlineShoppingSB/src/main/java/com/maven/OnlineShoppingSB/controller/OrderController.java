@@ -1,23 +1,28 @@
 package com.maven.OnlineShoppingSB.controller;
 
+import com.maven.OnlineShoppingSB.config.CustomUserDetails;
 import com.maven.OnlineShoppingSB.dto.BulkOrderStatusUpdateRequest;
 import com.maven.OnlineShoppingSB.dto.OrderDetailDto;
 import com.maven.OnlineShoppingSB.dto.OrderDto;
+import com.maven.OnlineShoppingSB.dto.PaymentRejectionReasonDTO;
 import com.maven.OnlineShoppingSB.entity.OrderEntity;
+import com.maven.OnlineShoppingSB.entity.UserEntity;
 import com.maven.OnlineShoppingSB.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/orders")
-@CrossOrigin(origins = {"http://localhost:4200", "http://127.0.0.1:4200"}, 
-             allowedHeaders = "*", 
-             methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
+@CrossOrigin(origins = {"http://localhost:4200", "http://127.0.0.1:4200"},
+        allowedHeaders = "*",
+        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 public class OrderController {
 
     @Autowired
@@ -82,8 +87,8 @@ public class OrderController {
         try {
             List<OrderEntity> updatedOrders = orderService.bulkUpdateOrderStatus(request);
             List<OrderDetailDto> updatedOrderDtos = updatedOrders.stream()
-                .map(orderService::convertToOrderDetailDto)
-                .collect(Collectors.toList());
+                    .map(orderService::convertToOrderDetailDto)
+                    .collect(Collectors.toList());
             return ResponseEntity.ok(updatedOrderDtos);
         } catch (Exception e) {
             System.err.println("Error updating order status: " + e.getMessage());
@@ -104,4 +109,31 @@ public class OrderController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    @PutMapping("/{id}/payment-status")
+    public ResponseEntity<?> updatePaymentStatus(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> payload
+    ) {
+        try {
+            String newStatus = payload.get("status");
+            OrderEntity updatedOrder = orderService.updatePaymentStatus(id, newStatus);
+            OrderDetailDto dto = orderService.convertToOrderDetailDto(updatedOrder);
+            return ResponseEntity.ok(dto);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{orderId}/reject-payment")
+    public ResponseEntity<OrderDetailDto> rejectPayment(
+            @PathVariable Long orderId,
+            @RequestBody PaymentRejectionReasonDTO.PaymentRejectionRequestDTO rejectionRequest,
+            @AuthenticationPrincipal CustomUserDetails principal
+    ) {
+        UserEntity adminUser = principal.getUser();
+        return ResponseEntity.ok(orderService.rejectPayment(orderId, rejectionRequest, adminUser));
+    }
+
+
 }

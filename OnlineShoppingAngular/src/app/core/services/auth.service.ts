@@ -12,6 +12,7 @@ import { jwtDecode } from 'jwt-decode';
 import { StorageService } from './StorageService';
 import { AccessControlService } from './AccessControl.service';
 import { AuthGuard } from '../guards/auth.guard';
+import { NotificationService } from './notification.service';
 
 
 @Injectable({
@@ -28,7 +29,8 @@ export class AuthService {
     private registerModalService: RegisterModalService,
     private alertService: AlertService,
     private storageService: StorageService,
-    private accessControlService: AccessControlService
+    private accessControlService: AccessControlService,
+    private notificationService: NotificationService,
   ) { }
 
   private userLoadedSubject = new BehaviorSubject<boolean>(false);
@@ -58,8 +60,13 @@ export class AuthService {
 
       // this.getCurrentUserByEmailAndRoleType(email, roleType).subscribe({
       this.fetchCurrentUser().subscribe({
-        next: () => {
+        next: (user) => {
           this.userLoadedSubject.next(true); // ✅ Done
+          // 👇 NEW: connect WebSocket
+          if (user?.roleName === 'CUSTOMER' || user?.roleName === 'ADMIN') {
+            this.notificationService.connectWebSocket();
+            this.notificationService.loadInAppNotificationsForUser(user.id);
+          }
         },
         error: () => {
           this.userSubject.next(null);
@@ -164,22 +171,22 @@ export class AuthService {
       tap((user: User) => {
         this.userSubject.next(user);
         this.accessControlService.setPermissions(user.permissions!);
+
+        // Add this block
+        if (user?.roleName === 'CUSTOMER' || user?.roleName === 'ADMIN') {
+          this.notificationService.connectWebSocket();
+          this.notificationService.loadInAppNotificationsForUser(user.id);
+        }
       })
     );
   }
 
 
   logout() {
-    console.log('[Logout] Start logout process');
-
     this.storageService.removeItem('token');
+    this.notificationService.disconnectWebSocket();
     this.userSubject.next(null);
-    console.log('[Logout] Token removed and userSubject cleared');
-
     const currentUrl = this.router.url;
-    console.log('[Logout] Redirecting back to current URL:', currentUrl);
-
-    // Redirect to the current URL to trigger AuthGuard
     this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
       this.router.navigateByUrl(currentUrl);
     });

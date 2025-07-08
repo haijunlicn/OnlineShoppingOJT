@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { TestNotificationRequest, UserNotificationDTO } from '../models/notification.model';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import SockJS from 'sockjs-client';
-import { Client, IMessage } from '@stomp/stompjs';
+import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
 import { StorageService } from './StorageService';
+import { UserNotificationDTO } from '../models/notification.model';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +15,7 @@ export class NotificationService {
   notifications$ = this.notificationsSubject.asObservable();
 
   private wsStompClient?: Client;
+  private stompSubscription?: StompSubscription;
 
   constructor(private http: HttpClient, private storageService: StorageService) { }
 
@@ -61,9 +62,25 @@ export class NotificationService {
     return this.http.put<void>(`http://localhost:8080/notifications/${id}/read`, {});
   }
 
+  markAllAsRead(): Observable<void> {
+    return this.http.put<void>(`http://localhost:8080/notifications/mark-all-read`, {});
+  }
+
+
   addNotification(notification: UserNotificationDTO) {
     const current = this.notificationsSubject.value;
     this.notificationsSubject.next([notification, ...current]);
+  }
+
+  disconnectWebSocket() {
+    if (this.stompSubscription) {
+      this.stompSubscription.unsubscribe();
+      this.stompSubscription = undefined;
+    }
+    if (this.wsStompClient) {
+      this.wsStompClient.deactivate();
+      this.wsStompClient = undefined;
+    }
   }
 
 }

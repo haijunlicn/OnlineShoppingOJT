@@ -29,6 +29,7 @@ import { RefundRequestFormComponent } from './refundManagements/refund-request-f
 import { AccountSettingsComponent } from './common/account-settings/account-settings.component';
 
 import { NotificationListComponent } from './notification/notification-list/notification-list.component';
+import { PaymentGuard } from '@app/core/services/payment-guard.service';
 
 const routes: Routes = [
 
@@ -99,7 +100,11 @@ const routes: Routes = [
     component: ProductDetailComponent
   },
   { path: 'order', component: OrderManagementComponent },
-  { path: 'payment', component: PaymentAcceptComponent },
+  {
+    path: 'payment',
+    component: PaymentAcceptComponent,
+    canDeactivate: [PaymentGuard]
+  },
   { path: 'orderDetail/:id', component: OrderDetailComponent, canActivate: [AuthGuard] },
   { path: 'orders', component: OrderListComponent, canActivate: [AuthGuard] },
   { path: 'order', component: OrderManagementComponent, canActivate: [AuthGuard] },
