@@ -1,18 +1,34 @@
 export interface UserNotificationDTO {
-  id: number;
-  title: string;
-  message: string;
-  metadata?: string;
-  read: boolean;
-  deliveredAt: string;  // ISO string
-  readAt?: string;
-  method: 'IN_APP' | 'EMAIL' | 'SMS' | 'PUSH';
+  id: string
+  title: string
+  message: string
+  type: string
+  read: boolean
+  deliveredAt: string
+  userId: string
+  richContent?: NotificationRichContent
 }
 
-export interface TestNotificationRequest {
-  type: string;
-  title: string;
-  message: string;
-  metadata?: string;
-  targetUserIds?: number[];
+export interface NotificationRichContent {
+  image?: string
+  content?: string // HTML content
+  links?: NotificationLink[]
+  actions?: NotificationAction[]
+  data?: { [key: string]: any }
+}
+
+export interface NotificationLink {
+  label: string
+  url: string
+  icon?: string
+  external?: boolean
+}
+
+export interface NotificationAction {
+  label: string
+  type: "navigate" | "external" | "api" | "modal"
+  url?: string
+  icon?: string
+  style?: "primary" | "success" | "warning" | "danger" | "info"
+  payload?: any
 }

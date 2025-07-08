@@ -275,11 +275,9 @@ public class RefundRequestService {
 
             // Update item status based on admin decision
             if ("approve".equalsIgnoreCase(decision.getAction())) {
-                if (item.getRequestedAction() == RequestedRefundAction.REFUND_ONLY) {
-                    item.setStatus(RefundItemStatus.APPROVED);
-                } else {
-                    item.setStatus(RefundItemStatus.RETURN_PENDING);
-                }
+                item.setStatus(item.getRequestedAction() == RequestedRefundAction.REFUND_ONLY
+                        ? RefundItemStatus.APPROVED
+                        : RefundItemStatus.RETURN_PENDING);
             } else if ("reject".equalsIgnoreCase(decision.getAction())) {
                 item.setStatus(RefundItemStatus.REJECTED);
                 if (decision.getRejectionReasonId() != null) {
@@ -303,69 +301,65 @@ public class RefundRequestService {
             refundItemStatusHistoryRepository.save(history);
         }
 
-        // Get all items of this refund request
+        // Reload updated refund request with latest items
+        refundRequest = refundRequestRepository.findByIdWithItems(refundRequest.getId())
+                .orElseThrow(() -> new RuntimeException("Refund request not found after updating items"));
         Set<RefundItemEntity> allItems = refundRequest.getItems();
+
         if (allItems == null || allItems.isEmpty()) {
             throw new RuntimeException("No refund items found for this request");
         }
 
-        // Check if all items are rejected
-        boolean allRejected = allItems.stream()
-                .allMatch(item -> item.getStatus() == RefundItemStatus.REJECTED);
+        // Determine new status
+        boolean allRejected = allItems.stream().allMatch(item -> item.getStatus() == RefundItemStatus.REJECTED);
+        boolean allFinalized = allItems.stream().allMatch(item ->
+                item.getStatus() == RefundItemStatus.REJECTED ||
+                        item.getStatus() == RefundItemStatus.REFUNDED ||
+                        item.getStatus() == RefundItemStatus.REPLACED ||
+                        item.getStatus() == RefundItemStatus.RETURN_REJECTED
+        );
 
-        // Check if all items have final statuses
-        boolean allFinalized = allItems.stream()
-                .allMatch(item ->
-                        item.getStatus() == RefundItemStatus.REJECTED ||
-                                item.getStatus() == RefundItemStatus.REFUNDED ||
-                                item.getStatus() == RefundItemStatus.REPLACED ||
-                                item.getStatus() == RefundItemStatus.RETURN_REJECTED
+        RefundStatus newStatus = allRejected
+                ? RefundStatus.REJECTED
+                : allFinalized
+                ? RefundStatus.COMPLETED
+                : RefundStatus.IN_PROGRESS;
+
+        RefundStatus oldStatus = refundRequest.getStatus();
+
+        // Only update and notify if status changed
+        if (oldStatus != newStatus) {
+            refundRequest.setStatus(newStatus);
+            refundRequest.setUpdatedAt(LocalDateTime.now());
+            refundRequestRepository.save(refundRequest);
+
+            // Save status history
+            RefundStatusHistoryEntity statusHistory = new RefundStatusHistoryEntity();
+            statusHistory.setRefundRequest(refundRequest);
+            statusHistory.setStatus(newStatus);
+            statusHistory.setNote("Admin updated request status after item decisions");
+            statusHistory.setCreatedAt(LocalDateTime.now());
+            statusHistory.setUpdatedBy(admin.getId());
+            refundStatusHistoryRepository.save(statusHistory);
+
+            // Send notification based on new status
+            String type = switch (newStatus) {
+                case COMPLETED -> "REFUND_COMPLETED";
+                case REJECTED -> "REFUND_REJECTED";
+                case IN_PROGRESS -> "REFUND_IN_PROGRESS";
+                default -> null;
+            };
+
+            if (type != null) {
+                notificationService.notify(
+                        type,
+                        Map.of("orderId", refundRequest.getOrder().getId()),
+                        List.of(refundRequest.getUser().getId())
                 );
-
-
-        // Determine new refund request status
-        RefundStatus newStatus;
-        if (allRejected) {
-            newStatus = RefundStatus.REJECTED;
-        } else if (allFinalized) {
-            newStatus = RefundStatus.COMPLETED;
-        } else {
-            newStatus = RefundStatus.IN_PROGRESS;
-        }
-
-        // Update refund request status and timestamp
-        refundRequest.setStatus(newStatus);
-        refundRequest.setUpdatedAt(LocalDateTime.now());
-        refundRequestRepository.save(refundRequest);
-
-        // Save refund request status history
-        RefundStatusHistoryEntity statusHistory = new RefundStatusHistoryEntity();
-        statusHistory.setRefundRequest(refundRequest);
-        statusHistory.setStatus(newStatus);
-        statusHistory.setNote("Admin updated request status after item decisions");
-        statusHistory.setCreatedAt(LocalDateTime.now());
-        statusHistory.setUpdatedBy(admin.getId());
-        refundStatusHistoryRepository.save(statusHistory);
-
-        // Notify customer and/or admin based on request status
-        switch (newStatus) {
-            case COMPLETED -> notificationService.notify(
-                    "REFUND_COMPLETED",
-                    Map.of("orderId", refundRequest.getOrder().getId()),
-                    null // to customer
-            );
-            case REJECTED -> notificationService.notify(
-                    "REFUND_REJECTED",
-                    Map.of("orderId", refundRequest.getOrder().getId()),
-                    null // to customer
-            );
-            case IN_PROGRESS -> notificationService.notify(
-                    "REFUND_IN_PROGRESS",
-                    Map.of("orderId", refundRequest.getOrder().getId()),
-                    null // to customer
-            );
+            }
         }
     }
+
 
     @Transactional
     public void updateItemStatus(RefundRequestDTO.StatusUpdateRequest request) {
@@ -384,10 +378,6 @@ public class RefundRequestService {
         if (!isValidTransition(currentStatus, newStatus, action)) {
             throw new IllegalArgumentException("Invalid status transition from " + currentStatus + " to " + newStatus + " for action: " + action);
         }
-
-//        if (request.getNote() != null && !request.getNote().isBlank()) {
-//            item.setAdminComment(request.getNote());
-//        }
 
         // 🛠️ Handle rejection-specific fields
         if (newStatus == RefundItemStatus.REJECTED || newStatus == RefundItemStatus.RETURN_REJECTED) {
@@ -478,7 +468,7 @@ public class RefundRequestService {
             notificationService.notify(
                     notificationType,
                     Map.of("orderId", refundRequest.getOrder().getId()),
-                    null // notify the customer
+                    List.of(refundRequest.getUser().getId())
             );
         }
 

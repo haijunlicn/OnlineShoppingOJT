@@ -17,14 +17,59 @@
     </div>
   </div>
 
-  <!-- Global Timer Display -->
-  <div class="global-timer" *ngIf="!timerExpired">
-    <i class="fas fa-clock"></i>
-    <span>Time left to complete payment: <strong>{{ timerDisplay }}</strong></span>
+  <!-- Modern Professional Timer -->
+  <div class="payment-timer-container" *ngIf="!timerExpired || !this.paymentInProgress || !paymentSuccess">
+    <div class="timer-header">
+      <div class="timer-label">
+        <i class="fas fa-clock"></i>
+        <span>Payment Session</span>
+      </div>
+      <div class="timer-status" [ngClass]="getTimerStatus()">
+        {{ getTimerStatusText() }}
+      </div>
+    </div>
+
+    <div class="timer-display-container">
+      <div class="timer-display" [ngClass]="getTimerStatus()">
+        <span>{{ timerDisplay.split(':')[0] }}</span>
+        <span class="timer-separator">:</span>
+        <span>{{ timerDisplay.split(':')[1] }}</span>
+      </div>
+    </div>
+
+    <div class="timer-progress-container">
+      <div class="timer-progress-bar">
+        <div class="timer-progress-fill" [ngClass]="getTimerStatus()" [style.width.%]="timerProgressPercent">
+        </div>
+      </div>
+      <div class="timer-info">
+        <span>Time remaining to complete payment</span>
+        <span>{{ Math.floor(timeLeft / 60) }}m {{ timeLeft % 60 }}s</span>
+      </div>
+    </div>
+
+    <div class="timer-warning-message" *ngIf="timerWarning && !timerExpired">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>Hurry up! Only {{ Math.floor(timeLeft / 60) }} minutes {{ timeLeft % 60 }} seconds left to complete your
+        payment.</span>
+    </div>
   </div>
-  <div class="global-timer expired" *ngIf="timerExpired">
-    <i class="fas fa-exclamation-triangle"></i>
-    <span>Payment time expired. Please try again.</span>
+
+  <div class="payment-timer-container" *ngIf="timerExpired">
+    <div class="timer-header">
+      <div class="timer-label">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>Payment Session</span>
+      </div>
+      <div class="timer-status expired">
+        Expired
+      </div>
+    </div>
+
+    <div class="timer-expired-message">
+      <i class="fas fa-times-circle"></i>
+      <span>Payment time has expired. Please start a new order to continue.</span>
+    </div>
   </div>
 
   <!-- Main Content -->
@@ -93,30 +138,17 @@
               <div class="form-group">
                 <label>Card Number</label>
                 <div class="input-wrapper">
-                  <input 
-                    type="text" 
-                    [(ngModel)]="creditCardData.cardNumber"
-                    name="cardNumber"
-                    (input)="formatCardNumber($event)"
-                    placeholder="1234 5678 9012 3456"
-                    maxlength="19"
-                    required
-                    [disabled]="timerExpired"
-                  >
+                  <input type="text" [(ngModel)]="creditCardData.cardNumber" name="cardNumber"
+                    (input)="formatCardNumber($event)" placeholder="1234 5678 9012 3456" maxlength="19" required
+                    [disabled]="timerExpired">
                   <i class="fas fa-credit-card"></i>
                 </div>
               </div>
               <div class="form-group">
                 <label>Cardholder Name</label>
                 <div class="input-wrapper">
-                  <input 
-                    type="text" 
-                    [(ngModel)]="creditCardData.cardHolderName"
-                    name="cardHolderName"
-                    placeholder="John Doe"
-                    required
-                    [disabled]="timerExpired"
-                  >
+                  <input type="text" [(ngModel)]="creditCardData.cardHolderName" name="cardHolderName"
+                    placeholder="John Doe" required [disabled]="timerExpired">
                   <i class="fas fa-user"></i>
                 </div>
               </div>
@@ -124,31 +156,17 @@
                 <div class="form-group">
                   <label>Expiry Date</label>
                   <div class="input-wrapper">
-                    <input 
-                      type="text" 
-                      [(ngModel)]="creditCardData.expiryDate"
-                      name="expiryDate"
-                      (input)="formatExpiryDate($event)"
-                      placeholder="MM/YY"
-                      maxlength="5"
-                      required
-                      [disabled]="timerExpired"
-                    >
+                    <input type="text" [(ngModel)]="creditCardData.expiryDate" name="expiryDate"
+                      (input)="formatExpiryDate($event)" placeholder="MM/YY" maxlength="5" required
+                      [disabled]="timerExpired">
                     <i class="fas fa-calendar"></i>
                   </div>
                 </div>
                 <div class="form-group">
                   <label>CVV</label>
                   <div class="input-wrapper">
-                    <input 
-                      type="text" 
-                      [(ngModel)]="creditCardData.cvv"
-                      name="cvv"
-                      placeholder="123"
-                      maxlength="4"
-                      required
-                      [disabled]="timerExpired"
-                    >
+                    <input type="text" [(ngModel)]="creditCardData.cvv" name="cvv" placeholder="123" maxlength="4"
+                      required [disabled]="timerExpired">
                     <i class="fas fa-lock"></i>
                   </div>
                 </div>
@@ -157,14 +175,8 @@
               <div class="upload-section-enhanced">
                 <h5>Upload Payment Proof Image</h5>
                 <div class="upload-area-enhanced" *ngIf="!uploadedImageUrl">
-                  <input 
-                    type="file" 
-                    id="credit-upload" 
-                    accept="image/*" 
-                    (change)="onImageUpload($event)"
-                    style="display: none;"
-                    [disabled]="timerExpired"
-                  >
+                  <input type="file" id="credit-upload" accept="image/*" (change)="onImageUpload($event)"
+                    style="display: none;" [disabled]="timerExpired">
                   <label for="credit-upload" class="upload-button-enhanced" [class.disabled]="timerExpired">
                     <i class="fas fa-cloud-upload-alt"></i>
                     <span>Upload Image</span>
@@ -180,12 +192,8 @@
                 </div>
               </div>
               <!-- Place Order Button for Credit Card Payment -->
-              <button 
-                type="button" 
-                class="btn-pay"
-                (click)="processCreditCardPayment()"
-                [disabled]="isProcessing || !isValidCreditCard() || !uploadedImage || timerExpired"
-              >
+              <button type="button" class="btn-pay" (click)="processCreditCardPayment()"
+                [disabled]="isProcessing || !isValidCreditCard() || !uploadedImage || timerExpired">
                 <i class="fas fa-check" *ngIf="!isProcessing"></i>
                 <i class="fas fa-spinner fa-spin" *ngIf="isProcessing"></i>
                 {{ isProcessing ? 'Processing...' : 'Place Order' }}
@@ -205,14 +213,12 @@
                 <h3>Choose Mobile Wallet</h3>
               </div>
               <div class="qr-methods-grid">
-                <div 
-                  *ngFor="let method of qrPaymentMethods; trackBy: trackByMethodId"
-                  class="qr-method-card"
-                  (click)="selectQRMethod((method.id ?? '').toString())"
-                >
+                <div *ngFor="let method of qrPaymentMethods; trackBy: trackByMethodId" class="qr-method-card"
+                  (click)="selectQRMethod((method.id ?? '').toString())">
                   <div class="method-icon">
                     <ng-container *ngIf="method.logo; else iconTpl">
-                      <img [src]="method.logo" alt="{{ method.methodName }}" style="width: 28px; height: 28px; border-radius: 4px;" />
+                      <img [src]="method.logo" alt="{{ method.methodName }}"
+                        style="width: 28px; height: 28px; border-radius: 4px;" />
                     </ng-container>
                     <ng-template #iconTpl>
                       <i class="fas fa-qrcode"></i>
@@ -237,7 +243,8 @@
                   <div class="selected-method">
                     <div class="method-icon">
                       <ng-container *ngIf="getSelectedQRMethod()?.logo; else iconTpl2">
-                        <img [src]="getSelectedQRMethod()?.logo" alt="getSelectedQRMethod()?.methodName" style="width: 28px; height: 28px; border-radius: 4px;" />
+                        <img [src]="getSelectedQRMethod()?.logo" alt="getSelectedQRMethod()?.methodName"
+                          style="width: 28px; height: 28px; border-radius: 4px;" />
                       </ng-container>
                       <ng-template #iconTpl2>
                         <i class="fas fa-qrcode"></i>
@@ -271,19 +278,13 @@
                       </ol>
                     </div>
                   </div>
-                  
+
                   <!-- Image Upload Section -->
                   <div class="upload-section-enhanced">
                     <h5>Upload QR Screenshot for Translation</h5>
                     <div class="upload-area-enhanced" *ngIf="!uploadedImageUrl">
-                      <input 
-                        type="file" 
-                        id="qr-upload" 
-                        accept="image/*" 
-                        (change)="onImageUpload($event)"
-                        style="display: none;"
-                        [disabled]="timerExpired"
-                      >
+                      <input type="file" id="qr-upload" accept="image/*" (change)="onImageUpload($event)"
+                        style="display: none;" [disabled]="timerExpired">
                       <label for="qr-upload" class="upload-button-enhanced" [class.disabled]="timerExpired">
                         <i class="fas fa-cloud-upload-alt"></i>
                         <span>Upload Image</span>
@@ -298,15 +299,13 @@
                       </div>
                     </div>
                   </div>
-                  
-                  <button 
-                    class="btn-verify"
-                    (click)="verifyQRPayment()"
-                    [disabled]="isProcessing || timerExpired || !uploadedImage"
-                  >
+
+                  <button class="btn-verify" (click)="verifyQRPayment()"
+                    [disabled]="isProcessing || timerExpired || !uploadedImage">
                     <i class="fas fa-check-circle" *ngIf="!isProcessing"></i>
                     <i class="fas fa-spinner fa-spin" *ngIf="isProcessing"></i>
-                    {{ isProcessing ? 'Processing Payment & Placing Order...' : 'I have completed the payment & Place Order' }}
+                    {{ isProcessing ? 'Processing Payment & Placing Order...'
+                    : 'I have completed the payment & Place Order' }}
                   </button>
                 </div>
               </div>
@@ -401,14 +400,15 @@
   </div>
 
   <!-- Payment Status Overlay -->
-  <div *ngIf="paymentMessage" class="payment-status-overlay">
+  <!-- <div *ngIf="paymentMessage" class="payment-status-overlay">
     <div class="payment-status-card" [class.success]="paymentSuccess" [class.error]="!paymentSuccess">
       <div class="status-icon">
         <i class="fas fa-check-circle" *ngIf="paymentSuccess"></i>
         <i class="fas fa-exclamation-circle" *ngIf="!paymentSuccess"></i>
       </div>
+
       <div class="status-content">
-        <h3>{{ paymentSuccess ? 'Payment Successful!' : 'Payment Failed' }}</h3>
+        <h3>{{ !paymentSuccess ? 'Payment Successful!' : 'Payment Failed' }}</h3>
         <p>{{ paymentMessage }}</p>
         <div class="status-actions">
           <button *ngIf="!paymentSuccess" class="btn-try-again" (click)="paymentMessage = ''">
@@ -416,7 +416,8 @@
           </button>
         </div>
       </div>
-    </div>
-  </div>
-</div>
 
+    </div>
+  </div> -->
+
+</div>

@@ -1,5 +1,5 @@
 /* Color Variables - Dark Green & Tan Scheme */
-:root {
+/* :root {
   --color-primary: #2a322e;
   --color-accent: #d8cbbb;
   --color-secondary: #212427;
@@ -8,7 +8,7 @@
   --color-border: rgba(216, 203, 187, 0.3);
   --color-shadow: rgba(42, 50, 46, 0.1);
   --color-highlight: #bfa16a;
-}
+} */
 
 /* Modern Clean Header */
 .modern-header {
@@ -142,27 +142,40 @@
   transform: translateY(-1px);
 }
 
-/* Cart Badge */
+/* Enhanced Cart Badge - Professional Design */
 .action-btn.cart-btn {
   position: relative;
 }
 
 .cart-count {
   position: absolute;
-  top: -6px;
-  right: -6px;
-  background-color: var(--color-brown);
+  top: -8px;
+  right: -8px;
+  background: linear-gradient(135deg, #dc3545, #c82333);
   color: white;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  border-radius: 12px;
+  min-width: 22px;
+  height: 22px;
+  font-size: 0.7rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 0 2px white;
+  border: 2px solid white;
+  box-shadow: 0 3px 8px rgba(220, 53, 69, 0.3), 0 1px 3px rgba(0, 0, 0, 0.1);
   z-index: 2;
+  animation: subtle-pulse 2s infinite;
+  letter-spacing: -0.5px;
+}
+
+@keyframes subtle-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 /* Auth Buttons */
@@ -198,21 +211,9 @@
 .auth-btn-filled:hover {
   background-color: var(--color-brown);
   border-color: var(--color-brown);
-  color: var(--color-primary); /* dark green text */
+  color: var(--color-primary);
   cursor: pointer;
 }
-
-
-/* .auth-btn-filled {
-  background-color: var(--color-primary);
-  color: var(--color-background);
-  border-color: var(--color-primary);
-}
-
-.auth-btn-filled:hover {
-  background-color: var(--color-brown);
-  border-color: var(--color-brown);
-} */
 
 /* Profile Button - Better Spacing */
 .profile-btn {

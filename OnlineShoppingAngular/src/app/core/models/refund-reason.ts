@@ -15,3 +15,12 @@ export interface RejectionReasonDTO {
   updatedDate?: Date;
   allowCustomText?: boolean;
 }
+
+export interface PaymentRejectionReasonDTO {
+  id?: number;
+  label: string;
+  allowCustomText?: boolean;
+  delFg?: number;
+  createdDate?: Date;
+  updatedDate?: Date;
+}

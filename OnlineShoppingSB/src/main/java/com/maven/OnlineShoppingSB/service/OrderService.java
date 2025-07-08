@@ -3,16 +3,10 @@ package com.maven.OnlineShoppingSB.service;
 import com.cloudinary.utils.ObjectUtils;
 import com.maven.OnlineShoppingSB.dto.*;
 import com.maven.OnlineShoppingSB.entity.*;
-import com.maven.OnlineShoppingSB.repository.OrderRepository;
-import com.maven.OnlineShoppingSB.repository.ProductVariantRepository;
-import com.maven.OnlineShoppingSB.repository.UserAddressRepository;
-import com.maven.OnlineShoppingSB.repository.UserRepository;
-import com.maven.OnlineShoppingSB.repository.DeliveryMethodRepository;
-import com.maven.OnlineShoppingSB.repository.OrderStatusTypeRepository;
-import com.maven.OnlineShoppingSB.repository.OrderStatusHistoryRepository;
-import com.maven.OnlineShoppingSB.repository.PaymentMethodRepository;
+import com.maven.OnlineShoppingSB.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -53,12 +47,21 @@ public class OrderService {
     @Autowired
     private PaymentMethodRepository paymentMethodRepository;
 
+    @Autowired
+    private PaymentRejectionReasonRepository paymentRejectionReasonRepository;
+
+    @Autowired
+    private PaymentRejectionLogRepository paymentRejectionLogRepository;
+
+    @Autowired
+    private NotificationService notificationService;
+
     public OrderEntity createOrder(OrderDto dto, MultipartFile paymentProof) throws Exception {
         OrderEntity order = new OrderEntity();
         UserEntity user = userRepository.findById(dto.getUserId())
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
         UserAddressEntity address = addressRepository.findById(dto.getShippingAddressId())
-            .orElseThrow(() -> new RuntimeException("Address not found"));
+                .orElseThrow(() -> new RuntimeException("Address not found"));
         order.setUser(user);
         order.setUserAddress(address);
         order.setTrackingNumber("TRK" + System.currentTimeMillis());
@@ -67,7 +70,7 @@ public class OrderService {
         order.setShippingFee(dto.getShippingFee());
         order.setCreatedDate(LocalDateTime.now());
         DeliveryMethodEntity deliveryMethod = deliveryMethodRepository.findById(dto.getDeliveryMethod().getId())
-            .orElseThrow(() -> new RuntimeException("Delivery method not found"));
+                .orElseThrow(() -> new RuntimeException("Delivery method not found"));
         order.setDeliveryMethod(deliveryMethod);
         order.setUpdatedDate(LocalDateTime.now());
 
@@ -98,23 +101,35 @@ public class OrderService {
 
         if (dto.getPaymentMethodId() != null) {
             PaymentEntity paymentMethod = paymentMethodRepository.findById(dto.getPaymentMethodId().intValue())
-                .orElseThrow(() -> new RuntimeException("Payment method not found"));
+                    .orElseThrow(() -> new RuntimeException("Payment method not found"));
             order.setPaymentMethod(paymentMethod);
         }
 
-        System.out.println("Order Data "+order);
+        System.out.println("Order Data " + order);
         List<OrderItemEntity> items = dto.getItems().stream().map(itemDto -> {
             OrderItemEntity item = new OrderItemEntity();
             ProductVariantEntity variant = variantRepository.findById(itemDto.getVariantId())
-                .orElseThrow(() -> new RuntimeException("Variant not found"));
+                    .orElseThrow(() -> new RuntimeException("Variant not found"));
             item.setVariant(variant);
             item.setQuantity(itemDto.getQuantity());
             item.setPrice(BigDecimal.valueOf(itemDto.getPrice()));
             item.setOrder(order);
             return item;
         }).collect(Collectors.toList());
-
         order.setItems(items);
+
+        OrderStatusTypeEntity initialStatus = orderStatusTypeRepository.findByCode("ORDER_PENDING")
+                .orElseThrow(() -> new RuntimeException("Initial order status not found"));
+        order.setCurrentStatus(initialStatus);
+
+        // -- Add to status history
+        OrderStatusHistoryEntity history = new OrderStatusHistoryEntity();
+        history.setOrder(order);
+        history.setStatus(initialStatus);
+        history.setCreatedAt(LocalDateTime.now());
+        history.setNote("Order placed and awaiting payment verification."); // Optional
+        history.setUpdatedBy(dto.getUserId()); // Assuming user placed the order
+        order.setStatusHistoryList(List.of(history));
 
         return orderRepository.save(order);
     }
@@ -127,13 +142,13 @@ public class OrderService {
     // Get order by ID
     public OrderEntity getOrderById(Long orderId) {
         return orderRepository.findById(orderId)
-            .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new RuntimeException("Order not found"));
     }
 
     // Get order by ID with all details
     public OrderEntity getOrderByIdWithDetails(Long orderId) {
         return orderRepository.findById(orderId)
-            .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new RuntimeException("Order not found"));
     }
 
     // Convert OrderEntity to OrderDetailDto
@@ -212,23 +227,23 @@ public class OrderService {
             productDto.setId(item.getVariant().getProduct().getId());
             productDto.setName(item.getVariant().getProduct().getName());
             productDto.setDescription(item.getVariant().getProduct().getDescription());
-            
+
             // Convert ProductImageEntity list to ProductImageDTO list
             List<ProductImageDTO> productImageDtos = item.getVariant().getProduct().getProductImages().stream()
-                .map(imageEntity -> {
-                    ProductImageDTO imageDto = new ProductImageDTO();
-                    imageDto.setId(imageEntity.getId());
-                    imageDto.setProductId(imageEntity.getProduct().getId());
-                    imageDto.setImgPath(imageEntity.getImgPath());
-                    imageDto.setDisplayOrder(imageEntity.getDisplayOrder());
-                    imageDto.setMainImageStatus(imageEntity.isMainImageStatus());
-                    imageDto.setAltText(imageEntity.getAltText());
-                    imageDto.setCreatedDate(imageEntity.getCreatedDate());
-                    return imageDto;
-                })
-                .collect(Collectors.toList());
+                    .map(imageEntity -> {
+                        ProductImageDTO imageDto = new ProductImageDTO();
+                        imageDto.setId(imageEntity.getId());
+                        imageDto.setProductId(imageEntity.getProduct().getId());
+                        imageDto.setImgPath(imageEntity.getImgPath());
+                        imageDto.setDisplayOrder(imageEntity.getDisplayOrder());
+                        imageDto.setMainImageStatus(imageEntity.isMainImageStatus());
+                        imageDto.setAltText(imageEntity.getAltText());
+                        imageDto.setCreatedDate(imageEntity.getCreatedDate());
+                        return imageDto;
+                    })
+                    .collect(Collectors.toList());
             productDto.setProductImages(productImageDtos);
-            
+
             productDto.setCreatedDate(item.getVariant().getProduct().getCreatedDate());
             itemDto.setProduct(productDto);
 
@@ -256,32 +271,149 @@ public class OrderService {
 
     public List<OrderEntity> bulkUpdateOrderStatus(BulkOrderStatusUpdateRequest request) {
         List<OrderEntity> updatedOrders = new ArrayList<>();
+
         for (Long orderId : request.getOrderIds()) {
             OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+                    .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
 
             OrderStatusTypeEntity statusType = orderStatusTypeRepository.findById(request.getStatusId())
-                .orElseThrow(() -> new RuntimeException("Status not found: " + request.getStatusId()));
-            order.setPaymentStatus(statusType.getCode());
-            order.setUpdatedDate(java.time.LocalDateTime.now());
-            orderRepository.save(order);
+                    .orElseThrow(() -> new RuntimeException("Status not found: " + request.getStatusId()));
 
-            // Add to order_status_history
+            // ✅ Set current status (not payment status)
+            order.setCurrentStatus(statusType);
+            order.setUpdatedDate(java.time.LocalDateTime.now());
+
+            // ✅ Create and add order status history
             OrderStatusHistoryEntity history = new OrderStatusHistoryEntity();
             history.setOrder(order);
             history.setStatus(statusType);
             history.setNote(request.getNote());
             history.setCreatedAt(java.time.LocalDateTime.now());
             history.setUpdatedBy(request.getUpdatedBy());
-            orderStatusHistoryRepository.save(history);
 
-            updatedOrders.add(order);
+            // Append to history list to trigger cascade save
+            if (order.getStatusHistoryList() == null) {
+                order.setStatusHistoryList(new ArrayList<>());
+            }
+            order.getStatusHistoryList().add(history);
+
+            // ✅ Save the order (which cascades the history too)
+            updatedOrders.add(orderRepository.save(order));
         }
+
         return updatedOrders;
+    }
+
+    @Transactional
+    public OrderEntity updatePaymentStatus(Long orderId, String newStatus) {
+        OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        PaymentStatus status;
+        try {
+            status = PaymentStatus.valueOf(newStatus.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid payment status: " + newStatus);
+        }
+
+        order.setPaymentStatus(status);
+        order.setUpdatedDate(LocalDateTime.now());
+
+        // Handle status transitions
+        if (status == PaymentStatus.PAID) {
+            // Set initial status to ORDER_CONFIRMED
+            OrderStatusTypeEntity confirmedStatus = orderStatusTypeRepository.findByCode("ORDER_CONFIRMED")
+                    .orElseThrow(() -> new RuntimeException("ORDER_CONFIRMED status not found"));
+
+            order.setCurrentStatus(confirmedStatus);
+
+            OrderStatusHistoryEntity history = new OrderStatusHistoryEntity();
+            history.setOrder(order);
+            history.setStatus(confirmedStatus);
+            history.setNote("Payment approved, status set to ORDER_CONFIRMED");
+            history.setCreatedAt(LocalDateTime.now());
+            history.setUpdatedBy(1L); // Replace with actual admin ID
+
+            orderStatusHistoryRepository.save(history);
+        } else if (status == PaymentStatus.FAILED) {
+            // Set status to CANCELLED
+            OrderStatusTypeEntity cancelledStatus = orderStatusTypeRepository.findByCode("CANCELLED")
+                    .orElseThrow(() -> new RuntimeException("CANCELLED status not found"));
+
+            order.setCurrentStatus(cancelledStatus);
+
+            OrderStatusHistoryEntity history = new OrderStatusHistoryEntity();
+            history.setOrder(order);
+            history.setStatus(cancelledStatus);
+            history.setNote("Payment failed, order cancelled");
+            history.setCreatedAt(LocalDateTime.now());
+            history.setUpdatedBy(1L); // Replace with actual admin ID
+
+            orderStatusHistoryRepository.save(history);
+        }
+
+        return orderRepository.save(order);
     }
 
     // New method to fetch all orders for admin
     public List<OrderEntity> getAllOrders() {
         return orderRepository.findByDeletedFalseOrderByCreatedDateDesc();
     }
+
+    @Transactional
+    public OrderDetailDto rejectPayment(
+            Long orderId,
+            PaymentRejectionReasonDTO.PaymentRejectionRequestDTO request,
+            UserEntity adminUser
+    ) {
+        OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (order.getPaymentStatus() != PaymentStatus.PENDING) {
+            throw new IllegalStateException("Only pending payments can be rejected.");
+        }
+
+        // --- Validate Reason ---
+        if (request.getReasonId() == null && (request.getCustomReason() == null || request.getCustomReason().isBlank())) {
+            throw new IllegalArgumentException("Rejection reason is required.");
+        }
+
+        // --- Save Payment Status Update ---
+        order.setPaymentStatus(PaymentStatus.FAILED); // Assuming enum
+        order.setUpdatedDate(LocalDateTime.now());
+        orderRepository.save(order);
+
+        // --- Save Rejection Reason (in separate table) ---
+        PaymentRejectionLogEntity rejectionLog = new PaymentRejectionLogEntity();
+        rejectionLog.setOrder(order);
+
+        if (request.getReasonId() != null) {
+            PaymentRejectionReasonEntity reason = paymentRejectionReasonRepository.findById(request.getReasonId())
+                    .orElseThrow(() -> new IllegalArgumentException("Rejection reason not found"));
+            rejectionLog.setReason(reason);
+        }
+
+        rejectionLog.setCustomReason(request.getCustomReason());
+        rejectionLog.setRejectedBy(adminUser);
+        rejectionLog.setRejectedAt(LocalDateTime.now());
+
+        paymentRejectionLogRepository.save(rejectionLog);
+
+
+        // --- Save Order Status History (optional but recommended) ---
+        OrderStatusTypeEntity cancelledStatus = orderStatusTypeRepository.findByCode("ORDER_CANCELLED")
+                .orElseThrow(() -> new RuntimeException("Status 'ORDER_CANCELLED' not found"));
+
+        OrderStatusHistoryEntity history = new OrderStatusHistoryEntity();
+        history.setOrder(order);
+        history.setStatus(cancelledStatus);
+        history.setNote("Payment rejected by admin: " +
+                (request.getCustomReason() != null ? request.getCustomReason() : "Reason #" + request.getReasonId()));
+        history.setCreatedAt(LocalDateTime.now());
+        history.setUpdatedBy(adminUser.getId());
+        orderStatusHistoryRepository.save(history);
+
+        return convertToOrderDetailDto(order);
+    }
+
 }

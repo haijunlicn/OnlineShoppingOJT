@@ -43,8 +43,9 @@ import { OrderListComponent } from './orderManagements/order-list/order-list.com
 import { FileUploadComponent } from './refundManagements/file-upload/file-upload.component';
 import { RefundRequestFormComponent } from './refundManagements/refund-request-form/refund-request-form.component';
 import { NotificationBellComponent } from './notification/notification-bell/notification-bell.component';
-import { NotificationListComponent } from './notification/notification-list/notification-list.component';
 import { SearchBarComponent } from './common/search-bar/search-bar.component';
+import { NotificationDetailComponent } from './notification/notification-detail/notification-detail.component';
+import { NotificationListComponent } from './notification/notification-list/notification-list.component';
 
 @NgModule({
   declarations: [
@@ -81,8 +82,9 @@ import { SearchBarComponent } from './common/search-bar/search-bar.component';
     FileUploadComponent,
     RefundRequestFormComponent,
     NotificationBellComponent,
-    NotificationListComponent,
-    SearchBarComponent
+    SearchBarComponent,
+    NotificationDetailComponent,
+    NotificationListComponent
   ],
   imports: [
     CommonModule,
@@ -98,7 +100,6 @@ import { SearchBarComponent } from './common/search-bar/search-bar.component';
     MatInputModule,
     MatButtonModule,
     FormsModule,
-
     HttpClientModule,
   ]
 })

@@ -67,6 +67,13 @@ public class NotificationService {
             for (NotificationTypeMethodEntity methodMapping : type.getSupportedMethods()) {
                 NotiMethod method = methodMapping.getMethod();
 
+                // ✅ Check if already exists
+                boolean exists = userNotificationRepository
+                        .existsByUserIdAndNotificationIdAndMethod(user.getId(), notification.getId(), method);
+
+                if (exists) continue; // 🔒 skip duplicate
+
+                // ✅ Otherwise, save
                 UserNotificationEntity userNotification = new UserNotificationEntity();
                 userNotification.setUser(user);
                 userNotification.setNotification(notification);
@@ -123,6 +130,27 @@ public class NotificationService {
         un.setReadAt(LocalDateTime.now());
         userNotificationRepository.save(un);
     }
+
+    public void markAllAsRead(Long userId) {
+        List<UserNotificationEntity> notifications = userNotificationRepository.findAllByUserIdAndReadIsFalse(userId);
+
+        for (UserNotificationEntity n : notifications) {
+            n.setRead(true);
+            n.setReadAt(LocalDateTime.now());
+
+            // Optional: WebSocket notify client of the update
+            if (n.getMethod() == NotiMethod.IN_APP) {
+                messagingTemplate.convertAndSendToUser(
+                        n.getUser().getEmail(),
+                        "/queue/notifications/read",
+                        Map.of("id", n.getId())
+                );
+            }
+        }
+
+        userNotificationRepository.saveAll(notifications);
+    }
+
 
     public void sendNamedNotification(String typeName, Map<String, Object> metadata, List<Long> targetUserIds) {
         createNotificationAndDeliver(typeName, metadata, targetUserIds);

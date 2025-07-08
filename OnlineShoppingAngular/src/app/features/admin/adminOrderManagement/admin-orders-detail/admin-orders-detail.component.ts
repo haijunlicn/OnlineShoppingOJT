@@ -3,6 +3,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { OrderService, OrderDetail } from '../../../../core/services/order.service';
 import Swal from 'sweetalert2';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { RejectionReasonDTO } from '@app/core/models/refund-reason';
+import { PaymentRejectionReasonService } from '@app/core/services/payment-rejection-reason.service';
 
 // Define all possible order statuses
 export type OrderStatus = 'pending' | 'order_confirmed' | 'packed' | 'out_for_delivery' | 'delivered' | 'cancelled';
@@ -19,9 +22,16 @@ export class AdminOrdersDetailComponent implements OnInit, OnDestroy {
   loading = true;
   error = '';
   updatingStatus = false;
+  updatingPayment = false;
   updateStatusError = '';
+  paymentError = '';
   private subscriptions: Subscription[] = [];
   selectedStatus: OrderStatus | null = null;
+
+  rejectionForm!: FormGroup;
+  rejectionReasons: RejectionReasonDTO[] = [];
+  showRejectionReasonModal = false;
+
 
   // Allowed status transitions
   allowedTransitions: Record<OrderStatus, OrderStatus[]> = {
@@ -76,8 +86,10 @@ export class AdminOrdersDetailComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private orderService: OrderService
-  ) {}
+    private orderService: OrderService,
+    private rejectionReasonService: PaymentRejectionReasonService,
+    private fb: FormBuilder
+  ) { }
 
   ngOnInit(): void {
     this.subscriptions.push(
@@ -85,6 +97,8 @@ export class AdminOrdersDetailComponent implements OnInit, OnDestroy {
         this.orderId = +params['id'];
         if (this.orderId) {
           this.loadOrderDetails();
+          this.initRejectionForm();
+          this.loadRejectionReasons();
         } else {
           this.error = 'Invalid order ID';
           this.loading = false;
@@ -105,9 +119,9 @@ export class AdminOrdersDetailComponent implements OnInit, OnDestroy {
       next: (order: OrderDetail) => {
         this.order = order;
         this.loading = false;
-        // Set selectedStatus to first allowed transition
         const allowed = this.allowedTransitions[this.getCurrentUiStatus()] || [];
         this.selectedStatus = allowed.length > 0 ? allowed[0] : null;
+        console.log("Order details loaded:", this.order);
       },
       error: (err) => {
         this.error = 'Failed to load order details. Please try again.';
@@ -306,28 +320,28 @@ export class AdminOrdersDetailComponent implements OnInit, OnDestroy {
       id: 'pending',
       title: 'Pending',
       icon: 'fas fa-hourglass-start',
-      status: ['pending','order_confirmed','packed','out_for_delivery','delivered'].includes(currentStatus) ? 'completed' : (currentStatus === 'cancelled' ? 'cancelled' : 'pending')
+      status: ['pending', 'order_confirmed', 'packed', 'out_for_delivery', 'delivered'].includes(currentStatus) ? 'completed' : (currentStatus === 'cancelled' ? 'cancelled' : 'pending')
     });
     // Step 2: Order Confirmed
     timelineItems.push({
       id: 'order_confirmed',
       title: 'Order Confirmed',
       icon: 'fas fa-check-circle',
-      status: ['order_confirmed','packed','out_for_delivery','delivered'].includes(currentStatus) ? 'completed' : (currentStatus === 'cancelled' ? 'cancelled' : 'pending')
+      status: ['order_confirmed', 'packed', 'out_for_delivery', 'delivered'].includes(currentStatus) ? 'completed' : (currentStatus === 'cancelled' ? 'cancelled' : 'pending')
     });
     // Step 3: Packed
     timelineItems.push({
       id: 'packed',
       title: 'Packed',
       icon: 'fas fa-box',
-      status: ['packed','out_for_delivery','delivered'].includes(currentStatus) ? 'completed' : (currentStatus === 'cancelled' ? 'cancelled' : 'pending')
+      status: ['packed', 'out_for_delivery', 'delivered'].includes(currentStatus) ? 'completed' : (currentStatus === 'cancelled' ? 'cancelled' : 'pending')
     });
     // Step 4: Out for Delivery
     timelineItems.push({
       id: 'out_for_delivery',
       title: 'Out for Delivery',
       icon: 'fas fa-truck',
-      status: ['out_for_delivery','delivered'].includes(currentStatus) ? 'completed' : (currentStatus === 'cancelled' ? 'cancelled' : 'pending')
+      status: ['out_for_delivery', 'delivered'].includes(currentStatus) ? 'completed' : (currentStatus === 'cancelled' ? 'cancelled' : 'pending')
     });
     // Step 5: Delivered
     timelineItems.push({
@@ -349,7 +363,7 @@ export class AdminOrdersDetailComponent implements OnInit, OnDestroy {
 
   getProgressPercent(): number {
     const currentStatus = this.getCurrentUiStatus();
-    const steps = ['pending','order_confirmed','packed','out_for_delivery','delivered'];
+    const steps = ['pending', 'order_confirmed', 'packed', 'out_for_delivery', 'delivered'];
     if (currentStatus === 'cancelled') return 0;
     const idx = steps.indexOf(currentStatus);
     if (idx === -1) return 0;
@@ -374,4 +388,96 @@ export class AdminOrdersDetailComponent implements OnInit, OnDestroy {
   goBack(): void {
     this.router.navigate(['/admin/AdminOrder']);
   }
+
+  approvePayment(): void {
+    this.updatingPayment = true;
+    this.orderService.updatePaymentStatus(this.order!.id, 'PAID').subscribe({
+      next: (updatedOrder) => {
+        this.order = updatedOrder;
+        this.updatingPayment = false;
+      },
+      error: (err) => {
+        this.paymentError = err.error?.message || "Failed to approve payment";
+        this.updatingPayment = false;
+      }
+    });
+  }
+
+  rejectPayment(): void {
+    this.showRejectionReasonModal = true;
+  }
+
+
+  confirmRejection(): void {
+    const reasonId = this.rejectionForm.get('reasonId')?.value;
+    const customReason = this.rejectionForm.get('customReasonText')?.value;
+
+    if (!reasonId || (this.shouldShowCustomReasonField() && !customReason?.trim())) {
+      this.rejectionForm.markAllAsTouched();
+      return;
+    }
+
+    const payload = {
+      reasonId,
+      customReason,
+    };
+
+    this.updatingPayment = true;
+    this.closeRejectionReasonModal();
+
+    this.orderService.rejectPaymentWithReason(this.order!.id, payload).subscribe({
+      next: (updatedOrder) => {
+        this.order = updatedOrder;
+        this.updatingPayment = false;
+      },
+      error: (err) => {
+        this.paymentError = err.error?.message || 'Failed to reject payment';
+        this.updatingPayment = false;
+      }
+    });
+  }
+
+  initRejectionForm(): void {
+    this.rejectionForm = this.fb.group({
+      reasonId: ['', Validators.required],
+      customReasonText: ['']
+    });
+  }
+
+  loadRejectionReasons(): void {
+    this.rejectionReasonService.getAll().subscribe({
+      next: (reasons) => this.rejectionReasons = reasons,
+      error: () => console.error('Failed to load rejection reasons')
+    });
+  }
+
+  shouldShowCustomReasonField(): boolean {
+    const selectedId = this.rejectionForm.get('reasonId')?.value;
+    const selectedReason = this.rejectionReasons.find(r => r.id === +selectedId);
+    return selectedReason?.allowCustomText || false;
+  }
+
+  onRejectionReasonChange(): void {
+    const allowCustom = this.shouldShowCustomReasonField();
+    const commentCtrl = this.rejectionForm.get('customReasonText');
+
+    if (allowCustom) {
+      commentCtrl?.setValidators([Validators.required]);
+    } else {
+      commentCtrl?.clearValidators();
+    }
+
+    commentCtrl?.updateValueAndValidity();
+  }
+
+  isRejectionReasonFormValid(): boolean {
+    return this.rejectionForm.valid;
+  }
+
+  closeRejectionReasonModal(): void {
+    this.showRejectionReasonModal = false;
+    this.rejectionForm.reset();
+  }
+
+
 }

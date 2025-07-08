@@ -1,20 +1,71 @@
 <div class="notification-bell-container">
-    <button class="bell-btn" (click)="toggleDropdown()" title="Notifications">
+    <button class="bell-btn" (click)="toggleDropdown()" title="Notifications" [attr.aria-expanded]="showDropdown">
         <i class="fas fa-bell"></i>
-        <span *ngIf="unreadCount > 0" class="badge">{{ unreadCount }}</span>
+        <span *ngIf="unreadCount > 0" class="badge" [attr.aria-label]="unreadCount + ' unread notifications'">
+            {{ unreadCount > 99 ? '99+' : unreadCount }}
+        </span>
     </button>
 
-    <div class="dropdown" [class.show]="showDropdown">
+    <div class="dropdown" [class.show]="showDropdown" role="menu" aria-label="Notifications">
+        <!-- Dropdown Header -->
+        <div class="dropdown-header">
+            <h6 class="dropdown-title">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+                <span *ngIf="unreadCount > 0" class="dropdown-badge">{{ unreadCount }}</span>
+            </h6>
+            <button *ngIf="unreadCount > 0" class="mark-all-btn" (click)="markAllAsRead()" title="Mark all as read">
+                <i class="fas fa-check-double"></i>
+            </button>
+        </div>
+
+        <!-- Empty State -->
         <div *ngIf="notifications.length === 0" class="empty">
             <i class="fas fa-bell-slash"></i>
-            <p>No notifications</p>
+            <p>No notifications yet</p>
+            <div class="empty-subtitle">We'll notify you when something arrives!</div>
         </div>
-        <ul *ngIf="notifications.length > 0">
-            <li *ngFor="let noti of notifications" (click)="markAsRead(noti)" [class.unread]="!noti.read">
-                <strong>{{ noti.title }}</strong>
-                <p>{{ noti.message }}</p>
-                <small>{{ noti.deliveredAt | date:'short' }}</small>
-            </li>
-        </ul>
+
+        <!-- Notifications List (Limited to 5 for dropdown) -->
+        <div *ngIf="notifications.length > 0" class="dropdown-content">
+            <ul>
+                <li *ngFor="let noti of notifications.slice(0, 5); trackBy: trackByNotificationId" 
+                    (click)="openNotificationDetail(noti)"
+                    [class.unread]="!noti.read" 
+                    [ngClass]="getNotificationClass(noti.type)" 
+                    role="menuitem"
+                    [attr.aria-label]="noti.read ? 'Read notification' : 'Unread notification'">
+                    
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <strong>{{ noti.title }}</strong>
+                            <span class="notification-type-badge" [ngClass]="'badge-' + noti.type">
+                                {{ getTypeLabel(noti.type) }}
+                            </span>
+                        </div>
+                        <p>{{ noti.message | slice:0:80 }}{{ noti.message.length > 80 ? '...' : '' }}</p>
+                        <div class="notification-footer">
+                            <small>
+                                <i class="fas fa-clock"></i>
+                                {{ getTimeAgo(noti.deliveredAt) }}
+                            </small>
+                            <button class="quick-action-btn" (click)="quickMarkAsRead(noti, $event)" 
+                                    *ngIf="!noti.read" title="Mark as read">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Footer with See All button -->
+        <div *ngIf="notifications.length > 0" class="dropdown-footer">
+            <button class="see-all-btn" (click)="navigateToNotificationsList()">
+                <i class="fas fa-list"></i>
+                See All Notifications
+                <span *ngIf="notifications.length > 5" class="count-badge">+{{ notifications.length - 5 }}</span>
+            </button>
+        </div>
     </div>
 </div>

@@ -49,29 +49,14 @@
             </button>
           </div>
 
-          <!-- Delivery Method Dropdown with Icon -->
-          <div *ngIf="selectedAddress" class="delivery-method-section">
-            <label for="delivery-method-select">
-              <ng-container *ngIf="selectedDeliveryMethod">
-                <i [ngClass]="getDeliveryIconClass(selectedDeliveryMethod.name)" class="delivery-method-icon"></i>
-              </ng-container>
-              Delivery Method:
-            </label>
-            <select id="delivery-method-select" [(ngModel)]="selectedDeliveryMethod" (change)="calculateShippingFee()" class="form-input">
-              <option *ngFor="let method of deliveryMethods" [ngValue]="method">
-                <i [ngClass]="getDeliveryIconClass(method.name)"></i>
-                {{ method.name }} (Base: {{ method.baseFee | number }} MMK, +{{ method.feePerKm | number }} MMK/km)
-              </option>
-            </select>
-          </div>
-
           <!-- Address Dropdown -->
           <div class="addresses-dropdown" *ngIf="showAddressList">
             <div class="dropdown-header">
               <h4>Select Delivery Address</h4>
             </div>
             <div class="addresses-list">
-              <div *ngFor="let address of addresses; trackBy: trackByAddressId" class="address-item" [class.selected]="selectedAddress?.id === address.id" (click)="selectAddressAndClose(address)">
+              <div *ngFor="let address of addresses; trackBy: trackByAddressId" class="address-item"
+                [class.selected]="selectedAddress?.id === address.id" (click)="selectAddressAndClose(address)">
                 <div class="address-radio">
                   <div class="radio-dot" [class.checked]="selectedAddress?.id === address.id"></div>
                 </div>
@@ -91,6 +76,24 @@
               </div>
             </div>
           </div>
+
+          <!-- Delivery Method Dropdown with Icon -->
+          <div *ngIf="selectedAddress" class="delivery-method-section">
+            <label for="delivery-method-select">
+              <ng-container *ngIf="selectedDeliveryMethod">
+                <i [ngClass]="getDeliveryIconClass(selectedDeliveryMethod.name)" class="delivery-method-icon"></i>
+              </ng-container>
+              Delivery Method:
+            </label>
+            <select id="delivery-method-select" [(ngModel)]="selectedDeliveryMethod" (change)="calculateShippingFee()"
+              class="form-input">
+              <option *ngFor="let method of deliveryMethods" [ngValue]="method">
+                <i [ngClass]="getDeliveryIconClass(method.name)"></i>
+                {{ method.name }} (Base: {{ method.baseFee | number }} MMK, +{{ method.feePerKm | number }} MMK/km)
+              </option>
+            </select>
+          </div>
+
         </div>
       </div>
     </div>
@@ -145,11 +148,8 @@
           </div>
 
           <!-- Proceed to Payment Button -->
-          <button 
-            class="btn-proceed-to-payment" 
-            (click)="goToPaymentPage()" 
-            [disabled]="!selectedAddress || orderItems.length === 0"
-          >
+          <button class="btn-proceed-to-payment" (click)="goToPaymentPage()"
+            [disabled]="!selectedAddress || orderItems.length === 0">
             <i class="fas fa-credit-card"></i>
             Proceed to Payment
           </button>
@@ -168,25 +168,14 @@
             <i class="fas fa-times"></i>
           </button>
         </div>
-        
+
         <div class="modal-body">
           <!-- Search Box -->
           <div class="search-box">
-            <input 
-              type="text" 
-              [formControl]="searchControl"
-              placeholder="Search location and press Enter"
-              class="form-input search-input"
-              (keyup.enter)="onSearch()"
-              [disabled]="isLoading"
-            />
-            <button 
-              type="button" 
-              (click)="onSearch()" 
-              [disabled]="isLoading"
-              class="search-btn"
-              title="Search location"
-            >
+            <input type="text" [formControl]="searchControl" placeholder="Search location and press Enter"
+              class="form-input search-input" (keyup.enter)="onSearch()" [disabled]="isLoading" />
+            <button type="button" (click)="onSearch()" [disabled]="isLoading" class="search-btn"
+              title="Search location">
               🔍
             </button>
           </div>
@@ -196,20 +185,13 @@
               <div class="form-group">
                 <label>Address</label>
                 <div class="input-wrapper">
-                  <input 
-                    type="text" 
-                    formControlName="address"
-                    placeholder="Street address"
-                    class="form-input"
-                  />
-                  <button 
-                    type="button" 
-                    class="locate-btn" 
-                    (click)="autoLocate()"
-                    [disabled]="isLoading"
+                  <input type="text" formControlName="address" placeholder="Street address" class="form-input" />
+                  <button type="button" class="locate-btn" (click)="autoLocate()" [disabled]="isLoading"
                     title="Auto locate">
                     <svg *ngIf="!isLoading" width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <path d="M12 8C14.21 8 16 9.79 16 12C16 14.21 14.21 16 12 16C9.79 16 8 14.21 8 12C8 9.79 9.79 8 12 8ZM20.94 11C20.48 6.83 17.17 3.52 13 3.06V1H11V3.06C6.83 3.52 3.52 6.83 3.06 11H1V13H3.06C3.52 17.17 6.83 20.48 11 20.94V23H13V20.94C17.17 20.48 20.48 17.17 20.94 13H23V11H20.94ZM12 19C8.13 19 5 15.87 5 12C5 8.13 8.13 5 12 5C15.87 5 19 8.13 19 12C19 15.87 15.87 19 12 19Z" fill="currentColor"/>
+                      <path
+                        d="M12 8C14.21 8 16 9.79 16 12C16 14.21 14.21 16 12 16C9.79 16 8 14.21 8 12C8 9.79 9.79 8 12 8ZM20.94 11C20.48 6.83 17.17 3.52 13 3.06V1H11V3.06C6.83 3.52 3.52 6.83 3.06 11H1V13H3.06C3.52 17.17 6.83 20.48 11 20.94V23H13V20.94C17.17 20.48 20.48 17.17 20.94 13H23V11H20.94ZM12 19C8.13 19 5 15.87 5 12C5 8.13 8.13 5 12 5C15.87 5 19 8.13 19 12C19 15.87 15.87 19 12 19Z"
+                        fill="currentColor" />
                     </svg>
                     <div *ngIf="isLoading" class="loading-spinner"></div>
                   </button>
@@ -221,60 +203,38 @@
 
               <div class="form-group">
                 <label>Township</label>
-                <input
-                  type="text"
-                  formControlName="township"
-                  placeholder="Township"
-                  class="form-input"
-                />
+                <input type="text" formControlName="township" placeholder="Township" class="form-input" />
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group">
                 <label>City</label>
-                <input 
-                  type="text" 
-                  formControlName="city"
-                  placeholder="City"
-                  class="form-input"
-                />
+                <input type="text" formControlName="city" placeholder="City" class="form-input" />
               </div>
 
               <div class="form-group">
                 <label>Zip Code</label>
-                <input 
-                  type="text" 
-                  formControlName="zipCode"
-                  placeholder="Zip code"
-                  class="form-input"
-                />
+                <input type="text" formControlName="zipCode" placeholder="Zip code" class="form-input" />
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group">
                 <label>Country</label>
-                <input 
-                  type="text" 
-                  formControlName="country"
-                  placeholder="Country"
-                  class="form-input"
-                />
+                <input type="text" formControlName="country" placeholder="Country" class="form-input" />
               </div>
 
               <div class="form-group">
                 <label>Phone Number</label>
-                <input
-                  type="text"
-                  formControlName="phoneNumber"
-                  placeholder="eg - 09123456789"
-                  class="form-input"
-                  maxlength="13"
-                />
-                <div *ngIf="addressForm.get('phoneNumber')?.invalid && addressForm.get('phoneNumber')?.touched" class="error">
-                  <span *ngIf="addressForm.get('phoneNumber')?.errors?.['required']">Please enter your phone number</span>
-                  <span *ngIf="addressForm.get('phoneNumber')?.errors?.['pattern']">Myanmar Phone Number (eg - 09123456789)</span>
+                <input type="text" formControlName="phoneNumber" placeholder="eg - 09123456789" class="form-input"
+                  maxlength="13" />
+                <div *ngIf="addressForm.get('phoneNumber')?.invalid && addressForm.get('phoneNumber')?.touched"
+                  class="error">
+                  <span *ngIf="addressForm.get('phoneNumber')?.errors?.['required']">Please enter your phone
+                    number</span>
+                  <span *ngIf="addressForm.get('phoneNumber')?.errors?.['pattern']">Myanmar Phone Number (eg -
+                    09123456789)</span>
                 </div>
               </div>
             </div>
@@ -282,24 +242,12 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Latitude</label>
-                <input
-                  type="number"
-                  formControlName="lat"
-                  placeholder="Latitude"
-                  class="form-input"
-                  step="any"
-                />
+                <input type="number" formControlName="lat" placeholder="Latitude" class="form-input" step="any" />
               </div>
 
               <div class="form-group">
                 <label>Longitude</label>
-                <input
-                  type="number"
-                  formControlName="lng"
-                  placeholder="Longitude"
-                  class="form-input"
-                  step="any"
-                />
+                <input type="number" formControlName="lng" placeholder="Longitude" class="form-input" step="any" />
               </div>
             </div>
           </form>
@@ -309,17 +257,11 @@
           </div>
 
           <div class="modal-actions">
-            <button 
-              type="button" 
-              class="save-btn" 
-              (click)="saveAddress()"
+            <button type="button" class="save-btn" (click)="saveAddress()"
               [disabled]="!currentLatLng || addressForm.invalid">
               {{ isEditing ? 'Update Address' : 'Save Address' }}
             </button>
-            <button 
-              type="button" 
-              class="cancel-btn" 
-              (click)="cancelAddressForm()">
+            <button type="button" class="cancel-btn" (click)="cancelAddressForm()">
               Cancel
             </button>
           </div>
