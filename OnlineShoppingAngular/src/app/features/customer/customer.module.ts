@@ -42,6 +42,8 @@ import { OrderDetailComponent } from './orderManagements/order-detail/order-deta
 import { OrderListComponent } from './orderManagements/order-list/order-list.component';
 import { FileUploadComponent } from './refundManagements/file-upload/file-upload.component';
 import { RefundRequestFormComponent } from './refundManagements/refund-request-form/refund-request-form.component';
+import { AccountSettingsComponent } from './common/account-settings/account-settings.component';
+
 import { NotificationBellComponent } from './notification/notification-bell/notification-bell.component';
 import { SearchBarComponent } from './common/search-bar/search-bar.component';
 import { NotificationDetailComponent } from './notification/notification-detail/notification-detail.component';
@@ -81,6 +83,8 @@ import { NotificationListComponent } from './notification/notification-list/noti
     OrderListComponent,
     FileUploadComponent,
     RefundRequestFormComponent,
+    AccountSettingsComponent,
+
     NotificationBellComponent,
     SearchBarComponent,
     NotificationDetailComponent,

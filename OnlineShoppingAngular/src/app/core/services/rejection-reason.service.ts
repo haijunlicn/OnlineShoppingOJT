@@ -7,7 +7,6 @@ import { RejectionReasonDTO } from '../models/refund-reason';
   providedIn: 'root'
 })
 export class RejectionReasonService {
-
   private baseUrl = 'http://localhost:8080/rejection-reason';
 
   constructor(private http: HttpClient) {}

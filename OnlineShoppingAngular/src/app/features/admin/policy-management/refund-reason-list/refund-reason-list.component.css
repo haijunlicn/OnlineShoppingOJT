@@ -1,0 +1,88 @@
+/* Main layout structure */
+.admin-main {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f4f6f8;
+}
+
+.admin-content {
+  flex: 1;
+  padding: 2rem;
+  background-color: #ffffff;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.03);
+}
+
+.admin-content h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: #2c3e50;
+}
+
+/* Add New Button */
+button[routerLink] {
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #28a745;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+button[routerLink]:hover {
+  background-color: #218838;
+}
+
+/* Table Styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+thead {
+  background-color: #343a40;
+  color: white;
+}
+
+th,
+td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #dee2e6;
+}
+
+tr:hover {
+  background-color: #f1f3f5;
+}
+
+/* Action Buttons */
+td button {
+  margin-right: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+td button:first-child {
+  background-color: #007bff;
+}
+
+td button:first-child:hover {
+  background-color: #0056b3;
+}
+
+td button:last-child {
+  background-color: #dc3545;
+}
+
+td button:last-child:hover {
+  background-color: #c82333;
+}

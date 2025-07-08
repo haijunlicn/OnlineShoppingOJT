@@ -90,5 +90,35 @@ public class CustomUserDetailsService implements UserDetailsService {
                 authorities
         );
     }
+    @Transactional(readOnly = true)
+    public userDTO getProfile(String email, Integer roleType) {
+        UserEntity user = userRepository.findByEmailAndRoleType(email, roleType)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        userDTO dto = new userDTO();
+        dto.setName(user.getName());
+        dto.setEmail(user.getEmail());
+        dto.setPhone(user.getPhone());
+        return dto;
+    }
+    @Transactional
+    public userDTO updateProfile(String email, Integer roleType, userDTO updatedProfile) {
+        UserEntity user = userRepository.findByEmailAndRoleType(email, roleType)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        user.setName(updatedProfile.getName());
+        user.setPhone(updatedProfile.getPhone());
+        // Email usually shouldn't change for login users, but update if allowed
+        user.setEmail(updatedProfile.getEmail());
+
+        userRepository.save(user);
+
+        userDTO dto = new userDTO();
+        dto.setName(user.getName());
+        dto.setEmail(user.getEmail());
+        dto.setPhone(user.getPhone());
+        return dto;
+    }
+
 
 }

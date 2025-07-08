@@ -255,6 +255,4 @@ export class AuthService {
       catchError((error) => throwError(() => error))
     );
   }
-
-
 }

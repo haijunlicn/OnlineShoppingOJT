@@ -26,6 +26,8 @@ import { PaymentAcceptComponent } from './orderManagements/payment-accept/paymen
 import { OrderDetailComponent } from './orderManagements/order-detail/order-detail.component';
 import { OrderListComponent } from './orderManagements/order-list/order-list.component';
 import { RefundRequestFormComponent } from './refundManagements/refund-request-form/refund-request-form.component';
+import { AccountSettingsComponent } from './common/account-settings/account-settings.component';
+
 import { NotificationListComponent } from './notification/notification-list/notification-list.component';
 import { PaymentGuard } from '@app/core/services/payment-guard.service';
 
@@ -51,6 +53,11 @@ const routes: Routes = [
     path: 'auth/forgetPass',
     component: ForgetPasswordComponent,
   },
+  { path: 'about', component: AboutComponent},
+  { path: 'contact', component: ContactComponent},
+  { path: 'policy/privacy', component: PrivacyPolicyComponent},
+  { path: 'policy/terms-conditions', component: TermsConditionsComponent},
+  { path: 'policy/faq', component: FaqComponent},
   { path: 'about', component: AboutComponent },
   { path: 'contact', component: ContactComponent },
   { path: 'policy/privacy', component: PrivacyPolicyComponent },
@@ -59,6 +66,7 @@ const routes: Routes = [
   // {
   //   path: 'customer/auth/verify/:id',
   //   component: VerifyComponent,canActivate: [NoAuthGuard],
+    { path: 'account-settings', component: AccountSettingsComponent },
 
   {
     path: 'auth/reset-password',

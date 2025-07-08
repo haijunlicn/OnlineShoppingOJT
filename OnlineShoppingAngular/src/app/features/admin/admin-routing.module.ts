@@ -34,6 +34,10 @@ import { ProductEditComponent } from './product_management/product-edit/product-
 import { SaleAnalysisComponent } from './policy-management/sale-analysis/sale-analysis.component';
 import { PermissionGuard } from '@app/core/guards/permission.guard';
 import { AdminAccountCreateComponent } from './roleAndPermission/admin-account-create/admin-account-create.component';
+import { RefundReasonListComponent } from './policy-management/refund-reason-list/refund-reason-list.component';
+import { RefundReasonFormComponent } from './policy-management/refund-reason-form/refund-reason.component';
+import { RejectionReasonListComponent } from './policy-management/rejection-reason-list/rejection-reason-list.component';
+import { RejectionReasonFormComponent } from './policy-management/rejection-reason-form/rejection-reason-form.component';
 import { RefundRequestListComponent } from './RefundManagement/refund-request-list/refund-request-list.component';
 import { RefundRequestDetailComponent } from './RefundManagement/refund-request-detail/refund-request-detail.component';
 
@@ -153,6 +157,10 @@ const routes: Routes = [
   {
     path: 'sale-analysis', component: SaleAnalysisComponent, canActivate: [AdminAuthGuard]
   },
+  { path: 'refund-reason/list', component: RefundReasonListComponent  ,canActivate: [AdminAuthGuard]},
+  { path: 'refund-reason/create', component: RefundReasonFormComponent, canActivate: [AdminAuthGuard] },
+{ path: 'rejection-reason/list', component: RejectionReasonListComponent  ,canActivate: [AdminAuthGuard]},
+  { path: 'rejection-reason/create', component: RejectionReasonFormComponent, canActivate: [AdminAuthGuard] },
 
   {
     path: 'productAttributes',
