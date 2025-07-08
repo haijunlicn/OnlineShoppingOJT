@@ -15,7 +15,6 @@ import { ResetPasswordComponent } from './auth/reset-password/reset-password.com
 import { VerifyComponent } from './auth/verify/verify.component';
 import { LocationCreateComponent } from './account/location-create/location-create.component';
 import { HttpClientModule } from '@angular/common/http';
-import { LocationCardComponent } from './account/location-card/location-card.component';
 import { EditLocationComponent } from './account/edit-location/edit-location.component';
 import { AboutComponent } from './general/about/about.component';
 import { ContactComponent } from './general/contact/contact.component';
@@ -46,6 +45,7 @@ import { AccountSettingsComponent } from './common/account-settings/account-sett
 
 import { NotificationBellComponent } from './notification/notification-bell/notification-bell.component';
 import { SearchBarComponent } from './common/search-bar/search-bar.component';
+import { LocationCardComponent } from './account/location-card/location-card.component';
 import { NotificationDetailComponent } from './notification/notification-detail/notification-detail.component';
 import { NotificationListComponent } from './notification/notification-list/notification-list.component';
 
@@ -59,7 +59,6 @@ import { NotificationListComponent } from './notification/notification-list/noti
     ResetPasswordComponent,
     VerifyComponent,
     LocationCreateComponent,
-    LocationCardComponent,
     EditLocationComponent,
     WishlistDialogComponent,
     UserproductListComponent,
@@ -86,7 +85,9 @@ import { NotificationListComponent } from './notification/notification-list/noti
     AccountSettingsComponent,
 
     NotificationBellComponent,
+    NotificationListComponent,
     SearchBarComponent,
+    LocationCardComponent,
     NotificationDetailComponent,
     NotificationListComponent
   ],

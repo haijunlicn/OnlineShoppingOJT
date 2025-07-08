@@ -29,7 +29,7 @@
         *ngFor="let section of sections" 
         class="toc-item"
         [class.active]="activeSectionId === section.id"
-        (click)="scrollToSection(section.id)">
+        (click)="scrollToSection(section.id!)">
         <span class="toc-icon">{{ section.icon }}</span>
         <span class="toc-text">{{ section.title }}</span>
       </button>
@@ -43,7 +43,7 @@
       class="policy-section"
       [id]="'section-' + section.id">
 
-      <div class="section-header" (click)="toggleSection(section.id)">
+      <div class="section-header" (click)="toggleSection(section.id!)">
         <div class="section-title-group">
           <span class="section-icon">{{ section.icon }}</span>
           <h2 class="section-title">{{ section.title }}</h2>
