@@ -12,10 +12,7 @@ public class OrderItemDetailDto {
     private Integer quantity;
     private Double price;
     private Double totalPrice;
-    
-    // Product variant information
+    private int maxReturnQty;
     private ProductVariantDTO variant;
-    
-    // Product information
     private ProductDTO product;
 } 

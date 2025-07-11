@@ -27,6 +27,7 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
     {
       heading: "Product Management",
       items: [
+        { label: "Chart Testing", route: "/admin/chartTesting", icon: "fas fa-box" },
         { label: "Product List", route: "/admin/productList", icon: "fas fa-box" },
         { label: "Product Attributes", route: "/admin/productAttributes", icon: "fas fa-tags" },
       ],
@@ -40,7 +41,10 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
     },
     {
       heading: "Refund Management",
-      items: [{ label: "Refund Requests", route: "/admin/refundRequestList", icon: "fas fa-credit-card" }],
+      items: [
+        { label: "Refund Requests", route: "/admin/refundRequestList", icon: "fas fa-credit-card" },
+        { label: "Order List", route: "/admin/AdminOrder", icon: "fas fa-credit-card" },
+      ],
     },
     {
       heading: "Policy Management",

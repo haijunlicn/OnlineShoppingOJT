@@ -20,5 +20,10 @@ public class PaymentRejectionReasonDTO {
         private String customReason;
     }
 
+    @Data
+    public static class PaymentStatusUpdateRequest {
+        private String status;
+        private PaymentRejectionReasonDTO.PaymentRejectionRequestDTO rejectionRequest;
+    }
 
 }

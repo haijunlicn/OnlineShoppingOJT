@@ -3,21 +3,20 @@
   <div class="admin-main">
     <app-admin-sidebar></app-admin-sidebar>
     <main class="admin-content">
-<form (ngSubmit)="onSubmit()" #rejectionForm="ngForm">
-  <label>
-    Label:
-    <input [(ngModel)]="reason.label" name="label" required />
-  </label>
+      <form (ngSubmit)="onSubmit()" #rejectionForm="ngForm">
+        <label>
+          Label:
+          <input [(ngModel)]="reason.label" name="label" required />
+        </label>
 
-  <label>
-    Allow Custom Text:
-    <input type="checkbox" [(ngModel)]="reason.allowCustomText" name="allowCustomText" />
-  </label>
+        <label>
+          Allow Custom Text:
+          <input type="checkbox" [(ngModel)]="reason.allowCustomText" name="allowCustomText" />
+        </label>
 
-  <button type="submit" [disabled]="!rejectionForm.form.valid">
-    {{ isEdit ? 'Update' : 'Save' }}
-  </button>
-</form>
-   </main>
+        <button type="submit" [disabled]="!rejectionForm.form.valid">
+          {{ isEdit ? 'Update' : 'Save' }}
+        </button>
+      </form>
+    </main>
   </div>
-  <app-admin-footer></app-admin-footer>

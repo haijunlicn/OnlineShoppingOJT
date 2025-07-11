@@ -78,4 +78,8 @@ public class OrderEntity {
     @JoinColumn(name = "current_status_id")
     private OrderStatusTypeEntity currentStatus;
 
+    @Column(name = "order_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private OrderType orderType = OrderType.NORMAL;
+
 }

@@ -1,5 +1,6 @@
 package com.maven.OnlineShoppingSB.dto;
 
+import com.maven.OnlineShoppingSB.entity.OrderType;
 import com.maven.OnlineShoppingSB.entity.PaymentStatus;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,4 +30,5 @@ public class OrderDto {
     private PaymentDTO paymentMethod;
     private Long paymentMethodId;
     private String paymentType;
+    private OrderType orderType;
 }

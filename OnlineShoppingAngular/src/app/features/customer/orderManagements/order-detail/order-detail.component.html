@@ -30,7 +30,16 @@
   </div>
 
   <!-- Order Details -->
-  <div *ngIf="order && !loading" class="order-detail-container">
+  <div *ngIf="order && !loading" class="order-detail-container"
+    [ngClass]="{'replacement-order': order.orderType === 'REPLACEMENT'}">
+
+    <!-- Replacement Order Notice -->
+    <div *ngIf="order.orderType === 'REPLACEMENT'" class="replacement-order-notice">
+      <i class="fas fa-exchange-alt"></i>
+      <div class="notice-text">
+        This is a replacement order. Payment and pricing information are not applicable for replacement items.
+      </div>
+    </div>
 
     <!-- Header Section -->
     <div class="order-header">
@@ -46,95 +55,25 @@
       <div class="header-main">
         <div class="header-left">
           <div class="header-title-section">
-            <h1>Order-{{ order.trackingNumber }}</h1>
+            <h1>
+              {{ order.orderType === 'REPLACEMENT' ? 'Replacement' : 'Order' }} #{{ order.id }}
+            </h1>
             <div class="header-meta">
-              <span class="order-date">Order date {{ formatDate(order.createdDate) }}</span>
-              <span class="order-source">Order from <strong>{{ order.user.name }}</strong></span>
-              <span class="order-purchase">Purchased via online store</span>
+              <span class="order-date">{{ formatDate(order.createdDate) }}</span>
+              <span class="order-customer">Customer: {{ order.user.name }}</span>
+              <span *ngIf="order.orderType === 'REPLACEMENT'" class="order-type">
+                <i class="fas fa-exchange-alt"></i> Replacement Order
+              </span>
             </div>
           </div>
         </div>
 
         <div class="header-right">
           <div class="header-actions">
-            <button class="btn-action secondary" (click)="downloadInvoice()">
+            <button *ngIf="order.orderType !== 'REPLACEMENT'" class="btn-action primary" (click)="downloadInvoice()">
+              <i class="fas fa-download"></i>
               <span>Download Invoice</span>
             </button>
-            <button class="btn-action secondary" (click)="trackOrder()">
-              <span>Track Order</span>
-            </button>
-            <button class="btn-action primary" (click)="contactSupport()">
-              <span>Contact Support</span>
-            </button>
-          </div>
-          <div class="order-status-info">
-            <span class="order-number">Order {{ order.id }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Status Section -->
-    <div class="status-section">
-      <div class="status-card">
-        <div class="status-icon">
-          <i [class]="getStatusIcon(order.paymentStatus)"></i>
-        </div>
-        <div class="status-content">
-          <h3>{{ getStatusMessage(order.paymentStatus) }}</h3>
-          <div class="status-details">
-            <div class="status-location">
-              <i class="fas fa-map-marker-alt"></i>
-              <span>{{ order.shippingAddress.township }}, {{ order.shippingAddress.city }}</span>
-            </div>
-            <div class="status-progress">
-              <div class="progress-line" [style.width.%]="getProgressPercent()"></div>
-            </div>
-            <div class="status-destination">
-              <i class="fas fa-home"></i>
-              <span>{{ order.user.name }}'s Address, {{ order.shippingAddress.city }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="delivery-info">
-        <div class="delivery-item">
-          <div class="delivery-icon">
-            <i class="fas fa-calendar-alt"></i>
-          </div>
-          <div class="delivery-content">
-            <div class="delivery-label">Order Date</div>
-            <div class="delivery-value">{{ formatDate(order.createdDate) }}</div>
-          </div>
-        </div>
-
-        <div class="delivery-item">
-          <div class="delivery-icon">
-            <i class="fas fa-truck"></i>
-          </div>
-          <div class="delivery-content">
-            <div class="delivery-label">Delivery Method</div>
-            <div class="delivery-value">{{ order.deliveryMethod.name }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Status Bar Section -->
-    <div class="status-bar-section">
-      <div class="status-bar-header">
-        <h3>Order Status</h3>
-      </div>
-
-      <div class="status-bar-container">
-        <div class="status-bar-track">
-          <div *ngFor="let status of getStatusSteps(); let i = index" class="status-step" [ngClass]="status.class">
-            <div class="step-circle">
-              <i [class]="status.icon"></i>
-            </div>
-            <div class="step-label">{{ status.label }}</div>
-            <div *ngIf="i < getStatusSteps().length - 1" class="step-connector" [ngClass]="status.connectorClass"></div>
           </div>
         </div>
       </div>
@@ -144,106 +83,244 @@
     <div class="content-grid">
       <!-- Left Column -->
       <div class="left-column">
-        <!-- Shipment Section -->
+        <!-- Shipment Information -->
         <div class="section-card">
           <div class="section-header">
-            <h3>Shipment</h3>
+            <h3>{{ order.orderType === 'REPLACEMENT' ? 'Replacement' : 'Shipment' }} Details</h3>
+            <div class="tracking-number">
+              <span>{{ order.trackingNumber }}</span>
+              <button class="btn-copy" (click)="copyTrackingNumber()" title="Copy tracking number">
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
           </div>
           <div class="shipment-content">
-            <div class="shipment-provider">
-              <div class="provider-name">{{ order.deliveryMethod.name }} Delivery</div>
-              <div class="provider-location">{{ order.shippingAddress.city }}, {{ order.shippingAddress.country }}</div>
-            </div>
-
-            <div class="recipient-info">
-              <div class="recipient-label">Recipient</div>
-              <div class="recipient-name">{{ order.user.name }}</div>
-
-              <div class="delivery-address-label">Delivery address</div>
-              <div class="delivery-address">
-                {{ order.shippingAddress.address }}<span *ngIf="order.shippingAddress.township">, {{
-                  order.shippingAddress.township }}</span>, {{ order.shippingAddress.city }} {{
-                order.shippingAddress.zipCode }}
+            <div class="shipment-grid">
+              <div class="shipment-item">
+                <div class="shipment-icon">
+                  <i class="fas fa-user"></i>
+                </div>
+                <div class="shipment-details">
+                  <div class="shipment-label">Recipient</div>
+                  <div class="shipment-value">{{ order.user.name }}</div>
+                </div>
               </div>
 
-              <div class="tracking-info">
-                <div class="tracking-label">Tracking No.</div>
-                <div class="tracking-number">
-                  {{ order.trackingNumber }}
-                  <button class="btn-copy" (click)="copyTrackingNumber()">
-                    <i class="fas fa-copy"></i>
-                  </button>
+              <div class="shipment-item">
+                <div class="shipment-icon">
+                  <i class="fas fa-envelope"></i>
+                </div>
+                <div class="shipment-details">
+                  <div class="shipment-label">Email</div>
+                  <div class="shipment-value">{{ order.user.email }}</div>
+                </div>
+              </div>
+
+              <div class="shipment-item">
+                <div class="shipment-icon">
+                  <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="shipment-details">
+                  <div class="shipment-label">Delivery Address</div>
+                  <div class="shipment-value">
+                    {{ order.shippingAddress.address }}<span *ngIf="order.shippingAddress.township">, {{
+                      order.shippingAddress.township }}</span><br />
+                    {{ order.shippingAddress.city }}, {{ order.shippingAddress.zipCode }}<br />
+                    {{ order.shippingAddress.country }}
+                    <span *ngIf="order.shippingAddress.phoneNumber"><br />Phone: {{ order.shippingAddress.phoneNumber
+                      }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="shipment-item">
+                <div class="shipment-icon">
+                  <i [class]="getDeliveryMethodIcon(order.deliveryMethod.name)"></i>
+                </div>
+                <div class="shipment-details">
+                  <div class="shipment-label">Delivery Method</div>
+                  <div class="shipment-value">
+                    {{ order.deliveryMethod.name }}
+                    <div *ngIf="order.orderType !== 'REPLACEMENT'" class="delivery-fee">
+                      {{ formatCurrency(order.deliveryMethod.baseFee) }}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Items Section -->
+        <!-- Order Items -->
         <div class="section-card">
           <div class="section-header">
-            <h3>Items <span class="item-count">{{ getTotalItems() }}</span></h3>
+            <h3>{{ order.orderType === 'REPLACEMENT' ? 'Replacement' : 'Order' }} Items</h3>
+            <div class="item-count">{{ getTotalItems() }} items</div>
           </div>
           <div class="items-content">
             <div *ngFor="let item of order.items" class="item-row">
               <div class="item-image">
                 <img [src]="item.variant.imgPath || 'assets/img/default-product.jpg'" [alt]="item.product.name"
-                  (error)="onImageError($event)">
+                  (error)="onImageError($event)" />
               </div>
               <div class="item-details">
                 <div class="item-name">{{ item.product.name }}</div>
                 <div class="item-meta">
                   <span class="item-sku">SKU: {{ item.variant.sku }}</span>
-                  <span class="item-qty">Qty: {{ item.quantity }}</span>
+                  <span class="item-qty">Quantity: {{ item.quantity }}</span>
                 </div>
+
+                <!-- Compact Refund Details -->
+
+                <div class="refund-details-section" *ngIf="getRefundsForItem(item.id).length > 0">
+                  <div class="refund-header">
+                    <i class="fas fa-undo refund-icon"></i>
+                    <h4>Refund Details</h4>
+                  </div>
+
+                  <div *ngFor="let refund of getRefundsForItem(item.id); let last = last" class="refund-item">
+                    <!-- Find the specific refundItem matching this item -->
+                    <ng-container *ngFor="let refundItem of refund.items">
+                      <ng-container *ngIf="refundItem.orderItemId === item.id">
+                        <div class="refund-grid">
+                          <div class="refund-field">
+                            <span class="refund-label">ID:</span>
+                            <span class="refund-value">{{ refund.id }}</span>
+                          </div>
+
+                          <div class="refund-field">
+                            <span class="refund-label">Status:</span>
+                            <span class="refund-status-badge"
+                              [ngClass]="'status-' + (refundItem.status?.toLowerCase() || 'unknown')">
+                              {{ refundItem.status || 'N/A' }}
+                            </span>
+                          </div>
+
+                          <div class="refund-field">
+                            <span class="refund-label">Action:</span>
+                            <span class="refund-value">{{ refundItem.requestedAction || 'N/A' }}</span>
+                          </div>
+
+                          <div class="refund-field">
+                            <span class="refund-label">Qty:</span>
+                            <span class="refund-value">{{ refundItem.quantity }}</span>
+                          </div>
+
+                          <div class="refund-field full-width" *ngIf="refundItem.customReasonText">
+                            <span class="refund-label"><i class="fas fa-comment-alt"></i> Reason:</span>
+                            <span class="refund-value refund-comment">{{ refundItem.customReasonText }}</span>
+                          </div>
+
+                          <div class="refund-field full-width" *ngIf="refund.adminComment">
+                            <span class="refund-label"><i class="fas fa-user-shield"></i> Admin:</span>
+                            <span class="refund-value refund-comment">{{ refund.adminComment }}</span>
+                          </div>
+                        </div>
+
+                        <div class="refund-divider" *ngIf="!last"></div>
+                      </ng-container>
+                    </ng-container>
+                  </div>
+                </div>
+
+
+                <!-- <div class="refund-details-section" *ngIf="getRefundsForItem(item.id).length > 0">
+                  <div class="refund-header">
+                    <i class="fas fa-undo refund-icon"></i>
+                    <h4>Refund Details</h4>
+                  </div>
+
+                  <div *ngFor="let refund of getRefundsForItem(item.id); let last = last" class="refund-item">
+                    <div class="refund-grid">
+                      <div class="refund-field">
+                        <span class="refund-label">ID:</span>
+                        <span class="refund-value">{{ refund.id }}</span>
+                      </div>
+
+                      <div class="refund-field">
+                        <span class="refund-label">Status:</span>
+                        <span class="refund-status-badge"
+                          [ngClass]="'status-' + (refund.items[0].status?.toLowerCase() || 'unknown')">
+                          {{ refund.items[0].status || 'N/A' }}
+                        </span>
+                      </div>
+
+                      <div class="refund-field">
+                        <span class="refund-label">Action:</span>
+                        <span class="refund-value">{{ refund.items[0].requestedAction || 'N/A' }}</span>
+                      </div>
+
+                      <div class="refund-field">
+                        <span class="refund-label">Qty:</span>
+                        <span class="refund-value">{{ refund.items[0].quantity }}</span>
+                      </div>
+
+                      <div class="refund-field full-width" *ngIf="refund.items[0].customReasonText">
+                        <span class="refund-label">
+                          <i class="fas fa-comment-alt"></i>
+                          Reason:
+                        </span>
+                        <span class="refund-value refund-comment">{{ refund.items[0].customReasonText }}</span>
+                      </div>
+
+                      <div class="refund-field full-width" *ngIf="refund.adminComment">
+                        <span class="refund-label">
+                          <i class="fas fa-user-shield"></i>
+                          Admin:
+                        </span>
+                        <span class="refund-value refund-comment">{{ refund.adminComment }}</span>
+                      </div>
+                    </div>
+
+                    <div class="refund-divider" *ngIf="!last"></div>
+                  </div>
+                </div> -->
+
               </div>
-              <div class="item-price">{{ formatCurrency(item.totalPrice) }}</div>
+              <div *ngIf="order.orderType !== 'REPLACEMENT'" class="item-price">
+                {{ formatCurrency(item.totalPrice) }}
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Order Summary -->
-        <div class="section-card">
+        <!-- Order Summary - Hidden for Replacement Orders -->
+        <div *ngIf="order.orderType !== 'REPLACEMENT'" class="section-card">
           <div class="section-header">
             <h3>Order Summary</h3>
             <div class="payment-status">
-              <span class="payment-badge" [ngClass]="getOrderStatusClass(order.paymentStatus)">{{ order.paymentStatus
-                }}</span>
+              <span class="status-badge" [ngClass]="getOrderStatusClass(order.currentOrderStatus)">
+                {{ order.currentOrderStatus }}
+              </span>
             </div>
           </div>
           <div class="summary-content">
-            <div class="summary-text">Here's your summary for the items you purchased.</div>
-
-            <div class="summary-items">
-              <div *ngFor="let item of order.items" class="summary-item">
-                <span class="summary-item-name">{{ item.product.name }} ({{ item.quantity }}x)</span>
-                <span class="summary-item-price">{{ formatCurrency(item.totalPrice) }}</span>
+            <div class="summary-breakdown">
+              <div class="summary-row">
+                <span>Subtotal ({{ getTotalItems() }} items)</span>
+                <span>{{ formatCurrency(getSubtotal()) }}</span>
+              </div>
+              <div class="summary-row">
+                <span>Shipping Fee</span>
+                <span>{{ formatCurrency(order.shippingFee) }}</span>
+              </div>
+              <div class="summary-divider"></div>
+              <div class="summary-total">
+                <span>Total Amount</span>
+                <span>{{ formatCurrency(order.totalAmount) }}</span>
               </div>
             </div>
 
-            <div class="summary-divider"></div>
-
-            <div class="summary-row">
-              <span>Subtotal</span>
-              <span>{{ formatCurrency(getSubtotal()) }}</span>
-            </div>
-            <div class="summary-row">
-              <span>Shipping Fee</span>
-              <span>{{ formatCurrency(order.shippingFee) }}</span>
-            </div>
-
-            <div class="summary-divider"></div>
-
-            <div class="summary-total">
-              <span>Total</span>
-              <span>{{ formatCurrency(order.totalAmount) }}</span>
-            </div>
-
-            <div class="summary-note">{{ formatCurrency(order.totalAmount) }} ({{ getTotalItems() }} items)</div>
-
             <div class="summary-actions">
-              <button class="btn-contact" (click)="contactSupport()">Contact Support</button>
-              <button class="btn-invoice" (click)="downloadInvoice()">Download Invoice</button>
+              <button class="btn-refund" (click)="goToRefundForm()" [disabled]="isRefundDisabled()"
+                [title]="getRefundButtonTooltip()">
+                <i class="fas fa-undo"></i>
+                <span>Refund & Return</span>
+              </button>
+              <button class="btn-invoice" (click)="downloadInvoice()">
+                <i class="fas fa-file-invoice"></i>
+                <span>Download Invoice</span>
+              </button>
             </div>
           </div>
         </div>
@@ -251,48 +328,8 @@
 
       <!-- Right Column -->
       <div class="right-column">
-        <!-- Customer Info -->
-        <div class="info-card">
-          <div class="info-header">
-            <h3>Customer</h3>
-          </div>
-          <div class="customer-content">
-            <div class="customer-profile">
-              <div class="customer-avatar">
-                <i class="fas fa-user"></i>
-              </div>
-              <div class="customer-details">
-                <div class="customer-name">{{ order.user.name }}</div>
-                <div class="customer-email">{{ order.user.email }}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Shipping Address -->
-        <div class="info-card">
-          <div class="info-header">
-            <h3>Shipping Address</h3>
-          </div>
-          <div class="address-content">
-            <div class="address-details">
-              <div class="address-name">{{ order.user.name }}</div>
-              <div class="address-text">
-                {{
-                order.shippingAddress.address
-                + (order.shippingAddress.township ? ', ' + order.shippingAddress.township : '')
-                + ', ' + order.shippingAddress.city
-                + ', ' + order.shippingAddress.zipCode
-                + ', ' + order.shippingAddress.country
-                + (order.shippingAddress.phoneNumber ? ' (Phone: ' + order.shippingAddress.phoneNumber + ')' : '')
-                }}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Payment Information -->
-        <div *ngIf="order.paymentMethod" class="info-card">
+        <!-- Payment Information - Hidden for Replacement Orders -->
+        <div *ngIf="order.paymentMethod && order.orderType !== 'REPLACEMENT'" class="info-card payment-section">
           <div class="info-header">
             <h3>Payment Information</h3>
           </div>
@@ -300,7 +337,7 @@
             <div class="payment-method">
               <div class="payment-icon">
                 <img [src]="order.paymentMethod.logo" [alt]="order.paymentMethod.methodName"
-                  (error)="onPaymentLogoError($event)">
+                  (error)="onPaymentLogoError($event)" />
               </div>
               <div class="payment-details">
                 <div class="payment-name">{{ order.paymentMethod.methodName }}</div>
@@ -310,26 +347,40 @@
 
             <div *ngIf="order.paymentProofPath" class="payment-proof">
               <div class="proof-label">Payment Proof</div>
-              <img [src]="order.paymentProofPath" alt="Payment Proof" class="proof-image" (click)="viewPaymentProof()">
+              <img [src]="order.paymentProofPath" alt="Payment Proof" class="proof-image"
+                (click)="viewPaymentProof()" />
             </div>
           </div>
         </div>
 
-        <!-- Delivery Method -->
+        <!-- Enhanced Order Timeline -->
         <div class="info-card">
           <div class="info-header">
-            <h3>Delivery Method</h3>
+            <h3>{{ order.orderType === 'REPLACEMENT' ? 'Replacement' : 'Order' }} Timeline</h3>
+            <span class="status-badge" [ngClass]="getOrderStatusClass(order.currentOrderStatus)">
+              {{ getStatusMessage(order.currentOrderStatus, order.orderType) }}
+            </span>
           </div>
-          <div class="delivery-method-content">
-            <div class="delivery-method-info">
-              <div class="delivery-icon">
-                <i [class]="getDeliveryMethodIcon(order.deliveryMethod.name)"></i>
+          <div class="vertical-timeline">
+            <div *ngFor="let step of getUnifiedStatusSteps(); let i = index; let last = last" class="timeline-step"
+              [ngClass]="step.class">
+
+              <!-- Timeline connector line -->
+              <div class="timeline-connector" *ngIf="!last" [ngClass]="step.connectorClass"></div>
+
+              <!-- Step circle with icon -->
+              <div class="timeline-circle">
+                <i [class]="step.icon"></i>
               </div>
-              <div class="delivery-details">
-                <div class="delivery-name">{{ order.deliveryMethod.name }}</div>
-                <div class="delivery-fee">Base Fee: {{ formatCurrency(order.deliveryMethod.baseFee) }}</div>
-                <div *ngIf="order.deliveryMethod.feePerKm" class="delivery-per-km">Per KM: {{
-                  formatCurrency(order.deliveryMethod.feePerKm) }}</div>
+
+              <!-- Step content -->
+              <div class="timeline-content">
+                <div class="timeline-label">{{ step.label }}</div>
+                <div class="timeline-date" *ngIf="step.date">{{ step.date }}</div>
+                <div class="timeline-note" *ngIf="step.note">
+                  <i class="fas fa-sticky-note"></i>
+                  {{ step.note }}
+                </div>
               </div>
             </div>
           </div>

@@ -30,6 +30,7 @@ import { AccountSettingsComponent } from './common/account-settings/account-sett
 
 import { NotificationListComponent } from './notification/notification-list/notification-list.component';
 import { PaymentGuard } from '@app/core/services/payment-guard.service';
+import { RefundEligibilityGuard } from '@app/core/guards/refund-eligibility.guard';
 
 const routes: Routes = [
 
@@ -53,11 +54,11 @@ const routes: Routes = [
     path: 'auth/forgetPass',
     component: ForgetPasswordComponent,
   },
-  { path: 'about', component: AboutComponent},
-  { path: 'contact', component: ContactComponent},
-  { path: 'policy/privacy', component: PrivacyPolicyComponent},
-  { path: 'policy/terms-conditions', component: TermsConditionsComponent},
-  { path: 'policy/faq', component: FaqComponent},
+  { path: 'about', component: AboutComponent },
+  { path: 'contact', component: ContactComponent },
+  { path: 'policy/privacy', component: PrivacyPolicyComponent },
+  { path: 'policy/terms-conditions', component: TermsConditionsComponent },
+  { path: 'policy/faq', component: FaqComponent },
   { path: 'about', component: AboutComponent },
   { path: 'contact', component: ContactComponent },
   { path: 'policy/privacy', component: PrivacyPolicyComponent },
@@ -66,7 +67,7 @@ const routes: Routes = [
   // {
   //   path: 'customer/auth/verify/:id',
   //   component: VerifyComponent,canActivate: [NoAuthGuard],
-    { path: 'account-settings', component: AccountSettingsComponent },
+  { path: 'account-settings', component: AccountSettingsComponent },
 
   {
     path: 'auth/reset-password',
@@ -108,7 +109,10 @@ const routes: Routes = [
   { path: 'orderDetail/:id', component: OrderDetailComponent, canActivate: [AuthGuard] },
   { path: 'orders', component: OrderListComponent, canActivate: [AuthGuard] },
   { path: 'order', component: OrderManagementComponent, canActivate: [AuthGuard] },
-  { path: 'refundRequest/:orderId', component: RefundRequestFormComponent, canActivate: [AuthGuard] },
+  { path: 'refundRequest/:orderId', 
+    component: RefundRequestFormComponent, 
+    canActivate: [AuthGuard, RefundEligibilityGuard] 
+  },
   { path: 'notifications', component: NotificationListComponent, canActivate: [AuthGuard] },
 ];
 

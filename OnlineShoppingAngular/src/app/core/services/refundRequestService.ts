@@ -2,9 +2,9 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, map, Observable, throwError } from 'rxjs';
 import { RefundRequestDTO, ReturnRequestPayload, ReturnRequestResponse } from '../models/refund.model';
-import { OrderDetail } from './order.service';
 import { RefundReasonDTO } from '../models/refund-reason';
 import { StatusUpdateRequest } from '@app/features/admin/RefundManagement/refund-request-detail/refund-request-detail.component';
+import { OrderDetail, OrderItemDetail } from '../models/order.dto';
 
 @Injectable({
   providedIn: 'root'
@@ -17,13 +17,14 @@ export class RefundRequestService {
 
   getOrderDetails(orderId: number): Observable<OrderDetail> {
     return this.http.get<OrderDetail>(`http://localhost:8080/orders/${orderId}/details`).pipe(
-      map((order) => ({
-        ...order,
-        items: order.items.map((item) => ({
-          ...item,
-          maxReturnQty: this.calculateMaxReturnQty(item),
-        })),
-      })),
+      // map((order) => ({
+      //   ...order,
+      //   items: order.items.map((item : OrderItemDetail) => ({
+      //     ...item,
+      //     maxReturnQty: this.calculateMaxReturnQty(item),
+      //   })),
+      // })),
+      map((order) => order),
       catchError(this.handleError),
     )
   }

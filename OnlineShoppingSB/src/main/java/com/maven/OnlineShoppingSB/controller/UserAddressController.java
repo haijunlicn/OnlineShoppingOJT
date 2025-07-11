@@ -1,6 +1,7 @@
 package com.maven.OnlineShoppingSB.controller;
 
 import com.maven.OnlineShoppingSB.dto.UserAddressDto;
+import com.maven.OnlineShoppingSB.dto.UserResponseDTO;
 import com.maven.OnlineShoppingSB.dto.userDTO;
 import com.maven.OnlineShoppingSB.service.CustomUserDetailsService;
 import com.maven.OnlineShoppingSB.service.UserAddressService;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/locations")
@@ -17,7 +19,7 @@ public class UserAddressController {
 
     @Autowired
     private UserAddressService userAddressService;
-    
+
     @Autowired
     private CustomUserDetailsService cudservice;
 
@@ -33,7 +35,7 @@ public class UserAddressController {
         return ResponseEntity.ok(list);
     }
 
-//    @GetMapping("/{id}")
+    //    @GetMapping("/{id}")
 //    public ResponseEntity<UserAddressDto> getUserAddressById(@PathVariable Integer id) {
 //        UserAddressDto dto = userAddressService.getUserAddressById(id);
 //        if (dto == null) {
@@ -41,13 +43,12 @@ public class UserAddressController {
 //        }
 //        return ResponseEntity.ok(dto);
 //    }
-@GetMapping("/user-locations")
-public ResponseEntity<List<UserAddressDto>> getUserLocations(@RequestParam Integer userId) {
+    @GetMapping("/user-locations")
+    public ResponseEntity<List<UserAddressDto>> getUserLocations(@RequestParam Integer userId) {
         System.out.println("hello2");
-    List<UserAddressDto> dtos = userAddressService.getUserAddressesByUserId(userId);
-    return ResponseEntity.ok(dtos);
-}
-
+        List<UserAddressDto> dtos = userAddressService.getUserAddressesByUserId(userId);
+        return ResponseEntity.ok(dtos);
+    }
 
 
     @DeleteMapping("/{id}")
@@ -55,6 +56,7 @@ public ResponseEntity<List<UserAddressDto>> getUserLocations(@RequestParam Integ
         userAddressService.deleteUserAddress(id);
         return ResponseEntity.noContent().build();
     }
+
     @GetMapping("/{id}")
     public ResponseEntity<UserAddressDto> getAddressById(@PathVariable Integer id) {
         UserAddressDto dto = userAddressService.getUserAddressById(id);
@@ -75,20 +77,21 @@ public ResponseEntity<List<UserAddressDto>> getUserLocations(@RequestParam Integ
             return ResponseEntity.status(404).body(ex.getMessage());
         }
     }
+
     @GetMapping("/{email}/{roleType}")
-    public ResponseEntity<userDTO> getProfile(
+    public ResponseEntity<UserResponseDTO> getProfile(
             @PathVariable String email,
             @PathVariable Integer roleType) {
-        userDTO profile = cudservice.getProfile(email, roleType);
+        UserResponseDTO profile = cudservice.getProfile(email, roleType);
         return ResponseEntity.ok(profile);
     }
 
     @PutMapping("/update/{email}/{roleType}")
-    public ResponseEntity<userDTO> updateProfile(
+    public ResponseEntity<UserResponseDTO> updateProfile(
             @PathVariable String email,
             @PathVariable Integer roleType,
-            @RequestBody userDTO updatedProfile) {
-        userDTO updated = cudservice.updateProfile(email, roleType, updatedProfile);
+            @RequestBody UserResponseDTO updatedProfile) {
+        UserResponseDTO updated = cudservice.updateProfile(email, roleType, updatedProfile);
         return ResponseEntity.ok(updated);
     }
 

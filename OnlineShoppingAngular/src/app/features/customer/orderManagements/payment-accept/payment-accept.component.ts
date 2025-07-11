@@ -827,7 +827,7 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
 
   // Enhanced timer with modern design
   startGlobalTimer() {
-    this.timeLeft = 10 // 10 minutes
+    this.timeLeft = 15 // 10 minutes
     this.timerExpired = false
     this.timerWarning = false
     this.updateTimerDisplay()

@@ -41,6 +41,7 @@ import { RejectionReasonFormComponent } from './policy-management/rejection-reas
 import { RefundRequestListComponent } from './RefundManagement/refund-request-list/refund-request-list.component';
 import { RefundRequestDetailComponent } from './RefundManagement/refund-request-detail/refund-request-detail.component';
 import { PolicyUpdateComponent } from './policy-management/policy-update/policy-update.component';
+import { ChartTestingComponent } from './SaleAnalysis/chart-testing/chart-testing.component';
 
 
 const routes: Routes = [
@@ -91,7 +92,7 @@ const routes: Routes = [
     component: PolicyListComponent,
     canActivate: [AdminAuthGuard]
   },
-   {
+  {
     path: 'policy/policy-update',
     component: PolicyUpdateComponent,
     canActivate: [AdminAuthGuard]
@@ -163,9 +164,9 @@ const routes: Routes = [
   {
     path: 'sale-analysis', component: SaleAnalysisComponent, canActivate: [AdminAuthGuard]
   },
-  { path: 'refund-reason/list', component: RefundReasonListComponent  ,canActivate: [AdminAuthGuard]},
+  { path: 'refund-reason/list', component: RefundReasonListComponent, canActivate: [AdminAuthGuard] },
   { path: 'refund-reason/create', component: RefundReasonFormComponent, canActivate: [AdminAuthGuard] },
-{ path: 'rejection-reason/list', component: RejectionReasonListComponent  ,canActivate: [AdminAuthGuard]},
+  { path: 'rejection-reason/list', component: RejectionReasonListComponent, canActivate: [AdminAuthGuard] },
   { path: 'rejection-reason/create', component: RejectionReasonFormComponent, canActivate: [AdminAuthGuard] },
 
   {
@@ -241,7 +242,6 @@ const routes: Routes = [
     }
   },
   { path: 'storelocation', component: StoreAddressComponent },
-
   {
     path: 'AdminOrder', component: AdminOrdersControlComponent,
     canActivate: [AdminAuthGuard, PermissionGuard],
@@ -271,7 +271,9 @@ const routes: Routes = [
       ]
     }
   },
-
+  {
+    path: 'chartTesting', component: ChartTestingComponent,
+  },
 ];
 
 @NgModule({

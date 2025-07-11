@@ -21,5 +21,11 @@ public interface RefundRequestRepository extends JpaRepository<RefundRequestEnti
     @Query("SELECT rr FROM RefundRequestEntity rr LEFT JOIN FETCH rr.items WHERE rr.id = :id")
     Optional<RefundRequestEntity> findByIdWithItems(@Param("id") Long id);
 
+    @EntityGraph(attributePaths = {
+            "items", "items.orderItem", "items.reason", "items.rejectionReason", "items.images",
+            "statusHistoryList", "items.statusHistoryList"
+    })
+    @Query("SELECT rr FROM RefundRequestEntity rr WHERE rr.order.id = :orderId")
+    List<RefundRequestEntity> findByOrderIdWithAllDetails(@Param("orderId") Long orderId);
 
 }

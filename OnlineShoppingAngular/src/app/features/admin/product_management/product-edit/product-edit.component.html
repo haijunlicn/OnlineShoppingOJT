@@ -371,8 +371,8 @@
                                                     <button type="button" class="btn btn-outline-primary btn-sm"
                                                         (click)="toggleBulkAssignmentMode()">
                                                         <i class="fas fa-images me-1"></i>
-                                                        {{ bulkAssignmentMode ? 'Exit Bulk Mode' : 'Bulk Image
-                                                        Assignment'
+                                                        {{ bulkAssignmentMode ? 'Exit Bulk Mode' 
+                                                        : 'Bulk Image Assignment'
                                                         }}
                                                     </button>
                                                 </div>
@@ -617,8 +617,6 @@
     </div>
 
     <!-- Dialogs (same as before) -->
-    <app-admin-footer></app-admin-footer>
-
     <app-brand-dialog [(visible)]="brandDialogVisible" [editingBrand]="null" (save)="onBrandCreated()">
     </app-brand-dialog>
 
