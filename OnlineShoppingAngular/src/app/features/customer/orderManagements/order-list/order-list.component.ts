@@ -1,8 +1,9 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { OrderService, OrderDetail } from '../../../../core/services/order.service';
+import { OrderService } from '../../../../core/services/order.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { OrderDetail, OrderItemDetail } from '@app/core/models/order.dto';
 @Component({
   selector: "app-order-list",
   standalone: false,
@@ -16,43 +17,45 @@ export class OrderListComponent implements OnInit, OnDestroy {
   error = ""
   currentUserId = 0
   selectedFilter = "all"
+  selectedOrderType = "NORMAL" // Default to NORMAL
   searchTerm = ""
   dropdownOpen = false
+  orderTypeDropdownOpen = false
   private subscriptions: Subscription[] = []
 
   // Pagination state
-  currentPage = 1;
-  pageSize = 5;
+  currentPage = 1
+  pageSize = 5
 
   get totalPages(): number {
-    return Math.ceil(this.filteredOrders.length / this.pageSize) || 1;
+    return Math.ceil(this.filteredOrders.length / this.pageSize) || 1
   }
 
   get paginatedOrders(): OrderDetail[] {
-    const start = (this.currentPage - 1) * this.pageSize;
-    return this.filteredOrders.slice(start, start + this.pageSize);
+    const start = (this.currentPage - 1) * this.pageSize
+    return this.filteredOrders.slice(start, start + this.pageSize)
   }
 
   goToPage(page: number): void {
-    if (page < 1 || page > this.totalPages) return;
-    this.currentPage = page;
+    if (page < 1 || page > this.totalPages) return
+    this.currentPage = page
   }
 
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
-      this.currentPage++;
+      this.currentPage++
     }
   }
 
   prevPage(): void {
     if (this.currentPage > 1) {
-      this.currentPage--;
+      this.currentPage--
     }
   }
 
   setPageSize(size: number): void {
-    this.pageSize = size;
-    this.currentPage = 1;
+    this.pageSize = size
+    this.currentPage = 1
   }
 
   constructor(
@@ -66,6 +69,9 @@ export class OrderListComponent implements OnInit, OnDestroy {
     const target = event.target as HTMLElement
     if (!target.closest(".filter-dropdown")) {
       this.dropdownOpen = false
+    }
+    if (!target.closest(".order-type-dropdown")) {
+      this.orderTypeDropdownOpen = false
     }
   }
 
@@ -95,7 +101,7 @@ export class OrderListComponent implements OnInit, OnDestroy {
       next: (orders: OrderDetail[]) => {
         // Sort orders by creation date (newest first)
         this.orders = orders.sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime())
-        this.filteredOrders = [...this.orders]
+        this.applyFilters()
         this.loading = false
       },
       error: (err) => {
@@ -110,6 +116,12 @@ export class OrderListComponent implements OnInit, OnDestroy {
 
   toggleDropdown(): void {
     this.dropdownOpen = !this.dropdownOpen
+    this.orderTypeDropdownOpen = false
+  }
+
+  toggleOrderTypeDropdown(): void {
+    this.orderTypeDropdownOpen = !this.orderTypeDropdownOpen
+    this.dropdownOpen = false
   }
 
   selectFilter(filter: string): void {
@@ -118,8 +130,9 @@ export class OrderListComponent implements OnInit, OnDestroy {
     this.applyFilters()
   }
 
-  filterOrders(status: string): void {
-    this.selectedFilter = status
+  selectOrderType(orderType: string): void {
+    this.selectedOrderType = orderType
+    this.orderTypeDropdownOpen = false
     this.applyFilters()
   }
 
@@ -131,9 +144,34 @@ export class OrderListComponent implements OnInit, OnDestroy {
   applyFilters(): void {
     let filtered = [...this.orders]
 
-    // Apply status filter
+    // Apply order type filter
+    if (this.selectedOrderType !== "all") {
+      filtered = filtered.filter((order) => (order.orderType || "NORMAL") === this.selectedOrderType)
+    }
+
+    // Apply order status filter
     if (this.selectedFilter !== "all") {
-      filtered = filtered.filter((order) => order.paymentStatus?.toLowerCase() === this.selectedFilter.toLowerCase())
+      filtered = filtered.filter((order) => {
+        const orderStatus = order.currentOrderStatus?.toLowerCase()
+        switch (this.selectedFilter) {
+          case "pending":
+            return orderStatus === "order_pending"
+          case "confirmed":
+            return orderStatus === "order_confirmed"
+          case "packed":
+            return orderStatus === "packed"
+          case "shipped":
+            return orderStatus === "shipped"
+          case "out_for_delivery":
+            return orderStatus === "out_for_delivery"
+          case "delivered":
+            return orderStatus === "delivered"
+          case "cancelled":
+            return orderStatus === "order_cancelled"
+          default:
+            return true
+        }
+      })
     }
 
     // Apply search filter
@@ -142,49 +180,61 @@ export class OrderListComponent implements OnInit, OnDestroy {
       filtered = filtered.filter(
         (order) =>
           order.trackingNumber?.toLowerCase().includes(searchLower) ||
-          order.items?.some((item) => item.product.name.toLowerCase().includes(searchLower)),
+          order.items?.some((item: OrderItemDetail) => item.product.name.toLowerCase().includes(searchLower)),
       )
     }
 
     this.filteredOrders = filtered
-    this.currentPage = 1; // Reset to first page on filter
+    this.currentPage = 1 // Reset to first page on filter
   }
 
   clearFilters(): void {
     this.selectedFilter = "all"
+    this.selectedOrderType = "NORMAL"
     this.searchTerm = ""
     this.applyFilters()
   }
 
   getFilterTitle(): string {
-    switch (this.selectedFilter) {
-      case "all":
-        return this.searchTerm ? "Search Results" : "All Orders"
-      case "pending":
-        return "Pending Orders"
-      case "paid":
-        return "Paid Orders"
-      case "shipped":
-        return "Shipped Orders"
-      case "delivered":
-        return "Delivered Orders"
-      case "cancelled":
-        return "Cancelled Orders"
-      default:
-        return "Filtered Orders"
+    let title = ""
+
+    // Order type part
+    if (this.selectedOrderType === "REPLACEMENT") {
+      title = "Replacement Orders"
+    } else if (this.selectedOrderType === "NORMAL") {
+      title = "Normal Orders"
+    } else {
+      title = "All Orders"
     }
+
+    // Status part
+    if (this.selectedFilter !== "all") {
+      const statusLabel = this.getFilterLabel()
+      title = `${statusLabel} ${this.selectedOrderType === "all" ? "Orders" : title}`
+    }
+
+    // Search part
+    if (this.searchTerm) {
+      title = "Search Results"
+    }
+
+    return title
   }
 
   getFilterLabel(): string {
     switch (this.selectedFilter) {
       case "all":
-        return "All Orders"
+        return "All Status"
       case "pending":
         return "Pending"
-      case "paid":
-        return "Paid"
+      case "confirmed":
+        return "Confirmed"
+      case "packed":
+        return "Packed"
       case "shipped":
         return "Shipped"
+      case "out_for_delivery":
+        return "Out for Delivery"
       case "delivered":
         return "Delivered"
       case "cancelled":
@@ -194,49 +244,98 @@ export class OrderListComponent implements OnInit, OnDestroy {
     }
   }
 
+  getOrderTypeLabel(): string {
+    switch (this.selectedOrderType) {
+      case "NORMAL":
+        return "Normal Orders"
+      case "REPLACEMENT":
+        return "Replacement Orders"
+      case "all":
+        return "All Types"
+      default:
+        return "Order Type"
+    }
+  }
+
   viewOrderDetail(orderId: number): void {
     this.router.navigate(["/customer/orderDetail", orderId])
   }
 
+  // Updated to use currentOrderStatus instead of paymentStatus
   getOrderStatusClass(status: string): string {
     if (!status) return "status-default"
 
     switch (status.toLowerCase()) {
-      case "paid":
-        return "status-paid"
-      case "pending":
+      case "order_pending":
         return "status-pending"
-      case "payment failed":
-        return "status-failed"
+      case "order_confirmed":
+        return "status-confirmed"
+      case "packed":
+        return "status-packed"
       case "shipped":
         return "status-shipped"
+      case "out_for_delivery":
+        return "status-out-for-delivery"
       case "delivered":
         return "status-delivered"
-      case "cancelled":
+      case "order_cancelled":
         return "status-cancelled"
+      case "payment_rejected":
+        return "status-failed"
       default:
         return "status-default"
     }
   }
 
+  // Updated to use currentOrderStatus instead of paymentStatus
   getOrderStatusIcon(status: string): string {
     if (!status) return "fas fa-info-circle"
 
     switch (status.toLowerCase()) {
-      case "paid":
-        return "fas fa-check-circle"
-      case "pending":
+      case "order_pending":
         return "fas fa-clock"
-      case "payment failed":
-        return "fas fa-times-circle"
+      case "order_confirmed":
+        return "fas fa-thumbs-up"
+      case "packed":
+        return "fas fa-box"
       case "shipped":
+        return "fas fa-truck"
+      case "out_for_delivery":
         return "fas fa-shipping-fast"
       case "delivered":
         return "fas fa-box-open"
-      case "cancelled":
+      case "order_cancelled":
         return "fas fa-ban"
+      case "payment_rejected":
+        return "fas fa-times-circle"
       default:
         return "fas fa-info-circle"
+    }
+  }
+
+  // Helper method to get user-friendly status label
+  getOrderStatusLabel(status: string): string {
+    if (!status) return "Unknown"
+
+    switch (status.toLowerCase()) {
+      case "order_pending":
+        return "Pending"
+      case "order_confirmed":
+        return "Confirmed"
+      case "packed":
+        return "Packed"
+      case "shipped":
+        return "Shipped"
+      case "out_for_delivery":
+        return "Out for Delivery"
+      case "delivered":
+        return "Delivered"
+      case "order_cancelled":
+        return "Cancelled"
+      case "payment_rejected":
+        return "Payment Rejected"
+      default:
+        return status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
     }
   }
 
@@ -271,12 +370,17 @@ export class OrderListComponent implements OnInit, OnDestroy {
 
   getTotalItems(order: OrderDetail): number {
     if (!order.items || !Array.isArray(order.items)) return 0
-    return order.items.reduce((total, item) => total + (item.quantity || 0), 0)
+
+    return order.items.reduce((total: number, item: OrderItemDetail) => total + (item.quantity || 0), 0)
   }
 
   getSubtotal(order: OrderDetail): number {
     if (!order.items || !Array.isArray(order.items)) return 0
-    return order.items.reduce((total, item) => total + (item.price || 0) * (item.quantity || 0), 0)
+
+    return order.items.reduce(
+      (total: number, item: OrderItemDetail) => total + (item.price || 0) * (item.quantity || 0),
+      0,
+    )
   }
 
   goBackToHome(): void {
@@ -291,40 +395,74 @@ export class OrderListComponent implements OnInit, OnDestroy {
     event.target.src = "assets/img/default-product.jpg"
   }
 
-  // Statistics methods
+  // Updated statistics methods to use currentOrderStatus
   getPendingOrders(): number {
     return this.orders.filter((order) => {
-      const status = order.paymentStatus?.toLowerCase()
-      return status === "pending" || status === "payment failed"
+      const status = order.currentOrderStatus?.toLowerCase()
+      return status === "order_pending"
     }).length
   }
 
   getCompletedOrders(): number {
     return this.orders.filter((order) => {
-      const status = order.paymentStatus?.toLowerCase()
-      return status === "paid" || status === "delivered"
+      const status = order.currentOrderStatus?.toLowerCase()
+      return status === "delivered"
     }).length
   }
 
   getShippedOrders(): number {
-    return this.orders.filter((order) => order.paymentStatus?.toLowerCase() === "shipped").length
+    return this.orders.filter((order) => {
+      const status = order.currentOrderStatus?.toLowerCase()
+      return status === "shipped" || status === "out_for_delivery"
+    }).length
   }
 
   getCancelledOrders(): number {
-    return this.orders.filter((order) => order.paymentStatus?.toLowerCase() === "cancelled").length
+    return this.orders.filter((order) => {
+      const status = order.currentOrderStatus?.toLowerCase()
+      return status === "order_cancelled"
+    }).length
   }
 
+  // Updated to work with order status filters
   getFilteredOrdersCount(status: string): number {
     if (status === "all") return this.orders.length
 
-    return this.orders.filter((order) => order.paymentStatus?.toLowerCase() === status.toLowerCase()).length
+    return this.orders.filter((order) => {
+      const orderStatus = order.currentOrderStatus?.toLowerCase()
+      switch (status) {
+        case "pending":
+          return orderStatus === "order_pending"
+        case "confirmed":
+          return orderStatus === "order_confirmed"
+        case "packed":
+          return orderStatus === "packed"
+        case "shipped":
+          return orderStatus === "shipped"
+        case "out_for_delivery":
+          return orderStatus === "out_for_delivery"
+        case "delivered":
+          return orderStatus === "delivered"
+        case "cancelled":
+          return orderStatus === "order_cancelled"
+        default:
+          return false
+      }
+    }).length
+  }
+
+  // New method to get order type counts
+  getOrderTypeCount(orderType: string): number {
+    if (orderType === "all") return this.orders.length
+
+    return this.orders.filter((order) => (order.orderType || "NORMAL") === orderType).length
   }
 
   getTotalAmount(): number {
     return this.orders.reduce((total, order) => total + (order.totalAmount || 0), 0)
   }
 
-  // Payment method display methods
+  // Payment method display methods (keeping these for display purposes)
   getPaymentMethodName(order: OrderDetail): string {
     if (order.paymentMethod?.methodName) {
       return order.paymentMethod.methodName

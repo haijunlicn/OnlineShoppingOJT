@@ -1,483 +1,661 @@
-import { Component, type OnInit, OnDestroy } from "@angular/core"
-import { OrderDetail, OrderService } from "@app/core/services/order.service";
-import { Subscription } from 'rxjs';
+import { Component, type OnInit, OnDestroy, HostListener } from "@angular/core"
+import { OrderService } from "@app/core/services/order.service";
+import { debounceTime, distinctUntilChanged, Subject, Subscription, takeUntil } from 'rxjs';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { AuthService } from '@app/core/services/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { log } from "node:console";
 import Swal from 'sweetalert2';
+import { ORDER_STATUS, ORDER_STATUS_LABELS, OrderDetail, PAYMENT_STATUS } from "@app/core/models/order.dto";
+import { AlertService } from "@app/core/services/alert.service";
 
 interface Order {
   id: number
   trackingNumber: string
-  customer: string
-  email: string
-  avatar: string
   date: string
   time: string
-  status: "pending" | "order_confirmed" | "packed" | "out_for_delivery" | "delivered" | "cancelled"
-  total: number
-  items: number
-  paymentMethod: string
-  priority: "high" | "medium" | "low"
+  paymentStatus: PAYMENT_STATUS
+  orderStatus: ORDER_STATUS
+  items: any[]
+  createdDate: Date
+  city?: string
 }
 
-interface StatusConfig {
-  label: string
-  color: string
-  dot: string
+interface FilterParams {
+  search: string
+  status: string
+  city: string
+  dateFrom: string
+  dateTo: string
 }
 
 @Component({
   selector: "app-admin-orders-control",
-  standalone:false,
+  standalone: false,
   templateUrl: "./admin-orders-control.component.html",
   styleUrls: ["./admin-orders-control.component.css"],
 })
 export class AdminOrdersControlComponent implements OnInit, OnDestroy {
-  searchTerm = ""
-  statusFilter = "all"
-  priorityFilter = "all"
-
+  // Data properties
   orders: Order[] = []
   filteredOrders: Order[] = []
-  loading = false
-  error: string | null = null
-  private subscription: Subscription = new Subscription()
+  paginatedOrders: Order[] = []
+  isLoading = false
+  errorMessage = ""
 
-  statusConfig: Record<string, StatusConfig> = {
-    pending: {
-      label: "Pending",
-      color: "status-pending",
-      dot: "dot-pending",
-    },
-    order_confirmed: {
-      label: "Order Confirmed",
-      color: "status-processing",
-      dot: "dot-processing",
-    },
-    packed: {
-      label: "Packed",
-      color: "status-processing",
-      dot: "dot-processing",
-    },
-    out_for_delivery: {
-      label: "Out for Delivery",
-      color: "status-shipped",
-      dot: "dot-shipped",
-    },
-    delivered: {
-      label: "Delivered",
-      color: "status-delivered",
-      dot: "dot-delivered",
-    },
-    cancelled: {
-      label: "Cancelled",
-      color: "status-cancelled",
-      dot: "dot-cancelled",
-    }
+  // Filter/search properties
+  filterParams: FilterParams = {
+    search: "",
+    status: "",
+    city: "",
+    dateFrom: "",
+    dateTo: "",
   }
 
-  selectedOrderIds: number[] = [];
-  bulkStatus: string = '';
-  bulkNote: string = '';
-  bulkStatusLoading = false;
-  bulkStatusError: string | null = null;
+  // Search debouncing
+  private searchSubject = new Subject<string>()
+  private destroy$ = new Subject<void>()
 
-  selectedOrderForStatus: Order | null = null;
-  showSingleStatusModal = false;
-  singleStatus: string = '';
-  singleNote: string = '';
-  singleStatusLoading = false;
-  singleStatusError: string | null = null;
+  selectedOrderIds: number[] = []
+  bulkStatus: ORDER_STATUS | "" = ""
+  bulkNote = ""
+  bulkStatusLoading = false
+  bulkStatusError: string | null = null
 
-  adminId: number | null = null;
+  adminId: number | null = null
+  sortField = "createdAt"
+  sortDirection: "asc" | "desc" = "desc"
 
-  // Database id/code mapping
-  statusMap: any = {
-    pending: 0, // 0 or null if not in DB, but needed for UI
-    order_confirmed: 1,
-    packed: 2,
-    out_for_delivery: 3,
-    delivered: 4,
-    cancelled: 5
-  };
+  // Pagination
+  currentPage = 1
+  itemsPerPage = 10
+  totalItems = 0
+  totalPages = 0
 
-  // UI <-> DB mapping
-  uiToDbStatus: any = {
-    pending: 0, // 0 or null if not in DB, but needed for UI
-    order_confirmed: 1,
-    packed: 2,
-    out_for_delivery: 3,
-    delivered: 4,
-    cancelled: 5
-  };
+  // Status configurations for UI display
+  orderStatusConfig: Record<ORDER_STATUS, { label: string; color: string; icon: string }> = {
+    [ORDER_STATUS.ORDER_PENDING]: {
+      label: "Pending",
+      color: "badge bg-warning text-dark",
+      icon: "bi bi-clock",
+    },
+    [ORDER_STATUS.ORDER_CONFIRMED]: {
+      label: "Confirmed",
+      color: "badge bg-info",
+      icon: "bi bi-check-circle",
+    },
+    [ORDER_STATUS.PACKED]: {
+      label: "Packed",
+      color: "badge bg-primary",
+      icon: "bi bi-box",
+    },
+    [ORDER_STATUS.SHIPPED]: {
+      label: "Shipped",
+      color: "badge bg-primary",
+      icon: "bi bi-truck",
+    },
+    [ORDER_STATUS.OUT_FOR_DELIVERY]: {
+      label: "Out for Delivery",
+      color: "badge bg-info",
+      icon: "bi bi-geo-alt",
+    },
+    [ORDER_STATUS.DELIVERED]: {
+      label: "Delivered",
+      color: "badge bg-success",
+      icon: "bi bi-check-circle-fill",
+    },
+    [ORDER_STATUS.ORDER_CANCELLED]: {
+      label: "Cancelled",
+      color: "badge bg-danger",
+      icon: "bi bi-x-circle",
+    },
+    [ORDER_STATUS.PAYMENT_REJECTED]: {
+      label: "Payment Rejected",
+      color: "badge bg-danger",
+      icon: "bi bi-x-circle-fill",
+    },
+    [ORDER_STATUS.PAID]: {
+      label: "Payment Confirmed",
+      color: "badge bg-success",
+      icon: "bi bi-credit-card-fill",
+    },
+  }
 
-  // DB -> UI mapping
-  dbToUiStatus: any = {
-    PENDING: 'pending',
-    ORDER_CONFIRMED: 'order_confirmed',
-    PACKED: 'packed',
-    OUT_FOR_DELIVERY: 'out_for_delivery',
-    DELIVERED: 'delivered',
-    CANCELLED: 'cancelled'
-  };
-
-  allowedTransitions: Record<Order['status'], Order['status'][]> = {
-    pending: ['order_confirmed', 'cancelled'],
-    order_confirmed: ['packed', 'cancelled'],
-    packed: ['out_for_delivery'],
-    out_for_delivery: ['delivered'],
-    delivered: [],
-    cancelled: []
-  };
-
-  statusList: Order['status'][] = [
-    'pending',
-    'order_confirmed',
-    'packed',
-    'out_for_delivery',
-    'delivered',
-    'cancelled'
-  ];
-
-  constructor(private orderService: OrderService, private router: Router, private location: Location, private authService: AuthService, private snackBar: MatSnackBar) {}
+  constructor(
+    private orderService: OrderService,
+    private router: Router,
+    private authService: AuthService,
+    private alertService: AlertService,
+  ) {
+    // Setup search debouncing
+    this.searchSubject.pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$)).subscribe(() => {
+      this.applyFilters()
+    })
+  }
 
   ngOnInit(): void {
     // Get adminId from AuthService
-    const user = this.authService.getCurrentUser();
+    const user = this.authService.getCurrentUser()
     if (user && user.id) {
-      this.adminId = user.id;
+      this.adminId = user.id
     } else {
-      // Optionally, redirect to login if not authenticated
-      this.router.navigate(['/admin/login']);
-      return;
+      this.router.navigate(["/admin/login"])
+      return
     }
-    this.fetchOrders()
+    this.loadOrders()
   }
 
-  fetchOrders(): void {
-    this.loading = true
-    this.error = null
-    this.subscription.add(
-      this.orderService.getAllOrders().subscribe({
-        next: (orderDetails: OrderDetail[]) => {
-          this.orders = orderDetails.map((o) => this.mapOrderDetailToOrder(o))
-          this.filteredOrders = [...this.orders]
-          this.loading = false
-        },
-        error: (err) => {
-          this.error = 'Failed to load orders.'
-          this.loading = false
-        }
-      })
-    )
+  ngOnDestroy(): void {
+    this.destroy$.next()
+    this.destroy$.complete()
   }
 
-  // Format time to 12-hour with AM/PM
-  formatTime12hr(timeStr: string): string {
-    if (!timeStr) return '';
-    const [hour, minute] = timeStr.split(':');
-    let h = parseInt(hour, 10);
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    h = h % 12;
-    if (h === 0) h = 12;
-    return `${h}:${minute} ${ampm}`;
+  loadOrders(): void {
+    this.isLoading = true
+    this.errorMessage = ""
+
+    this.orderService.getAllOrders().subscribe({
+      next: (orderDetails: OrderDetail[]) => {
+        this.orders = orderDetails.map((o) => this.mapOrderDetailToOrder(o))
+        this.sortOrders()
+        this.filteredOrders = [...this.orders]
+        this.updatePagination()
+        this.isLoading = false
+      },
+      error: (err) => {
+        this.errorMessage = "Failed to load orders. Please try again."
+        this.isLoading = false
+        this.alertService.toast("Failed to load orders. Please try again.", "error")
+      },
+    })
+  }
+
+  refreshData(): void {
+    this.loadOrders()
   }
 
   mapOrderDetailToOrder(order: OrderDetail): Order {
     return {
       id: order.id,
       trackingNumber: order.trackingNumber,
-      customer: order.user?.name || '',
-      email: order.user?.email || '',
-      avatar: this.getAvatar(order.user?.name),
-      date: order.createdDate ? order.createdDate.split('T')[0] : '',
-      time: order.createdDate ? this.formatTime12hr(order.createdDate.split('T')[1]?.substring(0,5) || '') : '',
-      status: this.mapStatus(order.paymentStatus),
-      total: order.totalAmount,
-      items: order.items?.length || 0,
-      paymentMethod: order.paymentStatus || '',
-      priority: this.getPriority(order.paymentStatus),
+      date: order.createdDate ? this.formatCompactDate(order.createdDate) : "",
+      time: order.createdDate ? this.formatTime12hr(order.createdDate.split("T")[1]?.substring(0, 5) || "") : "",
+      paymentStatus: order.paymentStatus,
+      orderStatus: order.currentOrderStatus,
+      items: order.items || [],
+      createdDate: new Date(order.createdDate),
+      city: order.shippingAddress?.city || "—",
     }
   }
 
-  getAvatar(name: string | undefined): string {
-    if (!name) return ''
-    const parts = name.split(' ')
-    return parts.length > 1 ? (parts[0][0] + parts[1][0]).toUpperCase() : parts[0][0].toUpperCase()
-  }
-
-  mapStatus(paymentStatus: string): Order['status'] {
-    switch ((paymentStatus || '').toUpperCase()) {
-      case 'PENDING': return 'pending';
-      case 'ORDER_CONFIRMED': return 'order_confirmed';
-      case 'PACKED': return 'packed';
-      case 'OUT_FOR_DELIVERY': return 'out_for_delivery';
-      case 'DELIVERED': return 'delivered';
-      case 'CANCELLED': return 'cancelled';
-      default: return 'pending'; // fallback to pending if unknown
+  formatCompactDate(dateString: string): string {
+    if (!dateString) return ""
+    try {
+      const date = new Date(dateString)
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    } catch (error) {
+      return ""
     }
   }
 
-  getPriority(paymentStatus: string): Order['priority'] {
-    // Example: high for pending, medium for processing, low for others
-    switch ((paymentStatus || '').toLowerCase()) {
-      case 'pending': return 'high'
-      case 'processing': return 'medium'
-      default: return 'low'
-    }
+  formatTime12hr(timeStr: string): string {
+    if (!timeStr) return ""
+    const [hour, minute] = timeStr.split(":")
+    let h = Number.parseInt(hour, 10)
+    const ampm = h >= 12 ? "PM" : "AM"
+    h = h % 12
+    if (h === 0) h = 12
+    return `${h}:${minute} ${ampm}`
   }
 
-  ngOnDestroy(): void {
-    this.subscription.unsubscribe()
-  }
-
+  // Computed properties for stats
   get totalOrders(): number {
     return this.orders.length
   }
 
-  get pendingOrders(): number {
-    return this.orders.filter((o) => o.status === "pending").length
+  get pendingPaymentOrders(): number {
+    return this.orders.filter((o) => o.paymentStatus === PAYMENT_STATUS.PENDING).length
   }
 
   get processingOrders(): number {
-    return this.orders.filter((o) => o.status === "order_confirmed").length
+    return this.orders.filter(
+      (o) =>
+        o.paymentStatus === PAYMENT_STATUS.PAID &&
+        [
+          ORDER_STATUS.ORDER_CONFIRMED,
+          ORDER_STATUS.PACKED,
+          ORDER_STATUS.SHIPPED,
+          ORDER_STATUS.OUT_FOR_DELIVERY,
+        ].includes(o.orderStatus),
+    ).length
   }
 
-  get totalRevenue(): number {
-    return this.orders.reduce((sum, order) => sum + order.total, 0)
+  get deliveredOrders(): number {
+    return this.orders.filter((o) => o.orderStatus === ORDER_STATUS.DELIVERED).length
   }
 
-  filterOrders(): void {
-    this.filteredOrders = this.orders.filter((order) => {
-      const matchesSearch =
-        order.trackingNumber.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        order.customer.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        order.email.toLowerCase().includes(this.searchTerm.toLowerCase())
+  // Real-time filtering methods
+  onSearchChange(): void {
+    this.searchSubject.next(this.filterParams.search)
+  }
 
-      const matchesStatus = this.statusFilter === "all" || order.status === this.statusFilter
-      const matchesPriority = this.priorityFilter === "all" || order.priority === this.priorityFilter
+  onStatusChange(): void {
+    this.currentPage = 1
+    this.applyFilters()
+  }
 
-      return matchesSearch && matchesStatus && matchesPriority
+  onDateFromChange(): void {
+    this.currentPage = 1
+    this.applyFilters()
+  }
+
+  onDateToChange(): void {
+    this.currentPage = 1
+    this.applyFilters()
+  }
+
+  onCityChange(): void {
+    this.currentPage = 1
+    this.applyFilters()
+  }
+
+  onReset(): void {
+    this.filterParams = {
+      search: "",
+      status: "",
+      city: "",
+      dateFrom: "",
+      dateTo: "",
+    }
+    this.currentPage = 1
+    this.selectedOrderIds = [] // Clear selections on reset
+    this.filteredOrders = [...this.orders]
+    this.updatePagination()
+  }
+
+  private applyFilters(): void {
+    let filtered = [...this.orders]
+
+    // Status filter
+    if (this.filterParams.status) {
+      filtered = filtered.filter((order) => order.orderStatus === this.filterParams.status)
+    }
+
+    // Date range filter
+    if (this.filterParams.dateFrom) {
+      const fromDate = new Date(this.filterParams.dateFrom)
+      filtered = filtered.filter((order) => {
+        const orderDate = new Date(order.createdDate)
+        return orderDate >= fromDate
+      })
+    }
+
+    if (this.filterParams.dateTo) {
+      const toDate = new Date(this.filterParams.dateTo)
+      toDate.setHours(23, 59, 59, 999)
+      filtered = filtered.filter((order) => {
+        const orderDate = new Date(order.createdDate)
+        return orderDate <= toDate
+      })
+    }
+
+    // City filter
+    if (this.filterParams.city.trim()) {
+      const cityTerm = this.filterParams.city.toLowerCase().trim()
+      filtered = filtered.filter((order) => {
+        const orderCity = order.city && order.city !== "—" ? order.city.toLowerCase() : ""
+        return orderCity.includes(cityTerm)
+      })
+    }
+
+    // Enhanced search
+    if (this.filterParams.search.trim()) {
+      const searchTerm = this.filterParams.search.toLowerCase().trim()
+      filtered = filtered.filter((order) => {
+        const orderCity = order.city && order.city !== "—" ? order.city.toLowerCase() : ""
+        return (
+          order.id.toString().includes(searchTerm) ||
+          order.trackingNumber.toLowerCase().includes(searchTerm) ||
+          this.getOrderStatusLabel(order.orderStatus).toLowerCase().includes(searchTerm) ||
+          orderCity.includes(searchTerm)
+        )
+      })
+    }
+
+    this.filteredOrders = filtered
+    this.currentPage = 1 // Reset to first page
+    this.updatePagination()
+  }
+
+  // Sorting methods
+  sort(field: string): void {
+    if (this.sortField === field) {
+      this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc"
+    } else {
+      this.sortField = field
+      this.sortDirection = "desc"
+    }
+    this.sortOrders()
+    this.applyFilters()
+  }
+
+  private sortOrders(): void {
+    this.orders.sort((a, b) => {
+      let aValue: any
+      let bValue: any
+
+      switch (this.sortField) {
+        case "id":
+          aValue = a.id
+          bValue = b.id
+          break
+        case "orderStatus":
+          aValue = a.orderStatus
+          bValue = b.orderStatus
+          break
+        case "city":
+          aValue = a.city && a.city !== "—" ? a.city.toLowerCase() : ""
+          bValue = b.city && b.city !== "—" ? b.city.toLowerCase() : ""
+          break
+        case "createdAt":
+        default:
+          aValue = a.createdDate.getTime()
+          bValue = b.createdDate.getTime()
+          break
+      }
+
+      if (aValue < bValue) return this.sortDirection === "asc" ? -1 : 1
+      if (aValue > bValue) return this.sortDirection === "asc" ? 1 : -1
+      return 0
     })
   }
 
-  getPriorityClass(priority: string): string {
-    switch (priority) {
-      case "high":
-        return "priority-high"
-      case "medium":
-        return "priority-medium"
-      case "low":
-        return "priority-low"
-      default:
-        return "priority-default"
+  getSortIcon(field: string): string {
+    if (this.sortField !== field) return "bi-arrow-down-up"
+    return this.sortDirection === "asc" ? "bi-arrow-up" : "bi-arrow-down"
+  }
+
+  private updatePagination(): void {
+    this.totalItems = this.filteredOrders.length
+    this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage)
+
+    if (this.currentPage > this.totalPages && this.totalPages > 0) {
+      this.currentPage = this.totalPages
+    }
+
+    this.updatePaginatedOrders()
+  }
+
+  private updatePaginatedOrders(): void {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage
+    const endIndex = startIndex + this.itemsPerPage
+    this.paginatedOrders = this.filteredOrders.slice(startIndex, endIndex)
+  }
+
+  // Pagination methods
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page
+      this.updatePaginatedOrders()
     }
   }
 
-  getStatusClass(status: string): string {
-    return this.statusConfig[status]?.color || ""
+  goToPreviousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--
+      this.updatePaginatedOrders()
+    }
   }
 
-  getStatusDotClass(status: string): string {
-    return this.statusConfig[status]?.dot || ""
+  goToNextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++
+      this.updatePaginatedOrders()
+    }
   }
 
-  getStatusLabel(status: string): string {
-    return this.statusConfig[status]?.label || status
+  getPageNumbers(): number[] {
+    const pages: number[] = []
+    const maxVisiblePages = 5
+
+    if (this.totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= this.totalPages; i++) {
+        pages.push(i)
+      }
+    } else {
+      const half = Math.floor(maxVisiblePages / 2)
+      let start = Math.max(1, this.currentPage - half)
+      const end = Math.min(this.totalPages, start + maxVisiblePages - 1)
+
+      if (end - start < maxVisiblePages - 1) {
+        start = Math.max(1, end - maxVisiblePages + 1)
+      }
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i)
+      }
+    }
+
+    return pages
   }
 
-  // Action methods
-  viewOrder(order: Order, event?: Event): void {
-    if (event) event.stopPropagation();
-    this.router.navigate(['/admin/orderDetailAdmin', order.id]);
+  // Status styling methods
+  getOrderStatusClass(status: ORDER_STATUS): string {
+    return this.orderStatusConfig[status]?.color || "badge bg-secondary"
   }
 
-  editOrder(order: Order, event?: Event): void {
-    if (event) event.stopPropagation();
-    console.log('Edit Order clicked:', order);
-    alert(`Edit order #${order.id}`);
+  getOrderStatusIcon(status: ORDER_STATUS): string {
+    return this.orderStatusConfig[status]?.icon || "bi bi-info-circle"
   }
 
-  updateStatus(order: Order, event?: Event): void {
-    if (event) event.stopPropagation();
-    console.log("Update status:", order)
+  getOrderStatusLabel(status: ORDER_STATUS): string {
+    return this.orderStatusConfig[status]?.label || ORDER_STATUS_LABELS[status] || status
   }
 
-  sendEmail(order: Order, event?: Event): void {
-    if (event) event.stopPropagation();
-    console.log('Send Email clicked:', order);
-    alert(`Send email for order #${order.id}`);
-  }
-
-  printInvoice(order: Order, event?: Event): void {
-    if (event) event.stopPropagation();
-    console.log('Print Invoice clicked:', order);
-    alert(`Print invoice for order #${order.id}`);
-  }
-
-  cancelOrder(order: Order, event?: Event): void {
-    if (event) event.stopPropagation();
-    console.log('Cancel Order clicked:', order);
-    alert(`Cancel order #${order.id}`);
-  }
-
-  reviewPending(): void {
-    console.log("Review pending orders")
-  }
-
-  processShipments(): void {
-    console.log("Process shipments")
-  }
-
-  generateReports(): void {
-    console.log("Generate reports")
-  }
-
+  // Selection methods - only select current page items
   isSelected(order: Order): boolean {
-    return this.selectedOrderIds.includes(order.id);
+    return this.selectedOrderIds.includes(order.id)
   }
 
   isAllSelected(): boolean {
-    return this.filteredOrders.length > 0 && this.filteredOrders.every(order => this.selectedOrderIds.includes(order.id));
+    const selectableOrders = this.getSelectableOrdersOnCurrentPage()
+    return selectableOrders.length > 0 && selectableOrders.every((order) => this.selectedOrderIds.includes(order.id))
+  }
+
+  // Check if order can be selected (not pending payment, failed payment, or delivered)
+  isOrderSelectable(order: Order): boolean {
+    return (
+      order.paymentStatus === PAYMENT_STATUS.PAID &&
+      order.orderStatus !== ORDER_STATUS.DELIVERED &&
+      order.orderStatus !== ORDER_STATUS.ORDER_CANCELLED
+    )
+  }
+
+  getSelectableOrdersOnCurrentPage(): Order[] {
+    return this.paginatedOrders.filter((order) => this.isOrderSelectable(order))
   }
 
   toggleSelectOrder(order: Order, event: Event): void {
-    const checked = (event.target as HTMLInputElement).checked;
+    event.stopPropagation()
+
+    if (!this.isOrderSelectable(order)) {
+      return // Don't allow selection of non-selectable orders
+    }
+
+    const checked = (event.target as HTMLInputElement).checked
     if (checked) {
       if (!this.selectedOrderIds.includes(order.id)) {
-        this.selectedOrderIds.push(order.id);
+        this.selectedOrderIds.push(order.id)
       }
     } else {
-      this.selectedOrderIds = this.selectedOrderIds.filter(id => id !== order.id);
+      this.selectedOrderIds = this.selectedOrderIds.filter((id) => id !== order.id)
     }
   }
 
   toggleSelectAll(event: Event): void {
-    const checked = (event.target as HTMLInputElement).checked;
+    const checked = (event.target as HTMLInputElement).checked
+    const selectableOrders = this.getSelectableOrdersOnCurrentPage()
+
     if (checked) {
-      this.selectedOrderIds = this.filteredOrders.map(order => order.id);
+      selectableOrders.forEach((order) => {
+        if (!this.selectedOrderIds.includes(order.id)) {
+          this.selectedOrderIds.push(order.id)
+        }
+      })
     } else {
-      this.selectedOrderIds = [];
+      selectableOrders.forEach((order) => {
+        this.selectedOrderIds = this.selectedOrderIds.filter((id) => id !== order.id)
+      })
     }
   }
 
-  confirmBulkStatusUpdate(): void {
-    if (!this.bulkStatus || this.selectedOrderIds.length === 0 || !this.adminId) return;
+  // Get count of selected orders that have paid status (eligible for status updates)
+  getSelectedPaidCount(): number {
+    return this.orders.filter((o) => this.selectedOrderIds.includes(o.id) && o.paymentStatus === PAYMENT_STATUS.PAID)
+      .length
+  }
 
-    // Step-by-step check for all selected orders
-    const invalidOrders = this.orders.filter(o =>
-      this.selectedOrderIds.includes(o.id) &&
-      !(this.allowedTransitions[o.status] || []).includes(this.bulkStatus as Order['status'])
-    );
+  // Bulk status update - only for paid orders
+  confirmBulkStatusUpdate(): void {
+    if (!this.bulkStatus || this.selectedOrderIds.length === 0 || !this.adminId) return
+
+    // Get only paid orders from selection
+    const eligibleOrders = this.orders.filter(
+      (o) => this.selectedOrderIds.includes(o.id) && o.paymentStatus === PAYMENT_STATUS.PAID,
+    )
+
+    if (eligibleOrders.length === 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "No Eligible Orders",
+        text: "Selected orders must have approved payment status to update order status.",
+      })
+      return
+    }
+
+    // Validate status transitions for eligible orders
+    const invalidOrders = eligibleOrders.filter((order) => {
+      return !this.isValidStatusTransition(order.orderStatus, this.bulkStatus as ORDER_STATUS)
+    })
+
     if (invalidOrders.length > 0) {
       Swal.fire({
-        icon: 'error',
-        title: 'Invalid Bulk Status Change',
-        text: `Some selected orders cannot be changed to "${this.getStatusLabel(this.bulkStatus as Order['status'])}". Please select only valid orders.`,
-      });
-      return;
+        icon: "error",
+        title: "Invalid Status Transitions",
+        text: `Some orders cannot be changed to "${this.getOrderStatusLabel(this.bulkStatus as ORDER_STATUS)}" from their current status.`,
+      })
+      return
     }
 
-    this.bulkStatusLoading = true;
-    this.bulkStatusError = null;
-    const statusId = this.uiToDbStatus[this.bulkStatus];
-    const orderIds = this.selectedOrderIds;
-    const updatedBy = this.adminId;
-    this.orderService.bulkUpdateOrderStatus(orderIds, statusId, this.bulkNote, updatedBy).subscribe({
-      next: (updatedOrders) => {
-        updatedOrders.forEach((updatedOrder: any) => {
-          const idx = this.orders.findIndex(o => o.id === updatedOrder.id);
-          if (idx !== -1) {
-            this.orders[idx].status = this.dbToUiStatus[updatedOrder.paymentStatus];
-          }
-        });
-        this.filteredOrders = [...this.orders];
-        this.bulkStatusLoading = false;
-        this.bulkStatus = '';
-        this.bulkNote = '';
-        this.selectedOrderIds = [];
-        this.bulkStatusError = null;
-      },
-      error: (err) => {
-        this.bulkStatusLoading = false;
-        this.bulkStatusError = 'Failed to update status.';
+    // Confirm bulk update
+    Swal.fire({
+      title: "Confirm Bulk Status Update",
+      text: `Update ${eligibleOrders.length} orders to "${this.getOrderStatusLabel(this.bulkStatus as ORDER_STATUS)}"?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Update",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.performBulkStatusUpdate(eligibleOrders.map((o) => o.id))
       }
-    });
+    })
   }
 
-  openSingleStatusModal(order: Order, event?: Event): void {
-    if (event) event.stopPropagation();
-    this.selectedOrderForStatus = order;
-    this.showSingleStatusModal = true;
-    this.singleStatus = '';
-    this.singleNote = '';
-    this.singleStatusError = null;
+  private performBulkStatusUpdate(orderIds: number[]): void {
+    this.bulkStatusLoading = true
+    this.bulkStatusError = null
+
+    this.orderService
+      .bulkUpdateOrderStatus(
+        orderIds,
+        this.bulkStatus as ORDER_STATUS,
+        this.bulkNote || "Bulk status update by admin",
+        this.adminId!,
+      )
+      .subscribe({
+        next: () => {
+          this.bulkStatusLoading = false
+          this.bulkStatus = ""
+          this.bulkNote = ""
+          this.selectedOrderIds = []
+          this.loadOrders() // Refresh the orders list
+          this.alertService.toast(`Successfully updated ${orderIds.length} orders`, "success")
+        },
+        error: (err) => {
+          this.bulkStatusLoading = false
+          this.bulkStatusError = "Failed to update order status."
+          this.alertService.toast("Failed to update order status. Please try again.", "error")
+        },
+      })
   }
 
-  closeSingleStatusModal(): void {
-    this.showSingleStatusModal = false;
-    this.selectedOrderForStatus = null;
-    this.singleStatus = '';
-    this.singleNote = '';
-    this.singleStatusError = null;
-  }
-
-  confirmSingleStatusUpdate(): void {
-    if (!this.singleStatus || !this.selectedOrderForStatus || !this.adminId) return;
-
-    // Step-by-step check
-    const currentStatus = this.selectedOrderForStatus.status;
-    const allowed = this.allowedTransitions[currentStatus] || [];
-    if (!allowed.includes(this.singleStatus as Order['status'])) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Invalid Status Change',
-        text: `You can only change status from "${this.getStatusLabel(currentStatus)}" to "${allowed.map(s => this.getStatusLabel(s)).join(', ') || 'No further status'}".`,
-      });
-      return;
+  // Validate if status transition is allowed
+  private isValidStatusTransition(currentStatus: ORDER_STATUS, newStatus: ORDER_STATUS): boolean {
+    // Define allowed transitions based on business logic
+    const allowedTransitions: Record<ORDER_STATUS, ORDER_STATUS[]> = {
+      [ORDER_STATUS.ORDER_PENDING]: [ORDER_STATUS.ORDER_CONFIRMED, ORDER_STATUS.ORDER_CANCELLED],
+      [ORDER_STATUS.ORDER_CONFIRMED]: [ORDER_STATUS.PACKED, ORDER_STATUS.ORDER_CANCELLED],
+      [ORDER_STATUS.PACKED]: [ORDER_STATUS.SHIPPED, ORDER_STATUS.ORDER_CANCELLED],
+      [ORDER_STATUS.SHIPPED]: [ORDER_STATUS.OUT_FOR_DELIVERY, ORDER_STATUS.ORDER_CANCELLED],
+      [ORDER_STATUS.OUT_FOR_DELIVERY]: [ORDER_STATUS.DELIVERED, ORDER_STATUS.ORDER_CANCELLED],
+      [ORDER_STATUS.DELIVERED]: [],
+      [ORDER_STATUS.ORDER_CANCELLED]: [],
+      [ORDER_STATUS.PAYMENT_REJECTED]: [],
+      [ORDER_STATUS.PAID]: [ORDER_STATUS.ORDER_CONFIRMED],
     }
 
-    this.singleStatusLoading = true;
-    this.singleStatusError = null;
-    const statusId = this.statusMap[this.singleStatus];
-    const orderId = this.selectedOrderForStatus.id;
-    const updatedBy = this.adminId;
-
-    this.orderService.updateOrderStatus(orderId, statusId, this.singleNote, updatedBy).subscribe({
-      next: () => {
-        this.singleStatusLoading = false;
-        this.closeSingleStatusModal();
-        this.fetchOrders();
-      },
-      error: (err) => {
-        this.singleStatusLoading = false;
-        this.singleStatusError = 'Failed to update status.';
-      }
-    });
+    return allowedTransitions[currentStatus]?.includes(newStatus) || false
   }
 
-  showActionFeedback(message: string) {
-    this.snackBar.open(message, 'Close', { duration: 2000 });
+  // Navigation and actions
+  viewOrder(order: Order): void {
+    this.router.navigate(["/admin/orderDetailAdmin", order.id])
   }
 
-  // Dynamic filter options
-  get uniqueStatuses(): Order['status'][] {
-    const statuses = this.orders.map(o => o.status);
-    return Array.from(new Set(statuses));
+  // Filter helper methods
+  getFilteredOrdersCount(status: string): number {
+    if (status === "") return this.orders.length
+    return this.orders.filter((order) => order.orderStatus === status).length
   }
 
-  get uniquePriorities(): Order['priority'][] {
-    const priorities = this.orders.map(o => o.priority);
-    return Array.from(new Set(priorities));
+  getTotalItems(order: Order): number {
+    if (!order.items || !Array.isArray(order.items)) return 0
+    return order.items.reduce((total: number, item: any) => total + (item.quantity || 0), 0)
   }
 
-  clearFilters(): void {
-    this.searchTerm = '';
-    this.statusFilter = 'all';
-    this.priorityFilter = 'all';
-    this.filterOrders();
+  onImageError(event: any): void {
+    event.target.src = "assets/img/default-product.jpg"
+  }
+
+  trackByOrderId(index: number, order: Order): number {
+    return order.id
+  }
+
+  // Utility methods
+  getItemsPerPageOptions(): number[] {
+    return [10, 25, 50, 100]
+  }
+
+  onItemsPerPageChange(): void {
+    this.currentPage = 1
+    this.updatePagination()
+  }
+
+  Math = Math
+
+  getUniqueCities(): string[] {
+    const cities = this.orders
+      .map((order) => order.city)
+      .filter((city) => city && city !== "—")
+      .map((city) => city!.trim())
+      .filter((city) => city.length > 0)
+
+    return [...new Set(cities)].sort()
   }
 }

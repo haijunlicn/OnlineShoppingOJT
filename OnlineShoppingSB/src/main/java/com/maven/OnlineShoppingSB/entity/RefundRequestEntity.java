@@ -42,8 +42,11 @@ public class RefundRequestEntity {
     private Set<RefundItemEntity> items = new HashSet<>();
 
 
+//    @OneToMany(mappedBy = "refundRequest", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<RefundStatusHistoryEntity> statusHistoryList = new ArrayList<>();
+
     @OneToMany(mappedBy = "refundRequest", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RefundStatusHistoryEntity> statusHistoryList = new ArrayList<>();
+    private Set<RefundStatusHistoryEntity> statusHistoryList = new HashSet<>();
 
     private LocalDateTime receivedDate;
     private LocalDateTime refundedDate;

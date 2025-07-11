@@ -9,7 +9,7 @@ import java.util.List;
 @Setter
 public class BulkOrderStatusUpdateRequest {
     private List<Long> orderIds;
-    private Integer statusId;
+    private String statusCode;
     private String note;
     private Long updatedBy;
 }

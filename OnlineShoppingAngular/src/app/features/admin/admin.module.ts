@@ -8,7 +8,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AdminHeaderComponent } from './common/admin-header/admin-header.component';
 import { AdminSidebarComponent } from './common/admin-sidebar/admin-sidebar.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
-import { AdminFooterComponent } from './common/admin-footer/admin-footer.component';
 import { HeaderComponent } from './layout/header/header.component';
 import { FooterComponent } from './layout/footer/footer.component';
 import { SidebarComponent } from './layout/sidebar/sidebar.component';
@@ -29,6 +28,7 @@ import { ColorPickerModule } from 'primeng/colorpicker';
 import { TreeModule } from 'primeng/tree';
 import { MenuModule } from 'primeng/menu';
 import { NgxMaskModule } from 'ngx-mask';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
 
 import { ProductListComponent } from './product_management/product-list/product-list.component';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
@@ -74,6 +74,7 @@ import { RefundReasonListComponent } from './policy-management/refund-reason-lis
 import { RefundRequestListComponent } from './RefundManagement/refund-request-list/refund-request-list.component';
 import { RefundRequestDetailComponent } from './RefundManagement/refund-request-detail/refund-request-detail.component';
 import { PolicyUpdateComponent } from './policy-management/policy-update/policy-update.component';
+import { ChartTestingComponent } from './SaleAnalysis/chart-testing/chart-testing.component';
 
 
 @NgModule({
@@ -83,7 +84,6 @@ import { PolicyUpdateComponent } from './policy-management/policy-update/policy-
     AdminHeaderComponent,
     AdminSidebarComponent,
     DashboardComponent,
-    AdminFooterComponent,
     HeaderComponent,
     FooterComponent,
     SidebarComponent,
@@ -128,10 +128,10 @@ import { PolicyUpdateComponent } from './policy-management/policy-update/policy-
     RejectionReasonFormComponent,
     RejectionReasonListComponent,
     RefundReasonListComponent,
-    
     RefundRequestListComponent,
     RefundRequestDetailComponent,
     PolicyUpdateComponent,
+    ChartTestingComponent,
   ],
   imports: [
     CommonModule,
@@ -154,7 +154,8 @@ import { PolicyUpdateComponent } from './policy-management/policy-update/policy-
     TreeModule,
     MenuModule,
     FormsModule,
-    NgxMaskModule.forRoot()
+    NgxChartsModule,
+    NgxMaskModule.forRoot(),
   ]
 })
 export class AdminModule { }

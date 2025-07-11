@@ -21,34 +21,6 @@
           </h1>
           <p class="header-subtitle">Track and manage all your orders in one place</p>
         </div>
-
-        <!-- Inline Stats -->
-        <!-- <div class="header-stats" *ngIf="!loading && !error && orders.length > 0">
-          <div class="stat-item">
-            <div class="stat-number">{{ orders.length }}</div>
-            <div class="stat-text">Total</div>
-          </div>
-          <div class="stat-divider">|</div>
-          <div class="stat-item pending">
-            <div class="stat-number">{{ getPendingOrders() }}</div>
-            <div class="stat-text">Pending</div>
-          </div>
-          <div class="stat-divider">|</div>
-          <div class="stat-item completed">
-            <div class="stat-number">{{ getCompletedOrders() }}</div>
-            <div class="stat-text">Completed</div>
-          </div>
-          <div class="stat-divider">|</div>
-          <div class="stat-item">
-            <div class="stat-number">{{ getShippedOrders() }}</div>
-            <div class="stat-text">Shipped</div>
-          </div>
-          <div class="stat-divider">|</div>
-          <div class="stat-item">
-            <div class="stat-number">{{ getCancelledOrders() }}</div>
-            <div class="stat-text">Cancelled</div>
-          </div>
-        </div> -->
       </div>
 
       <button class="btn-back" (click)="goBackToHome()">
@@ -109,7 +81,7 @@
   <!-- Orders Content -->
   <div *ngIf="!loading && !error && orders.length > 0" class="orders-section">
 
-    <!-- Professional Controls with Dropdown Filter -->
+    <!-- Professional Controls with Enhanced Filters -->
     <div class="controls-section">
       <div class="controls-header">
         <h6 class="controls-title">
@@ -125,7 +97,35 @@
             (input)="onSearchChange($event)" [value]="searchTerm">
         </div>
 
-        <!-- Dropdown Filter -->
+        <!-- Order Type Filter -->
+        <div class="filter-dropdown order-type-dropdown">
+          <button class="filter-btn" (click)="toggleOrderTypeDropdown()" [class.active]="orderTypeDropdownOpen">
+            <i class="fas fa-tags"></i>
+            <span>{{ getOrderTypeLabel() }}</span>
+            <i class="fas fa-chevron-down" [style.transform]="orderTypeDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'"></i>
+          </button>
+
+          <div class="filter-dropdown-menu" [class.show]="orderTypeDropdownOpen">
+            <button class="filter-dropdown-item" [class.active]="selectedOrderType === 'NORMAL'"
+              (click)="selectOrderType('NORMAL')">
+              Normal Orders
+              <span class="filter-count">{{ getOrderTypeCount('NORMAL') }}</span>
+            </button>
+            <button class="filter-dropdown-item" [class.active]="selectedOrderType === 'REPLACEMENT'"
+              (click)="selectOrderType('REPLACEMENT')">
+              Replacement Orders
+              <span class="filter-count">{{ getOrderTypeCount('REPLACEMENT') }}</span>
+            </button>
+            <div class="filter-dropdown-divider"></div>
+            <button class="filter-dropdown-item" [class.active]="selectedOrderType === 'all'"
+              (click)="selectOrderType('all')">
+              All Types
+              <span class="filter-count">{{ getOrderTypeCount('all') }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Order Status Filter -->
         <div class="filter-dropdown">
           <button class="filter-btn" (click)="toggleDropdown()" [class.active]="dropdownOpen">
             <i class="fas fa-filter"></i>
@@ -136,7 +136,7 @@
           <div class="filter-dropdown-menu" [class.show]="dropdownOpen">
             <button class="filter-dropdown-item" [class.active]="selectedFilter === 'all'"
               (click)="selectFilter('all')">
-              All Orders
+              All Statuses
               <span class="filter-count">{{ getFilteredOrdersCount('all') }}</span>
             </button>
             <div class="filter-dropdown-divider"></div>
@@ -145,15 +145,25 @@
               Pending
               <span class="filter-count">{{ getFilteredOrdersCount('pending') }}</span>
             </button>
-            <button class="filter-dropdown-item" [class.active]="selectedFilter === 'paid'"
-              (click)="selectFilter('paid')">
-              Paid
-              <span class="filter-count">{{ getFilteredOrdersCount('paid') }}</span>
+            <button class="filter-dropdown-item" [class.active]="selectedFilter === 'confirmed'"
+              (click)="selectFilter('confirmed')">
+              Confirmed
+              <span class="filter-count">{{ getFilteredOrdersCount('confirmed') }}</span>
+            </button>
+            <button class="filter-dropdown-item" [class.active]="selectedFilter === 'packed'"
+              (click)="selectFilter('packed')">
+              Packed
+              <span class="filter-count">{{ getFilteredOrdersCount('packed') }}</span>
             </button>
             <button class="filter-dropdown-item" [class.active]="selectedFilter === 'shipped'"
               (click)="selectFilter('shipped')">
               Shipped
               <span class="filter-count">{{ getFilteredOrdersCount('shipped') }}</span>
+            </button>
+            <button class="filter-dropdown-item" [class.active]="selectedFilter === 'out_for_delivery'"
+              (click)="selectFilter('out_for_delivery')">
+              Out for Delivery
+              <span class="filter-count">{{ getFilteredOrdersCount('out_for_delivery') }}</span>
             </button>
             <button class="filter-dropdown-item" [class.active]="selectedFilter === 'delivered'"
               (click)="selectFilter('delivered')">
@@ -189,7 +199,12 @@
 
             <!-- Order Details Column -->
             <td>
-              <div class="order-number">#{{ order.trackingNumber }}</div>
+              <div class="order-number">
+                #{{ order.trackingNumber }}
+                <span *ngIf="order.orderType === 'REPLACEMENT'" class="order-type-badge">
+                  <i class="fas fa-exchange-alt"></i> Replacement
+                </span>
+              </div>
               <div class="order-date">
                 <i class="fas fa-calendar-alt"></i>
                 {{ formatDate(order.createdDate) }}
@@ -217,21 +232,33 @@
 
             <!-- Payment Column -->
             <td>
-              <div>Subtotal: {{ formatCurrency(getSubtotal(order)) }}</div>
-              <div>Shipping: {{ formatCurrency(order.shippingFee) }}</div>
+              <div *ngIf="order.orderType !== 'REPLACEMENT'">
+                <div>Subtotal: {{ formatCurrency(getSubtotal(order)) }}</div>
+                <div>Shipping: {{ formatCurrency(order.shippingFee) }}</div>
+              </div>
+              <div *ngIf="order.orderType === 'REPLACEMENT'" class="replacement-note">
+                <i class="fas fa-info-circle"></i>
+                <span>No payment required</span>
+              </div>
             </td>
 
-            <!-- Status Column -->
+            <!-- Status Column - Now using currentOrderStatus -->
             <td>
-              <span class="status-badge" [ngClass]="getOrderStatusClass(order.paymentStatus)">
-                <i [class]="getOrderStatusIcon(order.paymentStatus)"></i>
-                {{ order.paymentStatus }}
+              <span class="status-badge" [ngClass]="getOrderStatusClass(order.currentOrderStatus)">
+                <i [class]="getOrderStatusIcon(order.currentOrderStatus)"></i>
+                {{ getOrderStatusLabel(order.currentOrderStatus) }}
               </span>
             </td>
 
             <!-- Total Column -->
             <td>
-              <div class="order-total">{{ formatCurrency(order.totalAmount) }}</div>
+              <div *ngIf="order.orderType !== 'REPLACEMENT'" class="order-total">
+                {{ formatCurrency(order.totalAmount) }}
+              </div>
+              <div *ngIf="order.orderType === 'REPLACEMENT'" class="replacement-total">
+                <i class="fas fa-gift"></i>
+                <span>Free</span>
+              </div>
             </td>
 
             <!-- Actions Column -->

@@ -59,7 +59,13 @@ public class RefundItemEntity {
     @Column(name = "requested_action", nullable = false)
     private RequestedRefundAction requestedAction;
 
-    @OneToMany(mappedBy = "refundItem", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RefundItemStatusHistoryEntity> statusHistoryList = new ArrayList<>();
+//    @OneToMany(mappedBy = "refundItem", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<RefundItemStatusHistoryEntity> statusHistoryList = new ArrayList<>();
 
+    @OneToMany(mappedBy = "refundItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<RefundItemStatusHistoryEntity> statusHistoryList = new HashSet<>();
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "replacement_order_id", unique = true)
+    private OrderEntity replacementOrder;
 }
