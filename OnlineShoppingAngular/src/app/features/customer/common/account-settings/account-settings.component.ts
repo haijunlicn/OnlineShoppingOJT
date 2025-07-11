@@ -1,5 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { Router } from "@angular/router";
 import { User } from "@app/core/models/User";
 import { AuthService } from "@app/core/services/auth.service";
 import { ProfileService } from "@app/core/services/profile.service";
@@ -23,10 +24,10 @@ export class AccountSettingsComponent implements OnInit {
   passwordForm: FormGroup;
   successMessage = "";
   errorMessage = "";
-
+   activeSections: string = '';
   
 
-  constructor(private fb: FormBuilder, private profileService: ProfileService, private authService: AuthService) {
+  constructor(private fb: FormBuilder, private profileService: ProfileService, private authService: AuthService,private router: Router) {
     this.profileForm = this.fb.group({
       name: ["", [Validators.required, Validators.minLength(2)]],
       email: ["", [Validators.required, Validators.email]],
@@ -183,6 +184,14 @@ export class AccountSettingsComponent implements OnInit {
       const control = formGroup.get(key);
       control?.markAsTouched();
     });
+  }
+  setActiveSections(section: string): void {
+    this.activeSection = section;
+  }
+
+  goToLocation(): void {
+    this.activeSection = 'location';
+    this.router.navigate(['/customer/address']);
   }
 
   getFieldError(form: FormGroup, fieldName: string): string {

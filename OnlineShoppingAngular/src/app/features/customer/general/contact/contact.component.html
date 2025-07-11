@@ -37,17 +37,7 @@
           <p>{{ contactInfo.email }}</p>
           <small>We reply within 24hrs</small>
         </div>
-
-        <!-- Live Chat -->
-        <div class="contact-card" (click)="startLiveChat()">
-          <div class="card-icon chat-icon">
-            <i class="fas fa-comments"></i>
-          </div>
-          <h3>💬 Live Chat</h3>
-          <p>Available Now</p>
-          <button class="chat-btn">Start Chat</button>
-        </div>
-
+        
         <!-- Social Media -->
         <div class="contact-card">
           <div class="card-icon social-icon">
@@ -139,7 +129,7 @@
               <!-- Submit Button -->
               <button 
                 type="submit" 
-                style="background-color: #f3e2bf; color: rgb(68, 30, 30); padding: 10px 20px; border: none; border-radius: 6px;"
+                style="background-color: #292a29; color: rgb(248, 250, 250); padding: 10px 20px; border: none; border-radius: 6px;"
                 [disabled]="isSubmitting"
               >
                 <i *ngIf="isSubmitting" class="fas fa-spinner fa-spin"></i>

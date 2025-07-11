@@ -1,33 +1,30 @@
 <div class="login-modal-overlay">
   <div class="login-container">
     <button class="close-btn" (click)="closeModal()">×</button>
-
     <div class="card-body p-4">
       <div class="text-center mb-4">
         <h2 class="fw-bold">Welcome Back</h2>
         <div class="divider"><span></span></div>
       </div>
-
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-
         <!-- Email -->
         <div class="form-group mb-3">
           <label class="form-label">Email</label>
           <div class="input-wrapper">
             <input 
-              type="email" 
-              formControlName="email" 
-              class="form-control" 
+              type="email"
+              formControlName="email"
+              class="form-control"
               [ngClass]="{
                 'error': (email.touched || isSubmitted) && email.invalid
               }"
-              placeholder="Enter your email" 
+              placeholder="Enter your email"
             />
-            <i class="error-icon fas fa-exclamation-circle" 
+            <i class="error-icon fas fa-exclamation-circle"
                *ngIf="(email.touched || isSubmitted) && email.invalid">
             </i>
           </div>
-          <div class="error-message" 
+          <div class="error-message"
                *ngIf="(email.touched || isSubmitted) && email.invalid">
             <span *ngIf="email.errors?.['required']">This is a required field.</span>
             <span *ngIf="email.errors?.['email']">Enter a valid email address.</span>
@@ -39,19 +36,19 @@
           <label class="form-label">Password</label>
           <div class="input-wrapper">
             <input 
-              type="password" 
-              formControlName="password" 
-              class="form-control" 
+              type="password"
+              formControlName="password"
+              class="form-control"
               [ngClass]="{
                 'error': (password.touched || isSubmitted) && password.invalid
               }"
-              placeholder="Enter your password" 
+              placeholder="Enter your password"
             />
-            <i class="error-icon fas fa-exclamation-circle" 
+            <i class="error-icon fas fa-exclamation-circle"
                *ngIf="(password.touched || isSubmitted) && password.invalid">
             </i>
           </div>
-          <div class="error-message" 
+          <div class="error-message"
                *ngIf="(password.touched || isSubmitted) && password.invalid">
             This is a required field.
           </div>

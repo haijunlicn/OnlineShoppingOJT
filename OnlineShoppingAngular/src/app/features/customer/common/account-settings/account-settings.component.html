@@ -1,7 +1,7 @@
 <app-header></app-header>
 <div class="account-container main-content">
   <!-- Modern Sidebar Navigation -->
-  <div class="sidebar main-content">
+  <div class="sidebar">
     <div class="sidebar-content">
       <!-- Sidebar Header -->
       <div class="sidebar-header">
@@ -46,6 +46,23 @@
               <i class="bi bi-chevron-right"></i>
             </div>
           </div>
+
+          <!-- Add this inside one of the <div class="menu-section"> blocks -->
+          <div class="menu-item"
+              [class.active]="activeSection === 'location'"
+              (click)="goToLocation()">
+            <div class="menu-icon">
+              <i class="bi bi-geo-alt"></i>
+            </div>
+            <div class="menu-content">
+              <span class="menu-title">Location</span>
+              <span class="menu-subtitle">Manage your locations</span>
+            </div>
+            <div class="menu-arrow">
+              <i class="bi bi-chevron-right"></i>
+            </div>
+          </div>
+
         </div>
 
         <div class="menu-section">
