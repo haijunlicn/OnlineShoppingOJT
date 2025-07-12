@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import SockJS from 'sockjs-client';
 import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
 import { StorageService } from './StorageService';
-import { UserNotificationDTO } from '../models/notification.model';
+import { CreateNotificationPayload, UserNotificationDTO } from '../models/notification.model';
 
 @Injectable({
   providedIn: 'root'
@@ -16,6 +16,8 @@ export class NotificationService {
 
   private wsStompClient?: Client;
   private stompSubscription?: StompSubscription;
+
+  baseUrl = "http://localhost:8080/notifications";
 
   constructor(private http: HttpClient, private storageService: StorageService) { }
 
@@ -48,7 +50,7 @@ export class NotificationService {
   }
 
   loadInAppNotificationsForUser(userId: number): void {
-    this.http.get<UserNotificationDTO[]>(`http://localhost:8080/notifications/in-app/${userId}`).subscribe(
+    this.http.get<UserNotificationDTO[]>(`${this.baseUrl}/in-app/${userId}`).subscribe(
       (data) => {
         this.notificationsSubject.next(data);
       },
@@ -59,13 +61,12 @@ export class NotificationService {
   }
 
   markAsRead(id: number): Observable<void> {
-    return this.http.put<void>(`http://localhost:8080/notifications/${id}/read`, {});
+    return this.http.put<void>(`${this.baseUrl}/${id}/read`, {});
   }
 
   markAllAsRead(): Observable<void> {
-    return this.http.put<void>(`http://localhost:8080/notifications/mark-all-read`, {});
+    return this.http.put<void>(`${this.baseUrl}/mark-all-read`, {});
   }
-
 
   addNotification(notification: UserNotificationDTO) {
     const current = this.notificationsSubject.value;
@@ -81,6 +82,66 @@ export class NotificationService {
       this.wsStompClient.deactivate();
       this.wsStompClient = undefined;
     }
+  }
+
+  renderNotification(notification: UserNotificationDTO): UserNotificationDTO {
+    let metadata: { [key: string]: string } = {};
+
+    try {
+      if (typeof notification.metadata === 'string') {
+        metadata = JSON.parse(notification.metadata);
+      }
+    } catch (e) {
+      metadata = {};
+    }
+
+    const render = (template: string): { text: string, routerLink?: string }[] => {
+      const regex = /{{(.*?)}}/g;
+      const parts: { text: string; routerLink?: string }[] = [];
+
+      let lastIndex = 0;
+      let match: RegExpExecArray | null;
+
+      while ((match = regex.exec(template)) !== null) {
+        const key = match[1];
+        const index = match.index;
+
+        if (index > lastIndex) {
+          parts.push({ text: template.substring(lastIndex, index) });
+        }
+
+        const value = metadata[key];
+        const link = metadata[`${key}Link`];
+
+        if (value && link) {
+          parts.push({ text: value, routerLink: link });
+        } else if (value) {
+          parts.push({ text: value });
+        } else {
+          parts.push({ text: match[0] }); // fallback to raw
+        }
+
+        lastIndex = regex.lastIndex;
+      }
+
+      if (lastIndex < template.length) {
+        parts.push({ text: template.substring(lastIndex) });
+      }
+
+      return parts;
+    };
+
+    return {
+      ...notification,
+      richContent: {
+        titleParts: render(notification.title || ''),
+        messageParts: render(notification.message || '')
+      }
+    };
+  }
+
+  createCustomNotification(payload: CreateNotificationPayload): Observable<any> {
+    return this.http.post(`${this.baseUrl}/custom`, payload);
   }
 
 }

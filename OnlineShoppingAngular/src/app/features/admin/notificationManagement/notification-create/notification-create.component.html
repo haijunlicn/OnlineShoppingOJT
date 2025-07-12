@@ -1,0 +1,52 @@
+<div class="container mt-4" style="max-width: 600px;">
+    <h2>Create Custom Notification</h2>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="mb-3">
+            <label class="form-label">Type</label>
+            <input type="text" class="form-control" value="Custom Notification" disabled />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Title (optional)</label>
+            <input formControlName="title" type="text" class="form-control" maxlength="255"
+                placeholder="Enter notification title (optional)" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label text-danger">Message <sup>*</sup></label>
+            <textarea formControlName="message" rows="4" class="form-control" placeholder="Enter notification message"
+                required></textarea>
+            <div *ngIf="form.get('message')?.invalid && (form.get('message')?.dirty || form.get('message')?.touched)"
+                class="text-danger">
+                Message is required.
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Image URL (optional)</label>
+            <input formControlName="imageUrl" type="text" class="form-control" maxlength="500"
+                placeholder="Enter image URL (optional)" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Target User IDs (optional)</label>
+            <input formControlName="targetUsers" type="text" class="form-control"
+                placeholder="Comma separated user IDs (e.g. 10,15,20)" />
+            <small class="form-text text-muted">Leave blank to send to all users.</small>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Schedule Delivery (optional)</label>
+            <input formControlName="scheduledAt" type="datetime-local" class="form-control" />
+            <small class="form-text text-muted">Leave blank to send immediately.</small>
+        </div>
+
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid || submitting">
+            {{ submitting ? 'Sending...' : 'Send Notification' }}
+        </button>
+
+        <div class="mt-3 text-success" *ngIf="successMessage">{{ successMessage }}</div>
+        <div class="mt-3 text-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
+    </form>
+</div>

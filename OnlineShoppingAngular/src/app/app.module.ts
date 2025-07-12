@@ -21,16 +21,13 @@ import { initializeAuth } from './core/init/auth-init.factory';
   declarations: [
     AppComponent,
 
-
-
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     RouterModule,
     FormsModule,
-    // ReactiveFormsModule,
-    BrowserAnimationsModule, // required animations module
+    BrowserAnimationsModule,
     ReactiveFormsModule,
     HttpClientModule,
     GoogleMapsModule,
@@ -50,9 +47,7 @@ import { initializeAuth } from './core/init/auth-init.factory';
       multi: true
     }
   ],
-
-
-  // ],
+  
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -1,9 +1,13 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output, PLATFORM_ID } from "@angular/core"
+import { Router } from "@angular/router"
+import { isPlatformBrowser } from "@angular/common"
+import { AuthService } from "@app/core/services/auth.service"
 
 interface MenuItem {
   label: string
   route: string
   icon: string
+  badge?: number
 }
 
 interface MenuSection {
@@ -19,11 +23,23 @@ interface MenuSection {
 })
 export class AdminSidebarComponent implements OnInit, OnDestroy {
   @Input() accountInfo: any = { name: "Admin User" }
+  @Output() sidebarToggle = new EventEmitter<boolean>()
 
-  isCollapsed = false
+  isExpanded = true
   isMobile = false
+  searchQuery = ""
+  notificationCount = 15
+  private isBrowser: boolean
 
+  filteredMenuSections: MenuSection[] = []
   menuSections: MenuSection[] = [
+    {
+      heading: "Dashboard",
+      items: [
+        { label: "Overview", route: "/admin/dashboard", icon: "fas fa-chart-line" },
+        { label: "Analytics", route: "/admin/analytics", icon: "fas fa-chart-bar" },
+      ],
+    },
     {
       heading: "Product Management",
       items: [
@@ -49,7 +65,7 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
     {
       heading: "Policy Management",
       items: [
-        { label: "Privacy and Terms & Condition", route: "/admin/policy/policy-list", icon: "fas fa-file-contract" },
+        { label: "Privacy, Terms & Condition", route: "/admin/policy/policy-list", icon: "fas fa-file-contract" },
         { label: "Faq", route: "/admin/policy/faq-list", icon: "fas fa-question-circle" },
       ],
     },
@@ -59,25 +75,86 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
     },
   ]
 
-  constructor() { }
+  router: Router
+  authService: AuthService
+
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    router: Router,
+    authService: AuthService
+  ) {
+    this.platformId = platformId
+    this.router = router
+    this.authService = authService
+    this.isBrowser = isPlatformBrowser(this.platformId)
+  }
 
   ngOnInit() {
-    this.checkScreenSize()
-    window.addEventListener("resize", this.onResize.bind(this))
+    if (this.isBrowser) {
+      this.checkScreenSize()
+      window.addEventListener("resize", this.onResize.bind(this))
+    }
+    this.filteredMenuSections = this.menuSections
   }
 
   ngOnDestroy() {
-    window.removeEventListener("resize", this.onResize.bind(this))
-  }
-
-  toggleSidebar() {
-    this.isCollapsed = !this.isCollapsed
-  }
-
-  closeSidebar() {
-    if (this.isMobile) {
-      this.isCollapsed = true
+    if (this.isBrowser) {
+      window.removeEventListener("resize", this.onResize.bind(this))
     }
+  }
+
+  toggleExpanded() {
+    this.isExpanded = !this.isExpanded
+    this.sidebarToggle.emit(this.isExpanded)
+  }
+
+  onSearch(): void {
+    const query = this.searchQuery.trim().toLowerCase()
+
+    if (!query) {
+      this.filteredMenuSections = this.menuSections
+      return
+    }
+
+    this.filteredMenuSections = this.menuSections
+      .map(section => {
+        const filteredItems = section.items.filter(item =>
+          item.label.toLowerCase().includes(query)
+        )
+        return { ...section, items: filteredItems }
+      })
+      .filter(section => section.items.length > 0)
+  }
+
+  trackBySection(index: number, section: MenuSection) {
+    return section.heading
+  }
+
+  clearIfEmpty() {
+    if (this.searchQuery.trim().length === 0) {
+      this.searchQuery = ''
+    }
+  }
+
+  onNotificationClick(): void {
+    console.log("Notifications clicked")
+    // Implement notification logic here
+  }
+
+  onProfileClick(): void {
+    console.log("Profile clicked")
+    this.router.navigate(["/admin/profile"])
+  }
+
+  onSettingsClick(): void {
+    console.log("Settings clicked")
+    this.router.navigate(["/admin/settings"])
+  }
+
+  onLogout(): void {
+    this.authService.logout()
+    this.router.navigate(["/admin/login"])
+    console.log("User logged out")
   }
 
   private onResize() {
@@ -85,9 +162,13 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
   }
 
   private checkScreenSize() {
-    this.isMobile = window.innerWidth < 768
-    if (this.isMobile) {
-      this.isCollapsed = true
+    if (this.isBrowser) {
+      this.isMobile = window.innerWidth < 768
+      if (this.isMobile && this.isExpanded) {
+        // On mobile, emit the state change when auto-collapsing
+        this.isExpanded = false
+        this.sidebarToggle.emit(this.isExpanded)
+      }
     }
   }
 }

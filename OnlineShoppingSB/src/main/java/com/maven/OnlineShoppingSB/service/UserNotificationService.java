@@ -54,8 +54,8 @@ public class UserNotificationService {
             NotificationTypeEntity type = notification.getType();
             Map<String, Object> metadata = jsonService.fromJson(notification.getMetadata());
 
-            dto.setTitle(jsonService.renderTemplate(type.getTitleTemplate(), metadata));
-            dto.setMessage(jsonService.renderTemplate(type.getMessageTemplate(), metadata));
+            dto.setTitle(type.getTitleTemplate());  // raw template, no rendering here
+            dto.setMessage(type.getMessageTemplate()); // raw template
             dto.setMetadata(notification.getMetadata());
         }
 

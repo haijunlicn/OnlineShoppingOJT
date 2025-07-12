@@ -75,7 +75,8 @@ import { RefundRequestListComponent } from './RefundManagement/refund-request-li
 import { RefundRequestDetailComponent } from './RefundManagement/refund-request-detail/refund-request-detail.component';
 import { PolicyUpdateComponent } from './policy-management/policy-update/policy-update.component';
 import { ChartTestingComponent } from './SaleAnalysis/chart-testing/chart-testing.component';
-
+import { AdminLayoutComponent } from './common/admin-layout/admin-layout.component';
+import { NotificationCreateComponent } from './notificationManagement/notification-create/notification-create.component';
 
 @NgModule({
   declarations: [
@@ -132,6 +133,8 @@ import { ChartTestingComponent } from './SaleAnalysis/chart-testing/chart-testin
     RefundRequestDetailComponent,
     PolicyUpdateComponent,
     ChartTestingComponent,
+    AdminLayoutComponent,
+    NotificationCreateComponent,
   ],
   imports: [
     CommonModule,

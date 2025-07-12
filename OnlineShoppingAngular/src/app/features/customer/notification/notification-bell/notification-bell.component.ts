@@ -23,15 +23,19 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private router: Router,
     private notificationModalService: NotificationModalService,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.notificationService.loadInAppNotificationsForUser(this.authService.getCurrentUser()?.id!)
     this.notificationService.connectWebSocket()
     this.subscription = this.notificationService.notifications$.subscribe((notiList) => {
-      this.notifications = notiList
-      this.unreadCount = notiList.filter((n) => !n.read).length
-    })
+      this.notifications = notiList.map(noti => this.notificationService.renderNotification(noti));
+      this.unreadCount = this.notifications.filter((n) => !n.read).length;
+    });
+    // this.subscription = this.notificationService.notifications$.subscribe((notiList) => {
+    //   this.notifications = notiList
+    //   this.unreadCount = notiList.filter((n) => !n.read).length
+    // })
   }
 
   toggleDropdown(): void {

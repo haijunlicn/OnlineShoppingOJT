@@ -1,7 +1,9 @@
-import { Component, Input } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { NavigationStart, Router } from '@angular/router';
 import { NotificationAction, UserNotificationDTO } from '@app/core/models/notification.model';
+import { NotificationModalService } from '@app/core/services/notification-modal.service';
 import { NotificationService } from '@app/core/services/notification.service';
+import { Subscription } from 'rxjs';
 
 declare var bootstrap: any
 
@@ -11,13 +13,40 @@ declare var bootstrap: any
   templateUrl: "./notification-detail.component.html",
   styleUrls: ["./notification-detail.component.css"],
 })
-export class NotificationDetailComponent {
-  @Input() notification: UserNotificationDTO | null = null
+
+export class NotificationDetailComponent implements OnInit, OnDestroy {
+  // @Input() notification: UserNotificationDTO | null = null
+
+  notification: UserNotificationDTO | null = null;
+  private sub!: Subscription;
 
   constructor(
     private notificationService: NotificationService,
+    private notificationModalService: NotificationModalService,
     private router: Router,
-  ) {}
+  ) {
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationStart) {
+        const modal = bootstrap.Modal.getInstance(document.getElementById("notificationDetailModal"))
+        if (modal) {
+          modal.hide();
+          document.body.classList.remove("modal-open")
+          document.querySelector(".modal-backdrop")?.remove()
+        }
+      }
+    })
+  }
+
+  ngOnInit(): void {
+    // Suppose your service exposes an observable to emit current notification
+    this.notificationModalService.currentNotification$.subscribe(noti => {
+      this.notification = noti;
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.sub) this.sub.unsubscribe();
+  }
 
   markAsRead(): void {
     if (this.notification && !this.notification.read) {

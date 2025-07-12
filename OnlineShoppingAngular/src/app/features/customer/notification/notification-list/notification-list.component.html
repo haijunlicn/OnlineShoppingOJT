@@ -43,12 +43,19 @@
                 Filter
               </button>
               <ul class="dropdown-menu">
-                <li><a class="dropdown-item" (click)="setFilter('all')" [class.active]="currentFilter === 'all'">All Notifications</a></li>
-                <li><a class="dropdown-item" (click)="setFilter('unread')" [class.active]="currentFilter === 'unread'">Unread Only</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" (click)="setFilter('ORDER_PLACED')" [class.active]="currentFilter === 'ORDER_PLACED'">Orders</a></li>
-                <li><a class="dropdown-item" (click)="setFilter('PROMOTION_OFFER')" [class.active]="currentFilter === 'PROMOTION_OFFER'">Promotions</a></li>
-                <li><a class="dropdown-item" (click)="setFilter('ADMIN_MESSAGE')" [class.active]="currentFilter === 'ADMIN_MESSAGE'">Admin Messages</a></li>
+                <li><a class="dropdown-item" (click)="setFilter('all')" [class.active]="currentFilter === 'all'">All
+                    Notifications</a></li>
+                <li><a class="dropdown-item" (click)="setFilter('unread')"
+                    [class.active]="currentFilter === 'unread'">Unread Only</a></li>
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
+                <li><a class="dropdown-item" (click)="setFilter('ORDER_PLACED')"
+                    [class.active]="currentFilter === 'ORDER_PLACED'">Orders</a></li>
+                <li><a class="dropdown-item" (click)="setFilter('PROMOTION_OFFER')"
+                    [class.active]="currentFilter === 'PROMOTION_OFFER'">Promotions</a></li>
+                <li><a class="dropdown-item" (click)="setFilter('ADMIN_MESSAGE')"
+                    [class.active]="currentFilter === 'ADMIN_MESSAGE'">Admin Messages</a></li>
               </ul>
             </div>
           </div>
@@ -103,7 +110,22 @@
 
                 <div class="notification-content">
                   <div class="notification-header">
-                    <h6 class="notification-title">{{ notification.title }}</h6>
+                    <h6 class="notification-title">
+                      <ng-container *ngIf="notification.richContent?.titleParts as titleParts; else plainTitle">
+                        <ng-container *ngFor="let part of titleParts; let i = index">
+                          <ng-container *ngIf="part.routerLink; else plainTitleText">
+                            <a [routerLink]="part.routerLink" (click)="debugRouterLink($event, part.routerLink)">
+                              {{ part.text }}
+                            </a>
+                          </ng-container>
+                          <ng-template #plainTitleText>{{ part.text }}</ng-template>
+                        </ng-container>
+                      </ng-container>
+                      <ng-template #plainTitle>
+                        {{ notification.title }}
+                      </ng-template>
+                    </h6>
+
                     <div class="notification-meta">
                       <span class="notification-type-badge" [ngClass]="'badge-' + notification.type">
                         {{ getTypeLabel(notification.type) }}
@@ -112,12 +134,27 @@
                     </div>
                   </div>
 
-                  <p class="notification-message">{{ notification.message }}</p>
+                  <p class="notification-message">
+                    <ng-container *ngIf="notification.richContent?.messageParts as parts; else plainMessage">
+                      <ng-container *ngFor="let part of parts; let i = index">
+                        <ng-container *ngIf="part.routerLink; else plainText">
+                          <a [routerLink]="part.routerLink" (click)="debugRouterLink($event, part.routerLink)">
+                            {{ part.text }}
+                          </a>
+                        </ng-container>
+                        <ng-template #plainText>{{ part.text }}</ng-template>
+                      </ng-container>
+                    </ng-container>
+                    <ng-template #plainMessage>
+                      {{ notification.message }}
+                    </ng-template>
+                  </p>
 
                   <div class="notification-footer">
                     <span class="notification-date">{{ notification.deliveredAt | date:'MMM d, y' }}</span>
                   </div>
                 </div>
+
               </div>
             </div>
           </div>
@@ -143,6 +180,3 @@
     </div>
   </div>
 </main>
-
-<!-- Notification Detail Modal -->
-<app-notification-detail [notification]="notificationModalService.getCurrentNotification()"></app-notification-detail>

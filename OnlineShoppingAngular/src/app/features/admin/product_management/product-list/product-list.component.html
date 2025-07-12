@@ -1,350 +1,294 @@
-<div class="admin-layout">
-  <app-admin-header></app-admin-header>
-  <div class="admin-main">
-    <app-admin-sidebar></app-admin-sidebar>
-    <main class="admin-content">
-      <div class="container-fluid">
-        <!-- Page Header -->
-        <div class="page-header">
-          <div class="header-content">
-            <div class="header-info">
-              <h2 class="page-title">Products Management</h2>
-              <p class="page-subtitle">Manage your product inventory and details</p>
-            </div>
-            <div class="header-actions">
-              <button 
-                class="btn btn-outline-primary btn-filter" 
-                (click)="toggleFilters()">
-                <i class="bi bi-funnel"></i>
-                {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
-              </button>
-             <button 
-              *ngIf="canCreateProduct" 
-              class="btn custom-add-btn"
-              routerLink="/admin/productCreate">
-              <i class="bi bi-plus-circle"></i>
-              Add Product
-            </button>
-            <button 
-              *ngIf="canBulkUploadProducts" 
-              class="btn custom-upload-btn"
-              routerLink="/admin/bulkUploadProduct">
-              <i class="bi bi-upload"></i>
-              Bulk Upload
-            </button>
+<div class="container-fluid">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-info">
+        <h2 class="page-title">Products Management</h2>
+        <p class="page-subtitle">Manage your product inventory and details</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-outline-primary btn-filter" (click)="toggleFilters()">
+          <i class="bi bi-funnel"></i>
+          {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
+        </button>
+        <button *ngIf="canCreateProduct" class="btn btn-success" routerLink="/admin/productCreate">
+          <i class="bi bi-plus-circle"></i>
+          Add Product
+        </button>
+        <button *ngIf="canBulkUploadProducts" class="btn btn-primary" routerLink="/admin/bulkUploadProduct">
+          <i class="bi bi-upload"></i>
+          Bulk Upload
+        </button>
+      </div>
+    </div>
+  </div>
 
-            </div>
+  <!-- Main Table Card -->
+  <div class="table-card">
+    <div class="table-header">
+      <div class="table-title">
+        <h4>Product List</h4>
+        <span class="product-count">{{ products.length }} products</span>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-section" [class.show]="showFilters">
+      <div class="filters-grid">
+        <!-- Search Filter -->
+        <div class="filter-group">
+          <label class="filter-label">Search Products</label>
+          <div class="search-input">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" class="form-control" placeholder="Search by name..." [(ngModel)]="globalFilterValue"
+              (input)="onGlobalFilter($event)">
           </div>
         </div>
 
-        <!-- Main Table Card -->
-        <div class="table-card">
-          <div class="table-header">
-            <div class="table-title">
-              <h4>Product List</h4>
-              <span class="product-count">{{ products.length }} products</span>
-            </div>
+        <!-- Brand Filter -->
+        <div class="filter-group">
+          <label class="filter-label">Brand</label>
+          <div class="custom-dropdown">
+            <button class="dropdown-btn" type="button" data-bs-toggle="dropdown">
+              <span class="dropdown-text">
+                {{ getSelectedBrandName() || 'All Brands' }}
+              </span>
+              <i class="bi bi-chevron-down dropdown-arrow"></i>
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <a class="dropdown-item" (click)="selectBrand(null)">
+                  <i class="bi bi-x-circle"></i>
+                  All Brands
+                </a>
+              </li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li *ngFor="let brand of brands">
+                <a class="dropdown-item" (click)="selectBrand(brand)">
+                  <i class="bi bi-tag"></i>
+                  {{ brand.name }}
+                </a>
+              </li>
+            </ul>
           </div>
+        </div>
 
-          <!-- Filters Section -->
-          <div class="filters-section" [class.show]="showFilters">
-            <div class="filters-grid">
-              <!-- Search Filter -->
-              <div class="filter-group">
-                <label class="filter-label">Search Products</label>
-                <div class="search-input">
-                  <i class="bi bi-search search-icon"></i>
-                  <input 
-                    type="text" 
-                    class="form-control" 
-                    placeholder="Search by name..."
-                    [(ngModel)]="globalFilterValue" 
-                    (input)="onGlobalFilter($event)">
-                </div>
-              </div>
-
-              <!-- Brand Filter -->
-              <div class="filter-group">
-                <label class="filter-label">Brand</label>
-                <div class="custom-dropdown">
-                  <button 
-                    class="dropdown-btn" 
-                    type="button" 
-                    data-bs-toggle="dropdown">
-                    <span class="dropdown-text">
-                      {{ getSelectedBrandName() || 'All Brands' }}
-                    </span>
-                    <i class="bi bi-chevron-down dropdown-arrow"></i>
-                  </button>
-                  <ul class="dropdown-menu">
-                    <li>
-                      <a class="dropdown-item" (click)="selectBrand(null)">
-                        <i class="bi bi-x-circle"></i>
-                        All Brands
-                      </a>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li *ngFor="let brand of brands">
-                      <a class="dropdown-item" (click)="selectBrand(brand)">
-                        <i class="bi bi-tag"></i>
-                        {{ brand.name }}
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              <!-- Category Filter -->
-              <div class="filter-group">
-                <label class="filter-label">Category</label>
-                <div class="custom-dropdown">
-                  <button 
-                    class="dropdown-btn" 
-                    type="button" 
-                    data-bs-toggle="dropdown">
-                    <span class="dropdown-text">
-                      {{ getSelectedCategoryName() || 'All Categories' }}
-                    </span>
-                    <i class="bi bi-chevron-down dropdown-arrow"></i>
-                  </button>
-                  <ul class="dropdown-menu">
-                    <li>
-                      <a class="dropdown-item" (click)="selectCategory(null)">
-                        <i class="bi bi-x-circle"></i>
-                        All Categories
-                      </a>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li *ngFor="let category of categories">
-                      <a class="dropdown-item" (click)="selectCategory(category)">
-                        <i class="bi bi-folder"></i>
-                        {{ category.label }}
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              <!-- Status Filter -->
-              <div class="filter-group">
-                <label class="filter-label">Status</label>
-                <div class="custom-dropdown">
-                  <button 
-                    class="dropdown-btn" 
-                    type="button" 
-                    data-bs-toggle="dropdown">
-                    <span class="dropdown-text">
-                      {{ getSelectedStatusName() || 'All Status' }}
-                    </span>
-                    <i class="bi bi-chevron-down dropdown-arrow"></i>
-                  </button>
-                  <ul class="dropdown-menu">
-                    <li>
-                      <a class="dropdown-item" (click)="selectStatus(null)">
-                        <i class="bi bi-x-circle"></i>
-                        All Status
-                      </a>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li *ngFor="let status of statuses">
-                      <a class="dropdown-item" (click)="selectStatus(status)">
-                        <i class="bi bi-circle-fill" [style.color]="getStatusColor(status.value)"></i>
-                        {{ status.label }}
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              <!-- Price Range Filter -->
-              <div class="filter-group">
-                <label class="filter-label">Price Range (MMK)</label>
-                <div class="price-range">
-                  <input 
-                    type="number" 
-                    class="form-control price-input" 
-                    placeholder="Min"
-                    [(ngModel)]="priceRange[0]" 
-                    (ngModelChange)="onPriceInputChange()"
-                    [min]="minPrice" 
-                    [max]="priceRange[1]">
-                  <span class="price-separator">to</span>
-                  <input 
-                    type="number" 
-                    class="form-control price-input" 
-                    placeholder="Max"
-                    [(ngModel)]="priceRange[1]" 
-                    (ngModelChange)="onPriceInputChange()"
-                    [min]="priceRange[0]" 
-                    [max]="maxPrice">
-                </div>
-              </div>
-
-              <!-- Clear Filters -->
-              <div class="filter-group">
-                <label class="filter-label">&nbsp;</label>
-                <button class="btn btn-outline-secondary btn-clear" (click)="clearAllFilters()">
-                  <i class="bi bi-arrow-clockwise"></i>
-                  Clear All
-                </button>
-              </div>
-            </div>
+        <!-- Category Filter -->
+        <div class="filter-group">
+          <label class="filter-label">Category</label>
+          <div class="custom-dropdown">
+            <button class="dropdown-btn" type="button" data-bs-toggle="dropdown">
+              <span class="dropdown-text">
+                {{ getSelectedCategoryName() || 'All Categories' }}
+              </span>
+              <i class="bi bi-chevron-down dropdown-arrow"></i>
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <a class="dropdown-item" (click)="selectCategory(null)">
+                  <i class="bi bi-x-circle"></i>
+                  All Categories
+                </a>
+              </li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li *ngFor="let category of categories">
+                <a class="dropdown-item" (click)="selectCategory(category)">
+                  <i class="bi bi-folder"></i>
+                  {{ category.label }}
+                </a>
+              </li>
+            </ul>
           </div>
+        </div>
 
-          <!-- Table Container -->
-          <div class="table-container">
-            <p-table 
-              #dt 
-              [value]="products" 
-              [paginator]="true" 
-              [rows]="10"
-              [sortMode]="'multiple'"
-              [globalFilterFields]="['product.name', 'brand.name', 'category.name']"
-              [responsiveLayout]="'scroll'"
-              [rowsPerPageOptions]="[10,20,50]"
-              styleClass="custom-table"
-              [tableStyle]="{ 'min-width': '100%' }"
-              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products">
-              
-              <!-- Table Header -->
-              <ng-template pTemplate="header">
-                <tr>
-                  <th class="image-col">Image</th>
-                  <th pSortableColumn="product.name" class="name-col">
-                    Product Name
-                    <p-sortIcon field="product.name"></p-sortIcon>
-                  </th>
-                  <th class="brand-category-col">
-                    <div class="multi-sort-header">
-                      <span pSortableColumn="brand.name" class="sort-item">
-                        Brand
-                        <p-sortIcon field="brand.name"></p-sortIcon>
-                      </span>
-                      <span class="separator">/</span>
-                      <span pSortableColumn="category.name" class="sort-item">
-                        Category
-                        <p-sortIcon field="category.name"></p-sortIcon>
-                      </span>
-                    </div>
-                  </th>
-                  <th pSortableColumn="product.basePrice" class="price-col">
-                    Price
-                    <p-sortIcon field="product.basePrice"></p-sortIcon>
-                  </th>
-                  <th pSortableColumn="status" class="status-col">
-                    Stock Status
-                    <p-sortIcon field="status"></p-sortIcon>
-                  </th>
-                  <th pSortableColumn="product.createdDate" class="date-col">
-                    Created Date
-                    <p-sortIcon field="product.createdDate"></p-sortIcon>
-                  </th>
-                  <th class="actions-col">Actions</th>
-                </tr>
-              </ng-template>
-
-              <!-- Table Body -->
-              <ng-template pTemplate="body" let-product>
-                <tr class="table-row">
-                  <!-- Product Image -->
-                  <td class="image-cell">
-                    <div class="product-image">
-                      <img 
-                        [src]="getMainProductImage(product)" 
-                        [alt]="product.product.name" 
-                        class="product-img"
-                        loading="lazy">
-                    </div>
-                  </td>
-
-                  <!-- Product Name -->
-                  <td class="name-cell">
-                    <div class="product-name">{{ product.product.name }}</div>
-                  </td>
-
-                  <!-- Brand / Category -->
-                  <td class="brand-category-cell">
-                    <div class="brand-category-info">
-                      <div class="brand-name">
-                        <i class="bi bi-tag brand-icon"></i>
-                        {{ product.brand.name }}
-                      </div>
-                      <div class="category-name">
-                        <i class="bi bi-folder category-icon"></i>
-                        {{ product.category.name }}
-                      </div>
-                    </div>
-                  </td>
-
-                  <!-- Price -->
-                  <td class="price-cell">
-                    <div class="price-amount">
-                      {{ product.product.basePrice | currency:'MMK ':'code':'1.0-0' }}
-                    </div>
-                  </td>
-
-                  <!-- Status -->
-                  <td class="status-cell">
-                    <span class="status-badge" [ngClass]="getOverallStockClass(product)">
-                      <i class="status-icon" [ngClass]="getStatusIcon(product)"></i>
-                      {{ getStockStatus(product) }}
-                    </span>
-                  </td>
-
-                  <!-- Created Date -->
-                  <td class="date-cell">
-                    <div class="date-info">
-                      {{ product.product.createdDate | date: 'MMM dd, yyyy' }}
-                    </div>
-                  </td>
-
-                  <!-- Actions -->
-                  <td class="actions-cell">
-                    <div class="action-buttons">
-                      <button 
-                        class="action-btn view-btn" 
-                        (click)="viewProduct(product)"
-                        title="View Details">
-                        <i class="bi bi-eye"></i>
-                      </button>
-                      <button 
-                        class="action-btn edit-btn" 
-                        (click)="editProduct(product)"
-                        title="Edit Product">
-                        <i class="bi bi-pencil"></i>
-                      </button>
-                      <button 
-                        class="action-btn delete-btn" 
-                        (click)="deleteProduct(product)"
-                        title="Delete Product">
-                        <i class="bi bi-trash"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </ng-template>
-
-              <!-- Empty State -->
-              <ng-template pTemplate="emptymessage">
-                <tr>
-                  <td colspan="7" class="empty-state">
-                    <div class="empty-content">
-                      <div class="empty-icon">
-                        <i class="bi bi-box-seam"></i>
-                      </div>
-                      <h5 class="empty-title">No products found</h5>
-                      <p class="empty-text">Try adjusting your search or filter criteria</p>
-                      <button class="btn btn-primary" (click)="clearAllFilters()">
-                        Clear Filters
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </ng-template>
-            </p-table>
+        <!-- Status Filter -->
+        <div class="filter-group">
+          <label class="filter-label">Status</label>
+          <div class="custom-dropdown">
+            <button class="dropdown-btn" type="button" data-bs-toggle="dropdown">
+              <span class="dropdown-text">
+                {{ getSelectedStatusName() || 'All Status' }}
+              </span>
+              <i class="bi bi-chevron-down dropdown-arrow"></i>
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <a class="dropdown-item" (click)="selectStatus(null)">
+                  <i class="bi bi-x-circle"></i>
+                  All Status
+                </a>
+              </li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li *ngFor="let status of statuses">
+                <a class="dropdown-item" (click)="selectStatus(status)">
+                  <i class="bi bi-circle-fill" [style.color]="getStatusColor(status.value)"></i>
+                  {{ status.label }}
+                </a>
+              </li>
+            </ul>
           </div>
+        </div>
+
+        <!-- Price Range Filter -->
+        <div class="filter-group">
+          <label class="filter-label">Price Range (MMK)</label>
+          <div class="price-range">
+            <input type="number" class="form-control price-input" placeholder="Min" [(ngModel)]="priceRange[0]"
+              (ngModelChange)="onPriceInputChange()" [min]="minPrice" [max]="priceRange[1]">
+            <span class="price-separator">to</span>
+            <input type="number" class="form-control price-input" placeholder="Max" [(ngModel)]="priceRange[1]"
+              (ngModelChange)="onPriceInputChange()" [min]="priceRange[0]" [max]="maxPrice">
+          </div>
+        </div>
+
+        <!-- Clear Filters -->
+        <div class="filter-group">
+          <label class="filter-label">&nbsp;</label>
+          <button class="btn btn-outline-secondary btn-clear" (click)="clearAllFilters()">
+            <i class="bi bi-arrow-clockwise"></i>
+            Clear All
+          </button>
         </div>
       </div>
-    </main>
+    </div>
+
+    <!-- Table Container -->
+    <div class="table-container">
+      <p-table #dt [value]="products" [paginator]="true" [rows]="10" [sortMode]="'multiple'"
+        [globalFilterFields]="['product.name', 'brand.name', 'category.name']" [responsiveLayout]="'scroll'"
+        [rowsPerPageOptions]="[10,20,50]" styleClass="custom-table" [tableStyle]="{ 'min-width': '100%' }"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products">
+
+        <!-- Table Header -->
+        <ng-template pTemplate="header">
+          <tr>
+            <th class="image-col">Image</th>
+            <th pSortableColumn="product.name" class="name-col">
+              Product Name
+              <p-sortIcon field="product.name"></p-sortIcon>
+            </th>
+            <th class="brand-category-col">
+              <div class="multi-sort-header">
+                <span pSortableColumn="brand.name" class="sort-item">
+                  Brand
+                  <p-sortIcon field="brand.name"></p-sortIcon>
+                </span>
+                <span class="separator">/</span>
+                <span pSortableColumn="category.name" class="sort-item">
+                  Category
+                  <p-sortIcon field="category.name"></p-sortIcon>
+                </span>
+              </div>
+            </th>
+            <th pSortableColumn="product.basePrice" class="price-col">
+              Price
+              <p-sortIcon field="product.basePrice"></p-sortIcon>
+            </th>
+            <th pSortableColumn="status" class="status-col">
+              Stock Status
+              <p-sortIcon field="status"></p-sortIcon>
+            </th>
+            <th pSortableColumn="product.createdDate" class="date-col">
+              Created Date
+              <p-sortIcon field="product.createdDate"></p-sortIcon>
+            </th>
+            <th class="actions-col">Actions</th>
+          </tr>
+        </ng-template>
+
+        <!-- Table Body -->
+        <ng-template pTemplate="body" let-product>
+          <tr class="table-row">
+            <!-- Product Image -->
+            <td class="image-cell">
+              <div class="product-image">
+                <img [src]="getMainProductImage(product)" [alt]="product.product.name" class="product-img"
+                  loading="lazy">
+              </div>
+            </td>
+
+            <!-- Product Name -->
+            <td class="name-cell">
+              <div class="product-name">{{ product.product.name }}</div>
+            </td>
+
+            <!-- Brand / Category -->
+            <td class="brand-category-cell">
+              <div class="brand-category-info">
+                <div class="brand-name">
+                  <i class="bi bi-tag brand-icon"></i>
+                  {{ product.brand.name }}
+                </div>
+                <div class="category-name">
+                  <i class="bi bi-folder category-icon"></i>
+                  {{ product.category.name }}
+                </div>
+              </div>
+            </td>
+
+            <!-- Price -->
+            <td class="price-cell">
+              <div class="price-amount">
+                {{ product.product.basePrice | currency:'MMK ':'code':'1.0-0' }}
+              </div>
+            </td>
+
+            <!-- Status -->
+            <td class="status-cell">
+              <span class="status-badge" [ngClass]="getOverallStockClass(product)">
+                <i class="status-icon" [ngClass]="getStatusIcon(product)"></i>
+                {{ getStockStatus(product) }}
+              </span>
+            </td>
+
+            <!-- Created Date -->
+            <td class="date-cell">
+              <div class="date-info">
+                {{ product.product.createdDate | date: 'MMM dd, yyyy' }}
+              </div>
+            </td>
+
+            <!-- Actions -->
+            <td class="actions-cell">
+              <div class="action-buttons">
+                <button class="action-btn view-btn" (click)="viewProduct(product)" title="View Details">
+                  <i class="bi bi-eye"></i>
+                </button>
+                <button class="action-btn edit-btn" (click)="editProduct(product)" title="Edit Product">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="action-btn delete-btn" (click)="deleteProduct(product)" title="Delete Product">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <!-- Empty State -->
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7" class="empty-state">
+              <div class="empty-content">
+                <div class="empty-icon">
+                  <i class="bi bi-box-seam"></i>
+                </div>
+                <h5 class="empty-title">No products found</h5>
+                <p class="empty-text">Try adjusting your search or filter criteria</p>
+                <button class="btn btn-primary" (click)="clearAllFilters()">
+                  Clear Filters
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
   </div>
 </div>

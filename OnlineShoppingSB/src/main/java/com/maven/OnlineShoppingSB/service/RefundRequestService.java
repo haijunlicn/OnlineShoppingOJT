@@ -149,7 +149,7 @@ public class RefundRequestService {
 
         refundRequest.setItems(new HashSet<>(refundItems));
         refundRequest = refundRequestRepository.save(refundRequest);
-        notificationService.notifyRefundRequested(order.getId(), user.getName());
+        notificationService.notifyRefundRequested(order.getId(), user.getId(), user.getName());
 
         return refundRequest;
 
@@ -320,112 +320,6 @@ public class RefundRequestService {
                 .collect(Collectors.toList());
     }
 
-//    @Transactional
-//    public void reviewRefundItems(Long adminId, RefundRequestDTO.ReviewBatchRequestDTO request) {
-//        // Load refund request
-//        RefundRequestEntity refundRequest = refundRequestRepository.findById(request.getRefundRequestId())
-//                .orElseThrow(() -> new RuntimeException("Refund request not found"));
-//
-//        // Load admin user
-//        UserEntity admin = userRepository.findById(adminId)
-//                .orElseThrow(() -> new RuntimeException("Admin not found"));
-//
-//        // Process each item decision
-//        for (RefundRequestDTO.ReviewItemDecisionDTO decision : request.getItemDecisions()) {
-//            RefundItemEntity item = refundItemRepository.findById(decision.getItemId())
-//                    .orElseThrow(() -> new RuntimeException("Refund item not found"));
-//
-//            if (!item.getRefundRequest().getId().equals(refundRequest.getId())) {
-//                throw new RuntimeException("Refund item does not belong to this request");
-//            }
-//
-//            // Update item status based on admin decision
-//            if ("approve".equalsIgnoreCase(decision.getAction())) {
-//                item.setStatus(item.getRequestedAction() == RequestedRefundAction.REFUND_ONLY
-//                        ? RefundItemStatus.APPROVED
-//                        : RefundItemStatus.RETURN_PENDING);
-//            } else if ("reject".equalsIgnoreCase(decision.getAction())) {
-//                item.setStatus(RefundItemStatus.REJECTED);
-//                if (decision.getRejectionReasonId() != null) {
-//                    RejectionReasonEntity rejectReason = rejectionReasonRepository.findById(decision.getRejectionReasonId())
-//                            .orElseThrow(() -> new RuntimeException("Reason not found"));
-//                    item.setRejectionReason(rejectReason);
-//                }
-//                item.setAdminComment(decision.getComment());
-//            }
-//
-//            item.setUpdatedAt(LocalDateTime.now());
-//            refundItemRepository.save(item);
-//
-//            // Add status history for this item
-//            RefundItemStatusHistoryEntity history = new RefundItemStatusHistoryEntity();
-//            history.setRefundItem(item);
-//            history.setStatus(item.getStatus());
-//            history.setCreatedAt(LocalDateTime.now());
-//            history.setNote("Admin reviewed item");
-//            history.setUpdatedBy(admin.getId());
-//            refundItemStatusHistoryRepository.save(history);
-//        }
-//
-//        // Reload updated refund request with latest items
-//        refundRequest = refundRequestRepository.findByIdWithItems(refundRequest.getId())
-//                .orElseThrow(() -> new RuntimeException("Refund request not found after updating items"));
-//        Set<RefundItemEntity> allItems = refundRequest.getItems();
-//
-//        if (allItems == null || allItems.isEmpty()) {
-//            throw new RuntimeException("No refund items found for this request");
-//        }
-//
-//        // Determine new status
-//        boolean allRejected = allItems.stream().allMatch(item -> item.getStatus() == RefundItemStatus.REJECTED);
-//        boolean allFinalized = allItems.stream().allMatch(item ->
-//                item.getStatus() == RefundItemStatus.REJECTED ||
-//                        item.getStatus() == RefundItemStatus.REFUNDED ||
-//                        item.getStatus() == RefundItemStatus.REPLACED ||
-//                        item.getStatus() == RefundItemStatus.RETURN_REJECTED
-//        );
-//
-//        RefundStatus newStatus = allRejected
-//                ? RefundStatus.REJECTED
-//                : allFinalized
-//                ? RefundStatus.COMPLETED
-//                : RefundStatus.IN_PROGRESS;
-//
-//        RefundStatus oldStatus = refundRequest.getStatus();
-//
-//        // Only update and notify if status changed
-//        if (oldStatus != newStatus) {
-//            refundRequest.setStatus(newStatus);
-//            refundRequest.setUpdatedAt(LocalDateTime.now());
-//            refundRequestRepository.save(refundRequest);
-//
-//            // Save status history
-//            RefundStatusHistoryEntity statusHistory = new RefundStatusHistoryEntity();
-//            statusHistory.setRefundRequest(refundRequest);
-//            statusHistory.setStatus(newStatus);
-//            statusHistory.setNote("Admin updated request status after item decisions");
-//            statusHistory.setCreatedAt(LocalDateTime.now());
-//            statusHistory.setUpdatedBy(admin.getId());
-//            refundStatusHistoryRepository.save(statusHistory);
-//
-//            // Send notification based on new status
-//            String type = switch (newStatus) {
-//                case COMPLETED -> "REFUND_COMPLETED";
-//                case REJECTED -> "REFUND_REJECTED";
-//                case IN_PROGRESS -> "REFUND_IN_PROGRESS";
-//                default -> null;
-//            };
-//
-//            if (type != null) {
-//                notificationService.notify(
-//                        type,
-//                        Map.of("orderId", refundRequest.getOrder().getId()),
-//                        List.of(refundRequest.getUser().getId())
-//                );
-//            }
-//        }
-//    }
-
     @Transactional
     public void reviewRefundItems(Long adminId, RefundRequestDTO.ReviewBatchRequestDTO request) {
         // Load refund request
@@ -576,11 +470,19 @@ public class RefundRequestService {
             };
 
             if (type != null) {
-                notificationService.notify(
-                        type,
-                        Map.of("orderId", refundRequest.getOrder().getId()),
-                        List.of(refundRequest.getUser().getId())
+                Long orderId = refundRequest.getOrder().getId();
+                Long customerId = refundRequest.getUser().getId();
+                String customerName = refundRequest.getUser().getName();
+
+                Map<String, Object> metadata = Map.of(
+                        "orderId", orderId,
+                        "customerId", customerId,
+                        "customerName", customerName,
+                        "orderIdLink", "/customer/orderDetail/" + orderId,
+                        "customerIdLink", "/admin/customers/" + customerId
                 );
+
+                notificationService.notify(type, metadata, List.of(customerId));
             }
         }
     }
@@ -595,7 +497,6 @@ public class RefundRequestService {
         RequestedRefundAction action = item.getRequestedAction();
 
         if (currentStatus == newStatus) {
-            // No status change, optionally ignore or throw
             return;
         }
 
@@ -729,10 +630,16 @@ public class RefundRequestService {
 
 
         if (notificationType != null) {
+            Long orderId = refundRequest.getOrder().getId();
+            Long userId = refundRequest.getUser().getId();
+
             notificationService.notify(
                     notificationType,
-                    Map.of("orderId", refundRequest.getOrder().getId()),
-                    List.of(refundRequest.getUser().getId())
+                    Map.of(
+                            "orderId", orderId,
+                            "orderIdLink", "/customer/orderDetail/" + orderId
+                    ),
+                    List.of(userId)
             );
         }
 
