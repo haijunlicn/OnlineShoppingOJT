@@ -11,7 +11,8 @@
               <h2 class="mb-1">Policy Management</h2>
               <p class="text-muted mb-0">Manage privacy policies, terms & conditions, and other legal documents</p>
             </div>
-            <button class="btn btn-primary" routerLink="/admin/policy/policy-create">
+            <button type="button" class="btn" style="background-color: #053501; color: white; border: none;" 
+             routerLink="/admin/policy/policy-create">
               <i class="bi bi-plus-circle me-2"></i>Create New Policy
             </button>
           </div>
@@ -212,32 +213,33 @@
             </div>
           </div>
 
-          <!-- Pagination -->
-          <div class="card-footer bg-light" *ngIf="!isLoading && totalPages > 1">
-            <div class="d-flex justify-content-between align-items-center">
-              <div class="text-muted small">
-                Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to 
-                {{ Math.min(currentPage * itemsPerPage, totalItems) }} of {{ totalItems }} entries
-              </div>
-              <nav aria-label="Policy pagination">
-                <ul class="pagination pagination-sm mb-0">
-                  <li class="page-item" [class.disabled]="currentPage === 1">
-                    <button class="page-link" (click)="goToPreviousPage()" [disabled]="currentPage === 1">
-                      <i class="bi bi-chevron-left"></i>
-                    </button>
-                  </li>
-                  <li *ngFor="let page of getPageNumbers()" class="page-item" [class.active]="page === currentPage">
-                    <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
-                  </li>
-                  <li class="page-item" [class.disabled]="currentPage === totalPages">
-                    <button class="page-link" (click)="goToNextPage()" [disabled]="currentPage === totalPages">
-                      <i class="bi bi-chevron-right"></i>
-                    </button>
-                  </li>
-                </ul>
-              </nav>
+         <!-- Pagination -->
+        <div class="card-footer bg-light" *ngIf="!isLoading">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="text-muted small">
+              Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to 
+              {{ Math.min(currentPage * itemsPerPage, totalItems) }} of {{ totalItems }} entries
             </div>
+            <nav aria-label="Policy pagination">
+              <ul class="pagination pagination-sm mb-0">
+                <li class="page-item" [class.disabled]="currentPage === 1">
+                  <button class="page-link" (click)="goToPreviousPage()" [disabled]="currentPage === 1">
+                    <i class="bi bi-chevron-left"></i>
+                  </button>
+                </li>
+                <li *ngFor="let page of getPageNumbers()" class="page-item" [class.active]="page === currentPage">
+                  <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+                </li>
+                <li class="page-item" [class.disabled]="currentPage === totalPages">
+                  <button class="page-link" (click)="goToNextPage()" [disabled]="currentPage === totalPages">
+                    <i class="bi bi-chevron-right"></i>
+                  </button>
+                </li>
+              </ul>
+            </nav>
           </div>
+        </div>
+
         </div>
       </div>
     </main>
@@ -271,7 +273,8 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" (click)="editPolicy(selectedPolicy!.id!)" data-bs-dismiss="modal">
+        <button type="button" class="btn" style="background-color: #053501; color: white; border: none;"
+         (click)="editPolicy(selectedPolicy!.id!)" data-bs-dismiss="modal">
           <i class="bi bi-pencil me-1"></i>Edit Policy
         </button>
       </div>

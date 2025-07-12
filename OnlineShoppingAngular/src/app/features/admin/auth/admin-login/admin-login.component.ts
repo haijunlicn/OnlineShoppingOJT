@@ -57,6 +57,12 @@ export class AdminLoginComponent {
     });
 
   }
+  showPassword: boolean = false;
+
+togglePasswordVisibility() {
+  this.showPassword = !this.showPassword;
+}
+
 
   resetForm() {
     this.loginForm.reset()

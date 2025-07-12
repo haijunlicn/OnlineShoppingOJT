@@ -817,3 +817,13 @@
     padding: 0;
   }
 }
+.custom-add-btn {
+  background-color: #013703; /* a different green */
+  color: white;
+  border: none;
+}
+.custom-upload-btn {
+  background-color: #013808; /* a nice orange */
+  color: white;
+  border: none;
+}

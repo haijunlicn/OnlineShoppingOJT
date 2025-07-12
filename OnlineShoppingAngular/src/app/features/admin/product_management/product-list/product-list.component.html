@@ -18,20 +18,21 @@
                 <i class="bi bi-funnel"></i>
                 {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
               </button>
-              <button 
-                *ngIf="canCreateProduct" 
-                class="btn btn-success" 
-                routerLink="/admin/productCreate">
-                <i class="bi bi-plus-circle"></i>
-                Add Product
-              </button>
-              <button 
-                *ngIf="canBulkUploadProducts" 
-                class="btn btn-primary" 
-                routerLink="/admin/bulkUploadProduct">
-                <i class="bi bi-upload"></i>
-                Bulk Upload
-              </button>
+             <button 
+              *ngIf="canCreateProduct" 
+              class="btn custom-add-btn"
+              routerLink="/admin/productCreate">
+              <i class="bi bi-plus-circle"></i>
+              Add Product
+            </button>
+            <button 
+              *ngIf="canBulkUploadProducts" 
+              class="btn custom-upload-btn"
+              routerLink="/admin/bulkUploadProduct">
+              <i class="bi bi-upload"></i>
+              Bulk Upload
+            </button>
+
             </div>
           </div>
         </div>

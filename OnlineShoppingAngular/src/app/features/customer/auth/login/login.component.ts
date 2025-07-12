@@ -116,4 +116,10 @@ export class LoginComponent {
     this.loginForm.reset()
     this.isSubmitted = false
   }
+  showPassword: boolean = false;
+
+togglePasswordVisibility() {
+  this.showPassword = !this.showPassword;
+}
+
 }
