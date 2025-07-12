@@ -29,28 +29,54 @@
         <!-- Notifications List (Limited to 5 for dropdown) -->
         <div *ngIf="notifications.length > 0" class="dropdown-content">
             <ul>
-                <li *ngFor="let noti of notifications.slice(0, 5); trackBy: trackByNotificationId" 
-                    (click)="openNotificationDetail(noti)"
-                    [class.unread]="!noti.read" 
-                    [ngClass]="getNotificationClass(noti.type)" 
-                    role="menuitem"
+                <li *ngFor="let noti of notifications.slice(0, 5); trackBy: trackByNotificationId"
+                    (click)="openNotificationDetail(noti)" [class.unread]="!noti.read"
+                    [ngClass]="getNotificationClass(noti.type)" role="menuitem"
                     [attr.aria-label]="noti.read ? 'Read notification' : 'Unread notification'">
-                    
+
                     <div class="notification-content">
                         <div class="notification-header">
-                            <strong>{{ noti.title }}</strong>
+                            <!-- <strong>{{ noti.title }}</strong> -->
+                            <strong>
+                                <ng-container *ngIf="noti.richContent?.titleParts as titleParts; else plainTitle">
+                                    <ng-container *ngFor="let part of titleParts">
+                                        <ng-container *ngIf="part.routerLink; else plainTitleText">
+                                            <a [routerLink]="part.routerLink" (click)="$event.stopPropagation()">
+                                                {{ part.text }}
+                                            </a>
+                                        </ng-container>
+                                        <ng-template #plainTitleText>{{ part.text }}</ng-template>
+                                    </ng-container>
+                                </ng-container>
+                                <ng-template #plainTitle>{{ noti.title }}</ng-template>
+                            </strong>
                             <span class="notification-type-badge" [ngClass]="'badge-' + noti.type">
                                 {{ getTypeLabel(noti.type) }}
                             </span>
                         </div>
-                        <p>{{ noti.message | slice:0:80 }}{{ noti.message.length > 80 ? '...' : '' }}</p>
+                        <!-- <p>{{ noti.message | slice:0:80 }}{{ noti.message.length > 80 ? '...' : '' }}</p> -->
+                        <p>
+                            <ng-container *ngIf="noti.richContent?.messageParts as parts; else plainMessage">
+                                <ng-container *ngFor="let part of parts">
+                                    <ng-container *ngIf="part.routerLink; else plainMessageText">
+                                        <a [routerLink]="part.routerLink" (click)="$event.stopPropagation()">
+                                            {{ part.text }}
+                                        </a>
+                                    </ng-container>
+                                    <ng-template #plainMessageText>{{ part.text }}</ng-template>
+                                </ng-container>
+                            </ng-container>
+                            <ng-template #plainMessage>
+                                {{ noti.message | slice:0:80 }}{{ noti.message.length > 80 ? '...' : '' }}
+                            </ng-template>
+                        </p>
                         <div class="notification-footer">
                             <small>
                                 <i class="fas fa-clock"></i>
                                 {{ getTimeAgo(noti.deliveredAt) }}
                             </small>
-                            <button class="quick-action-btn" (click)="quickMarkAsRead(noti, $event)" 
-                                    *ngIf="!noti.read" title="Mark as read">
+                            <button class="quick-action-btn" (click)="quickMarkAsRead(noti, $event)" *ngIf="!noti.read"
+                                title="Mark as read">
                                 <i class="fas fa-check"></i>
                             </button>
                         </div>

@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from "@angular/forms"
 import { AuthService } from "../../../../core/services/auth.service"
 import { AlertService } from "../../../../core/services/alert.service"
 import { Router } from "@angular/router"
+import { filter, take } from "rxjs"
 
 @Component({
   selector: "app-admin-login",
@@ -37,26 +38,51 @@ export class AdminLoginComponent {
   }
 
   onSubmit() {
-    this.isSubmitted = true
+    this.isSubmitted = true;
 
     if (this.loginForm.invalid) {
-      this.loginForm.markAllAsTouched()
-      return
+      this.loginForm.markAllAsTouched();
+      return;
     }
 
-    const { email, password, rememberMe } = this.loginForm.value
+    const { email, password, rememberMe } = this.loginForm.value;
 
-    console.log("gonna call auth");
     this.auth.loginAdmin(email, password, rememberMe, 1).subscribe({
       next: () => {
-        this.router.navigate(['/admin/dashboard']); // ✅ Now it works on first click
+        this.auth.userLoaded$.pipe(
+          filter(loaded => loaded),
+          take(1)
+        ).subscribe(() => {
+          this.router.navigate(['/admin/dashboard']);
+        });
       },
       error: (err) => {
         this.errorMessage = "Invalid admin credentials";
       }
     });
-
   }
+
+
+  // onSubmit() {
+  //   this.isSubmitted = true
+
+  //   if (this.loginForm.invalid) {
+  //     this.loginForm.markAllAsTouched()
+  //     return
+  //   }
+
+  //   const { email, password, rememberMe } = this.loginForm.value
+
+  //   console.log("gonna call auth");
+  //   this.auth.loginAdmin(email, password, rememberMe, 1).subscribe({
+  //     next: () => {
+  //       this.router.navigate(['/admin/dashboard']);
+  //     },
+  //     error: (err) => {
+  //       this.errorMessage = "Invalid admin credentials";
+  //     }
+  //   });
+  // }
 
   resetForm() {
     this.loginForm.reset()

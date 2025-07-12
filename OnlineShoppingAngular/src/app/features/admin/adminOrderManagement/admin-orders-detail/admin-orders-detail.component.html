@@ -1,8 +1,4 @@
-<div class="admin-layout">
-  <app-admin-header></app-admin-header>
-  <div class="admin-main">
-    <app-admin-sidebar></app-admin-sidebar>
-    <main class="admin-content">
+
       <!-- Loading State -->
       <div *ngIf="loading" class="loading-section">
         <div class="loading-card">
@@ -381,8 +377,7 @@
           </div>
         </div>
       </div>
-    </main>
-  </div>
+
 
   <!-- Modern Rejection Reason Modal -->
   <div class="modern-modal-overlay" [class.show]="showRejectionReasonModal" *ngIf="showRejectionReasonModal">
@@ -448,4 +443,3 @@
       </div>
     </div>
   </div>
-</div>

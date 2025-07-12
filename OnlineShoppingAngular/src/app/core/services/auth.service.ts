@@ -50,34 +50,67 @@ export class AuthService {
     map(user => !!user && user.roleName === 'CUSTOMER')
   );
 
-  initializeUserFromToken(): void {
-    const token = this.storageService.getItem('token');
+  // initializeUserFromToken(): void {
+  //   const token = this.storageService.getItem('token');
 
-    if (token && !this.isTokenExpired(token)) {
-      const decoded: any = jwtDecode(token);
-      const email = decoded.sub;
-      const roleType = decoded.roleType;
+  //   if (token && !this.isTokenExpired(token)) {
+  //     const decoded: any = jwtDecode(token);
+  //     const email = decoded.sub;
+  //     const roleType = decoded.roleType;
 
-      // this.getCurrentUserByEmailAndRoleType(email, roleType).subscribe({
-      this.fetchCurrentUser().subscribe({
-        next: (user) => {
-          this.userLoadedSubject.next(true); // ✅ Done
-          // 👇 NEW: connect WebSocket
-          if (user?.roleName === 'CUSTOMER' || user?.roleName === 'ADMIN') {
-            this.notificationService.connectWebSocket();
-            this.notificationService.loadInAppNotificationsForUser(user.id);
+  //     // this.getCurrentUserByEmailAndRoleType(email, roleType).subscribe({
+  //     this.fetchCurrentUser().subscribe({
+  //       next: (user) => {
+  //         this.userLoadedSubject.next(true); // ✅ Done
+  //         // 👇 NEW: connect WebSocket
+  //         if (user?.roleName === 'CUSTOMER' || user?.roleName === 'ADMIN') {
+  //           this.notificationService.connectWebSocket();
+  //           this.notificationService.loadInAppNotificationsForUser(user.id);
+  //         }
+  //       },
+  //       error: () => {
+  //         this.userSubject.next(null);
+  //         this.storageService.removeItem('token');
+  //         this.userLoadedSubject.next(true); // ✅ Still done
+  //       }
+  //     });
+  //   } else {
+  //     this.userSubject.next(null);
+  //     this.userLoadedSubject.next(true); // ✅ Still done
+  //   }
+  // }
+
+  initializeUserFromToken(): Promise<void> {
+    return new Promise((resolve) => {
+      const token = this.storageService.getItem('token');
+
+      if (token && !this.isTokenExpired(token)) {
+        this.fetchCurrentUser().subscribe({
+          next: (user) => {
+            this.userSubject.next(user);
+            this.accessControlService.setPermissions(user.permissions!);
+
+            if (user?.roleName === 'CUSTOMER' || user?.roleName === 'ADMIN') {
+              this.notificationService.connectWebSocket();
+              this.notificationService.loadInAppNotificationsForUser(user.id);
+            }
+
+            this.userLoadedSubject.next(true);
+            resolve(); // ✅ Done loading
+          },
+          error: () => {
+            this.userSubject.next(null);
+            this.storageService.removeItem('token');
+            this.userLoadedSubject.next(true);
+            resolve(); // ✅ Even if error
           }
-        },
-        error: () => {
-          this.userSubject.next(null);
-          this.storageService.removeItem('token');
-          this.userLoadedSubject.next(true); // ✅ Still done
-        }
-      });
-    } else {
-      this.userSubject.next(null);
-      this.userLoadedSubject.next(true); // ✅ Still done
-    }
+        });
+      } else {
+        this.userSubject.next(null);
+        this.userLoadedSubject.next(true);
+        resolve(); // ✅ No token? Still resolve
+      }
+    });
   }
 
   register(userData: any): Observable<any> {
@@ -138,10 +171,7 @@ export class AuthService {
           updatedDate: res.updatedDate,
           permissions: res.permissions
         };
-
         console.log("/me called : ", user);
-
-
         return user;
       }),
       tap((user: User) => {
@@ -180,7 +210,6 @@ export class AuthService {
       })
     );
   }
-
 
   logout() {
     this.storageService.removeItem('token');
@@ -248,8 +277,6 @@ export class AuthService {
         const decodedToken: any = jwtDecode(token);
         const userEmail = decodedToken.sub;
 
-        // ✅ Wait for user fetch to complete
-        // return this.getCurrentUserByEmailAndRoleType(userEmail, 1);
         return this.fetchCurrentUser();
       }),
       catchError((error) => throwError(() => error))

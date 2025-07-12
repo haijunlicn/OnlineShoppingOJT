@@ -6,6 +6,7 @@ export interface UserNotificationDTO {
   read: boolean
   deliveredAt: string
   userId: string
+  metadata?: string;
   richContent?: NotificationRichContent
 }
 
@@ -15,6 +16,14 @@ export interface NotificationRichContent {
   links?: NotificationLink[]
   actions?: NotificationAction[]
   data?: { [key: string]: any }
+  titleParts?: {
+    text: string
+    routerLink?: string
+  }[],
+  messageParts?: {
+    text: string
+    routerLink?: string
+  }[]
 }
 
 export interface NotificationLink {
@@ -31,4 +40,12 @@ export interface NotificationAction {
   icon?: string
   style?: "primary" | "success" | "warning" | "danger" | "info"
   payload?: any
+}
+
+export interface CreateNotificationPayload {
+  title?: string | null;
+  message: string;
+  imageUrl?: string | null;
+  metadata?: string | null;
+  scheduledAt?: string | null;
 }

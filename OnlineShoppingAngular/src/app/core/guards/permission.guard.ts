@@ -1,4 +1,3 @@
-// src/app/core/guards/permission.guard.ts
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, Router } from '@angular/router';
 import { PermissionService } from '../services/permission.service';

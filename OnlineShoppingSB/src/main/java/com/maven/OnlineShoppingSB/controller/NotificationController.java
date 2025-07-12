@@ -85,5 +85,10 @@ public class NotificationController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/custom")
+    public ResponseEntity<?> createCustomNotification(@RequestBody NotificationDTO dto) {
+        notificationService.createCustomNotification(dto);
+        return ResponseEntity.ok().build();
+    }
 
 }

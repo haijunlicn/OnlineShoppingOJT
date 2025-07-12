@@ -1,0 +1,11 @@
+<app-admin-sidebar (sidebarToggle)="onSidebarToggle($event)"></app-admin-sidebar>
+
+<div class="admin-main-wrapper" [class.sidebar-expanded]="sidebarExpanded">
+    <app-admin-header [accountInfo]="accountInfo" [sidebarExpanded]="sidebarExpanded"></app-admin-header>
+
+    <main class="admin-content">
+        <div class="content-wrapper">
+            <router-outlet></router-outlet>
+        </div>
+    </main>
+</div>

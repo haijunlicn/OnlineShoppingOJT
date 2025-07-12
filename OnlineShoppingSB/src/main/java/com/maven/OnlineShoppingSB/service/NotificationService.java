@@ -1,5 +1,7 @@
 package com.maven.OnlineShoppingSB.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.maven.OnlineShoppingSB.dto.*;
 import com.maven.OnlineShoppingSB.entity.*;
 import com.maven.OnlineShoppingSB.repository.*;
@@ -13,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -104,19 +107,114 @@ public class NotificationService {
         return notification;
     }
 
+    public void createCustomNotification(NotificationDTO dto) {
+        System.out.println("Starting custom notification creation...");
+
+        System.out.println("Received notification DTO: title='" + dto.getTitle() + "', message='" + dto.getMessage() +
+                "', imageUrl='" + dto.getImageUrl() + "', scheduledAt='" + dto.getScheduledAt() + "', metadata=" + dto.getMetadata());
+
+        NotificationTypeEntity customType = notificationTypeRepository.findByName("CUSTOM")
+                .orElseThrow(() -> new RuntimeException("Custom notification type not found"));
+
+        NotificationEntity notification = new NotificationEntity();
+        notification.setType(customType);
+        notification.setTitle(dto.getTitle());
+        notification.setMessage(dto.getMessage());
+        notification.setImageUrl(dto.getImageUrl());
+        notification.setMetadata(dto.getMetadata());
+        notification.setScheduledAt(dto.getScheduledAt());
+        notification.setDelivered(false);
+        notification.setCreatedAt(LocalDateTime.now());
+
+        notificationRepository.save(notification);
+        System.out.println("Saved NotificationEntity with ID: " + notification.getId());
+
+        List<Long> userIds = dto.getTargetUserIdsFromMetadata();
+        System.out.println("Parsed user IDs from metadata: " + userIds);
+
+        if (userIds == null || userIds.isEmpty()) {
+            System.out.println("No user IDs found in metadata. Skipping user notification.");
+            return;
+        }
+
+        List<UserEntity> usersToNotify = userRepository.findAllById(userIds);
+        System.out.println("Resolved users to notify: " + usersToNotify.size() + " users found");
+
+        for (UserEntity user : usersToNotify) {
+            System.out.println("Processing user ID: " + user.getId() + " (" + user.getEmail() + ")");
+
+            NotiMethod method = NotiMethod.IN_APP;
+            System.out.println("Setting notification method to: " + method);
+
+            boolean exists = userNotificationRepository
+                    .existsByUserIdAndNotificationIdAndMethod(user.getId(), notification.getId(), method);
+
+            if (exists) {
+                System.out.println("Notification already exists for user " + user.getId() + ", method " + method + ". Skipping.");
+                continue;
+            }
+
+            UserNotificationEntity userNotification = new UserNotificationEntity();
+            userNotification.setUser(user);
+            userNotification.setNotification(notification);
+            userNotification.setRead(false);
+            userNotification.setDeliveredAt(LocalDateTime.now());
+            userNotification.setMethod(method);
+
+            userNotificationRepository.save(userNotification);
+            System.out.println("Saved UserNotification for user " + user.getId() + ", method " + method);
+
+            System.out.println("Sending IN_APP notification to user: " + user.getEmail());
+            messagingTemplate.convertAndSendToUser(
+                    user.getEmail(),
+                    "/queue/notifications",
+                    toDto(userNotification)
+            );
+        }
+
+        System.out.println("Custom notification processing completed.");
+    }
+
+//    private UserNotificationDTO toDto(UserNotificationEntity entity) {
+//        NotificationTypeEntity type = entity.getNotification().getType();
+//        Map<String, Object> metadata = jsonService.fromJson(entity.getNotification().getMetadata());
+//
+//        UserNotificationDTO dto = new UserNotificationDTO();
+//        dto.setId(entity.getId());
+
+    /// /        dto.setTitle(jsonService.renderTemplate(type.getTitleTemplate(), metadata));
+    /// /        dto.setMessage(jsonService.renderTemplate(type.getMessageTemplate(), metadata));
+//        dto.setTitle(type.getTitleTemplate());  // raw template, no rendering here
+//        dto.setMessage(type.getMessageTemplate()); // raw template
+//        dto.setMetadata(entity.getNotification().getMetadata());
+//        dto.setRead(entity.isRead());
+//        dto.setDeliveredAt(entity.getDeliveredAt());
+//        dto.setReadAt(entity.getReadAt());
+//        dto.setMethod(entity.getMethod());
+//        return dto;
+//    }
     private UserNotificationDTO toDto(UserNotificationEntity entity) {
-        NotificationTypeEntity type = entity.getNotification().getType();
-        Map<String, Object> metadata = jsonService.fromJson(entity.getNotification().getMetadata());
+        NotificationEntity notification = entity.getNotification();
+        NotificationTypeEntity type = notification.getType();
+        Map<String, Object> metadata = jsonService.fromJson(notification.getMetadata());
 
         UserNotificationDTO dto = new UserNotificationDTO();
         dto.setId(entity.getId());
-        dto.setTitle(jsonService.renderTemplate(type.getTitleTemplate(), metadata));
-        dto.setMessage(jsonService.renderTemplate(type.getMessageTemplate(), metadata));
-        dto.setMetadata(entity.getNotification().getMetadata());
         dto.setRead(entity.isRead());
         dto.setDeliveredAt(entity.getDeliveredAt());
         dto.setReadAt(entity.getReadAt());
         dto.setMethod(entity.getMethod());
+        dto.setMetadata(notification.getMetadata());
+
+        // 👇 Logic: use custom content if present, else fallback to template rendering
+        if (notification.getTitle() != null || notification.getMessage() != null) {
+            dto.setTitle(notification.getTitle());
+            dto.setMessage(notification.getMessage());
+        } else {
+            dto.setTitle(jsonService.renderTemplate(type.getTitleTemplate(), metadata));
+            dto.setMessage(jsonService.renderTemplate(type.getMessageTemplate(), metadata));
+        }
+
         return dto;
     }
 
@@ -167,26 +265,35 @@ public class NotificationService {
     public void notifyOrderPlaced(Long orderId, BigDecimal totalAmount) {
         Map<String, Object> metadata = Map.of(
                 "orderId", orderId,
-                "totalAmount", totalAmount
+                "totalAmount", totalAmount,
+                "orderIdLink", "/customer/orderDetail/" + orderId
         );
         List<Long> adminIds = getAdminIdsWithPermission("ORDER_READ");
         sendNamedNotification("ORDER_PLACED", metadata, adminIds);
     }
 
-    public void notifyRefundRequested(Long orderId, String customerName) {
+    public void notifyRefundRequested(Long orderId, Long customerId, String customerName) {
         Map<String, Object> metadata = Map.of(
                 "orderId", orderId,
-                "customerName", customerName
+                "customerId", customerId,
+                "customerName", customerName,
+                "orderIdLink", "/customer/orderDetail/" + orderId,
+                "customerIdLink", "/admin/customers/" + customerId
         );
         List<Long> adminIds = getAdminIdsWithPermission("ORDER_REFUND");
         sendNamedNotification("REFUND_REQUESTED", metadata, adminIds);
     }
 
-    public void notifyLowStock(String productName) {
-        Map<String, Object> metadata = Map.of("productName", productName);
+    public void notifyLowStock(Long productId, String productName) {
+        Map<String, Object> metadata = Map.of(
+                "productId", productId,
+                "productName", productName,
+                "productIdLink", "/admin/products/" + productId
+        );
         List<Long> adminIds = getAdminIdsWithPermission("PRODUCT_STOCK_UPDATE");
         sendNamedNotification("LOW_STOCK_ALERT", metadata, adminIds);
     }
+
 
     // ----------- Permission Checker -----------
 

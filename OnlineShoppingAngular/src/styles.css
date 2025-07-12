@@ -1,123 +1,21 @@
-/* Admin Header Styles */
-.admin-header {
-  background-color: #080808 !important;
-  border-bottom: 1px solid #1a1a1a;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  min-height: 60px;
-  padding: 0 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  z-index: 1001;
-}
-
-/* Header Left Section */
-.header-left {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.admin-layout {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.admin-main {
-  display: flex;
-  flex: 1 1 auto;
-  margin-top: 50px; /* height of header */
-  min-height: 0;
-}
-
-app-admin-sidebar {
-  position: fixed;
-  top: 60px; /* height of header */
-  left: 0;
-  height: calc(100vh - 60px);
-  width: 240px;
-  z-index: 1000;
-}
-
-.admin-content {
-  flex: 1 1 auto;
-  margin-left: 240px; /* width of sidebar */
-  min-width: 0;
-  min-height: 0;
-  padding: 2rem 1rem 1rem 1rem;
-  background: #f8f9fa;
-  overflow-y: auto;
-  height: calc(100vh - 60px);
-  display: flex;
-  flex-direction: column;
-}
-
-@media (max-width: 768px) {
-  app-admin-sidebar {
-    width: 60px;
-    min-width: 60px;
-  }
-  .admin-content {
-    margin-left: 60px;
-  }
-}
-
-@media (max-width: 576px) {
-  app-admin-sidebar {
-    display: none;
-  }
-  .admin-content {
-    margin-left: 0;
-  }
-}
-
-/* Admin Sidebar Styles */
-.admin-sidebar {
-  position: fixed;
-  top: 60px; /* <-- Keep in sync with header height */
-  left: 0;
-  height: calc(100vh - 60px); /* <-- Keep in sync with header height */
-  width: 240px;
-  background: #080808;
-  color: #e0e0e0;
-  transition: all 0.3s ease;
-  z-index: 2000;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
-  border-right: 1px solid #1a1a1a;
-}
-
-.admin-sidebar.collapsed {
-  width: 60px;
-}
-
-
-
 :root {
-  --color-primary: #16302B;       /* Elegant dark emerald green */
-  --color-accent: #fcf1d9;        /* Refined golden brown */
-  --color-secondary: #03110D;     /* Rich charcoal for dark backgrounds */
-  --color-brown: #3d3d3d;         /* Deep bronze-brown (hover, buttons) */
-  --color-background: #f5f5f3;    /* Clean soft background */
+  --color-primary: #142925; /* Elegant dark emerald green */
+  --color-accentOld: #fcf1d9; /* Refined golden brown */
+  --color-accent: #c89f4e;
+  --color-secondary: #03110d; /* Rich charcoal for dark backgrounds */
+  --color-brown: #3d3d3d; /* Deep bronze-brown (hover, buttons) */
+  --color-background: #f5f5f3; /* Clean soft background */
   --color-border: rgba(191, 161, 106, 0.2); /* Gold-tinted border */
-  --color-shadow: rgba(15, 61, 46, 0.1);    /* Soft green shadow */
-  --color-highlight: #d6b56c;     /* Lighter golden accent */
-  --color-success: #198754;       /* Bootstrap success green (kept) */
-  --color-danger: #470505;        /* Rich crimson */
+  --color-shadow: rgba(15, 61, 46, 0.1); /* Soft green shadow */
+  --color-highlight: #d6b56c; /* Lighter golden accent */
+  --color-success: #198754; /* Bootstrap success green (kept) */
+  --color-danger: #470505; /* Rich crimson */
 }
 
 body {
   background-color: var(--color-background);
   color: var(--color-text);
   font-family: "Helvetica Neue", Arial, sans-serif;
-  /* padding-top: 10px; */
 }
 
 /* Bootstrap overrides */

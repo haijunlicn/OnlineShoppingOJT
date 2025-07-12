@@ -40,7 +40,7 @@ export class NotificationListComponent implements OnInit, OnDestroy {
     public notificationModalService: NotificationModalService, // Make this public
     private authService: AuthService,
     private router: Router,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadNotifications()
@@ -50,47 +50,23 @@ export class NotificationListComponent implements OnInit, OnDestroy {
   loadNotifications(): void {
     this.loading = true
     const userId = this.authService.getCurrentUser()?.id!
-
-    this.notificationService.loadInAppNotificationsForUser(userId) // just triggers it
-
-    this.notificationService.notifications$.subscribe({
-      next: (notifications) => {
-        this.notifications = notifications
-        this.calculateStats()
-        this.applyFilters()
-        this.loading = false
-      },
-      error: (error) => {
-        console.error("Failed to load notifications:", error)
-        this.loading = false
-      },
-    })
+    this.notificationService.loadInAppNotificationsForUser(userId)
   }
 
-  // loadNotifications(): void {
-  //   this.loading = true
-  //   const userId = this.authService.getCurrentUser()?.id!
-
-  //   this.notificationService.loadInAppNotificationsForUser(userId).subscribe({
-  //     next: (notifications) => {
-  //       this.notifications = notifications
-  //       this.calculateStats()
-  //       this.applyFilters()
-  //       this.loading = false
-  //     },
-  //     error: (error) => {
-  //       console.error("Failed to load notifications:", error)
-  //       this.loading = false
-  //     },
-  //   })
-  // }
+  debugRouterLink(event: MouseEvent, link: string): void {
+    event.stopPropagation();  // prevent container click
+    console.log('RouterLink clicked:', link);
+  }
 
   subscribeToNotifications(): void {
     this.subscription = this.notificationService.notifications$.subscribe((notifications) => {
-      this.notifications = notifications
-      this.calculateStats()
-      this.applyFilters()
-    })
+      this.notifications = notifications.map(n =>
+        this.notificationService.renderNotification(n)
+      );
+      this.calculateStats();
+      this.applyFilters();
+      this.loading = false;
+    });
   }
 
   calculateStats(): void {

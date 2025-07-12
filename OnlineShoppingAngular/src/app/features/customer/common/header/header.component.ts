@@ -142,12 +142,12 @@ export class HeaderComponent implements OnInit {
     console.log("Login clicked")
   }
 
-   onProfile(): void {
-    this.router.navigate(['/customer/profile-update']); 
+  onProfile(): void {
+    this.router.navigate(['/customer/profile-update']);
     this.isProfileDropdownOpen = false;
-}
+  }
 
-  
+
 
   onSettings(): void {
     this.router.navigate(["/customer/account-settings"])
