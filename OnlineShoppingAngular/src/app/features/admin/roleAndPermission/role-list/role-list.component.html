@@ -1,0 +1,157 @@
+
+      <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2>Role Management</h2>
+          <button routerLink="/admin/role-form" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Create Role
+          </button>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="row mt-4">
+          <div class="col-md-3">
+            <div class="card text-center">
+              <div class="card-body">
+                <h3 class="text-primary">{{ roles.length }}</h3>
+                <small class="text-muted">Total Roles</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card text-center">
+              <div class="card-body">
+                <h3 class="text-info">{{ getAdminRolesCount() }}</h3>
+                <small class="text-muted">Admin Roles</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card text-center">
+              <div class="card-body">
+                <h3 class="text-success">{{ getCustomerRolesCount() }}</h3>
+                <small class="text-muted">Customer Roles</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card text-center">
+              <div class="card-body">
+                <h3 class="text-warning">{{ getSystemRolesCount() }}</h3>
+                <small class="text-muted">System Roles</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-8">
+                <input type="text" class="form-control" placeholder="Search roles by name or description..."
+                  [(ngModel)]="searchTerm" [ngModelOptions]="{standalone: true}" (input)="filterRoles()" />
+              </div>
+              <div class="col-md-4">
+                <select class="form-select" [(ngModel)]="selectedType" [ngModelOptions]="{standalone: true}"
+                  (change)="filterRoles()">
+                  <option value="">All Types</option>
+                  <option value="0">Customer Roles</option>
+                  <option value="1">Admin Roles</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Roles Display -->
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-0">System Roles</h5>
+              <small class="text-muted">{{ filteredRoles.length }} roles found</small>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Role Details</th>
+                    <th>Type</th>
+                    <th>Permissions</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let role of filteredRoles">
+                    <td>
+                      <div>
+                        <h6 class="mb-1">{{ role.name }}</h6>
+                        <small class="text-muted" *ngIf="role.description">
+                          {{ role.description }}
+                        </small>
+                        <small class="text-muted" *ngIf="!role.description">
+                          No description provided
+                        </small>
+                        <br>
+                        <small class="text-muted">ID: {{ role.id }}</small>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge" [class]="role.type === 1 ? 'bg-primary' : 'bg-secondary'">
+                        {{ role.type === 1 ? 'Admin' : 'Customer' }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="permission-summary">
+                        <span class="badge bg-info me-1">
+                          {{ role.permissions?.length || 0 }} permissions
+                        </span>
+                        <div class="mt-1" *ngIf="role.permissions && role.permissions.length > 0">
+                          <div class="permission-preview">
+                            <small class="text-muted d-block"
+                              *ngFor="let p of getPreviewPermissions(role.permissions); let i = index">
+                              • {{ p.description }}
+                            </small>
+                            <small class="text-muted" *ngIf="role.permissions.length > 3">
+                              ... and {{ role.permissions.length - 3 }} more
+                            </small>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="btn-group" role="group">
+                        <button class="btn btn-sm btn-outline-primary" (click)="editRole(role)"
+                          [disabled]="isFixedRole(role.id!) && !isSuperAdmin()" title="Edit Role">
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" (click)="deleteRole(role.id!)"
+                          [disabled]="isFixedRole(role.id!)" title="Delete Role">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </div>
+                      <div class="mt-1" *ngIf="isFixedRole(role.id!)">
+                        <small class="text-warning">
+                          <i class="fas fa-lock me-1"></i>System Role
+                        </small>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Empty State -->
+            <div class="text-center py-5" *ngIf="filteredRoles.length === 0">
+              <i class="fas fa-user-shield fa-3x text-muted mb-3"></i>
+              <h5 class="text-muted">No roles found</h5>
+              <p class="text-muted">Try adjusting your search criteria or create a new role</p>
+              <button routerLink="/admin/role-form" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Create First Role
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>

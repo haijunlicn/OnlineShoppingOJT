@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Set;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -32,16 +33,40 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String method = request.getMethod();
 
         // ✅ GET method အားလုံးကို JWT token မစစ်ပဲ လွတ်ခွင့်ပြု
-        if (method.equalsIgnoreCase("GET")) {
+//        if (method.equalsIgnoreCase("GET")) {
+//            chain.doFilter(request, response);
+//            return;
+//        }
+        if (path.startsWith("/ws-notifications")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        // Allow GET requests that contain 'public' in the URL without JWT check
+        if (method.equalsIgnoreCase("GET") && path.contains("public")) {
             chain.doFilter(request, response);
             return;
         }
 
         // ✅ Auth URLs တွေကို JWT token မစစ်ပဲ လွတ်ခွင့်ပြု
-        if (path.startsWith("/auth/")) {
+        Set<String> publicAuthEndpoints = Set.of(
+                "/auth/login",
+                "/auth/register",
+                "/auth/verify-otp",
+                "/auth/resend",
+                "/auth/forgot-password",
+                "/auth/reset-password"
+        );
+
+        if (publicAuthEndpoints.contains(path)) {
             chain.doFilter(request, response);
             return;
         }
+
+//        if (path.startsWith("/auth/")) {
+//            chain.doFilter(request, response);
+//            return;
+//        }
 
         // ✅ အခြား POST, PUT, DELETE request တွေ JWT token စစ်မယ်
         final String authHeader = request.getHeader("Authorization");
@@ -62,7 +87,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         roleType = jwtService.extractRoleType(token);
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = customUserDetailsService.loadUserByUsernameAndRoleType(email, roleType);
+            // Load user by username only (the standard method)
+            UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
 
             if (jwtService.isTokenValid(token)) {
                 UsernamePasswordAuthenticationToken authToken =
@@ -71,12 +97,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             } else {
-                // 👉 Token expired or invalid
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 response.getWriter().write("403 - Forbidden: Invalid or expired token");
                 return;
             }
         }
+
 
         chain.doFilter(request, response);
     }

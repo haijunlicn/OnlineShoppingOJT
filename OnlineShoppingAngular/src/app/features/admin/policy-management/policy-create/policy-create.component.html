@@ -1,81 +1,182 @@
-<app-admin-header></app-admin-header>
-<div class="d-flex" style="min-height: 100vh;">
-    <app-admin-sidebar></app-admin-sidebar>
-    <main class="flex-grow-1 bg-light py-3 px-3">
-<div class="policy-form-container">
-  <h2>Create New Policy</h2>
 
-  <form [formGroup]="policyForm" (ngSubmit)="onSubmit()" class="policy-form">
-    <!-- Title Field -->
-    <div class="form-group">
-      <label for="title">Policy Title *</label>
-      <input 
-        type="text" 
-        id="title"
-        formControlName="title"
-        class="form-control"
-        [class.error]="title?.invalid && title?.touched"
-        placeholder="Enter policy title">
-      
-      <div class="error-message" *ngIf="title?.invalid && title?.touched">
-        <span *ngIf="title?.errors?.['required']">Title is required</span>
-        <span *ngIf="title?.errors?.['minlength']">Title must be at least 3 characters</span>
+      <div class="policy-create-container">
+        <!-- Page Header -->
+        <div class="page-header mb-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h2 class="mb-1">Create Policy</h2>
+              <p class="text-muted mb-0">Create a new policy document for your organization</p>
+            </div>
+            <button class="btn btn-outline-secondary" routerLink="/admin/policy/policy-list">
+              <i class="bi bi-arrow-left me-2"></i>Back to List
+            </button>
+          </div>
+        </div>
+
+        <!-- Alert Messages -->
+        <div *ngIf="message" class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          {{ message }}
+          <button type="button" class="btn-close" (click)="message = ''" aria-label="Close"></button>
+        </div>
+
+        <!-- Main Form Card -->
+        <div class="card shadow-sm">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="bi bi-file-text me-2"></i>Policy Details
+            </h5>
+          </div>
+          <div class="card-body">
+            <form [formGroup]="policyForm" (ngSubmit)="onSubmit()">
+              <div class="row">
+                <!-- Left Column - Basic Information -->
+                <div class="col-lg-6">
+                  <div class="form-section">
+                    <h6 class="form-section-title">Basic Information</h6>
+                    
+                    <!-- Title Field -->
+                    <div class="mb-3">
+                      <label for="title" class="form-label required">Policy Title</label>
+                      <input 
+                        type="text" 
+                        id="title"
+                        class="form-control"
+                        formControlName="title" 
+                        placeholder="Enter policy title"
+                        maxlength="200"
+                        [class.is-invalid]="isFieldInvalid('title')">
+                      <div class="invalid-feedback" *ngIf="isFieldInvalid('title')">
+                        {{ getFieldError('title') }}
+                      </div>
+                      <div class="form-text">
+                        <span class="text-muted">{{ getCharacterCount('title') }}/200 characters</span>
+                      </div>
+                    </div>
+
+                    <!-- Type Field -->
+                    <div class="mb-3">
+                      <label for="type" class="form-label required">Policy Type</label>
+                      <select 
+                        id="type" 
+                        formControlName="type" 
+                        class="form-select" 
+                        [class.is-invalid]="isFieldInvalid('type')">
+                        <option value="">Select policy type</option>
+                        <option *ngFor="let type of policyTypes" [value]="type.value">
+                          {{ type.label }}
+                        </option>
+                      </select>
+                      <div class="invalid-feedback" *ngIf="isFieldInvalid('type')">
+                        {{ getFieldError('type') }}
+                      </div>
+                      <div class="form-text">Choose the appropriate policy type for classification</div>
+                    </div>
+
+                    
+                  </div>
+                </div>
+
+                <!-- Right Column - Preview -->
+                <div class="col-lg-6">
+                  <div class="form-section">
+                    <h6 class="form-section-title">Preview</h6>
+                    
+                    <div class="policy-preview">
+                      <div class="preview-header">
+                        <h6 class="preview-title">{{ policyForm.get('title')?.value || 'Policy Title' }}</h6>
+                        <span class="badge" [class]="getTypeBadgeClass(policyForm.get('type')?.value || '')">
+                          <i class="bi" [class]="getTypeIcon(policyForm.get('type')?.value || '')" class="me-1"></i>
+                          {{ getTypeLabel(policyForm.get('type')?.value || '') || 'Select Type' }}
+                        </span>
+                      </div>
+                      <div class="preview-content">
+                        <div *ngIf="policyForm.get('description')?.value; else noContent" 
+                             [innerHTML]="policyForm.get('description')?.value">
+                        </div>
+                        <ng-template #noContent>
+                          <p class="text-muted fst-italic">Description will appear here...</p>
+                        </ng-template>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Full Width - Description -->
+                <div class="col-12">
+                  <div class="form-section">
+                    <h6 class="form-section-title">Policy Content</h6>
+                    
+                    <div class="mb-3">
+                      <label for="description" class="form-label required">Policy Description</label>
+                      <div class="rich-text-wrapper">
+                        <app-rich-text-editor 
+                          formControlName="description" 
+                          placeholder="Enter the detailed policy content with formatting..."
+                          [class.is-invalid]="isFieldInvalid('description')">
+                        </app-rich-text-editor>
+                      </div>
+                      <div class="invalid-feedback" *ngIf="isFieldInvalid('description')">
+                        {{ getFieldError('description') }}
+                      </div>
+                      <div class="form-text">Use the rich text editor to format your policy content with headings, lists, links, etc.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Card Footer with Actions -->
+          <div class="card-footer bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="form-text">
+                <i class="bi bi-info-circle me-1"></i>
+                All required fields must be completed before saving
+              </div>
+              <div class="btn-group">
+                <button type="button" class="btn btn-outline-secondary" (click)="resetForm()">
+                  <i class="bi bi-arrow-clockwise me-1"></i>Reset
+                </button>
+                <button type="button" class="btn btn-outline-secondary" (click)="onCancel()">
+                  <i class="bi bi-x-lg me-1"></i>Cancel
+                </button>
+                <button 
+                  type="button" 
+                  class="btn btn-primary"
+                  (click)="onSubmit()"
+                  [disabled]="isSubmitting || policyForm.invalid">
+                  <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                  <i *ngIf="!isSubmitting" class="bi bi-check-lg me-1"></i>
+                  {{ isSubmitting ? 'Creating...' : 'Create Policy' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Validation Summary -->
+        <div *ngIf="policyForm.invalid && (policyForm.touched || policyForm.dirty)" class="card shadow-sm mt-3 border-warning">
+          <div class="card-header bg-warning bg-opacity-10">
+            <h6 class="mb-0 text-warning">
+              <i class="bi bi-exclamation-triangle me-2"></i>Form Validation Errors
+            </h6>
+          </div>
+          <div class="card-body">
+            <ul class="list-unstyled mb-0">
+              <li *ngIf="title?.errors?.['required']" class="mb-1">
+                <i class="bi bi-dot text-danger"></i>
+                <span class="text-danger">Policy title is required</span>
+              </li>
+              <li *ngIf="type?.errors?.['required']" class="mb-1">
+                <i class="bi bi-dot text-danger"></i>
+                <span class="text-danger">Policy type is required</span>
+              </li>
+              <li *ngIf="description?.errors?.['required']" class="mb-1">
+                <i class="bi bi-dot text-danger"></i>
+                <span class="text-danger">Policy description is required</span>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
-    </div>
-
-    <!-- Type Field -->
-    <div class="form-group">
-      <label for="type" class="form-label">Policy Type *</label>
-      <select
-        id="type"
-        formControlName="type"
-        class="form-control"
-        [class.is-invalid]="isFieldInvalid('type')"
-      >
-        <option value="">Select policy type</option>
-        <option *ngFor="let type of policyTypes" [value]="type.value">
-          {{ type.label }}
-        </option>
-      </select>
-      <div class="invalid-feedback" *ngIf="isFieldInvalid('type')">
-        {{ getFieldError('type') }}
-      </div>
-    </div>
-
-    <!-- Description Field with Rich Text Editor -->
-    <div class="form-group">
-      <label for="description">Policy Description *</label>
-      <app-rich-text-editor
-        formControlName="description"
-        placeholder="Enter policy description with formatting..."
-        [class.error]="description?.invalid && description?.touched">
-      </app-rich-text-editor>
-      
-      <div class="error-message" *ngIf="description?.invalid && description?.touched">
-        <span *ngIf="description?.errors?.['required']">Description is required</span>
-        <span *ngIf="description?.errors?.['minlength']">Description must be at least 10 characters</span>
-      </div>
-    </div>
-
-    <!-- Submit Button -->
-    <div class="form-actions">
-      <button 
-        type="submit" 
-        class="btn btn-primary"
-        [disabled]="isSubmitting || policyForm.invalid">
-        <span *ngIf="isSubmitting">Creating...</span>
-        <span *ngIf="!isSubmitting">Create Policy</span>
-      </button>
-    </div>
-
-    <!-- Success/Error Message -->
-    <div class="message" *ngIf="submitMessage" 
-         [class.success]="submitMessage.includes('successfully')"
-         [class.error]="submitMessage.includes('Error')">
-      {{ submitMessage }}
-    </div>
-  </form>
-</div>
-</main>
-</div>
-<app-admin-footer></app-admin-footer>

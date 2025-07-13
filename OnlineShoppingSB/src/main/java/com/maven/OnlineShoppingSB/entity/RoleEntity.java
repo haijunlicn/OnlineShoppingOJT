@@ -15,10 +15,13 @@ public class RoleEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(nullable = false, unique = true)
     private String name;
+
+    @Column(name = "description", nullable = true)
+    private String description;
 
     // 1 = Admin, 0 = Customer
     @Column(name = "type", nullable = false)
@@ -27,7 +30,7 @@ public class RoleEntity {
     @Column(name = "del_flg")
     private Integer delFg = 1;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "role_permissions",
         joinColumns = @JoinColumn(name = "role_id"),

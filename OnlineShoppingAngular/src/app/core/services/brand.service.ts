@@ -7,10 +7,10 @@ import { HttpClient } from '@angular/common/http';
   providedIn: 'root'
 })
 export class BrandService {
-  
+
   baseUrl = "http://localhost:8080/brand";
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   createBrand(brand: BrandDTO): Observable<BrandDTO> {
     return this.http.post<BrandDTO>(`${this.baseUrl}/create`, brand, { responseType: 'text' as 'json' });
@@ -18,6 +18,10 @@ export class BrandService {
 
   getAllBrands(): Observable<BrandDTO[]> {
     return this.http.get<BrandDTO[]>(`${this.baseUrl}/list`);
+  }
+
+  getAllPublicBrands(): Observable<BrandDTO[]> {
+    return this.http.get<BrandDTO[]>(`${this.baseUrl}/public/list`);
   }
 
   getBrandById(id: number): Observable<BrandDTO> {
@@ -31,12 +35,12 @@ export class BrandService {
   deleteBrand(id: number): Observable<string> {
     return this.http.delete(`${this.baseUrl}/delete/${id}`, { responseType: 'text' });
   }
-   uploadImage(file: File): Observable<string> {
-  const formData = new FormData();
-  formData.append('file', file);
-  return this.http.post('http://localhost:8080/api/cloudinary/upload', formData, {
-    responseType: 'text',
-  });
-}
+  uploadImage(file: File): Observable<string> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post('http://localhost:8080/api/cloudinary/upload', formData, {
+      responseType: 'text',
+    });
+  }
 
 }

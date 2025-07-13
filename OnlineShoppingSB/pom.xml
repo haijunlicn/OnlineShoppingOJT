@@ -31,6 +31,13 @@
     </properties>
     <dependencies>
 
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-text -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.12.0</version>
+        </dependency>
+
         <!-- excel upload -->
         <dependency>
             <groupId>org.apache.poi</groupId>

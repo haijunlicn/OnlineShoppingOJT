@@ -1,0 +1,265 @@
+<app-header></app-header>
+
+<div class="account-settings-container">
+  <div class="row g-0">
+    <!-- Sidebar Navigation -->
+    <div class="col-lg-3 col-xl-3">
+      <div class="account-sidebar bg-white border-end">
+        <!-- Sidebar Header -->
+        <div class="sidebar-header p-4 border-bottom">
+          <div class="d-flex align-items-center">
+            <div class="user-avatar me-3">
+              <img [src]="currentUser?.avatar || '/assets/images/default-avatar.png'" alt="Profile"
+                class="rounded-circle" width="48" height="48">
+            </div>
+            <div>
+              <h6 class="mb-1 fw-semibold text-primary">{{ currentUser?.name || 'User' }}</h6>
+              <small class="text-muted">Account Settings</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <div class="sidebar-menu p-3">
+          <!-- Personal Section -->
+          <div class="menu-section mb-4">
+            <h6 class="menu-section-title text-uppercase text-muted fw-bold mb-3"
+              style="font-size: 0.75rem; letter-spacing: 0.5px;">
+              Personal
+            </h6>
+
+            <div class="menu-item mb-2" [class.active]="activeSection === 'profile'"
+              (click)="setActiveSection('profile')" role="button">
+              <div class="d-flex align-items-center p-3 rounded-3 menu-item-content">
+                <div class="menu-icon me-3">
+                  <i class="bi bi-person-circle fs-5"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="menu-title fw-medium">Profile Info</div>
+                  <small class="menu-subtitle text-muted">Personal details & password</small>
+                </div>
+                <i class="bi bi-chevron-right text-muted"></i>
+              </div>
+            </div>
+
+            <div class="menu-item mb-2" [class.active]="activeSection === 'location'"
+              (click)="setActiveSection('location')" role="button">
+              <div class="d-flex align-items-center p-3 rounded-3 menu-item-content">
+                <div class="menu-icon me-3">
+                  <i class="bi bi-geo-alt fs-5"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="menu-title fw-medium">Location</div>
+                  <small class="menu-subtitle text-muted">Manage your addresses</small>
+                </div>
+                <i class="bi bi-chevron-right text-muted"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preferences Section -->
+          <div class="menu-section">
+            <h6 class="menu-section-title text-uppercase text-muted fw-bold mb-3"
+              style="font-size: 0.75rem; letter-spacing: 0.5px;">
+              Preferences
+            </h6>
+
+            <div class="menu-item mb-2" [class.active]="activeSection === 'notifications'"
+              (click)="setActiveSection('notifications')" role="button">
+              <div class="d-flex align-items-center p-3 rounded-3 menu-item-content">
+                <div class="menu-icon me-3">
+                  <i class="bi bi-bell fs-5"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="menu-title fw-medium">Notification Prefs</div>
+                  <small class="menu-subtitle text-muted">Email & push notifications</small>
+                </div>
+                <i class="bi bi-chevron-right text-muted"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer p-3 mt-auto border-top">
+          <div class="d-flex align-items-center p-3 bg-light rounded-3" role="button">
+            <i class="bi bi-question-circle text-primary me-3 fs-5"></i>
+            <div>
+              <div class="fw-medium">Need Help?</div>
+              <small class="text-muted">Contact support</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="col-lg-9 col-xl-9">
+      <div class="main-content p-4 p-lg-5">
+
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="text-center py-5">
+          <div class="spinner-border text-primary mb-3" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="text-muted">Loading account information...</p>
+        </div>
+
+        <!-- Profile Information Component -->
+        <app-profile-info-setting *ngIf="!isLoading && activeSection === 'profile'" [currentUser]="currentUser"
+          (openProfileModal)="openProfileModal()" (openPasswordModal)="openPasswordModal()"
+          (openPhotoModal)="openPhotoModal()">
+        </app-profile-info-setting>
+
+        <!-- Location Settings Component -->
+        <app-location-setting *ngIf="!isLoading && activeSection === 'location'" [currentUser]="currentUser">
+        </app-location-setting>
+
+        <!-- Notification Preferences Component -->
+        <app-noti-setting *ngIf="!isLoading && activeSection === 'notifications'" [currentUser]="currentUser">
+        </app-noti-setting>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Profile Edit Modal -->
+<div class="modal fade" id="profileModal" tabindex="-1" [class.show]="showProfileModal"
+  [style.display]="showProfileModal ? 'block' : 'none'">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-bottom">
+        <h5 class="modal-title text-primary fw-semibold">Edit Profile Information</h5>
+        <button type="button" class="btn-close" (click)="closeModals()"></button>
+      </div>
+      <form [formGroup]="profileForm" (ngSubmit)="onProfileSubmit()">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="name" class="form-label fw-medium">Your Name *</label>
+            <input type="text" class="form-control" id="name" formControlName="name">
+            <div class="text-danger small mt-1" *ngIf="getFieldError(profileForm, 'name')">
+              {{ getFieldError(profileForm, 'name') }}
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="email" class="form-label fw-medium">Email Address *</label>
+            <input type="email" class="form-control" id="email" formControlName="email">
+            <div class="text-danger small mt-1" *ngIf="getFieldError(profileForm, 'email')">
+              {{ getFieldError(profileForm, 'email') }}
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="phone" class="form-label fw-medium">Mobile Number</label>
+            <input type="tel" class="form-control" id="phone" formControlName="phone">
+            <div class="text-danger small mt-1" *ngIf="getFieldError(profileForm, 'phone')">
+              {{ getFieldError(profileForm, 'phone') }}
+            </div>
+          </div>
+
+          <div class="alert alert-success d-flex align-items-center" *ngIf="successMessage">
+            <i class="bi bi-check-circle me-2"></i>
+            {{ successMessage }}
+          </div>
+          <div class="alert alert-danger d-flex align-items-center" *ngIf="errorMessage">
+            <i class="bi bi-exclamation-circle me-2"></i>
+            {{ errorMessage }}
+          </div>
+        </div>
+        <div class="modal-footer border-top">
+          <button type="button" class="btn btn-outline-secondary" (click)="closeModals()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="!profileForm.valid || isUpdating">
+            <span *ngIf="isUpdating" class="spinner-border spinner-border-sm me-2"></span>
+            {{ isUpdating ? 'Saving...' : 'Save Changes' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Password Change Modal -->
+<div class="modal fade" id="passwordModal" tabindex="-1" [class.show]="showPasswordModal"
+  [style.display]="showPasswordModal ? 'block' : 'none'">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-bottom">
+        <h5 class="modal-title text-primary fw-semibold">Change Password</h5>
+        <button type="button" class="btn-close" (click)="closeModals()"></button>
+      </div>
+      <form [formGroup]="passwordForm" (ngSubmit)="onPasswordSubmit()">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="currentPassword" class="form-label fw-medium">Current Password *</label>
+            <input type="password" class="form-control" id="currentPassword" formControlName="currentPassword">
+          </div>
+          <div class="mb-3">
+            <label for="newPassword" class="form-label fw-medium">New Password *</label>
+            <input type="password" class="form-control" id="newPassword" formControlName="newPassword">
+          </div>
+          <div class="mb-3">
+            <label for="confirmPassword" class="form-label fw-medium">Confirm New Password *</label>
+            <input type="password" class="form-control" id="confirmPassword" formControlName="confirmPassword">
+          </div>
+
+          <div class="alert alert-success d-flex align-items-center" *ngIf="successMessage">
+            <i class="bi bi-check-circle me-2"></i>
+            {{ successMessage }}
+          </div>
+          <div class="alert alert-danger d-flex align-items-center" *ngIf="errorMessage">
+            <i class="bi bi-exclamation-circle me-2"></i>
+            {{ errorMessage }}
+          </div>
+        </div>
+        <div class="modal-footer border-top">
+          <button type="button" class="btn btn-outline-secondary" (click)="closeModals()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="!passwordForm.valid || isUpdating">
+            <span *ngIf="isUpdating" class="spinner-border spinner-border-sm me-2"></span>
+            {{ isUpdating ? 'Updating...' : 'Update Password' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Photo Upload Modal -->
+<div class="modal fade" id="photoModal" tabindex="-1" [class.show]="showPhotoModal"
+  [style.display]="showPhotoModal ? 'block' : 'none'">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-bottom">
+        <h5 class="modal-title text-primary fw-semibold">Change Profile Photo</h5>
+        <button type="button" class="btn-close" (click)="closeModals()"></button>
+      </div>
+      <div class="modal-body text-center">
+        <div class="mb-4">
+          <img [src]="currentUser?.avatar || '/assets/images/default-avatar.png'" alt="Current Photo"
+            class="rounded-circle border" width="120" height="120">
+        </div>
+        <div class="upload-area border-2 border-dashed rounded-3 p-4 mb-3"
+          style="border-color: var(--bs-border-color);">
+          <label for="photo-input" class="d-flex flex-column align-items-center text-decoration-none"
+            style="cursor: pointer;">
+            <i class="bi bi-cloud-upload fs-1 text-primary mb-2"></i>
+            <span class="fw-medium">Choose New Photo</span>
+          </label>
+          <input type="file" id="photo-input" accept="image/*" (change)="onFileSelected($event)" class="d-none">
+        </div>
+        <p class="text-muted small">Recommended: Square image, at least 200x200 pixels</p>
+
+        <div class="alert alert-success d-flex align-items-center" *ngIf="successMessage">
+          <i class="bi bi-check-circle me-2"></i>
+          {{ successMessage }}
+        </div>
+        <div class="alert alert-danger d-flex align-items-center" *ngIf="errorMessage">
+          <i class="bi bi-exclamation-circle me-2"></i>
+          {{ errorMessage }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Backdrop -->
+<div class="modal-backdrop fade show" *ngIf="showProfileModal || showPasswordModal || showPhotoModal"
+  (click)="closeModals()"></div>

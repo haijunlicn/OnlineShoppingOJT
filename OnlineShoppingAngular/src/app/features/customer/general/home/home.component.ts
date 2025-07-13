@@ -57,14 +57,14 @@ export class HomeComponent implements OnInit {
     private registerModalService: RegisterModalService,
     private forgotModalService: ForgotPasswordModalService,
     private authService: AuthService
-  ) {}
+  ) { }
 
- ngOnInit(): void {
+  ngOnInit(): void {
     this.loadCategories();
   }
 
   loadCategories(): void {
-    this.categoryService.getAllCategories().subscribe((data: CategoryDTO[]) => {
+    this.categoryService.getAllPublicCategories().subscribe((data: CategoryDTO[]) => {
       this.categories = data.map(dto => ({
         name: dto.name || '',
         image: dto.imgPath || 'assets/images/categories/default.jpg',
@@ -73,17 +73,17 @@ export class HomeComponent implements OnInit {
     });
   }
 
- scrollLeft(): void {
-  const carousel = this.carouselRef.nativeElement as HTMLElement;
-  const cardWidth = carousel.querySelector('.category-card')?.clientWidth || 300;
-  carousel.scrollBy({ left: -cardWidth * 4, behavior: 'smooth' });
-}
+  scrollLeft(): void {
+    const carousel = this.carouselRef.nativeElement as HTMLElement;
+    const cardWidth = carousel.querySelector('.category-card')?.clientWidth || 300;
+    carousel.scrollBy({ left: -cardWidth * 4, behavior: 'smooth' });
+  }
 
-scrollRight(): void {
-  const carousel = this.carouselRef.nativeElement as HTMLElement;
-  const cardWidth = carousel.querySelector('.category-card')?.clientWidth || 300;
-  carousel.scrollBy({ left: cardWidth * 4, behavior: 'smooth' });
-}
+  scrollRight(): void {
+    const carousel = this.carouselRef.nativeElement as HTMLElement;
+    const cardWidth = carousel.querySelector('.category-card')?.clientWidth || 300;
+    carousel.scrollBy({ left: cardWidth * 4, behavior: 'smooth' });
+  }
 
 
   get loginVisible$() {

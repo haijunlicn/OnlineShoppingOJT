@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CartService } from '../../../../core/services/cart.service';
-import { CartItem } from '../../../../core/models/cart.model'; // optional if you have strong typing
+import { CartItem } from '../../../../core/models/cart.model';
 
 @Component({
   selector: 'app-cart',
@@ -39,6 +39,11 @@ export class CartComponent implements OnInit {
     return this.cart.reduce((total, item) => total + item.price * item.quantity, 0);
   }
 
+  // Add this new method to calculate the total number of items in cart
+  getItemCount(): number {
+    return this.cart.reduce((count, item) => count + item.quantity, 0);
+  }
+
   clearCart(): void {
     this.cartService.clearCart();
     this.loadCart();
@@ -50,7 +55,6 @@ export class CartComponent implements OnInit {
       return;
     }
     
-    // Navigate to order management with cart data
     this.router.navigate(['/customer/order'], {
       state: {
         cartItems: this.cart,

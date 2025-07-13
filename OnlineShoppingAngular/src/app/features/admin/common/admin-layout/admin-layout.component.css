@@ -1,0 +1,86 @@
+/* Layout root */
+.admin-layout {
+  display: flex;
+  height: 100vh;
+  background-color: #f5f5f3;
+  overflow: hidden;
+}
+
+/* Sidebar remains fixed on the left */
+.sidebar-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  z-index: 1000;
+}
+
+/* Right panel holds both header and content */
+.admin-main-wrapper {
+  flex: 1;
+  margin-left: 70px; /* Icon sidebar width */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header starts beside sidebar, fixed */
+app-admin-header {
+  position: fixed;
+  top: 0;
+  left: 70px;
+  right: 0;
+  height: 70px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #dee2e6;
+  z-index: 1030;
+  display: flex;
+  align-items: center;
+  padding: 0 1.5rem;
+}
+
+/* Content sits below header */
+.admin-content {
+  margin-top: 70px; /* Header height */
+  flex: 1;
+  overflow-y: auto;
+  background-color: #f5f5f3;
+}
+
+/* Content wrapper padding */
+.content-wrapper {
+  padding: 2rem;
+  min-height: calc(100vh - 70px);
+}
+
+/* Sidebar expanded margin */
+.admin-main-wrapper.sidebar-expanded {
+  margin-left: calc(70px + 240px);
+}
+
+@media (max-width: 768px) {
+  app-admin-header {
+    left: 50px;
+    height: 60px;
+  }
+
+  .admin-content {
+    margin-top: 60px;
+  }
+
+  .content-wrapper {
+    padding: 1rem;
+  }
+
+  .admin-main-wrapper {
+    margin-left: 50px;
+  }
+
+  .admin-main-wrapper.sidebar-expanded {
+    margin-left: calc(50px + 260px);
+  }
+}
+/* Animate sidebar expansion */
+.admin-main-wrapper,
+app-admin-header {
+  transition: margin-left 0.3s ease, left 0.3s ease;
+}

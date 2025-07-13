@@ -11,10 +11,10 @@ import java.time.LocalDateTime;
 @Setter
 public class otpDTO {
 
-    private Integer id;
+    private Long id;
 
     @NotNull(message = "User ID is required")
-    private Integer userId;
+    private Long userId;
 
     @NotBlank(message = "OTP code is required")
     private String otpCode;

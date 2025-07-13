@@ -1,0 +1,141 @@
+
+      <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2>Update Role</h2>
+          <button type="button" class="btn btn-outline-secondary" (click)="goBack()">
+            <i class="fas fa-arrow-left me-2"></i>Back to Roles
+          </button>
+        </div>
+
+        <form [formGroup]="roleForm" (ngSubmit)="submit()">
+          <!-- Basic Role Information -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">Basic Information</h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Role Name *</label>
+                  <input class="form-control" formControlName="name" placeholder="Enter role name"
+                    [class.is-invalid]="roleForm.get('name')?.invalid && roleForm.get('name')?.touched" />
+                  <div class="invalid-feedback" *ngIf="roleForm.get('name')?.invalid && roleForm.get('name')?.touched">
+                    Role name is required
+                  </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Type *</label>
+                  <select class="form-select" formControlName="type"
+                    [class.is-invalid]="roleForm.get('type')?.invalid && roleForm.get('type')?.touched">
+                    <option [value]="0">Customer Role</option>
+                    <option [value]="1">Admin Role</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" formControlName="description" rows="3"
+                  placeholder="Describe what this role is for..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Permissions Section -->
+          <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <div>
+                <h5 class="mb-0">Permissions</h5>
+                <small class="text-muted">Select what this role can do in the system</small>
+              </div>
+              <div>
+                <button type="button" class="btn btn-sm btn-outline-success me-2" (click)="selectAll()">
+                  Select All
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger" (click)="clearAll()">
+                  Clear All
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <!-- Search/Filter -->
+              <div class="mb-3">
+                <input type="text" class="form-control" placeholder="Search permissions..." [(ngModel)]="searchTerm"
+                  [ngModelOptions]="{standalone: true}" (input)="filterPermissions()" />
+              </div>
+
+              <!-- Permission Groups -->
+              <div class="accordion" id="permissionAccordion">
+                <div class="accordion-item" *ngFor="let group of filteredGroupedPermissions; let i = index">
+                  <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" [class.collapsed]="!group.expanded"
+                      (click)="toggleGroup(i)" [attr.aria-expanded]="group.expanded">
+                      <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                        <span>
+                          <i [class]="getModuleIcon(group.resource)" class="me-2"></i>
+                          {{ group.resource }}
+                        </span>
+                        <span class="badge bg-primary">
+                          {{ getSelectedCount(group.permissions) }}/{{ group.permissions.length }}
+                        </span>
+                      </div>
+                    </button>
+                  </h2>
+                  <div class="accordion-collapse collapse" [class.show]="group.expanded">
+                    <div class="accordion-body">
+                      <div class="row">
+                        <div class="col-md-6" *ngFor="let perm of group.permissions">
+                          <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" [id]="'perm-' + perm.id"
+                              [checked]="isPermissionSelected(perm.id!)"
+                              (change)="onPermissionChange(perm.id!, $event)" />
+                            <label class="form-check-label" [for]="'perm-' + perm.id">
+                              <strong>{{ perm.description }}</strong>
+                              <br>
+                              <small class="text-muted">{{ perm.code }}</small>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Group Actions -->
+                      <div class="mt-3 pt-2 border-top">
+                        <button type="button" class="btn btn-sm btn-outline-primary me-2"
+                          (click)="selectGroupPermissions(group.permissions, true)">
+                          Select All in {{ group.resource }}
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary"
+                          (click)="selectGroupPermissions(group.permissions, false)">
+                          Clear All in {{ group.resource }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Selected Permissions Summary -->
+              <div class="mt-4 p-3 bg-light rounded" *ngIf="getSelectedPermissionsCount() > 0">
+                <h6>Selected Permissions Summary ({{ getSelectedPermissionsCount() }} total):</h6>
+                <div class="d-flex flex-wrap gap-1">
+                  <span class="badge bg-secondary" *ngFor="let perm of getSelectedPermissions()">
+                    {{ perm.description }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" (click)="goBack()">
+              Cancel
+            </button>
+            <button class="btn btn-primary" type="submit" [disabled]="roleForm.invalid || isSubmitting">
+              <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+              {{ isSubmitting ? 'Updating...' : 'Update Role' }}
+            </button>
+          </div>
+        </form>
+      </div>

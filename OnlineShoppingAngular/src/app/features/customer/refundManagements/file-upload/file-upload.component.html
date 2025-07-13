@@ -1,0 +1,52 @@
+<div class="file-upload-container">
+    <!-- Drop Zone -->
+    <div class="drop-zone" [class.drag-over]="dragOver" (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)" (drop)="onDrop($event)" (click)="fileInput.click()">
+
+        <div class="drop-zone-content">
+            <i class="bi bi-cloud-upload fs-1 text-muted mb-2"></i>
+            <p class="mb-2">Drag & drop images here or <span class="text-primary">browse</span></p>
+            <small class="text-muted">
+                Up to {{ maxFiles }} files, {{ formatFileSize(maxFileSize) }} each
+            </small>
+        </div>
+
+        <input #fileInput type="file" class="d-none" [accept]="acceptedTypes.join(',')" multiple
+            (change)="onFileSelect($event)">
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="alert alert-danger alert-sm mt-2 py-2">
+        <small>{{ errorMessage }}</small>
+    </div>
+
+    <!-- Selected Files Preview -->
+    <div *ngIf="selectedFiles.length > 0" class="selected-files mt-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <small class="fw-semibold">Selected Files ({{ selectedFiles.length }})</small>
+            <button type="button" class="btn btn-sm btn-outline-danger" (click)="clearAll()">
+                <i class="bi bi-trash me-1"></i>Clear All
+            </button>
+        </div>
+
+        <div class="row g-2">
+            <div *ngFor="let file of selectedFiles; let i = index" class="col-6 col-md-4 col-lg-2">
+                <div class="file-preview-card">
+                    <div class="file-preview-image">
+                        <img [src]="getFilePreview(file)" [alt]="file.name" class="img-fluid">
+                        <button type="button" class="btn btn-sm btn-danger file-remove-btn" (click)="removeFile(i)"
+                            title="Remove file">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                    <div class="file-info p-2">
+                        <small class="file-name d-block text-truncate" [title]="file.name">
+                            {{ file.name }}
+                        </small>
+                        <small class="text-muted">{{ formatFileSize(file.size) }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

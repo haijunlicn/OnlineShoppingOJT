@@ -11,6 +11,7 @@ import { Subscription } from 'rxjs';
 import { LocationService } from '../../../../core/services/location.service';
 import { LocationDto } from '../../../../core/models/location-dto';
 import { AuthService } from '../../../../core/services/auth.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-location',
@@ -39,12 +40,19 @@ export class LocationCreateComponent implements OnInit, OnDestroy {
 
     this.addressForm = this.formBuilder.group({
       address: ['', Validators.required],
-      township: [''],
+      township: ['', Validators.required],
       city: ['', Validators.required],
       zipCode: [''],
       country: ['', Validators.required],
       lat: [null, Validators.required],
-      lng: [null, Validators.required]
+      lng: [null, Validators.required],
+      phoneNumber: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern(/^09\d{7,9}$/)
+        ]
+      ]
     });
 
     this.searchControl = new FormControl('');
@@ -78,10 +86,16 @@ export class LocationCreateComponent implements OnInit, OnDestroy {
   }
 
   initMap(): void {
+    const myanmarBounds = this.L.latLngBounds(
+      this.L.latLng(9.5, 92.2),   // Southwest
+      this.L.latLng(28.6, 101.2)  // Northeast
+    );
     this.map = this.L.map('map', {
       zoomControl: false,
-      attributionControl: false
-    }).setView([39.8283, -98.5795], 4);
+      attributionControl: false,
+      maxBounds: myanmarBounds,
+      maxBoundsViscosity: 1.0
+    }).setView([20, 96], 5);
 
     this.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
@@ -93,6 +107,13 @@ export class LocationCreateComponent implements OnInit, OnDestroy {
       this.addMarker(e.latlng);
       this.reverseGeocodeLocation(e.latlng.lat, e.latlng.lng);
     });
+
+    // Prevent panning outside Myanmar
+    this.map.on('drag', () => {
+      this.map.panInsideBounds(myanmarBounds, { animate: false });
+    });
+
+    this.map.setMaxBounds(myanmarBounds);
   }
 
   autoLocate(): void {
@@ -108,7 +129,7 @@ export class LocationCreateComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       },
       error: () => {
-        alert('Unable to retrieve your location.');
+        Swal.fire('Unable to retrieve your location.', '', 'error');
         this.isLoading = false;
       }
     });
@@ -116,6 +137,14 @@ export class LocationCreateComponent implements OnInit, OnDestroy {
   }
 
   addMarker(latlng: any): void {
+    const myanmarBounds = this.L.latLngBounds(
+      this.L.latLng(9.5, 92.2),
+      this.L.latLng(28.6, 101.2)
+    );
+    if (!myanmarBounds.contains(latlng)) {
+      Swal.fire('Please select a location within Myanmar.', '', 'warning');
+      return;
+    }
     if (this.marker) {
       this.map.removeLayer(this.marker);
     }
@@ -180,19 +209,19 @@ export class LocationCreateComponent implements OnInit, OnDestroy {
 
   saveLocation(): void {
   if (!this.currentLatLng) {
-    alert('Please select a location first!');
+      Swal.fire('Please select a location first!', '', 'warning');
     return;
   }
 
   if (this.addressForm.invalid) {
-    alert('Please fill in all required fields!');
+      Swal.fire('Please fill in all required fields!', '', 'warning');
     return;
   }
 
   const userId = this.authService.getCurrentUser()?.id;
 
   if (!userId) {
-    alert('User not logged in!');
+      Swal.fire('User not logged in!', '', 'error');
     return;
   }
 
@@ -204,22 +233,24 @@ export class LocationCreateComponent implements OnInit, OnDestroy {
     city: this.addressForm.get('city')?.value || '',
     zipCode: String(this.addressForm.get('zipCode')?.value) || '',
     country: this.addressForm.get('country')?.value || '',
-    userId: userId
+      userId: userId,
+      phoneNumber: this.addressForm.get('phoneNumber')?.value || ''
   };
 
   const saveSub = this.locationService.saveLocation(location).subscribe({
-    next: () => alert('Location saved successfully!'),
-    error: () => alert('Failed to save location.')
+      next: () => {
+        Swal.fire('Location saved successfully!', '', 'success');
+      },
+      error: () => Swal.fire('Failed to save location.', '', 'error')
   });
 
   this.subscriptions.push(saveSub);
 }
 
-
   onSearch(): void {
     const query = this.searchControl.value?.trim();
     if (!query) {
-      alert('Please enter a location to search.');
+      Swal.fire('Please enter a location to search.', '', 'info');
       return;
     }
 
@@ -228,7 +259,7 @@ export class LocationCreateComponent implements OnInit, OnDestroy {
     const searchSub = this.locationService.geocode(query).subscribe({
       next: (results: any[]) => {
         if (results.length === 0) {
-          alert('Location not found.');
+          Swal.fire('Location not found.', '', 'warning');
           this.isLoading = false;
           return;
         }
@@ -242,7 +273,7 @@ export class LocationCreateComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       },
       error: () => {
-        alert('Failed to search location.');
+        Swal.fire('Failed to search location.', '', 'error');
         this.isLoading = false;
       }
     });

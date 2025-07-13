@@ -1,64 +1,239 @@
 .faq-list-container {
-  padding: 20px;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  min-height: calc(100vh - 120px);
 }
 
-h2 {
-  margin-bottom: 15px;
+.page-header {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 
-.create-btn {
-  margin-bottom: 15px;
-  padding: 8px 16px;
-  background-color: #28a745;
-  color: white;
+.page-header h2 {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+/* Table Styling */
+.table-row-hover:hover {
+  background-color: #f8f9fa !important;
+  transition: background-color 0.15s ease-in-out;
+}
+
+/* Question and Answer Cells */
+.question-cell {
+  max-width: 300px;
+}
+
+.answer-cell {
+  max-width: 400px;
+}
+
+.answer-preview {
+  font-size: 0.9rem;
+  color: #6c757d;
+  line-height: 1.4;
+  max-height: 60px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.answer-preview p {
+  margin: 0;
+}
+
+.answer-preview strong,
+.answer-preview b {
+  font-weight: 600;
+  color: #495057;
+}
+
+.answer-preview em,
+.answer-preview i {
+  font-style: italic;
+}
+
+.answer-preview ul,
+.answer-preview ol {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+/* Button Styling */
+.btn-group .btn {
+  border-radius: 0.375rem;
+}
+
+.btn-group .btn:not(:last-child) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.btn-group .btn:not(:first-child) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  margin-left: -1px;
+}
+
+/* Empty State */
+.empty-state {
+  padding: 3rem 1.5rem;
+}
+
+.empty-state .display-1 {
+  font-size: 4rem;
+  opacity: 0.3;
+}
+
+/* Card Enhancements */
+.card {
   border: none;
-  border-radius: 6px;
-  cursor: pointer;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 
-.create-btn:hover {
-  background-color: #218838;
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  font-weight: 500;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
+.card-footer {
+  border-top: 1px solid #dee2e6;
 }
 
-th, td {
-  border: 1px solid #ddd;
-  padding: 12px;
-  text-align: left;
+/* Loading State */
+.spinner-border {
+  width: 2rem;
+  height: 2rem;
 }
 
-th {
-  background-color: #f5f5f5;
-}
-
-.edit-btn {
-  background-color: #007bff;
-  color: white;
+/* Modal Enhancements */
+.modal-content {
   border: none;
-  padding: 6px 12px;
-  margin-right: 5px;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+  border-bottom: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+}
+
+.modal-footer {
+  border-top: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+}
+
+.answer-content {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  border: 1px solid #dee2e6;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.answer-content p {
+  margin-bottom: 0.5rem;
+}
+
+.answer-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .faq-list-container {
+    padding: 1rem;
+  }
+
+  .page-header {
+    padding: 1rem;
+  }
+
+  .page-header .d-flex {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .btn-group {
+    flex-direction: column;
+  }
+
+  .btn-group .btn {
+    border-radius: 0.375rem !important;
+    margin-left: 0 !important;
+    margin-bottom: 0.25rem;
+  }
+
+  .question-cell,
+  .answer-cell {
+    max-width: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+
+  .answer-preview {
+    font-size: 0.8rem;
+    max-height: 40px;
+    -webkit-line-clamp: 2;
+  }
+}
+
+/* Animation for smooth transitions */
+.table tbody tr {
+  transition: all 0.15s ease-in-out;
+}
+
+.card {
+  transition: box-shadow 0.15s ease-in-out;
+}
+
+.card:hover {
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+}
+
+/* Custom scrollbar for table */
+.table-responsive::-webkit-scrollbar {
+  height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: #f1f1f1;
   border-radius: 4px;
-  cursor: pointer;
 }
 
-.edit-btn:hover {
-  background-color: #0056b3;
-}
-
-.delete-btn {
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  padding: 6px 12px;
+.table-responsive::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
   border-radius: 4px;
-  cursor: pointer;
 }
 
-.delete-btn:hover {
-  background-color: #c82333;
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Custom scrollbar for answer content */
+.answer-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.answer-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.answer-content::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.answer-content::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }

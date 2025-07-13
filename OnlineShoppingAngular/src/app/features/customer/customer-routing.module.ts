@@ -21,9 +21,19 @@ import { ProductListComponent } from './product_display/product-list/product-lis
 import { ProductDetailComponent } from './product_display/product-detail/product-detail.component';
 import { NoAuthGuard } from '../../core/guards/no-auth.guard';
 import { AuthGuard } from '../../core/guards/auth.guard';
-import path from 'path';
 import { OrderManagementComponent } from './orderManagements/order-management/order-management.component';
+import { PaymentAcceptComponent } from './orderManagements/payment-accept/payment-accept.component';
+import { OrderDetailComponent } from './orderManagements/order-detail/order-detail.component';
+import { OrderListComponent } from './orderManagements/order-list/order-list.component';
+import { RefundRequestFormComponent } from './refundManagements/refund-request-form/refund-request-form.component';
+import { AccountSettingsComponent } from './common/account-settings/account-settings.component';
 
+import { NotificationListComponent } from './notification/notification-list/notification-list.component';
+import { PaymentGuard } from '@app/core/services/payment-guard.service';
+import { RefundEligibilityGuard } from '@app/core/guards/refund-eligibility.guard';
+import { LocationSettingComponent } from './common/location-setting/location-setting.component';
+import { NotiSettingComponent } from './common/noti-setting/noti-setting.component';
+import { ProfileInfoSettingComponent } from './common/profile-info-setting/profile-info-setting.component';
 
 const routes: Routes = [
 
@@ -42,20 +52,25 @@ const routes: Routes = [
   {
     path: 'auth/login',
     component: LoginComponent,
-
   },
   {
     path: 'auth/forgetPass',
     component: ForgetPasswordComponent,
   },
-  {path: 'about', component: AboutComponent, canActivate: [NoAuthGuard]},
-  {path: 'contact' , component: ContactComponent, canActivate: [NoAuthGuard]},
-  {path: 'policy/privacy', component: PrivacyPolicyComponent, canActivate: [NoAuthGuard]},
-  {path: 'policy/terms-conditions', component: TermsConditionsComponent, canActivate: [NoAuthGuard]},
-  {path: 'policy/faq', component: FaqComponent, canActivate: [NoAuthGuard]},
+  { path: 'about', component: AboutComponent },
+  { path: 'contact', component: ContactComponent },
+  { path: 'policy/privacy', component: PrivacyPolicyComponent },
+  { path: 'policy/terms-conditions', component: TermsConditionsComponent },
+  { path: 'policy/faq', component: FaqComponent },
+  { path: 'about', component: AboutComponent },
+  { path: 'contact', component: ContactComponent },
+  { path: 'policy/privacy', component: PrivacyPolicyComponent },
+  { path: 'policy/terms-conditions', component: TermsConditionsComponent },
+  { path: 'policy/faq', component: FaqComponent },
   // {
   //   path: 'customer/auth/verify/:id',
   //   component: VerifyComponent,canActivate: [NoAuthGuard],
+  { path: 'account-settings', component: AccountSettingsComponent },
 
   {
     path: 'auth/reset-password',
@@ -73,7 +88,6 @@ const routes: Routes = [
     path: 'cart', component: CartComponent,
     canActivate: [AuthGuard]
   },
-  { path: 'address', component: LocationCardComponent },
   {
     path: 'auth/reset-password',
     component: ResetPasswordComponent
@@ -89,8 +103,24 @@ const routes: Routes = [
     path: 'product/:id',
     component: ProductDetailComponent
   },
-  {path:'order',component:OrderManagementComponent}
-
+  { path: 'order', component: OrderManagementComponent },
+  {
+    path: 'payment',
+    component: PaymentAcceptComponent,
+    canDeactivate: [PaymentGuard]
+  },
+  { path: 'orderDetail/:id', component: OrderDetailComponent, canActivate: [AuthGuard] },
+  { path: 'orders', component: OrderListComponent, canActivate: [AuthGuard] },
+  { path: 'order', component: OrderManagementComponent, canActivate: [AuthGuard] },
+  {
+    path: 'refundRequest/:orderId',
+    component: RefundRequestFormComponent,
+    canActivate: [AuthGuard, RefundEligibilityGuard]
+  },
+  { path: 'notifications', component: NotificationListComponent, canActivate: [AuthGuard] },
+  { path: 'account/settings/location', component: LocationSettingComponent, canActivate: [AuthGuard] },
+  { path: 'account/settings/notifications', component: NotiSettingComponent, canActivate: [AuthGuard] },
+  { path: 'account/settings/profile', component: ProfileInfoSettingComponent, canActivate: [AuthGuard] },
 ];
 
 @NgModule({

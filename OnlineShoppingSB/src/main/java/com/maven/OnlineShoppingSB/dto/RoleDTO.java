@@ -12,7 +12,7 @@ import java.util.List;
 @Setter
 public class RoleDTO {
 
-    private Integer id;
+    private Long id;
 
     @NotBlank(message = "Role name is required")
     @Size(max = 100, message = "Role name must be at most 100 characters")
@@ -24,6 +24,7 @@ public class RoleDTO {
     private Integer type; 
 
     private Integer delFg; 
+    private List<userDTO> users;
 
     private LocalDateTime createdDate;
 

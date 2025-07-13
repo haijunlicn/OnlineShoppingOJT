@@ -1,0 +1,445 @@
+
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading-section">
+        <div class="loading-card">
+          <div class="loading-spinner">
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+          </div>
+          <h3>Loading order details...</h3>
+          <p>Please wait while we fetch the order information</p>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="error && !loading" class="error-section">
+        <div class="error-card">
+          <div class="error-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <h3>Something went wrong</h3>
+          <p>{{ error }}</p>
+          <button class="btn-retry" (click)="loadOrderDetails()">
+            <i class="fas fa-redo"></i>
+            <span>Try Again</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Order Details -->
+      <div *ngIf="order && !loading" class="order-detail-container"
+        [ngClass]="{'replacement-order': order.orderType === 'REPLACEMENT'}">
+
+        <!-- Replacement Order Notice -->
+        <div *ngIf="order.orderType === 'REPLACEMENT'" class="replacement-order-notice">
+          <i class="fas fa-exchange-alt"></i>
+          <div class="notice-text">
+            This is a replacement order. Payment and pricing information are not applicable for replacement items.
+          </div>
+        </div>
+
+        <!-- Header Section -->
+        <div class="order-header">
+          <div class="breadcrumb-nav">
+            <button class="breadcrumb-link" (click)="goBack()">
+              <i class="fas fa-arrow-left"></i>
+              <span>Back to Orders</span>
+            </button>
+            <i class="fas fa-chevron-right breadcrumb-separator"></i>
+            <span class="breadcrumb-current">Order Details</span>
+          </div>
+
+          <div class="header-main">
+            <div class="header-left">
+              <div class="header-title-section">
+                <h1>
+                  {{ order.orderType === 'REPLACEMENT' ? 'Replacement' : 'Order' }} #{{ order.id }}
+                </h1>
+                <div class="header-meta">
+                  <span class="order-date">{{ formatDate(order.createdDate) }}</span>
+                  <span class="order-customer">Customer: {{ order.user.name }}</span>
+                  <span *ngIf="order.orderType === 'REPLACEMENT'" class="order-type">
+                    <i class="fas fa-exchange-alt"></i> Replacement Order
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="header-right">
+              <div class="header-actions">
+                <button class="btn-action secondary">
+                  <i class="fas fa-print"></i>
+                  <span>Print Order</span>
+                </button>
+                <button class="btn-action secondary">
+                  <i class="fas fa-download"></i>
+                  <span>Export</span>
+                </button>
+                <button class="btn-action primary">
+                  <i class="fas fa-envelope"></i>
+                  <span>Contact Customer</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin Actions Section -->
+        <div class="admin-actions-section">
+          <!-- Payment Approval Card -->
+          <div *ngIf="isPaymentPending()" class="action-card payment-approval">
+            <div class="action-header">
+              <div class="action-icon pending">
+                <i class="fas fa-credit-card"></i>
+              </div>
+              <div class="action-content">
+                <h3>Payment Review Required</h3>
+                <p>Please verify the payment proof and approve or reject the payment.</p>
+              </div>
+            </div>
+            <div class="action-buttons">
+              <button class="btn-approve" (click)="approvePayment()" [disabled]="updatingPayment">
+                <i class="fas fa-check-circle"></i>
+                <span>Approve Payment</span>
+              </button>
+              <button class="btn-reject" (click)="rejectPayment()" [disabled]="updatingPayment">
+                <i class="fas fa-times-circle"></i>
+                <span>Reject Payment</span>
+              </button>
+            </div>
+            <div *ngIf="updatingPayment" class="action-status updating">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>Processing...</span>
+            </div>
+            <div *ngIf="paymentError" class="action-status error">
+              <i class="fas fa-exclamation-triangle"></i>
+              <span>{{ paymentError }}</span>
+            </div>
+          </div>
+
+          <!-- Compact Status Update Card -->
+          <div *ngIf="isPaymentPaid()" class="action-card status-update compact">
+            <div class="compact-action-header">
+              <div class="compact-action-icon">
+                <i class="fas fa-tasks"></i>
+              </div>
+              <div class="compact-action-content">
+                <h3>Update Order Status</h3>
+              </div>
+            </div>
+            <div class="compact-status-form">
+              <div class="status-form-row">
+                <select [(ngModel)]="selectedStatus" [disabled]="updatingStatus" class="compact-status-select">
+                  <option *ngFor="let status of getAllowedTransitions()" [ngValue]="status" 
+                    [ngStyle]="status === ORDER_STATUSES.ORDER_CANCELLED ? {'color': 'var(--color-danger)', 'font-weight': 'bold'} : {}">
+                    {{ ORDER_STATUS_LABELS[status] || status }}
+                  </option>
+                </select>
+                <button class="compact-btn-update" (click)="confirmStatusUpdate()" [disabled]="updatingStatus || !selectedStatus">
+                  <i class="fas fa-arrow-right"></i>
+                  <span>Update</span>
+                </button>
+              </div>
+              <div *ngIf="updatingStatus" class="compact-action-status updating">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Updating...</span>
+              </div>
+              <div *ngIf="updateStatusError" class="compact-action-status error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>{{ updateStatusError }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="content-grid">
+          <!-- Left Column -->
+          <div class="left-column">
+            <!-- Shipment Information -->
+            <div class="section-card">
+              <div class="section-header">
+                <h3>{{ order.orderType === 'REPLACEMENT' ? 'Replacement' : 'Shipment' }} Details</h3>
+                <div class="tracking-number">
+                  <span>{{ order.trackingNumber }}</span>
+                  <button class="btn-copy" (click)="copyTrackingNumber()" title="Copy tracking number">
+                    <i class="fas fa-copy"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="shipment-content">
+                <div class="shipment-grid">
+                  <div class="shipment-item">
+                    <div class="shipment-icon">
+                      <i class="fas fa-user"></i>
+                    </div>
+                    <div class="shipment-details">
+                      <div class="shipment-label">Recipient</div>
+                      <div class="shipment-value">{{ order.user.name }}</div>
+                    </div>
+                  </div>
+
+                  <div class="shipment-item">
+                    <div class="shipment-icon">
+                      <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="shipment-details">
+                      <div class="shipment-label">Email</div>
+                      <div class="shipment-value">{{ order.user.email }}</div>
+                    </div>
+                  </div>
+
+                  <div class="shipment-item">
+                    <div class="shipment-icon">
+                      <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="shipment-details">
+                      <div class="shipment-label">Delivery Address</div>
+                      <div class="shipment-value">
+                        {{ order.shippingAddress.address }}<span *ngIf="order.shippingAddress.township">, {{
+                          order.shippingAddress.township }}</span><br />
+                        {{ order.shippingAddress.city }}, {{ order.shippingAddress.zipCode }}<br />
+                        {{ order.shippingAddress.country }}
+                        <span *ngIf="order.shippingAddress.phoneNumber"><br />Phone: {{ order.shippingAddress.phoneNumber
+                          }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="shipment-item">
+                    <div class="shipment-icon">
+                      <i [class]="getDeliveryMethodIcon(order.deliveryMethod.name)"></i>
+                    </div>
+                    <div class="shipment-details">
+                      <div class="shipment-label">Delivery Method</div>
+                      <div class="shipment-value">
+                        {{ order.deliveryMethod.name }}
+                        <div *ngIf="order.orderType !== 'REPLACEMENT'" class="delivery-fee">
+                          {{ formatCurrency(order.deliveryMethod.baseFee) }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Order Items -->
+            <div class="section-card">
+              <div class="section-header">
+                <h3>{{ order.orderType === 'REPLACEMENT' ? 'Replacement' : 'Order' }} Items</h3>
+                <div class="item-count">{{ getTotalItems() }} items</div>
+              </div>
+              <div class="items-content">
+                <div *ngFor="let item of order.items" class="item-row">
+                  <div class="item-image">
+                    <img [src]="item.variant.imgPath || 'assets/img/default-product.jpg'" [alt]="item.product.name"
+                      (error)="onImageError($event)" />
+                  </div>
+                  <div class="item-details">
+                    <div class="item-name">{{ item.product.name }}</div>
+                    <div class="item-meta">
+                      <span class="item-sku">SKU: {{ item.variant.sku }}</span>
+                      <span class="item-qty">Quantity: {{ item.quantity }}</span>
+                    </div>
+                  </div>
+                  <div *ngIf="order.orderType !== 'REPLACEMENT'" class="item-price">
+                    {{ formatCurrency(calculateItemTotal(item)) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Order Summary - Hidden for Replacement Orders -->
+            <div *ngIf="order.orderType !== 'REPLACEMENT'" class="section-card">
+              <div class="section-header">
+                <h3>Order Summary</h3>
+                <div class="payment-status">
+                  <span class="status-badge" [ngClass]="getStatusClass(order.currentOrderStatus)">
+                    {{ order.currentOrderStatus }}
+                  </span>
+                </div>
+              </div>
+              <div class="summary-content">
+                <div class="summary-breakdown">
+                  <div class="summary-row">
+                    <span>Subtotal ({{ getTotalItems() }} items)</span>
+                    <span>{{ formatCurrency(getSubtotal()) }}</span>
+                  </div>
+                  <div class="summary-row">
+                    <span>Shipping Fee</span>
+                    <span>{{ formatCurrency(order.shippingFee) }}</span>
+                  </div>
+                  <div class="summary-divider"></div>
+                  <div class="summary-total">
+                    <span>Total Amount</span>
+                    <span>{{ formatCurrency(order.totalAmount) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Replacement Order Summary -->
+            <div *ngIf="order.orderType === 'REPLACEMENT'" class="section-card replacement-summary">
+              <div class="section-header">
+                <h3>Replacement Summary</h3>
+                <div class="replacement-badge">
+                  <i class="fas fa-exchange-alt"></i>
+                  REPLACEMENT
+                </div>
+              </div>
+              <div class="summary-content">
+                <div class="replacement-info">
+                  <div class="replacement-notice">
+                    <i class="fas fa-info-circle"></i>
+                    <span>This is a replacement order. No payment is required from the customer.</span>
+                  </div>
+                  <div class="replacement-details">
+                    <div class="detail-row">
+                      <span>Items to Replace:</span>
+                      <span>{{ getTotalItems() }} items</span>
+                    </div>
+                    <div class="detail-row">
+                      <span>Replacement Value:</span>
+                      <span>{{ formatCurrency(getSubtotal()) }}</span>
+                    </div>
+                    <div class="detail-row">
+                      <span>Customer Cost:</span>
+                      <span class="free-text">FREE</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div class="right-column">
+
+            <!-- Payment Information - Hidden for Replacement Orders -->
+            <div *ngIf="order.paymentMethod && order.orderType !== 'REPLACEMENT'" class="info-card payment-section">
+              <div class="info-header">
+                <h3>Payment Information</h3>
+              </div>
+              <div class="payment-content">
+                <div class="payment-method">
+                  <div class="payment-icon">
+                    <img [src]="order.paymentMethod.logo" [alt]="order.paymentMethod.methodName"
+                      (error)="onPaymentLogoError($event)" />
+                  </div>
+                  <div class="payment-details">
+                    <div class="payment-name">{{ order.paymentMethod.methodName }}</div>
+                    <div class="payment-type">{{ order.paymentMethod.type | titlecase }}</div>
+                  </div>
+                </div>
+
+                <div *ngIf="order.paymentProofPath" class="payment-proof">
+                  <div class="proof-label">Payment Proof</div>
+                  <img [src]="order.paymentProofPath" alt="Payment Proof" class="proof-image"
+                    (click)="viewPaymentProof()" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Enhanced Order Timeline -->
+            <div class="info-card">
+              <div class="info-header">
+                <h3>{{ order.orderType === 'REPLACEMENT' ? 'Replacement' : 'Order' }} Timeline</h3>
+                <span class="status-badge" [ngClass]="getStatusClass(order.currentOrderStatus)">
+                  {{ getStatusMessage(order.currentOrderStatus, order.orderType) }}
+                </span>
+              </div>
+              <div class="vertical-timeline">
+                <div *ngFor="let step of getUnifiedStatusSteps(); let i = index; let last = last" class="timeline-step"
+                  [ngClass]="step.class">
+
+                  <!-- Timeline connector line -->
+                  <div class="timeline-connector" *ngIf="!last" [ngClass]="step.connectorClass"></div>
+
+                  <!-- Step circle with icon -->
+                  <div class="timeline-circle">
+                    <i [class]="step.icon"></i>
+                  </div>
+
+                  <!-- Step content -->
+                  <div class="timeline-content">
+                    <div class="timeline-label">{{ step.label }}</div>
+                    <div class="timeline-date" *ngIf="step.date">{{ step.date }}</div>
+                    <div class="timeline-note" *ngIf="step.note">
+                      <i class="fas fa-sticky-note"></i>
+                      {{ step.note }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+  <!-- Modern Rejection Reason Modal -->
+  <div class="modern-modal-overlay" [class.show]="showRejectionReasonModal" *ngIf="showRejectionReasonModal">
+    <div class="modern-modal rejection-modal">
+      <div class="modal-header">
+        <div class="modal-icon danger">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 class="modal-title">Rejection Reason Required</h3>
+        <button type="button" class="modal-close" (click)="closeRejectionReasonModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-description">Please provide a reason for rejecting this payment:</p>
+
+        <form [formGroup]="rejectionForm" class="modern-form">
+          <div class="form-group">
+            <label for="rejectionReason" class="form-label required">
+              Rejection Reason
+            </label>
+            <select id="rejectionReason" class="form-control"
+              [class.error]="rejectionForm.get('reasonId')?.invalid && rejectionForm.get('reasonId')?.touched"
+              formControlName="reasonId" (change)="onRejectionReasonChange()">
+              <option value="">Select a reason</option>
+              <option *ngFor="let reason of rejectionReasons" [value]="reason.id">
+                {{ reason.label }}
+              </option>
+            </select>
+            <div class="error-message" *ngIf="rejectionForm.get('reasonId')?.errors?.['required']">
+              Rejection reason is required.
+            </div>
+          </div>
+
+          <div class="form-group" *ngIf="rejectionForm.get('reasonId')?.value">
+            <label for="rejectionComment" class="form-label" [class.required]="shouldShowCustomReasonField()">
+              {{ shouldShowCustomReasonField() ? 'Please specify (required)' : 'Additional Details (Optional)' }}
+            </label>
+            <textarea id="rejectionComment" class="form-control" rows="3" formControlName="customReasonText"
+              maxlength="500"
+              [class.error]="rejectionForm.get('customReasonText')?.invalid && rejectionForm.get('customReasonText')?.touched"
+              placeholder="Provide additional details..."></textarea>
+
+            <div class="form-footer">
+              <span class="char-count">{{ rejectionForm.get('customReasonText')?.value?.length || 0 }}/500</span>
+            </div>
+
+            <div class="error-message" *ngIf="rejectionForm.get('customReasonText')?.errors?.['required']">
+              Additional comment is required for this reason.
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeRejectionReasonModal()">Cancel</button>
+        <button type="button" class="btn btn-danger" (click)="confirmRejection()"
+          [disabled]="!isRejectionReasonFormValid()">
+          <i class="fas fa-times-circle"></i>
+          <span>Confirm Rejection</span>
+        </button>
+      </div>
+    </div>
+  </div>

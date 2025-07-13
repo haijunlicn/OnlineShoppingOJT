@@ -12,9 +12,6 @@ export class CloudinaryService {
 
   constructor(private http: HttpClient) { }
 
-
-  
-
   uploadProductImage(file: File): Observable<ImageUploadResponse> {
     const formData = new FormData()
     formData.append("image", file)
@@ -53,5 +50,7 @@ export class CloudinaryService {
 
     return { valid: true };
   }
+
+  
 
 }

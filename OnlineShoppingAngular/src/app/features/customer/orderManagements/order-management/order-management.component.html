@@ -29,6 +29,10 @@
           <h2>Delivery Location</h2>
         </div>
         <div class="section-content">
+          <button class="btn-add-new" (click)="showAddForm()" style="margin-bottom: 16px;" *ngIf="!showAddressForm">
+            <i class="fas fa-plus"></i>
+            Add New Address
+          </button>
           <!-- Selected Location -->
           <div class="selected-location" *ngIf="selectedAddress">
             <div class="location-details">
@@ -49,13 +53,10 @@
           <div class="addresses-dropdown" *ngIf="showAddressList">
             <div class="dropdown-header">
               <h4>Select Delivery Address</h4>
-              <button class="btn-add-new" (click)="showAddForm()">
-                <i class="fas fa-plus"></i>
-                Add New Address
-              </button>
             </div>
             <div class="addresses-list">
-              <div *ngFor="let address of addresses; trackBy: trackByAddressId" class="address-item" [class.selected]="selectedAddress?.id === address.id" (click)="selectAddressAndClose(address)">
+              <div *ngFor="let address of addresses; trackBy: trackByAddressId" class="address-item"
+                [class.selected]="selectedAddress?.id === address.id" (click)="selectAddressAndClose(address)">
                 <div class="address-radio">
                   <div class="radio-dot" [class.checked]="selectedAddress?.id === address.id"></div>
                 </div>
@@ -75,246 +76,24 @@
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Payment Method Section -->
-      <div class="payment-section section">
-        <div class="section-header">
-          <i class="fas fa-credit-card"></i>
-          <h2>Payment Method</h2>
-        </div>
-        <div class="section-content">
-          <!-- Payment Method Selection -->
-          <div class="payment-methods" *ngIf="!selectedPaymentMethod">
-            <div class="payment-option" (click)="selectPaymentMethod('credit-card')">
-              <div class="payment-icon">
-                <i class="fas fa-credit-card"></i>
-              </div>
-              <div class="payment-details">
-                <h4>Credit / Debit Card</h4>
-                <p>Pay securely with your card</p>
-              </div>
-              <div class="payment-arrow">
-                <i class="fas fa-chevron-right"></i>
-              </div>
-            </div>
-            <div class="payment-option" (click)="selectPaymentMethod('qr-payment')">
-              <div class="payment-icon qr">
-                <i class="fas fa-qrcode"></i>
-              </div>
-              <div class="payment-details">
-                <h4>Mobile Wallet</h4>
-                <p>Pay with QR code using mobile apps</p>
-              </div>
-              <div class="payment-arrow">
-                <i class="fas fa-chevron-right"></i>
-              </div>
-            </div>
+          <!-- Delivery Method Dropdown with Icon -->
+          <div *ngIf="selectedAddress" class="delivery-method-section">
+            <label for="delivery-method-select">
+              <ng-container *ngIf="selectedDeliveryMethod">
+                <i [ngClass]="getDeliveryIconClass(selectedDeliveryMethod.name)" class="delivery-method-icon"></i>
+              </ng-container>
+              Delivery Method:
+            </label>
+            <select id="delivery-method-select" [(ngModel)]="selectedDeliveryMethod" (change)="calculateShippingFee()"
+              class="form-input">
+              <option *ngFor="let method of deliveryMethods" [ngValue]="method">
+                <i [ngClass]="getDeliveryIconClass(method.name)"></i>
+                {{ method.name }} (Base: {{ method.baseFee | number }} MMK, +{{ method.feePerKm | number }} MMK/km)
+              </option>
+            </select>
           </div>
-          <ng-container *ngIf="selectedPaymentMethod">
-            <!-- Credit Card Form -->
-            <div *ngIf="showCreditCardForm">
-              <div class="form-header">
-                <button class="btn-back" (click)="selectedPaymentMethod = ''">
-                  <i class="fas fa-arrow-left"></i>
-                  Back
-                </button>
-                <h4>Enter Card Details</h4>
-                <div class="security-badge">
-                  <i class="fas fa-shield-alt"></i>
-                  <span>Secure Payment</span>
-                </div>
-              </div>
-              <form class="card-form" (ngSubmit)="processCreditCardPayment()" #creditCardForm="ngForm">
-                <div class="form-group">
-                  <label>Card Number</label>
-                  <div class="input-wrapper">
-                    <input 
-                      type="text" 
-                      [(ngModel)]="creditCardData.cardNumber"
-                      name="cardNumber"
-                      (input)="formatCardNumber($event)"
-                      placeholder="1234 5678 9012 3456"
-                      maxlength="19"
-                      required
-                    >
-                    <i class="fas fa-credit-card"></i>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label>Cardholder Name</label>
-                  <div class="input-wrapper">
-                    <input 
-                      type="text" 
-                      [(ngModel)]="creditCardData.cardHolderName"
-                      name="cardHolderName"
-                      placeholder="John Doe"
-                      required
-                    >
-                    <i class="fas fa-user"></i>
-                  </div>
-                </div>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label>Expiry Date</label>
-                    <div class="input-wrapper">
-                      <input 
-                        type="text" 
-                        [(ngModel)]="creditCardData.expiryDate"
-                        name="expiryDate"
-                        (input)="formatExpiryDate($event)"
-                        placeholder="MM/YY"
-                        maxlength="5"
-                        required
-                      >
-                      <i class="fas fa-calendar"></i>
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label>CVV</label>
-                    <div class="input-wrapper">
-                      <input 
-                        type="text" 
-                        [(ngModel)]="creditCardData.cvv"
-                        name="cvv"
-                        placeholder="123"
-                        maxlength="4"
-                        required
-                      >
-                      <i class="fas fa-lock"></i>
-                    </div>
-                  </div>
-                </div>
-                <button 
-                  type="submit" 
-                  class="btn-pay"
-                  [disabled]="isProcessing || !isValidCreditCard()"
-                >
-                  <i class="fas fa-lock" *ngIf="!isProcessing"></i>
-                  <i class="fas fa-spinner fa-spin" *ngIf="isProcessing"></i>
-                  {{ isProcessing ? 'Processing...' : 'Pay ' + totalAmount.toLocaleString() + ' MMK' }}
-                </button>
-              </form>
-            </div>
-            <!-- QR Payment Section -->
-            <div *ngIf="showQRCode">
-              <!-- QR Method Selection -->
-              <div class="qr-selection" *ngIf="!selectedQRMethod">
-                <div class="selection-header">
-                  <button class="btn-back" (click)="selectedPaymentMethod = ''">
-                    <i class="fas fa-arrow-left"></i>
-                    Back to Payment Methods
-                  </button>
-                  <h4>Choose Mobile Wallet</h4>
-                </div>
-                <div class="qr-methods-grid">
-                  <div 
-                    *ngFor="let method of qrPaymentMethods; trackBy: trackByMethodId"
-                    class="qr-method-card"
-                    (click)="selectQRMethod(method.id)"
-                  >
-                    <div class="method-icon" [style.background-color]="method.color">
-                      <i [class]="method.icon"></i>
-                    </div>
-                    <div class="method-info">
-                      <h5>{{ method.name }}</h5>
-                      <p>{{ method.description }}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- QR Payment Display -->
-              <div class="qr-payment" *ngIf="selectedQRMethod">
-                <div class="qr-header">
-                  <button class="btn-back" (click)="selectedQRMethod = ''">
-                    <i class="fas fa-arrow-left"></i>
-                    Back
-                  </button>
-                  <div class="selected-method">
-                    <div class="method-icon" [style.background-color]="getSelectedQRMethod()?.color">
-                      <i [class]="getSelectedQRMethod()?.icon"></i>
-                    </div>
-                    <div class="method-details">
-                      <h4>{{ getSelectedQRMethod()?.name }}</h4>
-                      <p>Amount: {{ totalAmount.toLocaleString() }} MMK</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="qr-content" *ngIf="qrPaymentData">
-                  <div class="qr-display">
-                    <div class="qr-code">
-                      <div class="qr-image">
-                        <i class="fas fa-qrcode"></i>
-                      </div>
-                      <div class="qr-timer">
-                        <i class="fas fa-clock"></i>
-                        <span>Expires in 09:45</span>
-                      </div>
-                    </div>
-                    <div class="qr-instructions">
-                      <h5>How to Pay:</h5>
-                      <ol>
-                        <li>Open {{ getSelectedQRMethod()?.name }} app</li>
-                        <li>Tap "Scan QR" or "Pay"</li>
-                        <li>Scan the QR code</li>
-                        <li>Confirm payment</li>
-                      </ol>
-                    </div>
-                  </div>
-                  <!-- Image Upload Section -->
-                  <div class="upload-section">
-                    <h5>Upload QR Screenshot for Translation</h5>
-                    <div class="upload-area" *ngIf="!uploadedImageUrl">
-                      <input 
-                        type="file" 
-                        id="qr-upload" 
-                        accept="image/*" 
-                        (change)="onImageUpload($event)"
-                        style="display: none;"
-                      >
-                      <label for="qr-upload" class="upload-button">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <span>Upload Image</span>
-                      </label>
-                    </div>
-                    <div class="uploaded-preview" *ngIf="uploadedImageUrl">
-                      <div class="image-preview">
-                        <img [src]="uploadedImageUrl" alt="QR Code" />
-                        <button class="btn-remove" (click)="clearUploadedImage()">
-                          <i class="fas fa-times"></i>
-                        </button>
-                      </div>
-                      <button 
-                        class="btn-translate" 
-                        (click)="translateImage()"
-                        [disabled]="isTranslating"
-                      >
-                        <i class="fas fa-language" *ngIf="!isTranslating"></i>
-                        <i class="fas fa-spinner fa-spin" *ngIf="isTranslating"></i>
-                        {{ isTranslating ? 'Translating...' : 'Translate' }}
-                      </button>
-                    </div>
-                    <div class="translation-result" *ngIf="translatedText">
-                      <h6>Translation Result:</h6>
-                      <div class="translated-text">
-                        <pre>{{ translatedText }}</pre>
-                      </div>
-                    </div>
-                  </div>
-                  <button 
-                    class="btn-verify"
-                    (click)="verifyQRPayment()"
-                    [disabled]="isProcessing"
-                  >
-                    <i class="fas fa-check-circle" *ngIf="!isProcessing"></i>
-                    <i class="fas fa-spinner fa-spin" *ngIf="isProcessing"></i>
-                    {{ isProcessing ? 'Verifying...' : 'I have completed the payment' }}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </ng-container>
+
         </div>
       </div>
     </div>
@@ -330,7 +109,7 @@
           <div class="order-items">
             <div class="order-item" *ngFor="let item of orderItems">
               <div class="item-info">
-                <h5>{{ item.name }}</h5>
+                <h5>{{ item.name }}({{item.variantSku}})</h5>
                 <span class="item-qty">Qty: {{ item.quantity }}</span>
               </div>
               <div class="item-price">{{ item.total.toLocaleString() }} MMK</div>
@@ -367,17 +146,19 @@
               </div>
             </div>
           </div>
-          <button class="btn-place-order" [disabled]="!selectedAddress || !selectedPaymentMethod" [class.success]="paymentSuccess">
-            <i class="fas fa-shopping-cart" *ngIf="!paymentSuccess"></i>
-            <i class="fas fa-check-circle" *ngIf="paymentSuccess"></i>
-            {{ paymentSuccess ? 'Order Placed Successfully!' : 'Place Order' }}
+
+          <!-- Proceed to Payment Button -->
+          <button class="btn-proceed-to-payment" (click)="goToPaymentPage()"
+            [disabled]="!selectedAddress || orderItems.length === 0">
+            <i class="fas fa-credit-card"></i>
+            Proceed to Payment
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Address Form Modal and Status Notification (unchanged) -->
+  <!-- Address Form Modal -->
   <ng-container *ngIf="showAddressForm">
     <div class="modal-overlay" (click)="cancelAddressForm()">
       <div class="modal-content" (click)="$event.stopPropagation()">
@@ -387,25 +168,14 @@
             <i class="fas fa-times"></i>
           </button>
         </div>
-        
+
         <div class="modal-body">
           <!-- Search Box -->
           <div class="search-box">
-            <input 
-              type="text" 
-              [formControl]="searchControl"
-              placeholder="Search location and press Enter"
-              class="form-input search-input"
-              (keyup.enter)="onSearch()"
-              [disabled]="isLoading"
-            />
-            <button 
-              type="button" 
-              (click)="onSearch()" 
-              [disabled]="isLoading"
-              class="search-btn"
-              title="Search location"
-            >
+            <input type="text" [formControl]="searchControl" placeholder="Search location and press Enter"
+              class="form-input search-input" (keyup.enter)="onSearch()" [disabled]="isLoading" />
+            <button type="button" (click)="onSearch()" [disabled]="isLoading" class="search-btn"
+              title="Search location">
               🔍
             </button>
           </div>
@@ -415,90 +185,69 @@
               <div class="form-group">
                 <label>Address</label>
                 <div class="input-wrapper">
-                  <input 
-                    type="text" 
-                    formControlName="address"
-                    placeholder="Street address"
-                    class="form-input"
-                  />
-                  <button 
-                    type="button" 
-                    class="locate-btn" 
-                    (click)="autoLocate()"
-                    [disabled]="isLoading"
+                  <input type="text" formControlName="address" placeholder="Street address" class="form-input" />
+                  <button type="button" class="locate-btn" (click)="autoLocate()" [disabled]="isLoading"
                     title="Auto locate">
                     <svg *ngIf="!isLoading" width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <path d="M12 8C14.21 8 16 9.79 16 12C16 14.21 14.21 16 12 16C9.79 16 8 14.21 8 12C8 9.79 9.79 8 12 8ZM20.94 11C20.48 6.83 17.17 3.52 13 3.06V1H11V3.06C6.83 3.52 3.52 6.83 3.06 11H1V13H3.06C3.52 17.17 6.83 20.48 11 20.94V23H13V20.94C17.17 20.48 20.48 17.17 20.94 13H23V11H20.94ZM12 19C8.13 19 5 15.87 5 12C5 8.13 8.13 5 12 5C15.87 5 19 8.13 19 12C19 15.87 15.87 19 12 19Z" fill="currentColor"/>
+                      <path
+                        d="M12 8C14.21 8 16 9.79 16 12C16 14.21 14.21 16 12 16C9.79 16 8 14.21 8 12C8 9.79 9.79 8 12 8ZM20.94 11C20.48 6.83 17.17 3.52 13 3.06V1H11V3.06C6.83 3.52 3.52 6.83 3.06 11H1V13H3.06C3.52 17.17 6.83 20.48 11 20.94V23H13V20.94C17.17 20.48 20.48 17.17 20.94 13H23V11H20.94ZM12 19C8.13 19 5 15.87 5 12C5 8.13 8.13 5 12 5C15.87 5 19 8.13 19 12C19 15.87 15.87 19 12 19Z"
+                        fill="currentColor" />
                     </svg>
                     <div *ngIf="isLoading" class="loading-spinner"></div>
                   </button>
+                </div>
+                <div class="address-helper">
+                  You can enter your complete address here
                 </div>
               </div>
 
               <div class="form-group">
                 <label>Township</label>
-                <input
-                  type="text"
-                  formControlName="township"
-                  placeholder="Township"
-                  class="form-input"
-                />
+                <input type="text" formControlName="township" placeholder="Township" class="form-input" />
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group">
                 <label>City</label>
-                <input 
-                  type="text" 
-                  formControlName="city"
-                  placeholder="City"
-                  class="form-input"
-                />
+                <input type="text" formControlName="city" placeholder="City" class="form-input" />
               </div>
 
               <div class="form-group">
                 <label>Zip Code</label>
-                <input 
-                  type="text" 
-                  formControlName="zipCode"
-                  placeholder="Zip code"
-                  class="form-input"
-                />
+                <input type="text" formControlName="zipCode" placeholder="Zip code" class="form-input" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Country</label>
+                <input type="text" formControlName="country" placeholder="Country" class="form-input" />
               </div>
 
               <div class="form-group">
-                <label>Country</label>
-                <input 
-                  type="text" 
-                  formControlName="country"
-                  placeholder="Country"
-                  class="form-input"
-                />
+                <label>Phone Number</label>
+                <input type="text" formControlName="phoneNumber" placeholder="eg - 09123456789" class="form-input"
+                  maxlength="13" />
+                <div *ngIf="addressForm.get('phoneNumber')?.invalid && addressForm.get('phoneNumber')?.touched"
+                  class="error">
+                  <span *ngIf="addressForm.get('phoneNumber')?.errors?.['required']">Please enter your phone
+                    number</span>
+                  <span *ngIf="addressForm.get('phoneNumber')?.errors?.['pattern']">Myanmar Phone Number (eg -
+                    09123456789)</span>
+                </div>
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group">
                 <label>Latitude</label>
-                <input
-                  type="number"
-                  formControlName="lat"
-                  placeholder="Latitude"
-                  class="form-input"
-                  step="any"
-                />
+                <input type="number" formControlName="lat" placeholder="Latitude" class="form-input" step="any" />
               </div>
 
               <div class="form-group">
                 <label>Longitude</label>
-                <input
-                  type="number"
-                  formControlName="lng"
-                  placeholder="Longitude"
-                  class="form-input"
-                  step="any"
-                />
+                <input type="number" formControlName="lng" placeholder="Longitude" class="form-input" step="any" />
               </div>
             </div>
           </form>
@@ -508,48 +257,16 @@
           </div>
 
           <div class="modal-actions">
-            <button 
-              type="button" 
-              class="save-btn" 
-              (click)="saveAddress()"
+            <button type="button" class="save-btn" (click)="saveAddress()"
               [disabled]="!currentLatLng || addressForm.invalid">
               {{ isEditing ? 'Update Address' : 'Save Address' }}
             </button>
-            <button 
-              type="button" 
-              class="cancel-btn" 
-              (click)="cancelAddressForm()">
+            <button type="button" class="cancel-btn" (click)="cancelAddressForm()">
               Cancel
             </button>
           </div>
         </div>
       </div>
     </div>
-  </ng-container>
-  
-  <!-- Payment Status Messages -->
-  <div *ngIf="paymentMessage" class="payment-status-overlay">
-    <div class="payment-status-card" [class.success]="paymentSuccess" [class.error]="!paymentSuccess">
-      <div class="status-icon">
-        <i class="fas fa-check-circle" *ngIf="paymentSuccess"></i>
-        <i class="fas fa-exclamation-circle" *ngIf="!paymentSuccess"></i>
-      </div>
-      <div class="status-content">
-        <h3>{{ paymentSuccess ? 'Payment Successful!' : 'Payment Failed' }}</h3>
-        <p>{{ paymentMessage }}</p>
-        <div class="status-actions">
-          <button *ngIf="paymentSuccess" class="btn-continue" (click)="goToHome()">
-            Continue Shopping
-          </button>
-          <button *ngIf="!paymentSuccess" class="btn-try-again" (click)="paymentMessage = ''">
-            Try Again
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <ng-container *ngIf="isProcessing && !showCreditCardForm && !showQRCode">
-    <!-- ... existing loading overlay ... -->
   </ng-container>
 </div>

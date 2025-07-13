@@ -2,15 +2,18 @@ package com.maven.OnlineShoppingSB.service;
 
 import com.maven.OnlineShoppingSB.dto.PermissionDTO;
 import com.maven.OnlineShoppingSB.dto.RoleDTO;
+import com.maven.OnlineShoppingSB.dto.userDTO;
 import com.maven.OnlineShoppingSB.entity.PermissionEntity;
 import com.maven.OnlineShoppingSB.entity.RoleEntity;
 import com.maven.OnlineShoppingSB.entity.RolePermissionEntity;
+import com.maven.OnlineShoppingSB.entity.UserEntity;
 import com.maven.OnlineShoppingSB.repository.PermissionRepository;
 import com.maven.OnlineShoppingSB.repository.RolePermissionRepository;
 import com.maven.OnlineShoppingSB.repository.RoleRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -68,12 +71,13 @@ public class RoleService {
         return roles.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
-    public RoleDTO getById(Integer id) {
+    public RoleDTO getById(Long id) {
         RoleEntity role = roleRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Role not found with id: " + id));
         return convertToDTO(role);
     }
 
+    @Transactional
     public RoleDTO updateRole(RoleDTO dto) {
         if (dto.getId() == null) {
             throw new IllegalArgumentException("Role ID must not be null for update");
@@ -106,7 +110,7 @@ public class RoleService {
         return convertToDTO(updated);
     }
 
-    public void deleteRole(Integer id) {
+    public void deleteRole(Long id) {
         if (id == CUSTOMER_ROLE_ID || id == SUPERADMIN_ROLE_ID) {
             throw new RuntimeException("Cannot delete system default roles.");
         }
@@ -133,4 +137,27 @@ public class RoleService {
 
         return dto;
     }
+    public List<RoleDTO> getCustomerRolesWithUsers() {
+        List<RoleEntity> customerRoles = roleRepo.findByTypeAndDelFgWithUsers(0,1);
+
+        return customerRoles.stream()
+                .map(role -> {
+                    RoleDTO dto = convertToDTO(role);
+                    dto.setUsers(role.getUsers().stream()
+                            .map(this::convertUserToDTO)
+                            .collect(Collectors.toList()));
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+
+    private userDTO convertUserToDTO(UserEntity user) {
+        userDTO dto = new userDTO();
+        dto.setId(user.getId());
+        dto.setName(user.getName());
+        dto.setEmail(user.getEmail());
+        return dto;
+    }
+
 }

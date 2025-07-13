@@ -1,0 +1,116 @@
+<div class="profile-info-section">
+    <!-- Success/Error Messages -->
+    <div class="alert alert-success d-flex align-items-center mb-4" *ngIf="successMessage">
+        <i class="bi bi-check-circle me-2"></i>
+        {{ successMessage }}
+    </div>
+    <div class="alert alert-danger d-flex align-items-center mb-4" *ngIf="errorMessage">
+        <i class="bi bi-exclamation-circle me-2"></i>
+        {{ errorMessage }}
+    </div>
+
+    <!-- Profile Photo Card -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white border-bottom py-3">
+            <h5 class="card-title mb-0 text-primary fw-semibold">Profile Photo</h5>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <img [src]="currentUser?.avatar || '/assets/images/default-avatar.png'" alt="Profile Photo"
+                        class="rounded-circle border" width="80" height="80">
+                </div>
+                <div class="col">
+                    <p class="mb-2 fw-medium">Upload a professional photo to help others recognize you</p>
+                    <small class="text-muted d-block mb-3">Recommended: Square image, at least 200x200 pixels</small>
+                    <div class="upload-area border-2 border-dashed rounded-3 p-3 d-inline-block">
+                        <label for="photo-input" class="d-flex align-items-center text-decoration-none mb-0"
+                            style="cursor: pointer;">
+                            <i class="bi bi-cloud-upload text-primary me-2"></i>
+                            <span class="fw-medium text-primary">Choose New Photo</span>
+                        </label>
+                        <input type="file" id="photo-input" accept="image/*" (change)="onFileSelected($event)"
+                            class="d-none">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Basic Information Form -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white border-bottom py-3">
+            <h5 class="card-title mb-0 text-primary fw-semibold">Basic Information</h5>
+        </div>
+        <div class="card-body">
+            <form [formGroup]="profileForm" (ngSubmit)="onProfileSubmit()">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="name" class="form-label fw-medium">Your Name *</label>
+                        <input type="text" class="form-control" id="name" formControlName="name">
+                        <div class="text-danger small mt-1" *ngIf="getFieldError(profileForm, 'name')">
+                            {{ getFieldError(profileForm, 'name') }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="email" class="form-label fw-medium">Email Address *</label>
+                        <input type="email" class="form-control" id="email" formControlName="email">
+                        <div class="text-danger small mt-1" *ngIf="getFieldError(profileForm, 'email')">
+                            {{ getFieldError(profileForm, 'email') }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="phone" class="form-label fw-medium">Mobile Number</label>
+                        <input type="tel" class="form-control" id="phone" formControlName="phone">
+                        <div class="text-danger small mt-1" *ngIf="getFieldError(profileForm, 'phone')">
+                            {{ getFieldError(profileForm, 'phone') }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium">Member ID</label>
+                        <input type="text" class="form-control" [value]="currentUser?.id" readonly>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary" [disabled]="!profileForm.valid || isUpdating">
+                        <span *ngIf="isUpdating" class="spinner-border spinner-border-sm me-2"></span>
+                        {{ isUpdating ? 'Saving...' : 'Save Profile Changes' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Change Password Form -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-bottom py-3">
+            <h5 class="card-title mb-0 text-primary fw-semibold">Change Password</h5>
+        </div>
+        <div class="card-body">
+            <form [formGroup]="passwordForm" (ngSubmit)="onPasswordSubmit()">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="currentPassword" class="form-label fw-medium">Current Password *</label>
+                        <input type="password" class="form-control" id="currentPassword"
+                            formControlName="currentPassword">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="newPassword" class="form-label fw-medium">New Password *</label>
+                        <input type="password" class="form-control" id="newPassword" formControlName="newPassword">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="confirmPassword" class="form-label fw-medium">Confirm New Password *</label>
+                        <input type="password" class="form-control" id="confirmPassword"
+                            formControlName="confirmPassword">
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary" [disabled]="!passwordForm.valid || isUpdating">
+                        <span *ngIf="isUpdating" class="spinner-border spinner-border-sm me-2"></span>
+                        {{ isUpdating ? 'Updating...' : 'Update Password' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

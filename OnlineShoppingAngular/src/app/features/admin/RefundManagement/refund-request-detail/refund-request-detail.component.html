@@ -1,0 +1,682 @@
+
+      <div class="refund-detail-container">
+
+        <!-- Clean Navigation Bar -->
+        <div class="navigation-bar" *ngIf="!isLoading && refundRequest">
+          <div class="nav-left">
+            <button class="btn btn-ghost btn-sm nav-btn" (click)="goBack()" title="Back to List">
+              <i class="bi bi-arrow-left me-2"></i>Back
+            </button>
+            <div class="nav-divider"></div>
+            <div class="nav-info">
+              <h1 class="nav-title">Refund Request #{{ refundRequest.id }}</h1>
+              <p class="nav-subtitle">
+                Order #{{ refundRequest.orderId }} • Customer #{{ refundRequest.userId }} •
+                Requested: {{ refundRequest.createdAt | date:'MMM d, y h:mm a' }}
+              </p>
+            </div>
+          </div>
+          <div class="nav-right">
+            <!-- ✅ Moved Button -->
+            <button class="btn btn-outline-info btn-sm nav-btn" (click)="openStatusHistoryModal()"
+              title="View Full Status History">
+              <i class="bi bi-clock-history me-1"></i>Status History
+            </button>
+            <button class="btn btn-outline btn-sm nav-btn" (click)="loadRefundRequestDetail()" [disabled]="isLoading"
+              title="Refresh">
+              <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- Messages -->
+        <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          {{ errorMessage }}
+          <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+        </div>
+
+        <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+          <i class="bi bi-check-circle me-2"></i>
+          {{ successMessage }}
+          <button type="button" class="btn-close" (click)="successMessage = ''" aria-label="Close"></button>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="loading-container">
+          <div class="loading-content">
+            <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+            <span class="text-muted">Loading refund details...</span>
+          </div>
+        </div>
+
+        <!-- Main Content Layout -->
+        <div *ngIf="!isLoading && refundRequest" class="main-layout">
+
+          <!-- Left Column: Items -->
+          <div class="items-section">
+            <div class="section-card">
+              <div class="section-header">
+                <h2 class="section-title">
+                  <i class="bi bi-box me-2"></i>Requested Items ({{ refundRequest.items.length }})
+                </h2>
+              </div>
+
+              <div class="items-container">
+                <div *ngFor="let item of refundRequest.items; let i = index" class="item-card">
+
+                  <!-- Item Header -->
+                  <div class="item-header">
+                    <div class="item-product">
+                      <img [src]="item.productImg || '/placeholder.svg?height=80&width=80'"
+                        [alt]="item.productName || 'Product'" class="product-image" (error)="onImageError($event)">
+                      <div class="product-info">
+                        <h3 class="product-name">{{ item.productName || 'Product Name' }}</h3>
+                        <div class="product-details">
+                          <span class="detail-item">SKU: {{ item.sku || 'N/A' }}</span>
+                          <span class="quantity-badge">Qty: {{ item.quantity }}</span>
+                        </div>
+                        <div class="order-pricing" *ngIf="refundRequest.orderDetail?.items">
+                          <ng-container *ngFor="let orderItem of refundRequest.orderDetail?.items">
+                            <div *ngIf="orderItem.id === item.orderItemId" class="pricing-info">
+                              <span class="unit-price">MMK {{ orderItem.price | number:'1.0-0' }} each</span>
+                              <span class="ordered-qty">Ordered: {{ orderItem.quantity }}</span>
+                            </div>
+                          </ng-container>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="item-status">
+                      <span [class]="getItemStatusBadgeClass(item.status || '')">
+                        {{ getItemStatusDisplayText(item.status || '') }}
+                      </span>
+                      <div *ngIf="item.updatedAt" class="status-date">
+                        <small class="text-muted">{{ item.updatedAt | date:'MMM d, h:mm a' }}</small>
+                      </div>
+                      <!-- 🆕 Status History Button (cleanly separated, visible but not crowded) -->
+                      <div class="item-tools d-flex justify-content-end mt-2">
+                        <button class="btn btn-outline-info btn-xs" (click)="openItemStatusHistoryModal(item)"
+                          title="Item Status History">
+                          <i class="bi bi-clock-history me-1"></i>Status History
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- <div class="status-history-btn-wrapper mt-2">
+                    <button class="btn btn-outline-info btn-sm" (click)="openItemStatusHistoryModal(item)"
+                      title="Item Status History">
+                      <i class="bi bi-clock-history me-1"></i>Item Status History
+                    </button>
+                  </div> -->
+
+                  <!-- Requested Action Section -->
+                  <div class="action-section">
+                    <div class="section-label">Requested Action:</div>
+                    <span class="action-badge" [ngClass]="getActionBadgeClass(item)">
+                      {{ getActionDisplayText(item) }}
+                    </span>
+                  </div>
+
+                  <!-- Refund Reason Section -->
+                  <div class="reason-section">
+                    <h4 class="subsection-title">Refund Reason</h4>
+                    <div class="reason-content">
+                      <div class="reason-label">{{ getRefundReasonLabel(item.reasonId || 0) }}</div>
+
+                      <!-- Custom Reason Text -->
+                      <div *ngIf="item.customReasonText" class="custom-reason">
+                        <div class="custom-reason-label">Customer's explanation:</div>
+                        <div class="custom-reason-text">{{ item.customReasonText }}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Enhanced Admin Rejection Section -->
+                  <div *ngIf="item.status === 'REJECTED' || item.status === 'RETURN_REJECTED'"
+                    class="admin-comment-section ">
+                    <h4 class="subsection-title">
+                      <i class="bi bi-x-circle me-2 text-danger"></i>
+                      {{ item.status === 'RETURN_REJECTED' ? 'Return Rejected by Admin' : 'Rejected by Admin' }}
+                    </h4>
+
+                    <div class="admin-rejection-details rejection-details">
+                      <div *ngIf="item.status === 'RETURN_REJECTED'" class="original-status-info">
+                        <ng-container *ngIf="getPreviousStatus(item) as prevStatus">
+                          <small class="text-muted">
+                            Original status before rejection: {{ getItemStatusDisplayText(prevStatus) }}
+                          </small>
+                        </ng-container>
+                      </div>
+
+                      <div class="rejection-reason">
+                        <strong>Reason:</strong>
+                        {{ getRejectionReasonLabel(item.rejectionReasonId || 0) }}
+                      </div>
+
+                      <div *ngIf="item.adminComment" class="mt-1 rejection-comment">
+                        <strong>Comment:</strong> {{ item.adminComment }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Proof Images -->
+                  <div *ngIf="item.images && item.images.length > 0" class="images-section">
+                    <h4 class="subsection-title">
+                      <i class="bi bi-image me-2"></i>Proof Images ({{ item.images.length }})
+                    </h4>
+                    <div class="images-grid">
+                      <img *ngFor="let image of item.images; let imgIndex = index" [src]="image.imgPath"
+                        alt="Proof image" class="proof-image"
+                        (click)="openImageModal(getImagePaths(item.images), imgIndex)">
+                    </div>
+                  </div>
+
+                  <!-- Per-Item Review Controls -->
+                  <div class="item-review-controls" *ngIf="canReviewItem(item)">
+                    <h4 class="subsection-title">Admin Review</h4>
+                    <div class="review-options">
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" [name]="'item-decision-' + item.id"
+                          [id]="'no-action-' + item.id" [checked]="getItemDecision(item) === 'no-action'"
+                          (change)="onItemDecisionChange(item, 'no-action')">
+                        <label class="form-check-label" [for]="'no-action-' + item.id">
+                          <i class="bi bi-dash-circle text-muted me-1"></i>No Action (Default)
+                        </label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" [name]="'item-decision-' + item.id"
+                          [id]="'approve-' + item.id" [checked]="getItemDecision(item) === 'approve'"
+                          (change)="onItemDecisionChange(item, 'approve')">
+                        <label class="form-check-label" [for]="'approve-' + item.id">
+                          <i class="bi bi-check-circle text-success me-1"></i>Approve
+                        </label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" [name]="'item-decision-' + item.id"
+                          [id]="'reject-' + item.id" [checked]="getItemDecision(item) === 'reject'"
+                          (change)="onItemDecisionChange(item, 'reject')">
+                        <label class="form-check-label" [for]="'reject-' + item.id">
+                          <i class="bi bi-x-circle text-danger me-1"></i>Reject
+                        </label>
+                      </div>
+                    </div>
+
+                    <!-- Show rejection details if rejected -->
+                    <div *ngIf="getItemDecision(item) === 'reject'" class="rejection-details">
+                      <div class="rejection-reason">
+                        <strong>Reason:</strong> {{
+                        getRejectionReasonLabel(itemDecisions.get(item.id!)?.rejectionReasonId || 0) }}
+                      </div>
+                      <div *ngIf="itemDecisions.get(item.id!)?.comment" class="rejection-comment">
+                        <strong>Comment:</strong> {{ itemDecisions.get(item.id!)?.comment }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Enhanced Status Flow Description -->
+                  <div class="status-flow-section" *ngIf="showStatusFlow(item)">
+                    <div class="status-flow-info">
+                      <i class="bi bi-info-circle me-2 text-info"></i>
+                      <span class="status-flow-text">{{ getStatusFlowDescription(item) }}</span>
+
+                      <!-- Add Update Button here -->
+                      <button *ngIf="canUpdateStatus(item) && !canReviewItem(item)"
+                        class="btn btn-sm btn-outline-primary ms-3" (click)="openStatusUpdateModal(item)">
+                        <i class="bi bi-arrow-up-circle me-1"></i>Update Status
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Show current status for non-reviewable items -->
+                  <div class="item-final-status" *ngIf="!canReviewItem(item) && !canUpdateStatus(item)">
+                    <div class="status-info">
+                      <i class="bi bi-info-circle me-2"></i>
+                      This item has reached its final status and cannot be modified.
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <div class="items-action-bar" *ngIf="getReviewableItemsCount() > 0">
+                <div class="action-bar-content">
+                  <div class="action-bar-info">
+                    <span class="review-progress">
+                      {{ getDecidedItemsCount() }} of {{ getReviewableItemsCount() }} items reviewed
+                    </span>
+                    <div class="progress-bar">
+                      <div class="progress-fill" [style.width.%]="getReviewProgress()"></div>
+                    </div>
+                  </div>
+                  <div class="action-bar-buttons">
+                    <button class="btn btn-secondary me-2" (click)="resetDecisions()"
+                      [disabled]="isSubmitting || !hasChanges">
+                      <i class="bi bi-arrow-counterclockwise me-1"></i>Reset All
+                    </button>
+                    <button class="btn btn-primary" (click)="submitReview()"
+                      [disabled]="isSubmitting || !canSubmitReview()">
+                      <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+                      <i class="bi bi-check-all me-1" *ngIf="!isSubmitting"></i>
+                      Submit Review
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Sidebar: Compact Design -->
+          <div class="sidebar-section">
+
+            <!-- 💰 Financial Summary Card -->
+            <div class="sidebar-card">
+              <div class="sidebar-card-header">
+                <h3 class="sidebar-title">
+                  <i class="bi bi-currency-dollar me-2"></i>Financial Summary
+                </h3>
+              </div>
+              <div class="sidebar-card-body">
+                <div class="financial-breakdown">
+
+                  <div class="breakdown-row total-requested mb-1">
+                    <span class="breakdown-label">
+                      <i class="bi bi-calculator me-1"></i>
+                      Total Requested:
+                    </span>
+                    <span class="breakdown-value total">
+                      MMK {{ getTotalRefundRequested() | number:'1.0-0' }}
+                    </span>
+                  </div>
+
+                  <div class="breakdown-row direct-refund">
+                    <span class="breakdown-label">
+                      <i class="bi bi-check-circle-fill text-success me-1"></i>
+                      Direct Refundable:
+                    </span>
+                    <span class="breakdown-value direct">
+                      MMK {{ getDirectRefundableAmount() | number:'1.0-0' }}
+                    </span>
+                  </div>
+
+                  <div class="breakdown-row pending-refund">
+                    <span class="breakdown-label">
+                      <i class="bi bi-clock-fill text-warning me-1"></i>
+                      Pending (After Return):
+                    </span>
+                    <span class="breakdown-value pending">
+                      MMK {{ getPendingRefundAmount() | number:'1.0-0' }}
+                    </span>
+                  </div>
+
+                  <div class="breakdown-row refunded">
+                    <span class="breakdown-label">
+                      <i class="bi bi-arrow-return-left text-info me-1"></i>
+                      Total Refunded:
+                    </span>
+                    <span class="breakdown-value refunded">
+                      MMK {{ getTotalRefundAmount() | number:'1.0-0' }}
+                    </span>
+                  </div>
+
+
+                </div>
+              </div>
+            </div>
+
+            <!-- 📊 Enhanced Item Summary Card -->
+            <div class="sidebar-card">
+              <div class="sidebar-card-header">
+                <h3 class="sidebar-title">
+                  <i class="bi bi-bar-chart me-2"></i>Item Summary
+                </h3>
+              </div>
+              <div class="sidebar-card-body">
+                <div class="summary-stats compact">
+                  <div class="stat-grid">
+
+                    <div class="stat-item review">
+                      <span class="stat-number">{{ getReviewRequiredCount() }}</span>
+                      <span class="stat-label">Review Required</span>
+                    </div>
+
+                    <div class="stat-item return">
+                      <span class="stat-number">{{ getReturnInProgressCount() }}</span>
+                      <span class="stat-label">Return In Progress</span>
+                    </div>
+
+                    <div class="stat-item refunded">
+                      <span class="stat-number">{{ getRefundedCount() }}</span>
+                      <span class="stat-label">Refunded</span>
+                    </div>
+
+                    <div class="stat-item replaced">
+                      <span class="stat-number">{{ getReplacedCount() }}</span>
+                      <span class="stat-label">Replaced</span>
+                    </div>
+
+                    <div class="stat-item rejected">
+                      <span class="stat-number">{{ getRejectedCount() }}</span>
+                      <span class="stat-label">Rejected</span>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+<!-- Modern Rejection Reason Modal -->
+<div class="modern-modal-overlay" [class.show]="showRejectionReasonModal" *ngIf="showRejectionReasonModal">
+  <div class="modern-modal rejection-modal">
+    <div class="modal-header">
+      <div class="modal-icon danger">
+        <i class="bi bi-exclamation-triangle"></i>
+      </div>
+      <h3 class="modal-title">Rejection Reason Required</h3>
+      <button type="button" class="modal-close" (click)="closeRejectionReasonModal()">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <p class="modal-description">Please provide a reason for rejecting this item request:</p>
+
+      <form [formGroup]="rejectionForm" class="modern-form">
+        <div class="form-group">
+          <label for="rejectionReason" class="form-label required">
+            Rejection Reason
+          </label>
+          <select id="rejectionReason" class="form-control"
+            [class.error]="rejectionForm.get('reasonId')?.invalid && rejectionForm.get('reasonId')?.touched"
+            formControlName="reasonId" (change)="onRejectionReasonChange()">
+            <option value="">Select a reason</option>
+            <option *ngFor="let reason of rejectionReasons" [value]="reason.id">
+              {{ reason.label }}
+            </option>
+          </select>
+          <div class="error-message" *ngIf="rejectionForm.get('reasonId')?.errors?.['required']">
+            Rejection reason is required.
+          </div>
+        </div>
+
+        <div class="form-group" *ngIf="rejectionForm.get('reasonId')?.value">
+          <label for="rejectionComment" class="form-label" [class.required]="shouldShowCustomReasonField()">
+            {{ shouldShowCustomReasonField() ? 'Please specify (required)' : 'Additional Details (Optional)' }}
+          </label>
+          <textarea id="rejectionComment" class="form-control" rows="3" formControlName="customReasonText"
+            maxlength="500"
+            [class.error]="rejectionForm.get('customReasonText')?.invalid && rejectionForm.get('customReasonText')?.touched"
+            placeholder="Provide additional details..."></textarea>
+
+          <div class="form-footer">
+            <span class="char-count">{{ rejectionForm.get('customReasonText')?.value?.length || 0 }}/500</span>
+          </div>
+
+          <div class="error-message" *ngIf="rejectionForm.get('customReasonText')?.errors?.['required']">
+            Additional comment is required for this reason.
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="closeRejectionReasonModal()">Cancel</button>
+      <button type="button" class="btn btn-danger" (click)="confirmRejection()"
+        [disabled]="!isRejectionReasonFormValid()">
+        <i class="bi bi-x-circle me-1"></i>Confirm Rejection
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Enhanced Status Update Modal -->
+<div class="modern-modal-overlay" [class.show]="showStatusUpdateModal" *ngIf="showStatusUpdateModal">
+  <div class="modern-modal status-modal">
+    <div class="modal-header">
+      <div class="modal-icon primary">
+        <i class="bi bi-arrow-up-circle"></i>
+      </div>
+      <h3 class="modal-title">Update Item Status</h3>
+      <button type="button" class="modal-close" (click)="closeStatusUpdateModal()">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div *ngIf="selectedItemForStatusUpdate" class="item-preview">
+        <div class="item-info">
+          <strong>Item:</strong> {{ selectedItemForStatusUpdate.productName }}
+        </div>
+        <div class="status-transition">
+          <span class="current-status" [class]="getItemStatusBadgeClass(selectedItemForStatusUpdate.status || '')">
+            {{ getItemStatusDisplayText(selectedItemForStatusUpdate.status || '') }}
+          </span>
+          <i class="bi bi-arrow-right mx-2"></i>
+          <span class="next-status">Next Status</span>
+        </div>
+      </div>
+
+      <form [formGroup]="statusUpdateForm" class="modern-form">
+        <div class="form-group">
+          <label for="newStatus" class="form-label required">
+            New Status
+          </label>
+          <select id="newStatus" class="form-control"
+            [class.error]="statusUpdateForm.get('newStatus')?.invalid && statusUpdateForm.get('newStatus')?.touched"
+            formControlName="newStatus" (change)="onStatusUpdateChange()">
+            <option value="">Select new status</option>
+            <option *ngFor="let status of getNextStatusOptions(selectedItemForStatusUpdate!)" [value]="status">
+              {{ getItemStatusDisplayText(status) }}
+            </option>
+          </select>
+          <div class="form-help">
+            <i class="bi bi-info-circle me-1"></i>
+            Only valid next statuses are shown to maintain proper workflow.
+          </div>
+          <div class="error-message" *ngIf="statusUpdateForm.get('newStatus')?.errors?.['required']">
+            Please select a new status.
+          </div>
+        </div>
+
+        <!-- Rejection Reason Section - Only show for rejection statuses -->
+        <ng-container *ngIf="isRejectionStatus(statusUpdateForm.get('newStatus')?.value)">
+          <div class="form-group">
+            <label for="statusRejectionReason" class="form-label required">
+              Rejection Reason
+            </label>
+            <select id="statusRejectionReason" class="form-control"
+              [class.error]="statusUpdateForm.get('rejectionReasonId')?.invalid && statusUpdateForm.get('rejectionReasonId')?.touched"
+              formControlName="rejectionReasonId" (change)="onStatusUpdateRejectionReasonChange()">
+              <option value="">Select a reason</option>
+              <option *ngFor="let reason of rejectionReasons" [value]="reason.id">
+                {{ reason.label }}
+              </option>
+            </select>
+            <div class="error-message" *ngIf="statusUpdateForm.get('rejectionReasonId')?.errors?.['required']">
+              Rejection reason is required.
+            </div>
+          </div>
+
+          <div class="form-group" *ngIf="statusUpdateForm.get('rejectionReasonId')?.value">
+            <label for="statusRejectionComment" class="form-label"
+              [class.required]="shouldShowStatusUpdateCustomReasonField()">
+              {{ shouldShowStatusUpdateCustomReasonField() ? 'Please specify (required)' :
+              'Additional Details (Optional)' }}
+            </label>
+            <textarea id="statusRejectionComment" class="form-control" rows="3" formControlName="rejectionComment"
+              maxlength="500"
+              [class.error]="statusUpdateForm.get('rejectionComment')?.invalid && statusUpdateForm.get('rejectionComment')?.touched"
+              placeholder="Provide additional details about the rejection..."></textarea>
+
+            <div class="form-footer">
+              <span class="char-count">{{ statusUpdateForm.get('rejectionComment')?.value?.length || 0 }}/500</span>
+            </div>
+
+            <div class="error-message" *ngIf="statusUpdateForm.get('rejectionComment')?.errors?.['required']">
+              Additional comment is required for this reason.
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Note Section - Only show for non-rejection statuses -->
+        <div class="form-group"
+          *ngIf="!isRejectionStatus(statusUpdateForm.get('newStatus')?.value) && statusUpdateForm.get('newStatus')?.value">
+          <label for="statusNote" class="form-label">
+            Note (Optional)
+          </label>
+          <textarea id="statusNote" class="form-control" rows="3" formControlName="note" maxlength="500"
+            placeholder="Add a note about this status change..."></textarea>
+          <div class="form-footer">
+            <span class="char-count">{{ statusUpdateForm.get('note')?.value?.length || 0 }}/500</span>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="closeStatusUpdateModal()">Cancel</button>
+      <button type="button" class="btn btn-primary" (click)="confirmStatusUpdate()"
+        [disabled]="!isStatusUpdateFormValid() || isUpdatingStatus">
+        <span *ngIf="isUpdatingStatus" class="spinner-border spinner-border-sm me-2"></span>
+        <i class="bi bi-check me-1" *ngIf="!isUpdatingStatus"></i>
+        {{ isRejectionStatus(statusUpdateForm.get('newStatus')?.value) ? 'Confirm Rejection' : 'Update Status' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modern Status History Modal -->
+<div class="modern-modal-overlay" [class.show]="showStatusHistoryModal" *ngIf="showStatusHistoryModal">
+  <div class="modern-modal history-modal">
+    <div class="modal-header">
+      <div class="modal-icon info">
+        <i class="bi bi-clock-history"></i>
+      </div>
+      <h3 class="modal-title">Request Status History</h3>
+      <button type="button" class="modal-close" (click)="closeStatusHistoryModal()">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="status-timeline">
+        <div *ngFor="let historyItem of getStatusHistory(); let i = index" class="timeline-item"
+          [class.current]="i === 0">
+          <div class="timeline-marker">
+            <i class="bi bi-circle-fill"></i>
+          </div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <span class="status-badge" [class]="getItemStatusBadgeClass(historyItem.status)">
+                {{ getItemStatusDisplayText(historyItem.status) }}
+              </span>
+              <span class="timeline-date">
+                {{ historyItem.createdAt | date: 'MMM d, y h:mm a' }}
+              </span>
+            </div>
+            <div class="timeline-details">
+              <div class="admin-info" *ngIf="historyItem.updatedBy">
+                <i class="bi bi-person me-1"></i>Admin #{{ historyItem.updatedBy }}
+              </div>
+              <div class="timeline-note" *ngIf="historyItem.note">
+                {{ historyItem.note }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary" (click)="closeStatusHistoryModal()">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modern Image Modal -->
+<div class="modern-modal-overlay" [class.show]="showImageModal" *ngIf="showImageModal">
+  <div class="modern-modal image-modal">
+    <div class="modal-header">
+      <h3 class="modal-title">
+        Proof Image {{ selectedImageIndex + 1 }} of {{ selectedItemImages.length }}
+      </h3>
+      <button type="button" class="modal-close" (click)="closeImageModal()">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="image-container">
+        <img [src]="selectedImage" alt="Proof image" class="modal-image">
+      </div>
+      <div class="image-navigation" *ngIf="selectedItemImages.length > 1">
+        <button class="btn btn-outline-secondary" (click)="previousImage()" [disabled]="selectedImageIndex === 0">
+          <i class="bi bi-chevron-left"></i> Previous
+        </button>
+        <span class="image-counter">{{ selectedImageIndex + 1 }} / {{ selectedItemImages.length }}</span>
+        <button class="btn btn-outline-secondary" (click)="nextImage()"
+          [disabled]="selectedImageIndex === selectedItemImages.length - 1">
+          Next <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Item Status History Modal -->
+<div class="modern-modal-overlay" [class.show]="showItemStatusHistoryModal" *ngIf="showItemStatusHistoryModal">
+  <div class="modern-modal history-modal">
+    <div class="modal-header">
+      <div class="modal-icon info">
+        <i class="bi bi-clock-history"></i>
+      </div>
+      <h3 class="modal-title">Item Status History - {{ selectedItem?.productName }}</h3>
+      <button type="button" class="modal-close" (click)="closeItemStatusHistoryModal()">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="status-timeline">
+        <div *ngFor="let historyItem of getItemStatusHistory(selectedItem!)" class="timeline-item">
+          <div class="timeline-marker">
+            <i class="bi bi-circle-fill"></i>
+          </div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <span class="status-badge" [class]="getItemStatusBadgeClass(historyItem.status)">
+                {{ getItemStatusDisplayText(historyItem.status) }}
+              </span>
+              <span class="timeline-date">
+                {{ historyItem.createdAt | date: 'MMM d, y h:mm a' }}
+              </span>
+            </div>
+            <div class="timeline-details">
+              <div class="admin-info" *ngIf="historyItem.updatedBy">
+                <i class="bi bi-person me-1"></i>Admin #{{ historyItem.updatedBy }}
+              </div>
+              <div class="timeline-note" *ngIf="historyItem.note">
+                {{ historyItem.note }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary" (click)="closeItemStatusHistoryModal()">
+        Close
+      </button>
+    </div>
+  </div>
+</div>

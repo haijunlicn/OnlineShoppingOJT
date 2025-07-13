@@ -15,7 +15,6 @@ import { ResetPasswordComponent } from './auth/reset-password/reset-password.com
 import { VerifyComponent } from './auth/verify/verify.component';
 import { LocationCreateComponent } from './account/location-create/location-create.component';
 import { HttpClientModule } from '@angular/common/http';
-import { LocationCardComponent } from './account/location-card/location-card.component';
 import { EditLocationComponent } from './account/edit-location/edit-location.component';
 import { AboutComponent } from './general/about/about.component';
 import { ContactComponent } from './general/contact/contact.component';
@@ -37,7 +36,21 @@ import { CategoryDropdownComponent } from './product_display/category-dropdown/c
 import { FilterSidebarComponent } from './common/filter-sidebar/filter-sidebar.component';
 import { OrderComponent } from './general/order/order.component';
 import { OrderManagementComponent } from './orderManagements/order-management/order-management.component';
+import { PaymentAcceptComponent } from './orderManagements/payment-accept/payment-accept.component';
+import { OrderDetailComponent } from './orderManagements/order-detail/order-detail.component';
+import { OrderListComponent } from './orderManagements/order-list/order-list.component';
+import { FileUploadComponent } from './refundManagements/file-upload/file-upload.component';
+import { RefundRequestFormComponent } from './refundManagements/refund-request-form/refund-request-form.component';
+import { AccountSettingsComponent } from './common/account-settings/account-settings.component';
 
+import { NotificationBellComponent } from './notification/notification-bell/notification-bell.component';
+import { SearchBarComponent } from './common/search-bar/search-bar.component';
+import { LocationCardComponent } from './account/location-card/location-card.component';
+import { NotificationDetailComponent } from './notification/notification-detail/notification-detail.component';
+import { NotificationListComponent } from './notification/notification-list/notification-list.component';
+import { LocationSettingComponent } from './common/location-setting/location-setting.component';
+import { ProfileInfoSettingComponent } from './common/profile-info-setting/profile-info-setting.component';
+import { NotiSettingComponent } from './common/noti-setting/noti-setting.component';
 
 @NgModule({
   declarations: [
@@ -49,13 +62,11 @@ import { OrderManagementComponent } from './orderManagements/order-management/or
     ResetPasswordComponent,
     VerifyComponent,
     LocationCreateComponent,
-    LocationCardComponent,
     EditLocationComponent,
     WishlistDialogComponent,
     UserproductListComponent,
     WishlistComponent,
     CartComponent,
-
     AboutComponent,
     ContactComponent,
     PrivacyPolicyComponent,
@@ -67,8 +78,23 @@ import { OrderManagementComponent } from './orderManagements/order-management/or
     CategoryDropdownComponent,
     FilterSidebarComponent,
     OrderComponent,
-    OrderManagementComponent
-
+    OrderManagementComponent,
+    PaymentAcceptComponent,
+    OrderDetailComponent,
+    OrderListComponent,
+    OrderListComponent,
+    FileUploadComponent,
+    RefundRequestFormComponent,
+    AccountSettingsComponent,
+    NotificationBellComponent,
+    NotificationListComponent,
+    SearchBarComponent,
+    LocationCardComponent,
+    NotificationDetailComponent,
+    NotificationListComponent,
+    LocationSettingComponent,
+    ProfileInfoSettingComponent,
+    NotiSettingComponent
   ],
   imports: [
     CommonModule,
@@ -84,7 +110,6 @@ import { OrderManagementComponent } from './orderManagements/order-management/or
     MatInputModule,
     MatButtonModule,
     FormsModule,
-
     HttpClientModule,
   ]
 })

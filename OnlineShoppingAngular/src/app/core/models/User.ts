@@ -15,4 +15,7 @@ export interface User {
   delFg?: boolean; // Optional
   createdDate?: string; // LocalDateTime will be sent as ISO String
   updatedDate?: string;
+  permissions?: string[];
+  avatar?: string;
+  roleType?: number;
 }

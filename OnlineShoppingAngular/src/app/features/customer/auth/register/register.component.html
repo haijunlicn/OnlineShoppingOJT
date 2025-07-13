@@ -1,89 +1,88 @@
-
 <div class="register-modal-overlay">
   <div class="register-modal-container">
     <button class="close-btn" (click)="closeModal()">×</button>
-
     <div class="card-body p-4">
       <div class="text-center mb-4">
         <h3 class="fw-bold">Create Your Account</h3>
         <div class="divider"><span></span></div>
       </div>
-
       <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-
+        <!-- Full Name -->
         <div class="form-group mb-3">
           <label class="form-label">Full Name</label>
           <div class="input-wrapper">
             <input 
-              type="text" 
-              formControlName="name" 
-              class="form-control" 
+              type="text"
+              formControlName="name"
+              class="form-control"
               [ngClass]="{
                 'error': (registerForm.get('name')?.touched || isSubmitted) && registerForm.get('name')?.invalid
               }"
-              placeholder="John Doe" 
+              placeholder="John Doe"
             />
-            <i class="error-icon fas fa-exclamation-circle" 
+            <i class="error-icon fas fa-exclamation-circle"
                *ngIf="(registerForm.get('name')?.touched || isSubmitted) && registerForm.get('name')?.invalid">
             </i>
           </div>
-          <div class="error-message" 
+          <div class="error-message"
                *ngIf="(registerForm.get('name')?.touched || isSubmitted) && registerForm.get('name')?.invalid">
             This is a required field.
           </div>
         </div>
 
+        <!-- Email Address -->
         <div class="form-group mb-3">
           <label class="form-label">Email Address</label>
           <div class="input-wrapper">
             <input 
-              type="email" 
-              formControlName="email" 
-              class="form-control" 
+              type="email"
+              formControlName="email"
+              class="form-control"
               [ngClass]="{
                 'error': (registerForm.get('email')?.touched || isSubmitted) && registerForm.get('email')?.invalid
               }"
-              placeholder="example@mail.com" 
+              placeholder="example@mail.com"
             />
-            <i class="error-icon fas fa-exclamation-circle" 
+            <i class="error-icon fas fa-exclamation-circle"
                *ngIf="(registerForm.get('email')?.touched || isSubmitted) && registerForm.get('email')?.invalid">
             </i>
           </div>
-          <div class="error-message" 
+          <div class="error-message"
                *ngIf="(registerForm.get('email')?.touched || isSubmitted) && registerForm.get('email')?.invalid">
             <span *ngIf="registerForm.get('email')?.errors?.['required']">This is a required field.</span>
             <span *ngIf="registerForm.get('email')?.errors?.['email']">Enter a valid email address.</span>
           </div>
         </div>
 
+        <!-- Password -->
         <div class="form-group mb-3">
           <label class="form-label">Password</label>
           <div class="input-wrapper">
             <div class="input-group">
               <input 
-                [type]="showPassword ? 'text' : 'password'" 
+                [type]="showPassword ? 'text' : 'password'"
                 formControlName="password"
-                class="form-control" 
-                autocomplete=""
+                class="form-control"
+                autocomplete="new-password"
                 [ngClass]="{
                   'error': (registerForm.get('password')?.touched || isSubmitted) && registerForm.get('password')?.invalid
                 }"
-                placeholder="••••••••" 
+                placeholder="••••••••"
               />
               <button class="toggle-btn" type="button" (click)="togglePassword()">
                 <i [class]="showPassword ? 'fa fa-eye-slash' : 'fa fa-eye'"></i>
               </button>
             </div>
-            <i class="error-icon fas fa-exclamation-circle" 
+            <i class="error-icon fas fa-exclamation-circle"
                *ngIf="(registerForm.get('password')?.touched || isSubmitted) && registerForm.get('password')?.invalid">
             </i>
           </div>
-          <div class="error-message" 
+          <div class="error-message"
                *ngIf="(registerForm.get('password')?.touched || isSubmitted) && registerForm.get('password')?.invalid">
             This is a required field.
           </div>
-
-          <!-- Simple Password Strength Bar -->
+          
+          <!-- Password Strength Indicator -->
           <div class="password-strength" *ngIf="registerForm.get('password')?.value">
             <div class="strength-info">
               <span>Password strength</span>
@@ -92,47 +91,68 @@
               </span>
             </div>
             <div class="progress">
-              <div class="progress-bar" 
-                   [ngClass]="passwordStrengthClass" 
+              <div class="progress-bar"
+                   [ngClass]="passwordStrengthClass"
                    [style.width]="passwordStrength + '%'">
               </div>
             </div>
           </div>
         </div>
 
+        <!-- Confirm Password -->
         <div class="form-group mb-4">
           <label class="form-label">Confirm Password</label>
           <div class="input-wrapper">
             <div class="input-group">
               <input 
-                [type]="showConfirmPassword ? 'text' : 'password'" 
+                [type]="showConfirmPassword ? 'text' : 'password'"
                 formControlName="confirmPassword"
-                class="form-control" 
-                autocomplete="off"
+                class="form-control"
+                autocomplete="new-password"
                 [ngClass]="{
-                  'error': (registerForm.get('confirmPassword')?.touched || isSubmitted) && 
-                    (registerForm.get('confirmPassword')?.invalid || registerForm.hasError('passwordMismatch'))
+                  'error': (registerForm.get('confirmPassword')?.touched || isSubmitted) &&
+                     (registerForm.get('confirmPassword')?.invalid || registerForm.hasError('passwordMismatch'))
                 }"
-                placeholder="••••••••" 
+                placeholder="••••••••"
               />
               <button class="toggle-btn" type="button" (click)="toggleConfirmPassword()">
                 <i [class]="showConfirmPassword ? 'fa fa-eye-slash' : 'fa fa-eye'"></i>
               </button>
             </div>
-            <i class="error-icon fas fa-exclamation-circle" 
-               *ngIf="(registerForm.get('confirmPassword')?.touched || isSubmitted) && 
+            <i class="error-icon fas fa-exclamation-circle"
+               *ngIf="(registerForm.get('confirmPassword')?.touched || isSubmitted) &&
                  (registerForm.get('confirmPassword')?.invalid || registerForm.hasError('passwordMismatch'))">
             </i>
           </div>
-          <div class="error-message" 
+          <div class="error-message"
                *ngIf="(registerForm.get('confirmPassword')?.touched || isSubmitted) && registerForm.hasError('passwordMismatch')">
             Passwords do not match.
           </div>
         </div>
 
+        <!-- Terms and Conditions -->
+        <div class="form-group form-check text-start mb-3">
+          <input
+            type="checkbox"
+            id="termsCheck"
+            class="form-check-input"
+            formControlName="acceptTerms"
+          />
+          <label class="form-check-label small-text" for="termsCheck">
+            I agree to the
+            <a href="/customer/policy/privacy" target="_blank">Privacy Policy</a>,
+            <a href="/customer/policy/terms-conditions" target="_blank">Terms & Conditions</a>
+          </label>
+        </div>
+        <div class="error-message"
+             *ngIf="(registerForm.get('acceptTerms')?.touched || isSubmitted) && registerForm.get('acceptTerms')?.invalid">
+          You must accept the terms to continue.
+        </div>
+
+        <!-- Action Buttons -->
         <div class="action-buttons">
-         <button 
-            type="submit" 
+          <button
+            type="submit"
             class="btn primary-btn"
             [disabled]="isLoading || !registerForm.valid || !registerForm.get('acceptTerms')?.value">
             <span *ngIf="!isLoading">Register</span>
@@ -141,32 +161,12 @@
               Registering...
             </span>
           </button>
-
-
           <button type="button" class="btn secondary-btn" (click)="resetForm()" [disabled]="isLoading">
             Cancel
           </button>
         </div>
-        <div class="form-group form-check text-start mb-3">
-              <input
-                type="checkbox"
-                id="termsCheck"
-                class="form-check-input"
-                formControlName="acceptTerms"
-              />
-             <label class="form-check-label small-text" for="termsCheck">
-              I agree to the
-              <a href="/customer/policy/privacy" target="_blank">Privacy Policy</a>,
-              <a href="/customer/policy/terms-conditions" target="_blank">Terms & Conditions</a>
-            </label>
 
-            </div>
-            <div class="error-message" 
-                *ngIf="(registerForm.get('acceptTerms')?.touched || isSubmitted) && registerForm.get('acceptTerms')?.invalid">
-              You must accept the terms to continue.
-            </div>
-
-
+        <!-- Login Link -->
         <div class="text-center mt-4">
           <span>Already have an account?</span>
           <a (click)="onSignIn()" class="login-link">
@@ -177,4 +177,3 @@
     </div>
   </div>
 </div>
-

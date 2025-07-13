@@ -1,19 +1,22 @@
 :root {
-  --color-primary: #1a1a1a;
-  --color-accent: #2e4a3f;
-  --color-secondary: #5a4632;
-  --color-highlight: #c9b87c;
-  --color-background: #f9f8f6;
-  --color-text: #333333;
-  --color-text-muted: #777777;
-  --color-border: #e0e0e0;
+  --color-primary: #142925; /* Elegant dark emerald green */
+  --color-accentOld: #fcf1d9; /* Refined golden brown */
+  --color-accent: #e6ba62;
+  --color-accentLight: #fff3ac;
+  --color-secondary: #03110d; /* Rich charcoal for dark backgrounds */
+  --color-brown: #3d3d3d; /* Deep bronze-brown (hover, buttons) */
+  --color-background: #f5f5f3; /* Clean soft background */
+  --color-border: rgba(191, 161, 106, 0.2); /* Gold-tinted border */
+  --color-shadow: rgba(15, 61, 46, 0.1); /* Soft green shadow */
+  --color-highlight: #d6b56c; /* Lighter golden accent */
+  --color-success: #198754; /* Bootstrap success green (kept) */
+  --color-danger: #470505; /* Rich crimson */
 }
 
 body {
   background-color: var(--color-background);
   color: var(--color-text);
   font-family: "Helvetica Neue", Arial, sans-serif;
-  /* padding-top: 10px; */
 }
 
 /* Bootstrap overrides */

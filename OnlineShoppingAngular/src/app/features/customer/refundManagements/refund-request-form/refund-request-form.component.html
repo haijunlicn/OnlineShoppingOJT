@@ -1,0 +1,346 @@
+<app-header></app-header>
+
+<main class="main-content py-3">
+    <div class="container-fluid py-2">
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="d-flex justify-content-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ errorMessage }}
+            <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+        </div>
+
+        <!-- Main Layout: Two Columns -->
+        <div *ngIf="!isLoading && order" class="row g-4">
+            <!-- Left: Return Request Form -->
+            <section class="col-lg-8">
+                <form [formGroup]="returnRequestForm" (ngSubmit)="onSubmit()" novalidate>
+                    <!-- Items to Return -->
+                    <div class="mb-4">
+                        <h2 class="h4 mb-3">Select Items for Return/Refund</h2>
+                        <div formArrayName="items">
+                            <div *ngFor="let itemGroup of itemsFormArray.controls; let i = index" [formGroupName]="i"
+                                class="card mb-3 shadow-sm border-0">
+
+                                <!-- Step 1: Item Info + Action Selection -->
+                                <div class="card-body p-4">
+                                    <div class="row align-items-center">
+                                        <!-- Item Image -->
+                                        <div class="col-auto">
+                                            <div class="variant-image-container">
+                                                <img [src]="getVariantImageUrl(order.items[i])"
+                                                    [alt]="order.items[i].product.name" class="variant-image"
+                                                    (error)="onImageError($event)">
+                                            </div>
+                                        </div>
+
+                                        <!-- Item Details -->
+                                        <div class="col">
+                                            <h5 class="fw-semibold mb-1">{{ getVariantDisplayName(order.items[i]) }}
+                                            </h5>
+                                            <div class="text-muted mb-2">
+                                                <strong>SKU:</strong> {{ order.items[i].variant.sku }}
+                                            </div>
+                                            <div class="text-muted">
+                                                <strong>Available for return:</strong> {{ order.items[i].maxReturnQty }}
+                                                units
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-4">
+                                        <label class="form-label fw-bold mb-2">What do you want to do with this
+                                            item?</label>
+
+                                        <div class="row g-2">
+                                            <div class="col-3 col-md-3">
+                                                <div class="form-check form-check-card h-100">
+                                                    <input class="form-check-input" type="radio"
+                                                        [id]="'refundOnly_' + i"
+                                                        [value]="RequestedRefundAction.REFUND_ONLY"
+                                                        formControlName="requestedAction" (change)="onActionChange(i)">
+                                                    <label class="form-check-label w-100 p-2 border rounded text-start"
+                                                        [for]="'refundOnly_' + i">
+                                                        <i class="bi bi-cash-coin me-2 text-success"></i>
+                                                        <strong>Refund Only</strong>
+                                                        <div class="text-muted small">Keep the item, get a refund</div>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-3 col-md-3">
+                                                <div class="form-check form-check-card h-100">
+                                                    <input class="form-check-input" type="radio"
+                                                        [id]="'returnRefund_' + i"
+                                                        [value]="RequestedRefundAction.RETURN_AND_REFUND"
+                                                        formControlName="requestedAction" (change)="onActionChange(i)">
+                                                    <label class="form-check-label w-100 p-2 border rounded text-start"
+                                                        [for]="'returnRefund_' + i">
+                                                        <i class="bi bi-arrow-left-right me-2 text-primary"></i>
+                                                        <strong>Return & Refund</strong>
+                                                        <div class="text-muted small">Send item back + refund</div>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-3 col-md-3">
+                                                <div class="form-check form-check-card h-100">
+                                                    <input class="form-check-input" type="radio"
+                                                        [id]="'replacement_' + i"
+                                                        [value]="RequestedRefundAction.REPLACEMENT"
+                                                        formControlName="requestedAction" (change)="onActionChange(i)">
+                                                    <label class="form-check-label w-100 p-2 border rounded text-start"
+                                                        [for]="'replacement_' + i">
+                                                        <i class="bi bi-arrow-repeat me-2 text-warning"></i>
+                                                        <strong>Replacement</strong>
+                                                        <div class="text-muted small">Request a new item</div>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-3 col-md-3">
+                                                <div class="form-check form-check-card h-100">
+                                                    <input class="form-check-input" type="radio" [id]="'noAction_' + i"
+                                                        value="" formControlName="requestedAction"
+                                                        (change)="onActionChange(i)">
+                                                    <label class="form-check-label w-100 p-2 border rounded text-start"
+                                                        [for]="'noAction_' + i">
+                                                        <i class="bi bi-x-circle me-2 text-muted"></i>
+                                                        <strong>No Action</strong>
+                                                        <div class="text-muted small">Do not include in request</div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+
+
+                                    <!-- Step 2: Details (Progressive Disclosure) -->
+                                    <div *ngIf="shouldShowStep2(i)" class="mt-4 pt-4 border-top">
+                                        <h6 class="fw-semibold mb-3 text-primary">
+                                            <i class="bi bi-arrow-down-circle me-2"></i>
+                                            Please provide additional details
+                                        </h6>
+
+                                        <!-- Quantity and Reason Row -->
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-4">
+                                                <label [for]="'returnQty_' + i" class="form-label">
+                                                    Quantity <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="number" [id]="'returnQty_' + i" class="form-control"
+                                                    [class.is-invalid]="getItemError(i, 'returnQty')"
+                                                    formControlName="returnQty" [min]="1"
+                                                    [max]="order.items[i].maxReturnQty ?? null"
+                                                    (change)="onReturnQtyChange(i)">
+                                                <div class="invalid-feedback">
+                                                    {{ getItemError(i, 'returnQty') }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <label [for]="'reason_' + i" class="form-label">
+                                                    Reason <span class="text-danger">*</span>
+                                                </label>
+                                                <select [id]="'reason_' + i" class="form-select"
+                                                    [class.is-invalid]="getItemError(i, 'reasonId')"
+                                                    formControlName="reasonId" (change)="onReasonChange(i)">
+                                                    <option value="">Select a reason</option>
+                                                    <option *ngFor="let reason of refundReasons" [value]="reason.id">
+                                                        {{ reason.label }}
+                                                    </option>
+                                                </select>
+                                                <div class="invalid-feedback">
+                                                    {{ getItemError(i, 'reasonId') }}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Custom Reason Text -->
+                                        <div class="row g-3 mb-3" *ngIf="getItemFormGroup(i).get('reasonId')?.value">
+                                            <div class="col-12">
+                                                <label [for]="'customReason_' + i" class="form-label"
+                                                    [ngClass]="{ 'text-danger fw-bold': shouldShowCustomReasonField(i) }">
+                                                    {{ shouldShowCustomReasonField(i) ? 'Please specify (required)' :
+                                                    'Optional: Provide more details' }}
+                                                    <span *ngIf="shouldShowCustomReasonField(i)"
+                                                        class="text-danger">*</span>
+                                                </label>
+
+                                                <textarea [id]="'customReason_' + i" class="form-control"
+                                                    [class.is-invalid]="getItemError(i, 'customReasonText')"
+                                                    formControlName="customReasonText" rows="2" maxlength="500"
+                                                    placeholder="You may add more details here..."></textarea>
+
+                                                <div class="form-text">
+                                                    {{ getItemFormGroup(i).get('customReasonText')?.value?.length || 0
+                                                    }}/500 characters
+                                                </div>
+
+                                                <!-- Only show error if field is required and invalid -->
+                                                <div class="invalid-feedback"
+                                                    *ngIf="getItemError(i, 'customReasonText')">
+                                                    {{ getItemError(i, 'customReasonText') }}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Proof Images Upload -->
+                                        <div class="row g-3">
+                                            <div class="col-12">
+                                                <label class="form-label text-danger fw-bold">
+                                                    Upload Proof Images <span class="text-danger">*</span>
+                                                </label>
+                                                <app-file-upload [maxFiles]="5" [maxFileSize]="2097152"
+                                                    [acceptedTypes]="['image/jpeg', 'image/png', 'image/jpg']"
+                                                    (filesSelected)="onFilesSelected(i, $event)">
+                                                </app-file-upload>
+                                                <div class="form-text text-muted">
+                                                    <i class="bi bi-info-circle me-1"></i>
+                                                    Upload <strong>at least 1</strong> and up to 5 images (JPEG, PNG
+                                                    only, max 2MB each)
+                                                </div>
+                                                <div class="text-danger small mt-1" *ngIf="getItemError(i, 'proofs')">
+                                                    {{ getItemError(i, 'proofs') }}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Validation Errors -->
+                                        <div *ngIf="getItemFormGroup(i).touched && getItemFormGroup(i).errors"
+                                            class="alert alert-danger py-2 mt-3">
+                                            <small>
+                                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                                Please complete all required fields for this item.
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- No items selected message -->
+                        <div *ngIf="!hasSelectedReturnItems()" class="alert alert-info mt-3">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Please select an action for at least one item to proceed.
+                        </div>
+                    </div>
+
+                    <!-- Sticky Submit Button -->
+                    <div class="position-sticky bottom-0 end-0 bg-white py-3"
+                        style="z-index: 10; border-top: 1px solid #eee;">
+                        <div class="d-flex gap-3 justify-content-end">
+                            <button type="button" class="btn btn-secondary" (click)="onCancel()"
+                                [disabled]="isSubmitting">
+                                <i class="bi bi-x-circle me-1"></i>
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary" [disabled]="!isFormValid() || isSubmitting">
+                                <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"
+                                    role="status"></span>
+                                <i *ngIf="!isSubmitting" class="bi bi-check-circle me-1"></i>
+                                {{ isSubmitting ? 'Submitting...' : 'Submit Request' }}
+                            </button>
+
+                            <button (click)="logFormErrors()">Log Form Errors</button>
+
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Right Sidebar: Order Summary -->
+            <aside class="col-lg-4 mb-4 mb-lg-0">
+                <div class="position-sticky" style="top: 6rem; z-index: 2;">
+                    <!-- Order Summary Card -->
+                    <div class="card shadow-sm mb-2">
+                        <div class="card-header">
+                            <h6 class="mb-0 fw-semibold">Order Summary</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-1">
+                                <span class="fw-semibold">Order Number:</span>
+                                <span class="ms-1">{{ order.trackingNumber }}</span>
+                            </div>
+                            <div class="mb-1">
+                                <span class="fw-semibold">Order Date:</span>
+                                <span class="ms-1">{{ order.createdDate | date:'medium' }}</span>
+                            </div>
+                            <div class="mb-1">
+                                <span class="fw-semibold">Customer:</span>
+                                <span class="ms-1">{{ order.user.name || '-' }}</span>
+                            </div>
+                            <div class="mb-1">
+                                <span class="fw-semibold">Items:</span>
+                                <span class="ms-1">{{ order.items.length }}</span>
+                            </div>
+                            <div class="mb-1">
+                                <span class="fw-semibold">Total:</span>
+                                <span class="ms-1">{{ order.totalAmount | currency:'USD':'symbol' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Return Summary Card -->
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0 fw-semibold">Return Summary</h6>
+                        </div>
+                        <div class="card-body">
+                            <ng-container *ngIf="hasReturnItems(); else noReturnItems">
+                                <div *ngFor="let item of itemsFormArray.controls; let i = index">
+                                    <div *ngIf="getItemFormGroup(i).get('requestedAction')?.value !== ''"
+                                        class="d-flex align-items-center mb-2">
+                                        <!-- Small thumbnail in summary -->
+                                        <img [src]="getVariantImageUrl(order.items[i])"
+                                            [alt]="order.items[i].product.name" class="summary-thumbnail me-2"
+                                            (error)="onImageError($event)">
+
+                                        <div class="flex-grow-1">
+                                            <div class="small fw-medium">
+                                                {{ order.items[i].product.name }}
+                                            </div>
+                                            <div class="small text-muted">
+                                                {{ order.items[i].variant.sku }}
+                                                <span *ngIf="getItemFormGroup(i).get('returnQty')?.value > 0">
+                                                    (x{{ getItemFormGroup(i).get('returnQty')?.value }})
+                                                </span>
+                                            </div>
+                                            <div class="small">
+                                                <span class="badge"
+                                                    [class.bg-success]="getItemFormGroup(i).get('requestedAction')?.value === RequestedRefundAction.REFUND_ONLY"
+                                                    [class.bg-primary]="getItemFormGroup(i).get('requestedAction')?.value === RequestedRefundAction.RETURN_AND_REFUND"
+                                                    [class.bg-warning]="getItemFormGroup(i).get('requestedAction')?.value === RequestedRefundAction.REPLACEMENT">
+                                                    {{ getItemFormGroup(i).get('requestedAction')?.value ===
+                                                    RequestedRefundAction.REFUND_ONLY ? 'Refund Only' :
+                                                    getItemFormGroup(i).get('requestedAction')?.value ===
+                                                    RequestedRefundAction.RETURN_AND_REFUND ? 'Return & Refund' :
+                                                    getItemFormGroup(i).get('requestedAction')?.value ===
+                                                    RequestedRefundAction.REPLACEMENT ? 'Replacement' : '' }}
+                                                </span>
+                                            </div>
+                                            <div class="small text-success"
+                                                *ngIf="getItemFormGroup(i).get('proofs')?.value?.length">
+                                                <i class="bi bi-check-circle me-1"></i>
+                                                {{ getItemFormGroup(i).get('proofs')?.value?.length }} file(s)
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ng-container>
+                            <ng-template #noReturnItems>
+                                <div class="text-muted fst-italic small">No items selected for return.</div>
+                            </ng-template>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</main>

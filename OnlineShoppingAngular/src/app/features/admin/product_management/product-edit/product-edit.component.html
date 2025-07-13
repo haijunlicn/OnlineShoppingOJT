@@ -1,608 +1,628 @@
-<app-admin-header></app-admin-header>
-<div class="d-flex" style="min-height: 100vh;">
-    <app-admin-sidebar></app-admin-sidebar>
-    <main class="flex-grow-1 bg-light py-3 px-3">
-        <div class="main-content container-fluid">
-            <div class="card shadow-sm border-0 mb-3">
-                <div class="card-header bg-primary text-white py-2">
-                    <h5 class="mb-0">{{ productId ? 'Edit Product Info' : 'Create Product Info' }}</h5>
-                </div>
-                <div class="card-body p-3">
-                    <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
-                        <!-- Basic Info Section (keeping the same as before) -->
-                        <div class="row">
-                            <!-- Left Column - Basic Info -->
-                            <div class="col-md-6 pe-md-3">
-                                <h6 class="text-muted mb-2 border-bottom pb-1">Basic Information</h6>
 
-                                <!-- Product Name -->
-                                <div class="mb-2">
-                                    <label for="name" class="form-label small fw-semibold mb-1">
-                                        Product Name <span class="text-danger">*</span>
-                                    </label>
-                                    <input type="text" id="name" class="form-control form-control-sm"
-                                        [class.is-invalid]="hasError('name')" formControlName="name"
-                                        placeholder="Enter product name">
-                                    <div class="invalid-feedback small" *ngIf="hasError('name')">
-                                        {{ getErrorMessage('name') }}
-                                    </div>
-                                </div>
+            <div class="main-content container-fluid">
+                <div class="card shadow-sm border-0 mb-3">
+                    <div class="card-header bg-primary text-white py-2">
+                        <h5 class="mb-0">{{ productId ? 'Edit Product Info' : 'Create Product Info' }}</h5>
+                    </div>
+                    <div class="card-body p-3">
+                        <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
+                            <!-- Basic Info Section (keeping the same as before) -->
+                            <div class="row">
+                                <!-- Left Column - Basic Info -->
+                                <div class="col-md-6 pe-md-3">
+                                    <h6 class="text-muted mb-2 border-bottom pb-1">Basic Information</h6>
 
-                                <!-- Brand and Category -->
-                                <div class="row">
-                                    <div class="col-6 mb-2">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <label for="brand" class="form-label small fw-semibold mb-1 mb-0">
-                                                Brand
-                                            </label>
-                                            <button type="button" class="btn btn-link btn-sm p-0"
-                                                (click)="openBrandDialog()">
-                                                + Add brand
-                                            </button>
+                                    <!-- Product Name -->
+                                    <div class="mb-2">
+                                        <label for="name" class="form-label small fw-semibold mb-1">
+                                            Product Name <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" id="name" class="form-control form-control-sm"
+                                            [class.is-invalid]="hasError('name')" formControlName="name"
+                                            placeholder="Enter product name">
+                                        <div class="invalid-feedback small" *ngIf="hasError('name')">
+                                            {{ getErrorMessage('name') }}
                                         </div>
-
-                                        <select id="brand" class="form-select form-select-sm"
-                                            [class.is-invalid]="hasError('brandId')" formControlName="brandId">
-                                            <option value="">Select Brand</option>
-                                            <option *ngFor="let brand of brands" [value]="brand.id">
-                                                {{ brand.name }}
-                                            </option>
-                                        </select>
                                     </div>
 
-                                    <!-- Category Dropdown -->
-                                    <div class="col-6 mb-2">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <label for="category" class="form-label small fw-semibold mb-1">
-                                                Category <span class="text-danger">*</span>
-                                            </label>
-                                            <button type="button" class="btn btn-link btn-sm p-0"
-                                                (click)="openCategoryDialogForNew()">
-                                                + Add category
-                                            </button>
+                                    <!-- Brand and Category -->
+                                    <div class="row">
+                                        <div class="col-6 mb-2">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <label for="brand" class="form-label small fw-semibold mb-1 mb-0">
+                                                    Brand
+                                                </label>
+                                                <button type="button" class="btn btn-link btn-sm p-0"
+                                                    (click)="openBrandDialog()">
+                                                    + Add brand
+                                                </button>
+                                            </div>
+
+                                            <select id="brand" class="form-select form-select-sm"
+                                                [class.is-invalid]="hasError('brandId')" formControlName="brandId">
+                                                <option value="">Select Brand</option>
+                                                <option *ngFor="let brand of brands" [value]="brand.id">
+                                                    {{ brand.name }}
+                                                </option>
+                                            </select>
                                         </div>
 
-                                        <div class="dropdown">
-                                            <button
-                                                class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-start d-flex justify-content-between align-items-center"
-                                                [class.is-invalid]="hasError('categoryId')" type="button"
-                                                id="categoryDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                                <span class="dropdown-text text-truncate w-100">
-                                                    <span *ngIf="!selectedCategory" class="text-muted">
-                                                        Select Category
+                                        <!-- Category Dropdown -->
+                                        <div class="col-6 mb-2">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <label for="category" class="form-label small fw-semibold mb-1">
+                                                    Category <span class="text-danger">*</span>
+                                                </label>
+                                                <button type="button" class="btn btn-link btn-sm p-0"
+                                                    (click)="openCategoryDialogForNew()">
+                                                    + Add category
+                                                </button>
+                                            </div>
+
+                                            <div class="dropdown">
+                                                <button
+                                                    class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-start d-flex justify-content-between align-items-center"
+                                                    [class.is-invalid]="hasError('categoryId')" type="button"
+                                                    id="categoryDropdown" data-bs-toggle="dropdown"
+                                                    aria-expanded="false">
+                                                    <span class="dropdown-text text-truncate w-100">
+                                                        <span *ngIf="!selectedCategory" class="text-muted">
+                                                            Select Category
+                                                        </span>
+                                                        <span *ngIf="selectedCategory" class="text-dark">
+                                                            {{ getSelectedCategoryPath() }}
+                                                        </span>
                                                     </span>
-                                                    <span *ngIf="selectedCategory" class="text-dark">
-                                                        {{ getSelectedCategoryPath() }}
-                                                    </span>
-                                                </span>
-                                            </button>
-
-                                            <ul class="dropdown-menu w-100 category-dropdown"
-                                                aria-labelledby="categoryDropdown">
-                                                <ng-container
-                                                    *ngTemplateOutlet="categoryTemplate; context: { categories: categories }"></ng-container>
-
-                                                <ng-template #categoryTemplate let-categories="categories">
-                                                    <li *ngFor="let category of categories" class="dropdown-submenu">
-                                                        <div class="category-item">
-                                                            <button type="button"
-                                                                class="dropdown-item d-flex justify-content-between align-items-center"
-                                                                [class]="getCategoryIndentClass(category.level || 0)"
-                                                                (click)="selectCategory(category, $event)">
-                                                                <span>{{ category.name }}</span>
-                                                                <i *ngIf="category.children?.length"
-                                                                    class="fas fa-chevron-right small text-muted"></i>
-                                                            </button>
-
-                                                            <ul *ngIf="category.children?.length" class="submenu">
-                                                                <ng-container
-                                                                    *ngTemplateOutlet="categoryTemplate; context: { categories: category.children }"></ng-container>
-                                                            </ul>
-                                                        </div>
-                                                    </li>
-                                                </ng-template>
-                                            </ul>
-                                        </div>
-                                        <div class="invalid-feedback small" *ngIf="hasError('categoryId')">
-                                            {{ getErrorMessage('categoryId') }}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Description -->
-                                <div class="mb-2">
-                                    <label for="description" class="form-label small fw-semibold mb-1">
-                                        Description <span class="text-danger">*</span>
-                                    </label>
-                                    <textarea id="description" class="form-control form-control-sm"
-                                        [class.is-invalid]="hasError('description')" formControlName="description"
-                                        rows="3" placeholder="Enter product description"></textarea>
-                                    <div class="invalid-feedback small" *ngIf="hasError('description')">
-                                        {{ getErrorMessage('description') }}
-                                    </div>
-                                </div>
-
-                                <!-- Base Price -->
-                                <div class="mb-3">
-                                    <label for="basePrice" class="form-label small fw-semibold mb-1">
-                                        Base Price <span class="text-danger">*</span>
-                                    </label>
-                                    <div class="input-group input-group-sm">
-                                        <span class="input-group-text">MMK</span>
-
-                                        <input type="text" class="form-control form-control-sm" [value]="displayPrice"
-                                            (input)="onDisplayPriceInput($event)" mask="separator" thousandSeparator=","
-                                            decimalMarker="." [dropSpecialCharacters]="false" placeholder="0.00" />
-                                        <input type="hidden" formControlName="basePrice" />
-
-                                    </div>
-                                </div>
-
-                                <!-- Image Pool Section (same as before) -->
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <label class="form-label small fw-semibold mb-0">Product Images</label>
-                                        <small class="text-muted">{{ imagePool.length }}/10</small>
-                                    </div>
-
-                                    <div class="row g-2 mb-2" *ngIf="imagePool.length > 0">
-                                        <div class="col-4 col-md-3" *ngFor="let img of imagePool; let i = index">
-                                            <div class="position-relative image-pool-item">
-                                                <img [src]="img.previewUrl" alt="Preview" class="img-thumbnail w-100"
-                                                    style="height: 80px; object-fit: cover;">
-
-                                                <button type="button" class="btn btn-danger btn-sm position-absolute"
-                                                    style="top: -8px; right: -8px; font-size: 0.7rem; width: 20px; height: 20px; padding: 0;"
-                                                    (click)="removeImageFromPool(img.id)">
-                                                    <i class="fas fa-times"></i>
                                                 </button>
 
-                                                <button type="button" class="btn btn-sm position-absolute"
-                                                    style="bottom: -8px; left: -8px; font-size: 0.7rem; width: 24px; height: 20px; padding: 0;"
-                                                    [class.btn-success]="img.isMain" [class.btn-warning]="!img.isMain"
-                                                    (click)="setMainImage(img.id)" title="Set as main image">
-                                                    <i class="fas fa-star"></i>
-                                                </button>
+                                                <ul class="dropdown-menu w-100 category-dropdown"
+                                                    aria-labelledby="categoryDropdown">
+                                                    <ng-container
+                                                        *ngTemplateOutlet="categoryTemplate; context: { categories: categories }"></ng-container>
 
-                                                <div class="position-absolute reorder-controls"
-                                                    style="top: -8px; left: -8px; display: flex; flex-direction: column; gap: 2px;">
-                                                    <button type="button" class="btn btn-secondary btn-sm"
-                                                        style="font-size: 0.6rem; width: 18px; height: 16px; padding: 0;"
-                                                        [disabled]="!canMoveUp(img.id)" (click)="moveImageUp(img.id)"
-                                                        title="Move up">
-                                                        <i class="fas fa-chevron-up"></i>
-                                                    </button>
-                                                    <button type="button" class="btn btn-secondary btn-sm"
-                                                        style="font-size: 0.6rem; width: 18px; height: 16px; padding: 0;"
-                                                        [disabled]="!canMoveDown(img.id)"
-                                                        (click)="moveImageDown(img.id)" title="Move down">
-                                                        <i class="fas fa-chevron-down"></i>
-                                                    </button>
-                                                </div>
+                                                    <ng-template #categoryTemplate let-categories="categories">
+                                                        <li *ngFor="let category of categories"
+                                                            class="dropdown-submenu">
+                                                            <div class="category-item">
+                                                                <button type="button"
+                                                                    class="dropdown-item d-flex justify-content-between align-items-center"
+                                                                    [class]="getCategoryIndentClass(category.level || 0)"
+                                                                    (click)="selectCategory(category, $event)">
+                                                                    <span>{{ category.name }}</span>
+                                                                    <i *ngIf="category.children?.length"
+                                                                        class="fas fa-chevron-right small text-muted"></i>
+                                                                </button>
 
-                                                <span *ngIf="img.isMain" class="badge bg-success position-absolute"
-                                                    style="top: 2px; left: 2px; font-size: 0.6rem;">Main</span>
-
-                                                <span class="badge bg-primary position-absolute"
-                                                    style="bottom: 2px; right: 2px; font-size: 0.6rem;">{{ i + 1
-                                                    }}</span>
+                                                                <ul *ngIf="category.children?.length" class="submenu">
+                                                                    <ng-container
+                                                                        *ngTemplateOutlet="categoryTemplate; context: { categories: category.children }"></ng-container>
+                                                                </ul>
+                                                            </div>
+                                                        </li>
+                                                    </ng-template>
+                                                </ul>
+                                            </div>
+                                            <div class="invalid-feedback small" *ngIf="hasError('categoryId')">
+                                                {{ getErrorMessage('categoryId') }}
                                             </div>
                                         </div>
                                     </div>
 
-                                    <button type="button" class="btn btn-outline-primary btn-sm w-100"
-                                        [disabled]="imagePool.length >= 10" (click)="triggerImageUpload()">
-                                        <i class="fas fa-plus me-1"></i>
-                                        Add Images ({{ imagePool.length }}/10)
-                                    </button>
-                                    <input type="file" #productFileInput class="d-none"
-                                        (change)="onImagesSelected($event)" accept="image/*" multiple>
+                                    <!-- Description -->
+                                    <div class="mb-2">
+                                        <label for="description" class="form-label small fw-semibold mb-1">
+                                            Description <span class="text-danger">*</span>
+                                        </label>
+                                        <textarea id="description" class="form-control form-control-sm"
+                                            [class.is-invalid]="hasError('description')" formControlName="description"
+                                            rows="3" placeholder="Enter product description"></textarea>
+                                        <div class="invalid-feedback small" *ngIf="hasError('description')">
+                                            {{ getErrorMessage('description') }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Base Price -->
+                                    <div class="mb-3">
+                                        <label for="basePrice" class="form-label small fw-semibold mb-1">
+                                            Base Price <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text">MMK</span>
+
+                                            <input type="text" class="form-control form-control-sm"
+                                                [value]="displayPrice" (input)="onDisplayPriceInput($event)"
+                                                mask="separator" thousandSeparator="," decimalMarker="."
+                                                [dropSpecialCharacters]="false" placeholder="0.00" />
+                                            <input type="hidden" formControlName="basePrice" />
+
+                                        </div>
+                                    </div>
+
+                                    <!-- Image Pool Section (same as before) -->
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <label class="form-label small fw-semibold mb-0">Product Images</label>
+                                            <small class="text-muted">{{ imagePool.length }}/10</small>
+                                        </div>
+
+                                        <div class="row g-2 mb-2" *ngIf="imagePool.length > 0">
+                                            <div class="col-4 col-md-3" *ngFor="let img of imagePool; let i = index">
+                                                <div class="position-relative image-pool-item">
+                                                    <img [src]="img.previewUrl" alt="Preview"
+                                                        class="img-thumbnail w-100"
+                                                        style="height: 80px; object-fit: cover;">
+
+                                                    <button type="button"
+                                                        class="btn btn-danger btn-sm position-absolute"
+                                                        style="top: -8px; right: -8px; font-size: 0.7rem; width: 20px; height: 20px; padding: 0;"
+                                                        (click)="removeImageFromPool(img.id)">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+
+                                                    <button type="button" class="btn btn-sm position-absolute"
+                                                        style="bottom: -8px; left: -8px; font-size: 0.7rem; width: 24px; height: 20px; padding: 0;"
+                                                        [class.btn-success]="img.isMain"
+                                                        [class.btn-warning]="!img.isMain" (click)="setMainImage(img.id)"
+                                                        title="Set as main image">
+                                                        <i class="fas fa-star"></i>
+                                                    </button>
+
+                                                    <div class="position-absolute reorder-controls"
+                                                        style="top: -8px; left: -8px; display: flex; flex-direction: column; gap: 2px;">
+                                                        <button type="button" class="btn btn-secondary btn-sm"
+                                                            style="font-size: 0.6rem; width: 18px; height: 16px; padding: 0;"
+                                                            [disabled]="!canMoveUp(img.id)"
+                                                            (click)="moveImageUp(img.id)" title="Move up">
+                                                            <i class="fas fa-chevron-up"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-secondary btn-sm"
+                                                            style="font-size: 0.6rem; width: 18px; height: 16px; padding: 0;"
+                                                            [disabled]="!canMoveDown(img.id)"
+                                                            (click)="moveImageDown(img.id)" title="Move down">
+                                                            <i class="fas fa-chevron-down"></i>
+                                                        </button>
+                                                    </div>
+
+                                                    <span *ngIf="img.isMain" class="badge bg-success position-absolute"
+                                                        style="top: 2px; left: 2px; font-size: 0.6rem;">Main</span>
+
+                                                    <span class="badge bg-primary position-absolute"
+                                                        style="bottom: 2px; right: 2px; font-size: 0.6rem;">{{ i + 1
+                                                        }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm w-100"
+                                            [disabled]="imagePool.length >= 10" (click)="triggerImageUpload()">
+                                            <i class="fas fa-plus me-1"></i>
+                                            Add Images ({{ imagePool.length }}/10)
+                                        </button>
+                                        <input type="file" #productFileInput class="d-none"
+                                            (change)="onImagesSelected($event)" accept="image/*" multiple>
+                                    </div>
+                                </div>
+
+                                <!-- Right Column - Options (same as before) -->
+                                <div class="col-md-6 ps-md-3">
+                                    <div
+                                        class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
+                                        <h6 class="text-muted mb-0">Product Options</h6>
+                                        <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2"
+                                            (click)="addOption()">
+                                            <i class="fas fa-plus me-1"></i>
+                                            Add Option
+                                        </button>
+                                    </div>
+
+                                    <div style="height: 400px; overflow-y: auto;" class="border rounded p-2 bg-white">
+                                        <div formArrayName="options" class="options-container">
+                                            <div *ngFor="let option of options.controls; let i = index"
+                                                [formGroupName]="i"
+                                                class="option-box mb-2 border-start border-primary ps-2">
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                    <small class="text-primary fw-semibold">Option {{ i + 1 }}</small>
+                                                    <button type="button"
+                                                        class="btn btn-outline-danger btn-sm py-0 px-1"
+                                                        (click)="removeOption(i)">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+
+                                                <div class="row g-2">
+                                                    <div class="col-5">
+                                                        <div class="input-group input-group-sm">
+                                                            <select class="form-select" formControlName="id"
+                                                                (change)="onOptionTypeChange(i)"
+                                                                [class.is-invalid]="option.get('id')?.invalid && option.get('id')?.touched">
+                                                                <option value="">Select Type</option>
+                                                                <option *ngFor="let type of optionTypes"
+                                                                    [value]="type.id">
+                                                                    {{ type.name }}</option>
+                                                            </select>
+                                                            <button type="button" class="btn btn-outline-secondary"
+                                                                (click)="openAddOptionDialog()">+</button>
+                                                        </div>
+                                                        <div class="invalid-feedback small"
+                                                            *ngIf="option.get('id')?.invalid && option.get('id')?.touched">
+                                                            Option type is required
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-7">
+                                                        <div *ngIf="option.get('id')?.value; else noTypeSelected"
+                                                            class="dropdown">
+                                                            <button
+                                                                class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-start d-flex justify-content-between align-items-center"
+                                                                type="button" [id]="'optionDropdown' + i"
+                                                                data-bs-toggle="dropdown" aria-expanded="false"
+                                                                [class.is-invalid]="option.get('values')?.invalid && option.get('values')?.touched">
+                                                                <span class="dropdown-text">
+                                                                    <span *ngIf="getSelectedValuesCount(i) === 0"
+                                                                        class="text-muted">Select values</span>
+                                                                    <span *ngIf="getSelectedValuesCount(i) > 0"
+                                                                        class="text-dark">{{ getSelectedValuesCount(i)
+                                                                        }}
+                                                                        selected</span>
+                                                                </span>
+                                                            </button>
+
+                                                            <ul class="dropdown-menu w-100"
+                                                                [attr.aria-labelledby]="'optionDropdown' + i">
+                                                                <li
+                                                                    *ngFor="let value of getOptionValues(option.get('id')?.value)">
+                                                                    <div class="dropdown-item-check px-3 py-1">
+                                                                        <div class="form-check">
+                                                                            <input class="form-check-input"
+                                                                                type="checkbox"
+                                                                                [id]="'option_' + i + '_' + value.id"
+                                                                                [checked]="isValueSelected(i, value.value)"
+                                                                                (change)="toggleOptionValue(i, value.value)" />
+                                                                            <label class="form-check-label small"
+                                                                                [for]="'option_' + i + '_' + value.id">
+                                                                                {{ value.value }}
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                </li>
+                                                                <li
+                                                                    *ngIf="getOptionValues(option.get('id')?.value)?.length === 0">
+                                                                    <span class="dropdown-item-text small text-muted">No
+                                                                        values available</span>
+                                                                </li>
+                                                                <li>
+                                                                    <button type="button"
+                                                                        class="dropdown-item text-primary small"
+                                                                        (click)="openAddOptionValueDialog(option.get('id')?.value)">
+                                                                        + Add new value
+                                                                    </button>
+                                                                </li>
+                                                            </ul>
+
+                                                            <div class="invalid-feedback small"
+                                                                *ngIf="option.get('values')?.invalid && option.get('values')?.touched">
+                                                                Please select at least one value
+                                                            </div>
+                                                        </div>
+
+                                                        <ng-template #noTypeSelected>
+                                                            <button
+                                                                class="btn btn-outline-secondary btn-sm w-100 text-start"
+                                                                type="button" disabled>
+                                                                <span class="text-muted small">Select type first</span>
+                                                            </button>
+                                                        </ng-template>
+
+                                                        <div class="selected-values mt-1"
+                                                            *ngIf="option.get('values')?.value?.length > 0">
+                                                            <span class="badge bg-light text-dark border me-1 mb-1"
+                                                                *ngFor="let val of option.get('values')?.value">
+                                                                {{ val }}
+                                                                <button type="button"
+                                                                    class="btn-close btn-close-sm ms-1"
+                                                                    (click)="removeOptionValue(i, val)"
+                                                                    aria-label="Remove"></button>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div *ngIf="options.length === 0" class="text-center py-2">
+                                                <small class="text-muted">No options added yet</small>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Right Column - Options (same as before) -->
-                            <div class="col-md-6 ps-md-3">
-                                <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
-                                    <h6 class="text-muted mb-0">Product Options</h6>
-                                    <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2"
-                                        (click)="addOption()">
-                                        <i class="fas fa-plus me-1"></i>
-                                        Add Option
-                                    </button>
-                                </div>
-
-                                <div style="height: 400px; overflow-y: auto;" class="border rounded p-2 bg-white">
-                                    <div formArrayName="options" class="options-container">
-                                        <div *ngFor="let option of options.controls; let i = index" [formGroupName]="i"
-                                            class="option-box mb-2 border-start border-primary ps-2">
-                                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                                <small class="text-primary fw-semibold">Option {{ i + 1 }}</small>
-                                                <button type="button" class="btn btn-outline-danger btn-sm py-0 px-1"
-                                                    (click)="removeOption(i)">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                            </div>
-
-                                            <div class="row g-2">
-                                                <div class="col-5">
-                                                    <div class="input-group input-group-sm">
-                                                        <select class="form-select" formControlName="id"
-                                                            (change)="onOptionTypeChange(i)"
-                                                            [class.is-invalid]="option.get('id')?.invalid && option.get('id')?.touched">
-                                                            <option value="">Select Type</option>
-                                                            <option *ngFor="let type of optionTypes" [value]="type.id">
-                                                                {{ type.name }}</option>
-                                                        </select>
-                                                        <button type="button" class="btn btn-outline-secondary"
-                                                            (click)="openAddOptionDialog()">+</button>
+                            <!-- UNIFIED VARIANTS SECTION -->
+                            <div class="row mt-3" *ngIf="getTotalVariantsCount() > 0">
+                                <div class="col-12">
+                                    <div class="card border">
+                                        <div class="card-header bg-light py-2">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h6 class="mb-0">
+                                                    <i class="fas fa-list me-2"></i>
+                                                    Product Variants ({{ getTotalVariantsCount() }})
+                                                    <span class="badge bg-info ms-2"
+                                                        *ngIf="existingVariants.length > 0">{{
+                                                        existingVariants.length }} Existing</span>
+                                                    <span class="badge bg-success ms-2"
+                                                        *ngIf="newVariants.length > 0">{{
+                                                        newVariants.length }} New</span>
+                                                </h6>
+                                                <div class="d-flex gap-2">
+                                                    <div class="input-group input-group-sm" style="width: 120px;">
+                                                        <span class="input-group-text">Stock:</span>
+                                                        <input type="number" class="form-control"
+                                                            [(ngModel)]="bulkStockValue"
+                                                            [ngModelOptions]="{standalone: true}" min="0" step="1">
                                                     </div>
-                                                    <div class="invalid-feedback small"
-                                                        *ngIf="option.get('id')?.invalid && option.get('id')?.touched">
-                                                        Option type is required
+                                                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                                                        (click)="applyBulkStock()">
+                                                        <i class="fas fa-boxes me-1"></i>
+                                                        Apply Bulk Stock
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-primary btn-sm"
+                                                        (click)="toggleBulkAssignmentMode()">
+                                                        <i class="fas fa-images me-1"></i>
+                                                        {{ bulkAssignmentMode ? 'Exit Bulk Mode' 
+                                                        : 'Bulk Image Assignment'
+                                                        }}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-body p-2">
+                                            <!-- Bulk Assignment Controls -->
+                                            <div class="alert alert-info py-2 mb-2" *ngIf="bulkAssignmentMode">
+                                                <div class="row align-items-center">
+                                                    <div class="col-md-4">
+                                                        <small class="fw-semibold">Bulk Image Assignment Mode</small>
+                                                        <div class="small text-muted">Select variants and assign image
+                                                            to
+                                                            all selected</div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <select class="form-select form-select-sm"
+                                                            [(ngModel)]="selectedImageForBulkAssignment"
+                                                            [ngModelOptions]="{standalone: true}">
+                                                            <option value="">Select Image</option>
+                                                            <option value="clear">Clear Image</option>
+                                                            <option *ngFor="let img of imagePool; let i = index"
+                                                                [value]="img.id">
+                                                                Image {{ i + 1 }}{{ img.isMain ? ' (Main)' : '' }}
+                                                            </option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="d-flex gap-1">
+                                                            <button type="button" class="btn btn-outline-primary btn-sm"
+                                                                (click)="selectAllVariants()">
+                                                                Select All
+                                                            </button>
+                                                            <button type="button"
+                                                                class="btn btn-outline-secondary btn-sm"
+                                                                (click)="clearVariantSelection()">
+                                                                Clear
+                                                            </button>
+                                                            <button type="button" class="btn btn-primary btn-sm"
+                                                                [disabled]="!selectedImageForBulkAssignment || selectedVariants.size === 0"
+                                                                (click)="applyBulkImageAssignment()">
+                                                                Apply ({{ getSelectedVariantsCount() }})
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
+                                            </div>
 
-                                                <div class="col-7">
-                                                    <div *ngIf="option.get('id')?.value; else noTypeSelected"
-                                                        class="dropdown">
-                                                        <button
-                                                            class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-start d-flex justify-content-between align-items-center"
-                                                            type="button" [id]="'optionDropdown' + i"
-                                                            data-bs-toggle="dropdown" aria-expanded="false"
-                                                            [class.is-invalid]="option.get('values')?.invalid && option.get('values')?.touched">
-                                                            <span class="dropdown-text">
-                                                                <span *ngIf="getSelectedValuesCount(i) === 0"
-                                                                    class="text-muted">Select values</span>
-                                                                <span *ngIf="getSelectedValuesCount(i) > 0"
-                                                                    class="text-dark">{{ getSelectedValuesCount(i) }}
-                                                                    selected</span>
-                                                            </span>
-                                                        </button>
-
-                                                        <ul class="dropdown-menu w-100"
-                                                            [attr.aria-labelledby]="'optionDropdown' + i">
-                                                            <li
-                                                                *ngFor="let value of getOptionValues(option.get('id')?.value)">
-                                                                <div class="dropdown-item-check px-3 py-1">
-                                                                    <div class="form-check">
-                                                                        <input class="form-check-input" type="checkbox"
-                                                                            [id]="'option_' + i + '_' + value.id"
-                                                                            [checked]="isValueSelected(i, value.value)"
-                                                                            (change)="toggleOptionValue(i, value.value)" />
-                                                                        <label class="form-check-label small"
-                                                                            [for]="'option_' + i + '_' + value.id">
-                                                                            {{ value.value }}
-                                                                        </label>
+                                            <div class="table-responsive">
+                                                <table class="table table-sm table-hover mb-0">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th *ngIf="bulkAssignmentMode" style="width: 40px;">
+                                                                <input type="checkbox" class="form-check-input"
+                                                                    [checked]="getSelectedVariantsCount() === getTotalVariantsCount() && getTotalVariantsCount() > 0"
+                                                                    (change)="getSelectedVariantsCount() === getTotalVariantsCount() ? clearVariantSelection() : selectAllVariants()">
+                                                            </th>
+                                                            <th>#</th>
+                                                            <th>Status</th>
+                                                            <th>Variant</th>
+                                                            <th>Image Assignment</th>
+                                                            <th>Price (MMK)</th>
+                                                            <th>Stock</th>
+                                                            <th>SKU</th>
+                                                            <th>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody formArrayName="variants">
+                                                        <tr *ngFor="let variantCtrl of variants.controls; let i = index"
+                                                            [formGroupName]="i"
+                                                            [class.table-warning]="bulkAssignmentMode && isVariantSelected(i)"
+                                                            [class.table-light]="isExistingVariant(i)">
+                                                            <td *ngIf="bulkAssignmentMode">
+                                                                <input type="checkbox" class="form-check-input"
+                                                                    [checked]="isVariantSelected(i)"
+                                                                    (change)="toggleVariantSelection(i)"
+                                                                    [disabled]="!canSelectVariantForBulk(i)">
+                                                            </td>
+                                                            <td>{{ i + 1 }}</td>
+                                                            <td>
+                                                                <span class="badge"
+                                                                    [class]="getVariantStatusBadgeClass(i)">
+                                                                    <i class="fas"
+                                                                        [class.fa-database]="isExistingVariant(i)"
+                                                                        [class.fa-plus-circle]="!isExistingVariant(i)"></i>
+                                                                    {{ getVariantStatusText(i) }}
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                <div class="variant-options">
+                                                                    <div class="fw-semibold small mb-1">
+                                                                        {{ getVariantDisplayLabel(i) }}
+                                                                    </div>
+                                                                    <div *ngIf="getVariantAtIndex(i).options.length > 0"
+                                                                        class="small text-muted">
+                                                                        <span
+                                                                            *ngFor="let option of getVariantAtIndex(i).options; let last = last">
+                                                                            {{ option.optionName }}: {{ option.valueName
+                                                                            }}{{ !last ? ', ' : '' }}
+                                                                        </span>
                                                                     </div>
                                                                 </div>
-                                                            </li>
-                                                            <li
-                                                                *ngIf="getOptionValues(option.get('id')?.value)?.length === 0">
-                                                                <span class="dropdown-item-text small text-muted">No
-                                                                    values available</span>
-                                                            </li>
-                                                            <li>
+                                                            </td>
+                                                            <td>
+                                                                <div class="d-flex align-items-center gap-2">
+                                                                    <div *ngIf="getAssignedImage(i)"
+                                                                        class="flex-shrink-0">
+                                                                        <img [src]="getAssignedImage(i)!.previewUrl"
+                                                                            alt="Assigned image" class="img-thumbnail"
+                                                                            style="width: 50px; height: 50px; object-fit: cover;">
+                                                                    </div>
+                                                                    <div *ngIf="!getAssignedImage(i)"
+                                                                        class="flex-shrink-0 d-flex align-items-center justify-content-center border rounded"
+                                                                        style="width: 50px; height: 50px; background-color: #f8f9fa;">
+                                                                        <i class="fas fa-image text-muted"></i>
+                                                                    </div>
+                                                                    <div class="flex-grow-1">
+                                                                        <select class="form-select form-select-sm"
+                                                                            formControlName="assignedImageId">
+                                                                            <option value="">No Image</option>
+                                                                            <option
+                                                                                *ngFor="let img of getAvailableImagesForVariant(); let imgIndex = index"
+                                                                                [value]="img.id">
+                                                                                Image {{ imgIndex + 1 }}{{ img.isMain ?
+                                                                                '
+                                                                                (Main)' : '' }}
+                                                                            </option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <app-price-display-input #priceInput
+                                                                    [control]="getFormControl(variantCtrl.get('price'))"></app-price-display-input>
+                                                            </td>
+                                                            <td>
+                                                                <input type="number"
+                                                                    class="form-control form-control-sm"
+                                                                    formControlName="stock" min="0" step="1">
+                                                            </td>
+                                                            <td class="small text-muted">
+                                                                {{ getSkuForVariant(i) }}
+                                                            </td>
+                                                            <td>
                                                                 <button type="button"
-                                                                    class="dropdown-item text-primary small"
-                                                                    (click)="openAddOptionValueDialog(option.get('id')?.value)">
-                                                                    + Add new value
+                                                                    class="btn btn-outline-danger btn-sm"
+                                                                    (click)="removeVariant(i)">
+                                                                    <i class="fas fa-trash"
+                                                                        style="font-size: 0.75rem;"></i>
                                                                 </button>
-                                                            </li>
-                                                        </ul>
-
-                                                        <div class="invalid-feedback small"
-                                                            *ngIf="option.get('values')?.invalid && option.get('values')?.touched">
-                                                            Please select at least one value
-                                                        </div>
-                                                    </div>
-
-                                                    <ng-template #noTypeSelected>
-                                                        <button
-                                                            class="btn btn-outline-secondary btn-sm w-100 text-start"
-                                                            type="button" disabled>
-                                                            <span class="text-muted small">Select type first</span>
-                                                        </button>
-                                                    </ng-template>
-
-                                                    <div class="selected-values mt-1"
-                                                        *ngIf="option.get('values')?.value?.length > 0">
-                                                        <span class="badge bg-light text-dark border me-1 mb-1"
-                                                            *ngFor="let val of option.get('values')?.value">
-                                                            {{ val }}
-                                                            <button type="button" class="btn-close btn-close-sm ms-1"
-                                                                (click)="removeOptionValue(i, val)"
-                                                                aria-label="Remove"></button>
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div *ngIf="options.length === 0" class="text-center py-2">
-                                            <small class="text-muted">No options added yet</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- UNIFIED VARIANTS SECTION -->
-                        <div class="row mt-3" *ngIf="getTotalVariantsCount() > 0">
-                            <div class="col-12">
-                                <div class="card border">
-                                    <div class="card-header bg-light py-2">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <h6 class="mb-0">
-                                                <i class="fas fa-list me-2"></i>
-                                                Product Variants ({{ getTotalVariantsCount() }})
-                                                <span class="badge bg-info ms-2" *ngIf="existingVariants.length > 0">{{
-                                                    existingVariants.length }} Existing</span>
-                                                <span class="badge bg-success ms-2" *ngIf="newVariants.length > 0">{{
-                                                    newVariants.length }} New</span>
-                                            </h6>
-                                            <div class="d-flex gap-2">
-                                                <div class="input-group input-group-sm" style="width: 120px;">
-                                                    <span class="input-group-text">Stock:</span>
-                                                    <input type="number" class="form-control"
-                                                        [(ngModel)]="bulkStockValue"
-                                                        [ngModelOptions]="{standalone: true}" min="0" step="1">
-                                                </div>
-                                                <button type="button" class="btn btn-outline-secondary btn-sm"
-                                                    (click)="applyBulkStock()">
-                                                    <i class="fas fa-boxes me-1"></i>
-                                                    Apply Bulk Stock
-                                                </button>
-                                                <button type="button" class="btn btn-outline-primary btn-sm"
-                                                    (click)="toggleBulkAssignmentMode()">
-                                                    <i class="fas fa-images me-1"></i>
-                                                    {{ bulkAssignmentMode ? 'Exit Bulk Mode' : 'Bulk Image Assignment'
-                                                    }}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="card-body p-2">
-                                        <!-- Bulk Assignment Controls -->
-                                        <div class="alert alert-info py-2 mb-2" *ngIf="bulkAssignmentMode">
-                                            <div class="row align-items-center">
-                                                <div class="col-md-4">
-                                                    <small class="fw-semibold">Bulk Image Assignment Mode</small>
-                                                    <div class="small text-muted">Select variants and assign image to
-                                                        all selected</div>
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <select class="form-select form-select-sm"
-                                                        [(ngModel)]="selectedImageForBulkAssignment"
-                                                        [ngModelOptions]="{standalone: true}">
-                                                        <option value="">Select Image</option>
-                                                        <option value="clear">Clear Image</option>
-                                                        <option *ngFor="let img of imagePool; let i = index"
-                                                            [value]="img.id">
-                                                            Image {{ i + 1 }}{{ img.isMain ? ' (Main)' : '' }}
-                                                        </option>
-                                                    </select>
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <div class="d-flex gap-1">
-                                                        <button type="button" class="btn btn-outline-primary btn-sm"
-                                                            (click)="selectAllVariants()">
-                                                            Select All
-                                                        </button>
-                                                        <button type="button" class="btn btn-outline-secondary btn-sm"
-                                                            (click)="clearVariantSelection()">
-                                                            Clear
-                                                        </button>
-                                                        <button type="button" class="btn btn-primary btn-sm"
-                                                            [disabled]="!selectedImageForBulkAssignment || selectedVariants.size === 0"
-                                                            (click)="applyBulkImageAssignment()">
-                                                            Apply ({{ getSelectedVariantsCount() }})
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="table-responsive">
-                                            <table class="table table-sm table-hover mb-0">
-                                                <thead class="table-light">
-                                                    <tr>
-                                                        <th *ngIf="bulkAssignmentMode" style="width: 40px;">
-                                                            <input type="checkbox" class="form-check-input"
-                                                                [checked]="getSelectedVariantsCount() === getTotalVariantsCount() && getTotalVariantsCount() > 0"
-                                                                (change)="getSelectedVariantsCount() === getTotalVariantsCount() ? clearVariantSelection() : selectAllVariants()">
-                                                        </th>
-                                                        <th>#</th>
-                                                        <th>Status</th>
-                                                        <th>Variant</th>
-                                                        <th>Image Assignment</th>
-                                                        <th>Price (MMK)</th>
-                                                        <th>Stock</th>
-                                                        <th>SKU</th>
-                                                        <th>Actions</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody formArrayName="variants">
-                                                    <tr *ngFor="let variantCtrl of variants.controls; let i = index"
-                                                        [formGroupName]="i"
-                                                        [class.table-warning]="bulkAssignmentMode && isVariantSelected(i)"
-                                                        [class.table-light]="isExistingVariant(i)">
-                                                        <td *ngIf="bulkAssignmentMode">
-                                                            <input type="checkbox" class="form-check-input"
-                                                                [checked]="isVariantSelected(i)"
-                                                                (change)="toggleVariantSelection(i)"
-                                                                [disabled]="!canSelectVariantForBulk(i)">
-                                                        </td>
-                                                        <td>{{ i + 1 }}</td>
-                                                        <td>
-                                                            <span class="badge" [class]="getVariantStatusBadgeClass(i)">
-                                                                <i class="fas"
-                                                                    [class.fa-database]="isExistingVariant(i)"
-                                                                    [class.fa-plus-circle]="!isExistingVariant(i)"></i>
-                                                                {{ getVariantStatusText(i) }}
-                                                            </span>
-                                                        </td>
-                                                        <td>
-                                                            <div class="variant-options">
-                                                                <div class="fw-semibold small mb-1">
-                                                                    {{ getVariantDisplayLabel(i) }}
-                                                                </div>
-                                                                <div *ngIf="getVariantAtIndex(i).options.length > 0"
-                                                                    class="small text-muted">
-                                                                    <span
-                                                                        *ngFor="let option of getVariantAtIndex(i).options; let last = last">
-                                                                        {{ option.optionName }}: {{ option.valueName
-                                                                        }}{{ !last ? ', ' : '' }}
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            <div class="d-flex align-items-center gap-2">
-                                                                <div *ngIf="getAssignedImage(i)" class="flex-shrink-0">
-                                                                    <img [src]="getAssignedImage(i)!.previewUrl"
-                                                                        alt="Assigned image" class="img-thumbnail"
-                                                                        style="width: 50px; height: 50px; object-fit: cover;">
-                                                                </div>
-                                                                <div *ngIf="!getAssignedImage(i)"
-                                                                    class="flex-shrink-0 d-flex align-items-center justify-content-center border rounded"
-                                                                    style="width: 50px; height: 50px; background-color: #f8f9fa;">
-                                                                    <i class="fas fa-image text-muted"></i>
-                                                                </div>
-                                                                <div class="flex-grow-1">
-                                                                    <select class="form-select form-select-sm"
-                                                                        formControlName="assignedImageId">
-                                                                        <option value="">No Image</option>
-                                                                        <option
-                                                                            *ngFor="let img of getAvailableImagesForVariant(); let imgIndex = index"
-                                                                            [value]="img.id">
-                                                                            Image {{ imgIndex + 1 }}{{ img.isMain ? '
-                                                                            (Main)' : '' }}
-                                                                        </option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            <app-price-display-input #priceInput
-                                                                [control]="getFormControl(variantCtrl.get('price'))"></app-price-display-input>
-                                                        </td>
-                                                        <td>
-                                                            <input type="number" class="form-control form-control-sm"
-                                                                formControlName="stock" min="0" step="1">
-                                                        </td>
-                                                        <td class="small text-muted">
-                                                            {{ getSkuForVariant(i) }}
-                                                        </td>
-                                                        <td>
-                                                            <button type="button" class="btn btn-outline-danger btn-sm"
-                                                                (click)="removeVariant(i)">
-                                                                <i class="fas fa-trash" style="font-size: 0.75rem;"></i>
-                                                            </button>
-                                                            <!-- <button type="button" class="btn btn-outline-danger btn-sm"
+                                                                <!-- <button type="button" class="btn btn-outline-danger btn-sm"
                                                                 [disabled]="!canRemoveVariant(i)"
                                                                 (click)="removeVariant(i)"
                                                                 [title]="canRemoveVariant(i) ? 'Remove this variant' : 'Cannot remove existing variants'">
                                                                 <i class="fas fa-trash" style="font-size: 0.75rem;"></i>
                                                             </button> -->
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Enhanced Info Panel -->
-                        <div class="row mt-2" *ngIf="getTotalVariantsCount() > 0">
-                            <div class="col-12">
-                                <div class="alert alert-light border py-2">
-                                    <div class="row">
-                                        <div class="col-md-3">
-                                            <small>
-                                                <i class="fas fa-database me-1 text-info"></i>
-                                                <strong>Existing:</strong> {{ existingVariants.length }} from database
-                                            </small>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <small>
-                                                <i class="fas fa-plus-circle me-1 text-success"></i>
-                                                <strong>New:</strong> {{ newVariants.length }} generated from options
-                                            </small>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <small>
-                                                <i class="fas fa-save me-1 text-primary"></i>
-                                                <strong>Total:</strong> {{ getTotalVariantsCount() }} will be saved
-                                            </small>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <small>
-                                                <i class="fas fa-info-circle me-1 text-warning"></i>
-                                                <strong>Note:</strong> Bulk operations work on all variants
-                                            </small>
+                            <!-- Enhanced Info Panel -->
+                            <div class="row mt-2" *ngIf="getTotalVariantsCount() > 0">
+                                <div class="col-12">
+                                    <div class="alert alert-light border py-2">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <small>
+                                                    <i class="fas fa-database me-1 text-info"></i>
+                                                    <strong>Existing:</strong> {{ existingVariants.length }} from
+                                                    database
+                                                </small>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <small>
+                                                    <i class="fas fa-plus-circle me-1 text-success"></i>
+                                                    <strong>New:</strong> {{ newVariants.length }} generated from
+                                                    options
+                                                </small>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <small>
+                                                    <i class="fas fa-save me-1 text-primary"></i>
+                                                    <strong>Total:</strong> {{ getTotalVariantsCount() }} will be saved
+                                                </small>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <small>
+                                                    <i class="fas fa-info-circle me-1 text-warning"></i>
+                                                    <strong>Note:</strong> Bulk operations work on all variants
+                                                </small>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- No Variants Message -->
-                        <div class="alert alert-info" *ngIf="getTotalVariantsCount() === 0">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-info-circle me-2"></i>
-                                <div>
-                                    <strong>No variants found.</strong>
-                                    <p class="mb-0 small">Add product options above to generate variants, or this
-                                        product will use a default variant.</p>
+                            <!-- No Variants Message -->
+                            <div class="alert alert-info" *ngIf="getTotalVariantsCount() === 0">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <div>
+                                        <strong>No variants found.</strong>
+                                        <p class="mb-0 small">Add product options above to generate variants, or this
+                                            product will use a default variant.</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Submit Button -->
-                        <div class="row mt-3">
-                            <div class="col-12">
-                                <div class="d-flex justify-content-end">
-                                    <button type="button" class="btn btn-outline-secondary btn-sm me-2"
-                                        (click)="resetForm()">
-                                        Cancel
-                                    </button>
-                                    <button [disabled]="productForm.invalid || loading.submission" type="submit"
-                                        class="btn btn-primary btn-sm">
-                                        <span *ngIf="loading.submission"
-                                            class="spinner-border spinner-border-sm me-1"></span>
-                                        {{ loading.submission ? 'Updating Product...' : 'Update Product' }}
-                                    </button>
+                            <!-- Submit Button -->
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <div class="d-flex justify-content-end">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm me-2"
+                                            (click)="resetForm()">
+                                            Cancel
+                                        </button>
+                                        <button [disabled]="productForm.invalid || loading.submission" type="submit"
+                                            class="btn btn-primary btn-sm">
+                                            <span *ngIf="loading.submission"
+                                                class="spinner-border spinner-border-sm me-1"></span>
+                                            {{ loading.submission ? 'Updating Product...' : 'Update Product' }}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Error Messages -->
-                        <div *ngIf="errorMessage" class="alert alert-danger alert-sm mt-2">
-                            {{ errorMessage }}
-                        </div>
-                    </form>
+                            <!-- Error Messages -->
+                            <div *ngIf="errorMessage" class="alert alert-danger alert-sm mt-2">
+                                {{ errorMessage }}
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
-    </main>
-</div>
+            
+    <!-- Dialogs (same as before) -->
+    <app-brand-dialog [(visible)]="brandDialogVisible" [editingBrand]="null" (save)="onBrandCreated()">
+    </app-brand-dialog>
 
-<!-- Dialogs (same as before) -->
-<app-admin-footer></app-admin-footer>
+    <app-category-dialog [(visible)]="categoryDialogVisible" [editingCategory]="editingCategory"
+        [parentCategoryForNew]="parentCategoryForNew" [categoryDropdown]="categoryDropdown"
+        (save)="onCategorySaved($event)">
+    </app-category-dialog>
 
-<app-brand-dialog [(visible)]="brandDialogVisible" [editingBrand]="null" (save)="onBrandCreated()">
-</app-brand-dialog>
+    <app-option-dialog [(visible)]="optionDialogVisible" [editingOption]="editingOption"
+        (save)="onOptionTypeSaved($event)">
+    </app-option-dialog>
 
-<app-category-dialog [(visible)]="categoryDialogVisible" [editingCategory]="editingCategory"
-    [parentCategoryForNew]="parentCategoryForNew" [categoryDropdown]="categoryDropdown"
-    (save)="onCategorySaved($event)">
-</app-category-dialog>
-
-<app-option-dialog [(visible)]="optionDialogVisible" [editingOption]="editingOption" (save)="onOptionTypeSaved($event)">
-</app-option-dialog>
-
-<app-option-value-dialog [(visible)]="optionValueDialogVisible" [selectedOption]="selectedOptionTypeForDialog"
-    [editingValue]="editingOptionValue" (save)="onOptionValueSaved($event)">
-</app-option-value-dialog>
+    <app-option-value-dialog [(visible)]="optionValueDialogVisible" [selectedOption]="selectedOptionTypeForDialog"
+        [editingValue]="editingOptionValue" (save)="onOptionValueSaved($event)">
+    </app-option-value-dialog>

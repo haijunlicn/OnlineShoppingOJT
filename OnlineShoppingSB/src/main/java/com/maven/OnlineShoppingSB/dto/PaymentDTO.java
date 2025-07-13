@@ -11,5 +11,7 @@ public class PaymentDTO {
     private String methodName;
     private String qrPath;
     private String logo;
+    private String description;
     private int status;
+    private String type;
  }

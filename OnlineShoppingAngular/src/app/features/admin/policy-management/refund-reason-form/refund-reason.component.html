@@ -1,0 +1,19 @@
+<h2>{{ isEdit ? 'Update' : 'Create' }} Refund Reason</h2>
+
+<form (ngSubmit)="onSubmit()" #reasonForm="ngForm">
+  <div>
+    <label for="label">Label:</label>
+    <input type="text" id="label" name="label" [(ngModel)]="reason.label" required />
+  </div>
+
+  <div>
+    <label>
+      <input type="checkbox" name="allowCustomText" [(ngModel)]="reason.allowCustomText" />
+      Allow Custom Text
+    </label>
+  </div>
+
+  <button type="submit" [disabled]="reasonForm.invalid">
+    {{ isEdit ? 'Update' : 'Save' }}
+  </button>
+</form>

@@ -8,7 +8,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AdminHeaderComponent } from './common/admin-header/admin-header.component';
 import { AdminSidebarComponent } from './common/admin-sidebar/admin-sidebar.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
-import { AdminFooterComponent } from './common/admin-footer/admin-footer.component';
 import { HeaderComponent } from './layout/header/header.component';
 import { FooterComponent } from './layout/footer/footer.component';
 import { SidebarComponent } from './layout/sidebar/sidebar.component';
@@ -29,6 +28,7 @@ import { ColorPickerModule } from 'primeng/colorpicker';
 import { TreeModule } from 'primeng/tree';
 import { MenuModule } from 'primeng/menu';
 import { NgxMaskModule } from 'ngx-mask';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
 
 import { ProductListComponent } from './product_management/product-list/product-list.component';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
@@ -44,21 +44,25 @@ import { FaqUpdateComponent } from './policy-management/faq-update/faq-update.co
 
 import { ProductCreateComponent } from './product_management/product-create/product-create.component';
 import { ProductBulkUploadComponent } from './product_management/product-bulk-upload/product-bulk-upload.component';
-import { RoleListComponent } from './role-management/role-list/role-list.component';
-import { RoleFormComponent } from './role-management/role-form/role-form.component';
-import { PermissionListComponent } from './role-management/permission-list/permission-list.component';
-import { PermissionFormComponent } from './role-management/permission-form/permission-form.component';
-import { RoleUpdateComponent } from './role-management/role-update/role-update.component';
-import { PermissionUpdateComponent } from './role-management/permission-update/permission-update.component';
+import { RoleListComponent } from './roleAndPermission/role-list/role-list.component';
+import { RoleFormComponent } from './roleAndPermission/role-form/role-form.component';
+import { PermissionListComponent } from './roleAndPermission/permission-list/permission-list.component';
+import { PermissionFormComponent } from './roleAndPermission/permission-form/permission-form.component';
+import { RoleUpdateComponent } from './roleAndPermission/role-update/role-update.component';
+import { PermissionUpdateComponent } from './roleAndPermission/permission-update/permission-update.component';
 import { PaymentListComponent } from './payment-management/payment-list/payment-list.component';
 import { PaymentCreateComponent } from './payment-management/payment-create/payment-create.component';
-import { PaymentUpdateComponent } from './payment-management/payment-update/payment-update.component';import { ProductAttributeComponent } from './attribute_management/product-attribute/product-attribute.component';
+import { PaymentUpdateComponent } from './payment-management/payment-update/payment-update.component';
+import { ProductAttributeComponent } from './attribute_management/product-attribute/product-attribute.component';
 import { BrandDialogComponent } from './attribute_management/brand-dialog/brand-dialog.component';
 import { CategoryDialogComponent } from './attribute_management/category-dialog/category-dialog.component';
 import { OptionDialogComponent } from './attribute_management/option-dialog/option-dialog.component';
 import { OptionValueDialogComponent } from './attribute_management/option-value-dialog/option-value-dialog.component';
 import { CategoryOptionsDialogComponent } from './attribute_management/category-options-dialog/category-options-dialog.component';
 import { PriceDisplayInputComponent } from './product_management/price-display-input/price-display-input.component';
+import { StoreAddressComponent } from './storeManagement/store-address/store-address.component';
+import { AdminOrdersControlComponent } from './adminOrderManagement/admin-orders-control/admin-orders-control.component';
+import { AdminOrdersDetailComponent } from './adminOrderManagement/admin-orders-detail/admin-orders-detail.component';
 import { ProductDetailComponent } from './product_management/product-detail/product-detail.component';
 import { StockUpdateModalComponent } from './product_management/stock-update-modal/stock-update-modal.component';
 import { CreateDiscountComponent } from './discount_management/create-discount/create-discount.component';
@@ -70,6 +74,23 @@ import { ProductSelectionComponent } from './discount_management/product-selecti
 
 
 
+import { SaleAnalysisComponent } from './policy-management/sale-analysis/sale-analysis.component';
+import { AdminAccountCreateComponent } from './roleAndPermission/admin-account-create/admin-account-create.component';
+import { RefundReasonFormComponent } from './policy-management/refund-reason-form/refund-reason.component';
+import { RejectionReasonFormComponent } from './policy-management/rejection-reason-form/rejection-reason-form.component';
+import { RejectionReasonListComponent } from './policy-management/rejection-reason-list/rejection-reason-list.component';
+import { RefundReasonListComponent } from './policy-management/refund-reason-list/refund-reason-list.component';
+import { RefundRequestListComponent } from './RefundManagement/refund-request-list/refund-request-list.component';
+import { RefundRequestDetailComponent } from './RefundManagement/refund-request-detail/refund-request-detail.component';
+import { PolicyUpdateComponent } from './policy-management/policy-update/policy-update.component';
+import { ChartTestingComponent } from './SaleAnalysis/chart-testing/chart-testing.component';
+import { AdminLayoutComponent } from './common/admin-layout/admin-layout.component';
+import { NotificationCreateComponent } from './notificationManagement/notification-create/notification-create.component';
+import { AdminNotificationBellComponent } from './notificationManagement/admin-notification-bell/admin-notification-bell.component';
+import { AdminNotificationListComponent } from './notificationManagement/admin-notification-list/admin-notification-list.component';
+import { AdminNotificationDetailComponent } from './notificationManagement/admin-notification-detail/admin-notification-detail.component';
+import { AdminNotiTypesComponent } from './notificationManagement/admin-noti-types/admin-noti-types.component';
+import { AdminSentNotisComponent } from './notificationManagement/admin-sent-notis/admin-sent-notis.component';
 
 @NgModule({
   declarations: [
@@ -78,7 +99,6 @@ import { ProductSelectionComponent } from './discount_management/product-selecti
     AdminHeaderComponent,
     AdminSidebarComponent,
     DashboardComponent,
-    AdminFooterComponent,
     HeaderComponent,
     FooterComponent,
     SidebarComponent,
@@ -112,6 +132,9 @@ import { ProductSelectionComponent } from './discount_management/product-selecti
     OptionValueDialogComponent,
     CategoryOptionsDialogComponent,
     PriceDisplayInputComponent,
+    StoreAddressComponent,
+    AdminOrdersControlComponent,
+    AdminOrdersDetailComponent,
     ProductDetailComponent,
     StockUpdateModalComponent,
     CreateDiscountComponent,
@@ -119,6 +142,23 @@ import { ProductSelectionComponent } from './discount_management/product-selecti
     DiscountRulesComponent,
      CreateDiscountGroupComponent,
   
+    SaleAnalysisComponent,
+    AdminAccountCreateComponent,
+    RefundReasonFormComponent,
+    RejectionReasonFormComponent,
+    RejectionReasonListComponent,
+    RefundReasonListComponent,
+    RefundRequestListComponent,
+    RefundRequestDetailComponent,
+    PolicyUpdateComponent,
+    ChartTestingComponent,
+    AdminLayoutComponent,
+    NotificationCreateComponent,
+    AdminNotificationBellComponent,
+    AdminNotificationDetailComponent,
+    AdminNotificationListComponent,
+    AdminNotiTypesComponent,
+    AdminSentNotisComponent,
   ],
   imports: [
     CommonModule,
@@ -140,7 +180,9 @@ import { ProductSelectionComponent } from './discount_management/product-selecti
     ColorPickerModule,
     TreeModule,
     MenuModule,
-    NgxMaskModule.forRoot()
+    FormsModule,
+    NgxChartsModule,
+    NgxMaskModule.forRoot(),
   ]
 })
 export class AdminModule { }

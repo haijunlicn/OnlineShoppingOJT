@@ -7,6 +7,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Modal } from 'bootstrap';
 import { isPlatformBrowser } from '@angular/common';
 import { Inject, PLATFORM_ID } from '@angular/core';
+import { AccessControlService } from '@app/core/services/AccessControl.service';
 
 
 @Component({
@@ -24,6 +25,7 @@ export class ProductDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private productService: ProductService,
+    private accessControl: AccessControlService,
     private fb: FormBuilder
   ) { }
 
@@ -184,5 +186,14 @@ export class ProductDetailComponent implements OnInit {
   // TrackBy Methods for Performance
   trackByVariantId(index: number, variant: ProductVariantDTO): number {
     return variant.id || index;
+  }
+
+  // Helper getters to check permissions
+  get canUpdateStock(): boolean {
+    return this.accessControl.hasAny('PRODUCT_STOCK_UPDATE', 'SUPERADMIN_PERMISSION');
+  }
+
+  get canEditProduct(): boolean {
+    return this.accessControl.hasAny('PRODUCT_UPDATE', 'SUPERADMIN_PERMISSION');
   }
 }

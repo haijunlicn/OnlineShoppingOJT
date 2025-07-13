@@ -5,6 +5,7 @@ import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LocationService } from '../../../../core/services/location.service';
 import { isPlatformBrowser } from '@angular/common';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-edit-location',
@@ -81,9 +82,15 @@ export class EditLocationComponent implements OnInit, OnDestroy {
   }
 
   initMap(): void {
+    const myanmarBounds = this.L.latLngBounds(
+      this.L.latLng(9.5, 92.2),   // Southwest
+      this.L.latLng(28.6, 101.2)  // Northeast
+    );
     this.map = this.L.map('map', {
       zoomControl: true,
-      attributionControl: false
+      attributionControl: false,
+      maxBounds: myanmarBounds,
+      maxBoundsViscosity: 1.0
     }).setView([20, 96], 5);
 
     this.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -95,10 +102,24 @@ export class EditLocationComponent implements OnInit, OnDestroy {
       this.reverseGeocodeLocation(e.latlng.lat, e.latlng.lng);
     });
 
+    // Prevent panning outside Myanmar
+    this.map.on('drag', () => {
+      this.map.panInsideBounds(myanmarBounds, { animate: false });
+    });
+
     setTimeout(() => this.map.invalidateSize(), 0); // fix rendering
   }
 
   addMarker(latlng: any): void {
+    // Myanmar bounds
+    const myanmarBounds = this.L.latLngBounds(
+      this.L.latLng(9.5, 92.2),
+      this.L.latLng(28.6, 101.2)
+    );
+    if (!myanmarBounds.contains(latlng)) {
+      Swal.fire('Please select a location within Myanmar.', '', 'warning');
+      return;
+    }
     if (this.marker) {
       this.map.removeLayer(this.marker);
     }
@@ -142,14 +163,14 @@ export class EditLocationComponent implements OnInit, OnDestroy {
       };
       const sub = this.locationService.updateLocation(updatedLocation).subscribe({
         next: () => {
-          alert('Location updated successfully!');
+          Swal.fire('Location updated successfully!', '', 'success');
           this.router.navigate(['/customer/address']);
         },
-        error: () => alert('Failed to update location.')
+        error: () => Swal.fire('Failed to update location.', '', 'error')
       });
       this.subscriptions.push(sub);
     } else {
-      alert('Please complete the form.');
+      Swal.fire('Please complete the form.', '', 'warning');
     }
   }
 
@@ -167,10 +188,10 @@ export class EditLocationComponent implements OnInit, OnDestroy {
           this.map.setView(latlng, 15);
           this.reverseGeocodeLocation(lat, lon);
         } else {
-          alert('Location not found.');
+          Swal.fire('Location not found.', '', 'warning');
         }
       },
-      error: () => alert('Search failed.')
+      error: () => Swal.fire('Search failed.', '', 'error')
     });
 
     this.subscriptions.push(sub);

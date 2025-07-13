@@ -1,0 +1,29 @@
+<h2>Refund Reasons</h2>
+<button routerLink="/admin/refund-reason/create">Add New</button>
+
+<table *ngIf="reasons.length > 0; else noData">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Label</th>
+      <th>Allow Custom Text</th>
+      <th>Created</th>
+
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let reason of reasons">
+      <td>{{ reason.id }}</td>
+      <td>{{ reason.label }}</td>
+      <td>{{ reason.allowCustomText ? 'Yes' : 'No' }}</td>
+      <td>
+        <button (click)="edit(reason.id!)">Edit</button>
+        <button (click)="delete(reason.id!)">Delete</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<ng-template #noData>
+  <p>No refund reasons found.</p>
+</ng-template>

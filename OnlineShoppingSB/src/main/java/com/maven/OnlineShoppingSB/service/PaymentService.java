@@ -41,6 +41,7 @@ public class PaymentService {
             entity.setStatus(1); // Reactivate
             entity.setQrPath(dto.getQrPath());
             entity.setLogo(dto.getLogo());
+            entity.setDescription(dto.getDescription());
         } else {
             entity = mapper.map(dto, PaymentEntity.class);
             entity.setStatus(1);
@@ -70,6 +71,7 @@ public class PaymentService {
         existing.setMethodName(dto.getMethodName());
         existing.setQrPath(dto.getQrPath());
         existing.setLogo(dto.getLogo());
+        existing.setDescription(dto.getDescription());
 
         PaymentEntity updated = repo.save(existing);
         return mapper.map(updated, PaymentDTO.class);
@@ -81,5 +83,12 @@ public class PaymentService {
 
         entity.setStatus(0); 
         repo.save(entity);
+    }
+
+    public List<PaymentDTO> getPaymentMethodsByType(String type) {
+        List<PaymentEntity> list = repo.findByStatusAndType(1, type);
+        return list.stream()
+                .map(entity -> mapper.map(entity, PaymentDTO.class))
+                .collect(Collectors.toList());
     }
 }

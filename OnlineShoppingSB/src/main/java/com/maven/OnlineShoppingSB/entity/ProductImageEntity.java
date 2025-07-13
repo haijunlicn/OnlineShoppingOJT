@@ -33,7 +33,14 @@ public class ProductImageEntity {
     @Column(name = "alt_text")
     private String altText;
 
+    @Column(name = "del_fg")
+    private Integer delFg;
+
+
     @CreationTimestamp
     @Column(name = "created_date", updatable = false)
     private LocalDateTime createdDate;
+
+    @Column(name = "updated_date", updatable = false)
+    private LocalDateTime UpdatedDate;
 }

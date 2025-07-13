@@ -1,19 +1,30 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { CURRENT_USER_ID } from '../models/user.constant';
 import { CartItem } from '../models/cart.model';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CartService {
-  private storageKey = `cart_user_${CURRENT_USER_ID}`;
-
-  // Stream of the total item count in cart
-  private cartCountSubject = new BehaviorSubject<number>(this.calcCount());
+  private cartCountSubject = new BehaviorSubject<number>(0);
   cartCount$ = this.cartCountSubject.asObservable();
 
-  constructor() {}
+  constructor(private authService: AuthService) {
+    // Refresh cart count whenever the user logs in or logs out
+    this.authService.user$.subscribe(() => {
+      this.emitCount();
+    });
+
+    // Initial count
+    this.emitCount();
+  }
+
+  // Dynamic localStorage key based on current user
+  private get storageKey(): string {
+    const userId = this.authService?.getCurrentUser?.()?.id;
+    return userId ? `cart_user_${userId}` : 'cart_guest';
+  }
 
   /** Read full cart */
   getCart(): CartItem[] {
@@ -21,10 +32,10 @@ export class CartService {
     return cart ? JSON.parse(cart) : [];
   }
 
-  /** Add or bump a variant (stores product and variant info) */
+  /** Add product variant to cart */
   addToCart(product: {
-    id: number;              // productId
-    name: string;            // productName
+    id: number;
+    name: string;
     variantId: number;
     variantSku: string;
     stock: number;
@@ -61,7 +72,7 @@ export class CartService {
     this.emitCount();
   }
 
-  /** Update quantity for a specific variant using variantId */
+  /** Update quantity for a specific variant */
   updateQuantity(productId: number, variantId: number, change: number): void {
     const cart = this.getCart();
     const index = cart.findIndex(
@@ -74,7 +85,7 @@ export class CartService {
         cart[index].quantity = newQty;
       } else if (newQty < 1) {
         this.removeFromCart(productId, variantId);
-        return; // Already emits
+        return;
       }
     }
 
@@ -82,7 +93,7 @@ export class CartService {
     this.emitCount();
   }
 
-  /** Remove a specific variant from cart using variantId */
+  /** Remove an item from the cart */
   removeFromCart(productId: number, variantId: number): void {
     const updatedCart = this.getCart().filter(
       (item) => !(item.productId === productId && item.variantId === variantId)
@@ -91,13 +102,13 @@ export class CartService {
     this.emitCount();
   }
 
-  /** Clear everything */
+  /** Clear the cart completely */
   clearCart(): void {
     localStorage.removeItem(this.storageKey);
     this.emitCount();
   }
 
-  /** Get quantity for a specific variant using variantId */
+  /** Get quantity for a specific variant */
   getVariantQuantity(productId: number, variantId: number): number {
     const cart = this.getCart();
     const item = cart.find(
@@ -106,12 +117,12 @@ export class CartService {
     return item ? item.quantity : 0;
   }
 
-  /** Calculate the sum of all quantities in storage */
+  /** Recalculate total item count in cart */
   private calcCount(): number {
     return this.getCart().reduce((sum, i) => sum + i.quantity, 0);
   }
 
-  /** Push the latest total into the BehaviorSubject */
+  /** Emit new count to subscribers */
   private emitCount(): void {
     this.cartCountSubject.next(this.calcCount());
   }

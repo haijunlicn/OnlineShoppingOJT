@@ -1,0 +1,358 @@
+<form class="notification-detail-container" [formGroup]="form" (ngSubmit)="onSubmit()">
+
+    <!-- Clean Navigation Bar -->
+    <div class="navigation-bar">
+        <div class="nav-left">
+            <button class="btn btn-ghost btn-sm nav-btn" (click)="goBack()" title="Back to List">
+                <i class="bi bi-arrow-left me-2"></i>Back
+            </button>
+            <div class="nav-divider"></div>
+            <div class="nav-info">
+                <h1 class="nav-title">Create Notification</h1>
+                <p class="nav-subtitle">Send targeted notifications to your users</p>
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="btn btn-outline btn-sm nav-btn"
+                (click)="form.reset(); form.patchValue({audienceType: 'admin'}); clearImage(); selectedUsers = []"
+                title="Reset Form">
+                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+            </button>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        {{ errorMessage }}
+        <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+    </div>
+
+    <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>
+        {{ successMessage }}
+        <button type="button" class="btn-close" (click)="successMessage = ''" aria-label="Close"></button>
+    </div>
+    <!-- 
+    <form [formGroup]="form" (ngSubmit)="onSubmit()"></form> -->
+    <!-- Main Content Layout -->
+    <div class="main-layout">
+
+        <!-- Left Column: Targeting & Schedule -->
+        <div class="targeting-section">
+
+            <!-- Audience Selection Card -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="bi bi-people me-2"></i>Audience
+                    </h2>
+                </div>
+                <div class="section-body">
+                    <!-- <div class="audience-options">
+                        <div class="audience-option" *ngFor="let type of audienceTypes"
+                            [class.selected]="form.get('audienceType')?.value === type.value"
+                            (click)="form.patchValue({audienceType: type.value})">
+                            <input type="radio" [value]="type.value" formControlName="audienceType"
+                                class="radio-hidden">
+                            <div class="option-content">
+                                <div class="option-header">
+                                    <span class="option-icon">{{ type.icon }}</span>
+                                    <span class="option-label">{{ type.label }}</span>
+                                </div>
+                                <span class="option-description">{{ type.description }}</span>
+                            </div>
+                        </div>
+                    </div> -->
+
+                    <!-- ✅ Wrap with formGroup -->
+                    <div>
+                        <div class="audience-options">
+                            <div class="audience-option" *ngFor="let type of audienceTypes"
+                                [class.selected]="form.get('audienceType')?.value === type.value"
+                                (click)="form.patchValue({audienceType: type.value})">
+                                <input type="radio" [value]="type.value" formControlName="audienceType"
+                                    class="radio-hidden">
+                                <div class="option-content">
+                                    <div class="option-header">
+                                        <span class="option-icon">{{ type.icon }}</span>
+                                        <span class="option-label">{{ type.label }}</span>
+                                    </div>
+                                    <span class="option-description">{{ type.description }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Custom User Selection -->
+                    <div class="custom-selection" *ngIf="form.get('audienceType')?.value === 'custom'">
+                        <div class="selection-header">
+                            <label class="selection-label">Selected Users</label>
+                            <button type="button" class="btn btn-outline-primary btn-sm" (click)="openUserModal()">
+                                <i class="bi bi-person-plus me-1"></i>Select Users
+                            </button>
+                        </div>
+                        <div class="selected-users-display" *ngIf="selectedUsers.length > 0">
+                            <div class="users-summary">
+                                <span class="users-count">{{ selectedUsers.length }} users selected</span>
+                                <div class="users-preview">
+                                    <span *ngFor="let user of selectedUsers.slice(0, 3); let i = index"
+                                        class="user-tag">
+                                        {{ user.name }}<span *ngIf="i < 2 && selectedUsers.length > i + 1">,</span>
+                                    </span>
+                                    <span *ngIf="selectedUsers.length > 3" class="more-users">
+                                        and {{ selectedUsers.length - 3 }} more
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="no-selection" *ngIf="selectedUsers.length === 0">
+                            <span class="no-selection-text">No users selected</span>
+                        </div>
+                    </div>
+
+                    <!-- Audience Summary -->
+                    <div class="audience-summary">
+                        <div class="summary-item">
+                            <span class="summary-label">Recipients:</span>
+                            <span class="summary-value">{{ getAudienceCount() }} users</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schedule Card -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="bi bi-calendar-event me-2"></i>Schedule
+                    </h2>
+                </div>
+                <div class="section-body">
+                    <div class="schedule-options">
+                        <div class="schedule-option">
+                            <input type="radio" id="send-now" name="scheduleType"
+                                [checked]="!form.get('scheduledAt')?.value"
+                                (change)="form.patchValue({scheduledAt: ''})" class="schedule-radio">
+                            <label for="send-now" class="schedule-label">
+                                <div class="schedule-header">
+                                    <i class="bi bi-send me-2"></i>
+                                    <span class="schedule-title">Send Now</span>
+                                </div>
+                                <span class="schedule-description">Send immediately after creation</span>
+                            </label>
+                        </div>
+
+                        <div class="schedule-option">
+                            <!-- <input type="radio" id="send-later" name="scheduleType"
+                                [checked]="!!form.get('scheduledAt')?.value" class="schedule-radio"> -->
+                            <input type="radio" id="send-later" name="scheduleType"
+                                [checked]="!!form.get('scheduledAt')?.value" #sendLaterRadio class="schedule-radio">
+
+                            <label for="send-later" class="schedule-label">
+                                <div class="schedule-header">
+                                    <i class="bi bi-clock me-2"></i>
+                                    <span class="schedule-title">Schedule</span>
+                                </div>
+                                <span class="schedule-description">Send at a specific time</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- <div class="datetime-input"
+                        *ngIf="form.get('scheduledAt')?.value || document.getElementById('send-later')?.checked"> -->
+                    <div class="datetime-input" *ngIf="form.get('scheduledAt')?.value || isSendLaterSelected()">
+                        <label for="scheduledAt" class="input-label">Delivery Time</label>
+                        <input type="datetime-local" id="scheduledAt" formControlName="scheduledAt" class="form-control"
+                            [class.error]="form.get('scheduledAt')?.invalid && form.get('scheduledAt')?.touched">
+                        <div class="error-message"
+                            *ngIf="form.get('scheduledAt')?.invalid && form.get('scheduledAt')?.touched">
+                            <span *ngIf="form.get('scheduledAt')?.errors?.['pastDate']">Scheduled time must be in the
+                                future</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Content -->
+        <div class="content-section">
+
+            <!-- Message Content Card -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="bi bi-chat-text me-2"></i>Message Content
+                    </h2>
+                </div>
+                <div class="section-body">
+                    <div>
+
+                        <!-- Title Input -->
+                        <div class="form-group">
+                            <label for="title" class="form-label">Title (Optional)</label>
+                            <input type="text" id="title" formControlName="title" class="form-control"
+                                placeholder="Enter notification title..." maxlength="100">
+                            <div class="form-help">
+                                <span class="char-count">{{ form.get('title')?.value?.length || 0 }}/100</span>
+                            </div>
+                        </div>
+
+                        <!-- Message Input -->
+                        <div class="form-group">
+                            <label for="message" class="form-label required">Message</label>
+                            <textarea id="message" formControlName="message" class="form-control message-textarea"
+                                [class.error]="form.get('message')?.invalid && form.get('message')?.touched"
+                                placeholder="Write your notification message..." maxlength="500" rows="4"></textarea>
+                            <div class="form-help">
+                                <span class="char-count">{{ form.get('message')?.value?.length || 0 }}/500</span>
+                            </div>
+                            <div class="error-message"
+                                *ngIf="form.get('message')?.invalid && form.get('message')?.touched">
+                                <span *ngIf="form.get('message')?.errors?.['required']">Message is required</span>
+                                <span *ngIf="form.get('message')?.errors?.['maxlength']">Message cannot exceed 500
+                                    characters</span>
+                            </div>
+                        </div>
+
+                        <!-- Image Upload -->
+                        <div class="form-group">
+                            <label class="form-label">Image (Optional)</label>
+                            <div class="image-upload-container">
+                                <input #imageInput type="file" id="imageInput" accept=".jpg,.jpeg,.png,.webp"
+                                    (change)="onImageSelect($event)" class="file-input" />
+
+                                <div class="upload-area" *ngIf="!imagePreviewUrl" (click)="triggerImageUpload()">
+                                    <div class="upload-content">
+                                        <i class="bi bi-image upload-icon"></i>
+                                        <span class="upload-text">Click to add image</span>
+                                        <span class="upload-help">JPG, PNG, WEBP up to 5MB</span>
+                                    </div>
+                                </div>
+
+                                <div class="image-preview-container" *ngIf="imagePreviewUrl">
+                                    <img [src]="imagePreviewUrl" alt="Preview" class="image-preview">
+                                    <div class="image-actions">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm"
+                                            (click)="triggerImageUpload()">
+                                            <i class="bi bi-pencil me-1"></i>Change
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm"
+                                            (click)="clearImage()">
+                                            <i class="bi bi-trash me-1"></i>Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Actions -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary" [disabled]="form.invalid || submitting">
+                                <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
+                                <i class="bi bi-send me-1" *ngIf="!submitting"></i>
+                                {{ submitting ? 'Sending...' : 'Send Notification' }}
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</form>
+
+
+<!-- User Selection Modal -->
+<div class="modern-modal-overlay" [class.show]="showUserModal" *ngIf="showUserModal">
+    <div class="modern-modal user-modal">
+        <div class="modal-header">
+            <div class="modal-icon primary">
+                <i class="bi bi-people"></i>
+            </div>
+            <h3 class="modal-title">Select Users</h3>
+            <button type="button" class="modal-close" (click)="closeUserModal()">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <!-- Filters -->
+            <div class="filters-section">
+                <div class="filter-group">
+                    <input type="text" [(ngModel)]="searchTerm" (input)="filterUsers()"
+                        placeholder="Search by name or email..." class="filter-input">
+                </div>
+                <div class="filter-group">
+                    <select [(ngModel)]="selectedRole" (change)="filterUsers()" class="filter-select">
+                        <option *ngFor="let role of roles" [value]="role.value">{{ role.label }}</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <select [(ngModel)]="verifiedFilter" (change)="filterUsers()" class="filter-select">
+                        <option value="">All Status</option>
+                        <option value="verified">Verified</option>
+                        <option value="unverified">Unverified</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Select All -->
+            <div class="select-all-section">
+                <label class="checkbox-label">
+                    <input type="checkbox" [checked]="selectAllChecked" (change)="toggleSelectAllOnPage()">
+                    <span>Select all on page</span>
+                </label>
+                <span class="results-count">{{ filteredUsers.length }} users found</span>
+            </div>
+
+            <!-- User List -->
+            <div class="user-list">
+                <div class="user-item" *ngFor="let user of paginatedUsers">
+                    <label class="user-checkbox">
+                        <input type="checkbox" [checked]="isUserSelected(user)" (change)="toggleUserSelection(user)">
+                        <div class="user-info">
+                            <div class="user-name">{{ user.name }}</div>
+                            <div class="user-meta">
+                                <span class="user-email">{{ user.email }}</span>
+                                <span class="user-role role-{{ user.roleName }}">{{ user.roleName }}</span>
+                                <span class="user-status" [class.verified]="user.isVerified">
+                                    {{ user.isVerified ? '✓ Verified' : '⚠ Unverified' }}
+                                </span>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-section" *ngIf="totalPages > 1">
+                <button type="button" class="btn btn-outline-secondary btn-sm" [disabled]="currentPage === 1"
+                    (click)="prevPage()">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
+                <button type="button" class="btn btn-outline-secondary btn-sm" [disabled]="currentPage === totalPages"
+                    (click)="nextPage()">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <div class="selected-info">
+                <span class="selected-count">{{ selectedUsers.length }} users selected</span>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" (click)="closeUserModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" (click)="applyUserSelection()">
+                    Apply Selection
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

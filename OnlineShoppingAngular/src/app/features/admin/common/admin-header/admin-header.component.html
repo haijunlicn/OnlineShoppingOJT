@@ -1,28 +1,84 @@
-<nav class="sb-topnav navbar navbar-expand navbar-dark fixed-top d-flex justify-content-between">
-  <div class="logo">
-    <p><span class="brand">Britium <span class="gallery-highlight">Gallery</span></span></p>
+<header class="admin-header" [ngClass]="{ 'sidebar-expanded': sidebarExpanded }">
+  <div class="header-container">
+    <!-- Left Section: Date and Time -->
+    <div class="header-left">
+      <div class="datetime-section">
+        <div class="current-date">
+          <i class="fas fa-calendar-alt me-2"></i>
+          {{ currentDate }}
+        </div>
+        <div class="current-time">
+          <i class="fas fa-clock me-2"></i>
+          {{ currentTime }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Section: Notifications, Settings, User -->
+    <div class="header-right">
+      <!-- Notification Bell -->
+      <div class="header-item">
+
+        <!-- Notifications -->
+        <app-admin-notification-bell></app-admin-notification-bell>
+
+        <!-- <button class="header-btn notification-btn" (click)="onNotificationClick()" title="Notifications" type="button">
+          <i class="fas fa-bell"></i>
+          <span class="notification-badge" *ngIf="notificationCount > 0">
+            {{ notificationCount > 99 ? '99+' : notificationCount }}
+          </span>
+        </button> -->
+      </div>
+
+      <!-- Settings Gear -->
+      <div class="header-item">
+        <button class="header-btn settings-btn" (click)="onSettingsClick()" title="Settings" type="button">
+          <i class="fas fa-cog"></i>
+        </button>
+      </div>
+
+      <!-- User Dropdown -->
+      <div class="header-item">
+        <div class="dropdown">
+          <button class="header-btn user-btn dropdown-toggle" type="button" id="userHeaderDropdown"
+            data-bs-toggle="dropdown" aria-expanded="false" title="User Menu">
+            <div class="user-info">
+              <i class="fas fa-user-circle user-avatar"></i>
+              <span class="user-name d-none d-md-inline">{{ accountInfo.name || 'Admin User' }}</span>
+            </div>
+            <i class="fas fa-chevron-down dropdown-arrow d-none d-md-inline"></i>
+          </button>
+
+          <ul class="dropdown-menu dropdown-menu-end user-dropdown-menu" aria-labelledby="userHeaderDropdown">
+            <li>
+              <h6 class="dropdown-header">
+                <i class="fas fa-user me-2"></i>{{ accountInfo.name || 'Admin User' }}
+              </h6>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+            <li>
+              <a class="dropdown-item" (click)="onProfileClick()">
+                <i class="fas fa-user-edit me-2"></i>Profile
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" (click)="onSettingsClick()">
+                <i class="fas fa-cog me-2"></i>Settings
+              </a>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+            <li>
+              <a class="dropdown-item logout-item" (click)="onLogout()">
+                <i class="fas fa-sign-out-alt me-2"></i>Logout
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
-  <span class="text-white ms-2">Admin Panel</span>
-
-  <div class="d-flex">
-    <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle">
-      <i class="fas fa-bars"></i>
-    </button>
-
-    <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown"
-          aria-expanded="false">
-          <i class="fas fa-user fa-fw"></i>
-        </a>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-          <li><a class="dropdown-item" href="#">Profile</a></li>
-          <li><a class="dropdown-item" href="#">Settings</a></li>
-          <li><hr class="dropdown-divider" /></li>
-          <li><a class="dropdown-item" (click)="onLogout()">Logout</a></li>
-        </ul>
-      </li>
-    </ul>
-  </div>
-</nav>
-
+</header>

@@ -1,0 +1,288 @@
+.notifications-page {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+/* Clean Header */
+.page-header {
+  background: white;
+  padding: 1.5rem 2rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.page-title {
+  color: #212529;
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+.page-subtitle {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+/* Inline Header Stats */
+.header-stats {
+  font-size: 0.85rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.stat-number {
+  font-weight: 600;
+  color: #212529;
+  font-size: 1.1rem;
+}
+
+.stat-item.unread .stat-number {
+  color: #dc3545;
+}
+
+.stat-text {
+  color: #6c757d;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-divider {
+  color: #dee2e6;
+  font-weight: 300;
+}
+
+.header-actions .btn {
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+
+/* Clean Card */
+.notifications-container .card {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  padding: 1rem 1.5rem;
+}
+
+.sort-controls .form-select {
+  border-radius: 6px;
+  border-color: #ced4da;
+  font-size: 0.875rem;
+  min-width: 140px;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.empty-state i {
+  font-size: 2.5rem;
+}
+
+/* Clean Notifications List */
+.notifications-list {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.notification-item {
+  display: flex;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #f1f3f4;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item:hover {
+  background-color: #f8f9fa;
+}
+
+.notification-item.unread {
+  background-color: #fff8f0;
+  border-left: 3px solid #fd7e14;
+}
+
+.notification-item.unread::after {
+  content: "";
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 6px;
+  height: 6px;
+  background: #fd7e14;
+  border-radius: 50%;
+}
+
+/* Clean Notification Icon */
+.notification-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+  flex-shrink: 0;
+  background: #f8f9fa;
+  color: #6c757d;
+}
+
+.notification-icon i {
+  font-size: 1rem;
+}
+
+/* Clean Content */
+.notification-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+  gap: 1rem;
+}
+
+.notification-title {
+  color: #212529;
+  font-weight: 500;
+  margin-bottom: 0;
+  font-size: 0.95rem;
+  line-height: 1.3;
+}
+
+.notification-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.notification-type-badge {
+  font-size: 0.65rem;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  background: #e9ecef;
+  color: #495057;
+}
+
+.notification-time {
+  color: #6c757d;
+  font-size: 0.75rem;
+}
+
+.notification-message {
+  color: #495057;
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.notification-footer {
+  margin-top: 0.5rem;
+}
+
+.notification-date {
+  color: #6c757d;
+  font-size: 0.75rem;
+}
+
+/* Simple Badge Colors */
+.badge-ORDER_PLACED,
+.badge-ORDER_SHIPPED,
+.badge-ORDER_DELIVERED {
+  background: #d1e7dd;
+  color: #0f5132;
+}
+
+.badge-REFUND_REQUESTED,
+.badge-REFUND_REJECTED {
+  background: #fff3cd;
+  color: #664d03;
+}
+
+.badge-LOW_STOCK_ALERT {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.badge-ADMIN_MESSAGE {
+  background: #cff4fc;
+  color: #055160;
+}
+
+.badge-PROMOTION_OFFER {
+  background: #e2e3e5;
+  color: #41464b;
+}
+
+/* Clean Pagination */
+.card-footer {
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  padding: 1rem;
+}
+
+.pagination-sm .page-link {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  border-radius: 4px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .page-header {
+    padding: 1rem;
+  }
+
+  .header-stats {
+    display: none;
+  }
+
+  .notification-item {
+    padding: 0.75rem 1rem;
+  }
+
+  .notification-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .notification-meta {
+    align-self: stretch;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 576px) {
+  .notification-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .notification-icon i {
+    font-size: 0.9rem;
+  }
+}

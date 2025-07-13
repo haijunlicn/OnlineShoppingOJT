@@ -29,22 +29,27 @@ public class RoleController {
     }
 
     @GetMapping("/getbyid/{id}")
-    public ResponseEntity<RoleDTO> getById(@PathVariable Integer id) {
+    public ResponseEntity<RoleDTO> getById(@PathVariable Long id) {
         RoleDTO dto = roleService.getById(id);
         return ResponseEntity.ok(dto);
     }
 
     // Update Role
     @PutMapping("/update/{id}")
-    public ResponseEntity<RoleDTO> updateRole(@PathVariable Integer id, @RequestBody RoleDTO dto) {
+    public ResponseEntity<RoleDTO> updateRole(@PathVariable Long id, @RequestBody RoleDTO dto) {
         dto.setId(id); 
         RoleDTO updated = roleService.updateRole(dto);
         return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteRole(@PathVariable Integer id) {
+    public ResponseEntity<String> deleteRole(@PathVariable Long id) {
         roleService.deleteRole(id);
         return ResponseEntity.ok("Role deleted successfully!");
+    }
+    @GetMapping("/customers")
+    public ResponseEntity<List<RoleDTO>> getCustomerRoles() {
+        List<RoleDTO> customerRoles = roleService.getCustomerRolesWithUsers();
+        return ResponseEntity.ok(customerRoles);
     }
 }

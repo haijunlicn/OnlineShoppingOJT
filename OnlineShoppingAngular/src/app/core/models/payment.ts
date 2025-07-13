@@ -6,4 +6,6 @@ export interface PaymentMethodDTO {
   status?: number;
   createdDate?: string;
   updatedDate?: string;
+  description?:string;
+  type?: string;
 }

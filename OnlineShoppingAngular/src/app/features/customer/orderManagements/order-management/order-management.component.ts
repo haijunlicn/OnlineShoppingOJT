@@ -8,28 +8,12 @@ import { LocationService } from '../../../../core/services/location.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { CartService } from '../../../../core/services/cart.service';
 import { CartItem } from '../../../../core/models/cart.model';
-
-export interface CreditCardPayment {
-  cardNumber: string;
-  expiryDate: string;
-  cvv: string;
-  cardHolderName: string;
-  amount: number;
-}
-
-export interface QRPayment {
-  method: string;
-  amount: number;
-  qrCode: string;
-}
-
-export interface PaymentMethod {
-  id: string;
-  name: string;
-  icon: string;
-  color: string;
-  description: string;
-}
+import { StoreLocationService } from '../../../../core/services/store-location.service';
+import { StoreLocationDto } from '../../../../core/models/storeLocationDto';
+import { VariantService, StockUpdateResponse } from '../../../../core/services/variant.service';
+import { DeliveryMethodService } from '../../../../core/services/delivery-method.service';
+import { DeliveryMethod } from '../../../../core/models/delivery-method.model';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-order-management',
@@ -59,67 +43,18 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
   currentLatLng: any = null;
   isLoading = false;
 
-  // Payment Properties
-  selectedPaymentMethod = '';
-  selectedQRMethod = '';
-  showCreditCardForm = false;
-  showQRCode = false;
-
-  // Available QR Payment Methods
-  qrPaymentMethods: PaymentMethod[] = [
-    { id: 'kpay', name: 'KPay', icon: 'fas fa-mobile-alt', color: '#ff6b35', description: 'KBZ Bank Digital Wallet' },
-    { id: 'wavepay', name: 'Wave Pay', icon: 'fas fa-wave-square', color: '#00d4aa', description: 'Telenor Digital Payment' },
-    { id: 'ayapay', name: 'AYA Pay', icon: 'fas fa-university', color: '#1e88e5', description: 'AYA Bank Digital Wallet' },
-    { id: 'cbpay', name: 'CB Pay', icon: 'fas fa-credit-card', color: '#4caf50', description: 'CB Bank Mobile Payment' },
-    { id: 'uabpay', name: 'UAB Pay', icon: 'fas fa-building', color: '#ff9800', description: 'United Amara Bank Pay' },
-    { id: 'okdollar', name: 'OK Dollar', icon: 'fas fa-dollar-sign', color: '#9c27b0', description: 'OK Dollar Digital Payment' },
-    { id: 'onepay', name: 'OnePay', icon: 'fas fa-wallet', color: '#f44336', description: 'One Stop Payment Solution' },
-    { id: 'mpitesan', name: 'MPitesan', icon: 'fas fa-money-bill-wave', color: '#607d8b', description: 'Myanmar Payment Integration' },
-  ];
-
-  creditCardData: CreditCardPayment = {
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
-    cardHolderName: '',
-    amount: 0,
-  };
-
-  qrPaymentData: QRPayment | null = null;
-  paymentAmount = 0; // Will be set from cart total
-  isProcessing = false;
-  paymentSuccess = false;
-  paymentMessage = '';
-
-  // QR Code Upload and Translation
-  uploadedImage: File | null = null;
-  uploadedImageUrl: string | null = null;
-  translatedText = '';
-  isTranslating = false;
-
-  // Static QR codes for demo
-  staticQRCodes: { [key: string]: string } = {
-    kpay: 'KPAY_QR_CODE_12345_85000_MMK',
-    wavepay: 'WAVE_QR_CODE_67890_85000_MMK',
-    ayapay: 'AYAPAY_QR_CODE_11111_85000_MMK',
-    cbpay: 'CBPAY_QR_CODE_22222_85000_MMK',
-    uabpay: 'UABPAY_QR_CODE_33333_85000_MMK',
-    okdollar: 'OKDOLLAR_QR_CODE_44444_85000_MMK',
-    onepay: 'ONEPAY_QR_CODE_55555_85000_MMK',
-    mpitesan: 'MPITESAN_QR_CODE_66666_85000_MMK',
-  };
-
   // Order Summary Properties - Now using cart data
   orderItems: any[] = [];
   itemSubtotal = 0;
   shippingFee = 0;
   totalAmount = 0;
 
-  // Store location (Yangon center) - you can change this to your actual store location
-  private readonly STORE_LOCATION = {
-    lat: 16.8409, // Yangon center latitude
-    lng: 96.1735  // Yangon center longitude
-  };
+  // Store location (dynamic)
+  storeLocation: StoreLocationDto | null = null;
+
+  // Delivery method integration
+  deliveryMethods: DeliveryMethod[] = [];
+  selectedDeliveryMethod: DeliveryMethod | null = null;
 
   // Dynamic shipping rate calculation based on distance
   private readonly BASE_SHIPPING_RATE = 500; // Base rate in MMK
@@ -135,10 +70,13 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     private router: Router,
     private cartService: CartService,
     private formBuilder: FormBuilder,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private storeLocationService: StoreLocationService,
+    private variantService: VariantService,
+    private deliveryMethodService: DeliveryMethodService
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
-    
+
     this.addressForm = this.formBuilder.group({
       address: ['', Validators.required],
       township: [''],
@@ -146,22 +84,52 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
       zipCode: [''],
       country: ['', Validators.required],
       lat: [null, Validators.required],
-      lng: [null, Validators.required]
+      lng: [null, Validators.required],
+      phoneNumber: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern(/^09\d{7,9}$/)
+        ]
+      ]
     });
 
     this.searchControl = new FormControl('');
   }
 
   async ngOnInit(): Promise<void> {
+    // Initialize user ID first (like HeaderComponent)
+    this.authService.initializeUserFromToken();
     const user = this.authService.getCurrentUser();
     this.currentUserId = user ? user.id : 0;
+
+    // Fetch store location dynamically
+    this.storeLocationService.getAll().subscribe({
+      next: (stores: StoreLocationDto[]) => {
+        if (stores && stores.length > 0) {
+          this.storeLocation = stores[0]; // Use the first store as default
+        }
+        // Continue with the rest of ngOnInit logic
+        this.initOrderManagement();
+      },
+      error: (err) => {
+        console.error('Failed to load store location:', err);
+        // Fallback: continue with rest of ngOnInit logic
+        this.initOrderManagement();
+      }
+    });
+  }
+
+  private initOrderManagement(): void {
+    // Remove duplicate user initialization since it's done in ngOnInit
     this.loadAddresses();
     this.loadCartData();
-    this.resetPaymentForms();
 
     if (this.isBrowser) {
-      this.L = await import('leaflet');
-      this.setupCustomMarkerIcon();
+      import('leaflet').then(L => {
+        this.L = L;
+        this.setupCustomMarkerIcon();
+      });
     }
   }
 
@@ -189,6 +157,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
         // Convert cart items to order items format
         this.orderItems = state.cartItems.map((item: CartItem) => ({
           id: item.productId,
+          variantId: item.variantId,
           name: item.productName,
           quantity: item.quantity,
           price: item.price,
@@ -196,11 +165,10 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
           variantSku: item.variantSku,
           imgPath: item.imgPath
         }));
-        
+
         this.itemSubtotal = state.cartTotal || this.calculateSubtotal();
         this.totalAmount = this.itemSubtotal;
-        this.paymentAmount = this.totalAmount;
-        
+
         console.log('Cart data loaded successfully:', {
           items: this.orderItems.length,
           subtotal: this.itemSubtotal,
@@ -208,7 +176,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
         });
       } else {
         // No cart items, redirect back to cart
-        alert('No items in cart. Please add items before proceeding to checkout.');
+        Swal.fire('No items in cart. Please add items before proceeding to checkout.', '', 'warning');
         this.router.navigate(['/customer/cart']);
         return;
       }
@@ -219,6 +187,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
         // Use current cart data
         this.orderItems = currentCart.map((item: CartItem) => ({
           id: item.productId,
+          variantId: item.variantId,
           name: item.productName,
           quantity: item.quantity,
           price: item.price,
@@ -226,11 +195,10 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
           variantSku: item.variantSku,
           imgPath: item.imgPath
         }));
-        
+
         this.itemSubtotal = this.calculateSubtotal();
         this.totalAmount = this.itemSubtotal;
-        this.paymentAmount = this.totalAmount;
-        
+
         console.log('Using current cart data:', {
           items: this.orderItems.length,
           subtotal: this.itemSubtotal,
@@ -238,7 +206,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
         });
       } else {
         // No cart data available, redirect back to cart
-        alert('No items in cart. Please add items before proceeding to checkout.');
+        Swal.fire('No items in cart. Please add items before proceeding to checkout.', '', 'warning');
         this.router.navigate(['/customer/cart']);
         return;
       }
@@ -260,6 +228,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
       zipCode: '',
       country: 'Myanmar',
       userId: this.currentUserId,
+      phoneNumber: ''
     };
   }
 
@@ -269,7 +238,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
         this.addresses = data;
         if (this.addresses.length > 0) {
           this.selectedAddress = { ...this.addresses[0] };
-          this.calculateShippingFee();
+          this.fetchDeliveryMethodsAndCalculateFee();
         } else {
           this.selectedAddress = null;
         }
@@ -288,7 +257,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     this.newAddress = this.getEmptyAddress();
     this.addressForm.reset();
     this.currentLatLng = null;
-    
+
     // Initialize map after modal is shown
     setTimeout(() => {
       if (this.isBrowser) {
@@ -303,7 +272,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     this.isEditing = true;
     this.newAddress = { ...address };
     this.addressForm.patchValue(address);
-    
+
     // Initialize map and set marker
     setTimeout(() => {
       if (this.isBrowser) {
@@ -324,9 +293,17 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
       this.map.remove();
     }
 
+    // Myanmar bounds
+    const myanmarBounds = this.L.latLngBounds(
+      this.L.latLng(9.5, 92.2),   // Southwest
+      this.L.latLng(28.6, 101.2)  // Northeast
+    );
+
     this.map = this.L.map('address-map', {
       zoomControl: false,
-      attributionControl: false
+      attributionControl: false,
+      maxBounds: myanmarBounds,
+      maxBoundsViscosity: 1.0
     }).setView([20, 96], 5); // Myanmar center
 
     this.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -340,12 +317,27 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
       this.reverseGeocodeLocation(e.latlng.lat, e.latlng.lng);
     });
 
+    // Prevent panning outside Myanmar
+    this.map.on('drag', () => {
+      this.map.panInsideBounds(myanmarBounds, { animate: false });
+    });
+
     // Fix map rendering
     setTimeout(() => this.map.invalidateSize(), 100);
   }
 
   addMarker(latlng: any): void {
     if (!this.isBrowser || !this.L) return;
+
+    // Myanmar bounds
+    const myanmarBounds = this.L.latLngBounds(
+      this.L.latLng(9.5, 92.2),
+      this.L.latLng(28.6, 101.2)
+    );
+    if (!myanmarBounds.contains(latlng)) {
+      Swal.fire('Please select a location within Myanmar.', '', 'warning');
+      return;
+    }
 
     if (this.marker) {
       this.map.removeLayer(this.marker);
@@ -362,7 +354,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
 
   autoLocate(): void {
     if (!this.isBrowser) return;
-    
+
     this.isLoading = true;
     const geoSub = this.locationService.getCurrentPosition().subscribe({
       next: (position) => {
@@ -375,7 +367,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       },
       error: () => {
-        alert('Unable to retrieve your location.');
+        Swal.fire('Unable to retrieve your location.', '', 'error');
         this.isLoading = false;
       }
     });
@@ -417,7 +409,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
   onSearch(): void {
     const query = this.searchControl.value?.trim();
     if (!query) {
-      alert('Please enter a location to search.');
+      Swal.fire('Please enter a location to search.', '', 'info');
       return;
     }
 
@@ -426,7 +418,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     const searchSub = this.locationService.geocode(query).subscribe({
       next: (results: any[]) => {
         if (results.length === 0) {
-          alert('Location not found.');
+          Swal.fire('Location not found.', '', 'warning');
           this.isLoading = false;
           return;
         }
@@ -440,7 +432,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       },
       error: () => {
-        alert('Failed to search location.');
+        Swal.fire('Failed to search location.', '', 'error');
         this.isLoading = false;
       }
     });
@@ -450,14 +442,17 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
 
   saveAddress(): void {
     if (!this.currentLatLng) {
-      alert('Please select a location first!');
+      Swal.fire('Please select a location first!', '', 'warning');
       return;
     }
 
     if (this.addressForm.invalid) {
-      alert('Please fill in all required fields!');
+      Swal.fire('Please fill in all required fields!', '', 'warning');
       return;
     }
+
+    console.log("current user Id : ", this.currentUserId);
+
 
     const location: LocationDto = {
       lat: this.currentLatLng.lat,
@@ -467,30 +462,31 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
       city: this.addressForm.get('city')?.value || '',
       zipCode: String(this.addressForm.get('zipCode')?.value) || '',
       country: this.addressForm.get('country')?.value || '',
-      userId: this.currentUserId
+      userId: this.currentUserId,
+      phoneNumber: this.addressForm.get('phoneNumber')?.value || ''
     };
 
     if (this.isEditing && this.newAddress.id) {
       location.id = this.newAddress.id;
       const updateSub = this.locationService.updateLocation(location).subscribe({
         next: () => {
-          alert('Address updated successfully!');
+          Swal.fire('Address updated successfully!', '', 'success');
           this.loadAddresses();
           this.showAddressForm = false;
           this.cleanupMap();
         },
-        error: () => alert('Failed to update address.')
+        error: () => Swal.fire('Failed to update address.', '', 'error')
       });
       this.subscriptions.push(updateSub);
     } else {
       const saveSub = this.locationService.saveLocation(location).subscribe({
         next: () => {
-          alert('Address saved successfully!');
+          Swal.fire('Address saved successfully!', '', 'success');
           this.loadAddresses();
           this.showAddressForm = false;
           this.cleanupMap();
         },
-        error: () => alert('Failed to save address.')
+        error: () => Swal.fire('Failed to save address.', '', 'error')
       });
       this.subscriptions.push(saveSub);
     }
@@ -501,11 +497,11 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     this.locationService.deleteLocation(id).subscribe({
       next: () => {
         this.loadAddresses();
-        alert('Address deleted successfully.');
+        Swal.fire('Address deleted successfully.', '', 'success');
       },
       error: (err: any) => {
         console.error('Error deleting address:', err);
-        alert('Failed to delete address.');
+        Swal.fire('Failed to delete address.', '', 'error');
       },
     });
   }
@@ -543,295 +539,94 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
   selectAddress(address: LocationDto): void {
     if (!address) return;
     this.selectedAddress = { ...address };
-    this.calculateShippingFee();
+    this.fetchDeliveryMethodsAndCalculateFee();
   }
 
-  // Payment Methods
-  selectPaymentMethod(method: string): void {
-    if (!method) return;
-    this.selectedPaymentMethod = method;
-    this.showCreditCardForm = method === 'credit-card';
-    this.showQRCode = method === 'qr-payment';
-    this.paymentSuccess = false;
-    this.paymentMessage = '';
-    if (method !== 'qr-payment') {
-      this.selectedQRMethod = '';
+  fetchDeliveryMethodsAndCalculateFee(): void {
+    console.log("selected address : ", this.selectedAddress);
+
+    console.log("Store Location : ", this.storeLocation);
+    
+
+    if (this.selectedAddress && this.storeLocation) {
+
+      console.log("condition one");
+
+      const distance = this.getDistanceFromStore(this.selectedAddress);
+      this.deliveryMethodService.getAvailableMethods(distance).subscribe(methods => {
+        this.deliveryMethods = methods;
+        this.selectedDeliveryMethod = methods.length > 0 ? methods[0] : null;
+        this.calculateShippingFee();
+        this.cdr.detectChanges();
+      });
+    } else {
+
+      console.log("condition two");
+
+      this.deliveryMethods = [];
+      this.selectedDeliveryMethod = null;
+      this.calculateShippingFee();
     }
   }
 
-  selectQRMethod(methodId: string): void {
-    if (!methodId) return;
-    this.selectedQRMethod = methodId;
-    this.generateQRCode(methodId);
-  }
-
-  generateQRCode(method: string): void {
-    if (!method || this.isProcessing) return;
-    this.isProcessing = true;
-    setTimeout(() => {
-      try {
-        this.qrPaymentData = {
-          method: method,
-          amount: this.paymentAmount,
-          qrCode: this.staticQRCodes[method] || `${method.toUpperCase()}_QR_CODE_${Date.now()}_${this.paymentAmount}_MMK`,
-        };
-        this.isProcessing = false;
-        this.cdr.detectChanges();
-      } catch (error) {
-        console.error('Error generating QR code:', error);
-        this.isProcessing = false;
-      }
-    }, 1500);
-  }
-
-  processCreditCardPayment(): void {
-    if (!this.isValidCreditCard()) {
-      this.paymentMessage = 'Please fill in all required fields correctly.';
+  goToPaymentPage(): void {
+    if (!this.selectedAddress || this.orderItems.length === 0) {
+      Swal.fire('Please select a delivery address and ensure your cart is not empty.', '', 'warning');
       return;
     }
-    if (this.isProcessing) return;
-    this.isProcessing = true;
-    this.creditCardData.amount = this.paymentAmount;
-    setTimeout(() => {
-      try {
-        this.isProcessing = false;
-        const isSuccess = Math.random() > 0.2;
-        if (isSuccess) {
-          this.paymentSuccess = true;
-          this.paymentMessage = `Payment of ${this.paymentAmount.toLocaleString()} MMK processed successfully! Transaction ID: CC${Date.now()}`;
-          this.resetPaymentForms();
-          // Clear cart after successful payment
-          this.clearCartAfterOrder();
+
+    // Call the stock removal service before navigating
+    this.variantService.recudeStock(this.orderItems).subscribe({
+      next: (responses: StockUpdateResponse[]) => {
+        const allSuccessful = responses.every(response => response.success);
+        if (allSuccessful) {
+          // All stock updates successful, proceed to payment
+          console.log("go to payment : ", this.orderItems);
+          this.router.navigate(['/customer/payment'], {
+            state: {
+              orderItems: this.orderItems,
+              selectedAddress: this.selectedAddress,
+              shippingFee: this.shippingFee,
+              totalAmount: this.totalAmount,
+              itemSubtotal: this.itemSubtotal,
+              selectedDeliveryMethod: this.selectedDeliveryMethod
+            }
+          }).then(navigated => {
+            if (navigated) {
+              this.cartService.clearCart();
+            }
+          });
         } else {
-          this.paymentSuccess = false;
-          this.paymentMessage = 'Payment failed. Please check your card details and try again.';
+          // Some stock updates failed
+          const failedItems = responses
+            .filter(response => !response.success)
+            .map(response => response.message)
+            .join('\n');
+          Swal.fire(`Stock update failed for some items:\n${failedItems}`, '', 'error');
         }
-        this.cdr.detectChanges();
-      } catch (error) {
-        console.error('Error processing payment:', error);
-        this.isProcessing = false;
+      },
+      error: (error) => {
+        Swal.fire(`Stock update failed: ${error?.error || 'Server error'}`, '', 'error');
       }
-    }, 2000);
-  }
-
-  verifyQRPayment(): void {
-    if (!this.qrPaymentData || this.isProcessing) return;
-    this.isProcessing = true;
-    setTimeout(() => {
-      try {
-        this.isProcessing = false;
-        const isSuccess = Math.random() > 0.1;
-        if (isSuccess) {
-          this.paymentSuccess = true;
-          this.paymentMessage = `${this.getPaymentMethodName(this.qrPaymentData?.method || '')} payment of ${this.paymentAmount.toLocaleString()} MMK completed successfully! Transaction ID: QR${Date.now()}`;
-          this.showQRCode = false;
-          this.qrPaymentData = null;
-          this.selectedPaymentMethod = '';
-          this.selectedQRMethod = '';
-          // Clear cart after successful payment
-          this.clearCartAfterOrder();
-        } else {
-          this.paymentSuccess = false;
-          this.paymentMessage = 'Payment verification failed. Please try again or contact support.';
-        }
-        this.cdr.detectChanges();
-      } catch (error) {
-        console.error('Error verifying payment:', error);
-        this.isProcessing = false;
-      }
-    }, 2000);
-  }
-
-  // Image Upload and Translation Methods
-  onImageUpload(event: any): void {
-    const file = event.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-      this.uploadedImage = file;
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.uploadedImageUrl = e.target.result;
-        this.cdr.detectChanges();
-      };
-      reader.readAsDataURL(file);
-    }
-  }
-
-  translateImage(): void {
-    if (!this.uploadedImage) return;
-    this.isTranslating = true;
-    this.translatedText = '';
-    setTimeout(() => {
-      try {
-        this.translatedText = `Translated QR Code Information:\n\nPayment Method: ${this.getPaymentMethodName(this.selectedQRMethod)}\nAmount: ${this.paymentAmount.toLocaleString()} MMK\nMerchant: Sample Store\nTransaction ID: ${Date.now()}\nStatus: Ready for Payment\n\nPlease confirm the payment in your mobile app.`;
-        this.isTranslating = false;
-        this.cdr.detectChanges();
-      } catch (error) {
-        console.error('Error translating image:', error);
-        this.isTranslating = false;
-      }
-    }, 2000);
-  }
-
-  clearUploadedImage(): void {
-    this.uploadedImage = null;
-    this.uploadedImageUrl = null;
-    this.translatedText = '';
-  }
-
-  isValidCreditCard(): boolean {
-    try {
-      return !!(
-        this.creditCardData.cardNumber &&
-        this.creditCardData.expiryDate &&
-        this.creditCardData.cvv &&
-        this.creditCardData.cardHolderName &&
-        this.creditCardData.cardNumber.replace(/\s/g, '').length >= 16 &&
-        this.creditCardData.cvv.length >= 3
-      );
-    } catch (error) {
-      console.error('Error validating credit card:', error);
-      return false;
-    }
-  }
-
-  formatCardNumber(event: any): void {
-    try {
-      if (!event?.target?.value) return;
-      const value = event.target.value.replace(/\s/g, '');
-      const formattedValue = value.replace(/(.{4})/g, '$1 ').trim();
-      this.creditCardData.cardNumber = formattedValue;
-    } catch (error) {
-      console.error('Error formatting card number:', error);
-    }
-  }
-
-  formatExpiryDate(event: any): void {
-    try {
-      if (!event?.target?.value) return;
-      let value = event.target.value.replace(/\D/g, '');
-      if (value.length >= 2) {
-        value = value.substring(0, 2) + '/' + value.substring(2, 4);
-      }
-      this.creditCardData.expiryDate = value;
-    } catch (error) {
-      console.error('Error formatting expiry date:', error);
-    }
-  }
-
-  resetPaymentForms(): void {
-    try {
-      this.creditCardData = {
-        cardNumber: '',
-        expiryDate: '',
-        cvv: '',
-        cardHolderName: '',
-        amount: 0,
-      };
-      this.selectedPaymentMethod = '';
-      this.selectedQRMethod = '';
-      this.showCreditCardForm = false;
-      this.showQRCode = false;
-      this.qrPaymentData = null;
-      this.clearUploadedImage();
-    } catch (error) {
-      console.error('Error resetting payment forms:', error);
-    }
-  }
-
-  getPaymentMethodName(method: string): string {
-    if (!method) return '';
-    const qrMethod = this.qrPaymentMethods.find((m) => m.id === method);
-    if (qrMethod) return qrMethod.name;
-    switch (method) {
-      case 'credit-card':
-        return 'Credit Card';
-      default:
-        return method;
-    }
-  }
-
-  getSelectedQRMethod(): PaymentMethod | null {
-    return this.qrPaymentMethods.find((m) => m.id === this.selectedQRMethod) || null;
-  }
-
-  trackByAddressId(index: number, address: LocationDto): number | undefined {
-    return address.id;
-  }
-
-  trackByMethodId(index: number, method: PaymentMethod): string {
-    return method.id;
-  }
-
-  calculateShippingFee(): void {
-    if (this.selectedAddress) {
-      const destLat = this.selectedAddress.lat;
-      const destLng = this.selectedAddress.lng;
-
-      // Haversine formula
-      const toRad = (v: number) => v * Math.PI / 180;
-      const R = 6371; // Earth radius in km
-      const dLat = toRad(destLat - this.STORE_LOCATION.lat);
-      const dLng = toRad(destLng - this.STORE_LOCATION.lng);
-      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(toRad(this.STORE_LOCATION.lat)) * Math.cos(toRad(destLat)) *
-                Math.sin(dLng/2) * Math.sin(dLng/2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      const distance = R * c;
-
-      let shippingFee = this.BASE_SHIPPING_RATE + this.RATE_PER_KM * distance;
-      if (shippingFee > this.MAX_SHIPPING_RATE) {
-        shippingFee = this.MAX_SHIPPING_RATE;
-      }
-      
-      // Round to nearest 100 MMK for cleaner display
-      this.shippingFee = Math.round(shippingFee / 100) * 100;
-      
-      this.totalAmount = this.itemSubtotal + this.shippingFee;
-      this.paymentAmount = this.totalAmount;
-    }
-  }
-
-  goBackToCart(): void {
-    this.router.navigate(['/customer/cart']);
-  }
-
-  goToHome(): void {
-    this.router.navigate(['/customer/home']);
-  }
-
-  private clearCartAfterOrder(): void {
-    // Clear the cart after successful order
-    this.cartService.clearCart();
-    console.log('Order completed successfully! Cart cleared.');
-    // Navigate to home page after 3 seconds
-    setTimeout(() => {
-      this.router.navigate(['/customer/home']);
-    }, 3000);
+    });
   }
 
   getEstimatedDeliveryTime(): string {
-    if (!this.selectedAddress) return '';
-
+    if (!this.selectedAddress || !this.storeLocation) return '';
     const destLat = this.selectedAddress.lat;
     const destLng = this.selectedAddress.lng;
-
+    const storeLat = this.storeLocation.lat;
+    const storeLng = this.storeLocation.lng;
     // Haversine formula
     const toRad = (v: number) => v * Math.PI / 180;
     const R = 6371; // Earth radius in km
-    const dLat = toRad(destLat - this.STORE_LOCATION.lat);
-    const dLng = toRad(destLng - this.STORE_LOCATION.lng);
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(toRad(this.STORE_LOCATION.lat)) * Math.cos(toRad(destLat)) *
-              Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const dLat = toRad(destLat - storeLat);
+    const dLng = toRad(destLng - storeLng);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(storeLat)) * Math.cos(toRad(destLat)) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = R * c;
-
-    // Example logic:
-    // - < 50km: 1-2 days
-    // - 50-300km: 2-4 days
-    // - 300-1000km: 4-7 days
-    // - >1000km: 1-2 weeks
-
     if (distance < 50) {
       return '1-2 days';
     } else if (distance < 300) {
@@ -844,51 +639,81 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
   }
 
   getShippingFeeForAddress(address: LocationDto): number {
-    if (!address || !address.lat || !address.lng) {
-      return this.BASE_SHIPPING_RATE;
+    if (!address || !address.lat || !address.lng || !this.storeLocation || !this.selectedDeliveryMethod) {
+      return 0;
     }
-
     const destLat = address.lat;
     const destLng = address.lng;
-
+    const storeLat = this.storeLocation.lat;
+    const storeLng = this.storeLocation.lng;
     // Haversine formula
     const toRad = (v: number) => v * Math.PI / 180;
     const R = 6371; // Earth radius in km
-    const dLat = toRad(destLat - this.STORE_LOCATION.lat);
-    const dLng = toRad(destLng - this.STORE_LOCATION.lng);
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(toRad(this.STORE_LOCATION.lat)) * Math.cos(toRad(destLat)) *
-              Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const dLat = toRad(destLat - storeLat);
+    const dLng = toRad(destLng - storeLng);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(storeLat)) * Math.cos(toRad(destLat)) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = R * c;
-
-    let shippingFee = this.BASE_SHIPPING_RATE + this.RATE_PER_KM * distance;
-    shippingFee = Math.min(shippingFee, this.MAX_SHIPPING_RATE);
-    
-    // Round to nearest 100 MMK for cleaner display
+    const method = this.selectedDeliveryMethod;
+    let shippingFee = method.baseFee + method.feePerKm * distance;
     return Math.round(shippingFee / 100) * 100;
   }
 
   getDistanceFromStore(address: LocationDto): number {
-    if (!address || !address.lat || !address.lng) {
+    if (!address || !address.lat || !address.lng || !this.storeLocation) {
       return 0;
     }
-
     const destLat = address.lat;
     const destLng = address.lng;
-
+    const storeLat = this.storeLocation.lat;
+    const storeLng = this.storeLocation.lng;
     // Haversine formula
     const toRad = (v: number) => v * Math.PI / 180;
     const R = 6371; // Earth radius in km
-    const dLat = toRad(destLat - this.STORE_LOCATION.lat);
-    const dLng = toRad(destLng - this.STORE_LOCATION.lng);
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(toRad(this.STORE_LOCATION.lat)) * Math.cos(toRad(destLat)) *
-              Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const dLat = toRad(destLat - storeLat);
+    const dLng = toRad(destLng - storeLng);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(storeLat)) * Math.cos(toRad(destLat)) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = R * c;
-
     return Math.round(distance * 10) / 10; // Round to 1 decimal place
+  }
+
+  goBackToCart(): void {
+    this.router.navigate(['/customer/cart']);
+  }
+
+  calculateShippingFee(): void {
+    if (this.selectedAddress && this.storeLocation && this.selectedDeliveryMethod) {
+      const distance = this.getDistanceFromStore(this.selectedAddress);
+      const method = this.selectedDeliveryMethod;
+      let shippingFee = method.baseFee + method.feePerKm * distance;
+      this.shippingFee = Math.round(shippingFee / 100) * 100;
+      this.totalAmount = this.itemSubtotal + this.shippingFee;
+    } else {
+      this.shippingFee = 0;
+      this.totalAmount = this.itemSubtotal;
+    }
+  }
+
+  trackByAddressId(index: number, address: LocationDto): number | undefined {
+    return address.id;
+  }
+
+  getDeliveryIconClass(methodName: string): string {
+    const name = methodName.toLowerCase();
+    if (name.includes('bike') || name.includes('bicycle')) {
+      return 'fas fa-bicycle';
+    } else if (name.includes('car')) {
+      return 'fas fa-car';
+    } else if (name.includes('truck')) {
+      return 'fas fa-truck';
+    } else {
+      return 'fas fa-shipping-fast';
+    }
   }
 }
 

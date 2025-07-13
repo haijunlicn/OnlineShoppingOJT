@@ -4,7 +4,7 @@ import { BrandDTO } from '@app/core/models/product.model';
 
 export interface FilterState {
   categories: number[]
-  brands: string[]
+  brands: number[]
   priceRange: { min: number | null; max: number | null }
   inStock: boolean
   onSale: boolean
@@ -34,7 +34,7 @@ export class FilterSidebarComponent implements OnInit {
 
   // Filter state
   selectedCategories = new Set<number>()
-  selectedBrands = new Set<string>()
+  selectedBrands = new Set<number>()
   customPriceMin: number | null = null
   customPriceMax: number | null = null
   selectedPriceRange: PriceRange | null = null
@@ -70,20 +70,88 @@ export class FilterSidebarComponent implements OnInit {
     this.emitFilters()
   }
 
-  // Category filtering with auto-selection of subcategories
+  // Public method to emit filters (called from parent)
+  emitFilters() {
+    const filters: FilterState = {
+      categories: Array.from(this.selectedCategories),
+      brands: Array.from(this.selectedBrands),
+      priceRange: {
+        min: this.customPriceMin,
+        max: this.customPriceMax,
+      },
+      inStock: this.inStockOnly,
+      onSale: this.onSaleOnly,
+      isNew: this.newItemsOnly,
+      rating: this.minRating,
+    }
+    this.filtersChanged.emit(filters)
+  }
+
+  // Add this method to your FilterSidebarComponent if it doesn't exist
+  setCategoryFilter(categoryId: number) {
+    this.selectedCategories.clear();
+    this.selectedCategories.add(categoryId);
+
+    // Also select all descendants
+    const descendants = this.getAllDescendants(categoryId);
+    descendants.forEach(desc => {
+      this.selectedCategories.add(desc.id!);
+    });
+
+    // Expand categories section to show the selection
+    this.expandedSections.categories = true;
+
+    // Emit the updated filters
+    this.emitFilters();
+  }
+
+  // FIXED: Improved category filtering with better parent-child handling
   toggleCategory(categoryId: number) {
     if (this.selectedCategories.has(categoryId)) {
-      // Deselect this category and all its descendants
-      this.selectedCategories.delete(categoryId)
-      const descendants = this.getAllDescendants(categoryId)
-      descendants.forEach((desc) => this.selectedCategories.delete(desc.id!))
+      // Deselecting a category
+      this.deselectCategoryAndDescendants(categoryId);
+
+      // Also deselect any parent categories that were auto-selected
+      // this.deselectParentsIfNeeded(categoryId);
     } else {
-      // Select this category and all its descendants
-      this.selectedCategories.add(categoryId)
-      const descendants = this.getAllDescendants(categoryId)
-      descendants.forEach((desc) => this.selectedCategories.add(desc.id!))
+      // Selecting a category
+      this.selectedCategories.add(categoryId);
+
+      // Auto-select all descendants
+      const descendants = this.getAllDescendants(categoryId);
+      descendants.forEach((desc) => this.selectedCategories.add(desc.id!));
     }
-    this.emitFilters()
+
+    this.emitFilters();
+  }
+
+  // Helper method to deselect a category and all its descendants
+  private deselectCategoryAndDescendants(categoryId: number) {
+    this.selectedCategories.delete(categoryId);
+    const descendants = this.getAllDescendants(categoryId);
+    descendants.forEach((desc) => this.selectedCategories.delete(desc.id!));
+  }
+
+  // Helper method to deselect parent categories if no children are selected
+  private deselectParentsIfNeeded(categoryId: number) {
+    const category = this.categories.find(cat => cat.id === categoryId);
+    if (!category || !category.parentCategoryId) return;
+
+    const parent = this.categories.find(cat => cat.id === category.parentCategoryId);
+    if (!parent) return;
+
+    // Check if any siblings of this category are still selected
+    const siblings = this.getDirectChildren(parent.id!);
+    const hasSelectedSiblings = siblings.some(sibling =>
+      sibling.id !== categoryId && this.selectedCategories.has(sibling.id!)
+    );
+
+    // If no siblings are selected, deselect the parent
+    if (!hasSelectedSiblings) {
+      this.selectedCategories.delete(parent.id!);
+      // Recursively check grandparents
+      this.deselectParentsIfNeeded(parent.id!);
+    }
   }
 
   isCategorySelected(categoryId: number): boolean {
@@ -92,16 +160,16 @@ export class FilterSidebarComponent implements OnInit {
 
   // Brand filtering
   toggleBrand(brandId: string) {
-    if (this.selectedBrands.has(brandId)) {
-      this.selectedBrands.delete(brandId)
+    if (this.selectedBrands.has(+brandId)) {
+      this.selectedBrands.delete(+brandId)
     } else {
-      this.selectedBrands.add(brandId)
+      this.selectedBrands.add(+brandId)
     }
     this.emitFilters()
   }
 
   isBrandSelected(brandId: string): boolean {
-    return this.selectedBrands.has(brandId)
+    return this.selectedBrands.has(+brandId)
   }
 
   // Price filtering
@@ -158,23 +226,6 @@ export class FilterSidebarComponent implements OnInit {
     this.brandSearchTerm = ""
     this.emitFilters()
     this.clearAllFilters.emit()
-  }
-
-  // Emit current filter state
-  private emitFilters() {
-    const filters: FilterState = {
-      categories: Array.from(this.selectedCategories),
-      brands: Array.from(this.selectedBrands),
-      priceRange: {
-        min: this.customPriceMin,
-        max: this.customPriceMax,
-      },
-      inStock: this.inStockOnly,
-      onSale: this.onSaleOnly,
-      isNew: this.newItemsOnly,
-      rating: this.minRating,
-    }
-    this.filtersChanged.emit(filters)
   }
 
   // Get active filter count
