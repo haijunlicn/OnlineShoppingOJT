@@ -41,7 +41,7 @@ import { PolicyListComponent } from './policy-management/policy-list/policy-list
 import { FaqListComponent } from './policy-management/faq-list/faq-list.component';
 import { FaqCreateComponent } from './policy-management/faq-create/faq-create.component';
 import { FaqUpdateComponent } from './policy-management/faq-update/faq-update.component';
-import { DiscountGroupComponent } from './discount_management/discount-group/discount-group.component';
+
 import { ProductCreateComponent } from './product_management/product-create/product-create.component';
 import { ProductBulkUploadComponent } from './product_management/product-bulk-upload/product-bulk-upload.component';
 import { RoleListComponent } from './role-management/role-list/role-list.component';
@@ -61,6 +61,14 @@ import { CategoryOptionsDialogComponent } from './attribute_management/category-
 import { PriceDisplayInputComponent } from './product_management/price-display-input/price-display-input.component';
 import { ProductDetailComponent } from './product_management/product-detail/product-detail.component';
 import { StockUpdateModalComponent } from './product_management/stock-update-modal/stock-update-modal.component';
+import { CreateDiscountComponent } from './discount_management/create-discount/create-discount.component';
+
+import { DiscountRulesComponent } from './discount_management/discount-rules/discount-rules.component';
+
+import { CreateDiscountGroupComponent } from './discount_management/create-discount-group/create-discount-group.component';
+import { ProductSelectionComponent } from './discount_management/product-selection/product-selection.component';
+
+
 
 
 @NgModule({
@@ -87,7 +95,7 @@ import { StockUpdateModalComponent } from './product_management/stock-update-mod
     FaqListComponent,
     FaqCreateComponent,
     FaqUpdateComponent,
-    DiscountGroupComponent,
+  
     ProductBulkUploadComponent,
     RoleListComponent,
     RoleFormComponent,
@@ -106,6 +114,11 @@ import { StockUpdateModalComponent } from './product_management/stock-update-mod
     PriceDisplayInputComponent,
     ProductDetailComponent,
     StockUpdateModalComponent,
+    CreateDiscountComponent,
+    ProductSelectionComponent,
+    DiscountRulesComponent,
+     CreateDiscountGroupComponent,
+  
   ],
   imports: [
     CommonModule,
@@ -127,8 +140,7 @@ import { StockUpdateModalComponent } from './product_management/stock-update-mod
     ColorPickerModule,
     TreeModule,
     MenuModule,
-    FormsModule,
-    NgxMaskModule.forRoot(),
+    NgxMaskModule.forRoot()
   ]
 })
 export class AdminModule { }

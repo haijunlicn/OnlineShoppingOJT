@@ -11,7 +11,7 @@ import { PolicyListComponent } from './policy-management/policy-list/policy-list
 import { FaqCreateComponent } from './policy-management/faq-create/faq-create.component';
 import { FaqListComponent } from './policy-management/faq-list/faq-list.component';
 import { FaqUpdateComponent } from './policy-management/faq-update/faq-update.component';
-import { DiscountGroupComponent } from './discount_management/discount-group/discount-group.component';
+
 import { ProductCreateComponent } from './product_management/product-create/product-create.component';
 import { ProductBulkUploadComponent } from './product_management/product-bulk-upload/product-bulk-upload.component';
 import { RoleListComponent } from './role-management/role-list/role-list.component';
@@ -28,34 +28,35 @@ import { AdminAuthGuard } from '../../core/guards/admin-auth.guard';
 import { ProductAttributeComponent } from './attribute_management/product-attribute/product-attribute.component';
 import { ProductDetailComponent } from './product_management/product-detail/product-detail.component';
 import { ProductEditComponent } from './product_management/product-edit/product-edit.component';
+import { CreateDiscountComponent } from './discount_management/create-discount/create-discount.component';
+import { CreateDiscountGroupComponent } from './discount_management/create-discount-group/create-discount-group.component';
+import { ProductSelectionComponent } from './discount_management/product-selection/product-selection.component';
+
+
 
 
 const routes: Routes = [
   {
     path: 'login',
     component: AdminLoginComponent,
-    canActivate: [AdminNoAuthGuard]
+    // canActivate: [AdminNoAuthGuard]
   },
   {
     path: 'dashboard',
     component: DashboardComponent,
-    canActivate: [AdminAuthGuard]
+    // canActivate: [AdminAuthGuard]
   },
   {
     path: 'productList',
     component: ProductListComponent,
-    canActivate: [AdminAuthGuard]
+    // canActivate: [AdminAuthGuard]
   },
   {
     path: 'productCreate',
     component: ProductCreateComponent,
-    canActivate: [AdminAuthGuard]
+    // canActivate: [AdminAuthGuard]
   },
-  {
-    path: 'group',
-    component: DiscountGroupComponent,
-    canActivate: [AdminAuthGuard]
-  },
+  
   {
     path: 'policy/policy-create', component: PolicyCreateComponent, canActivate: [AdminAuthGuard]
   },
@@ -90,7 +91,7 @@ const routes: Routes = [
   { path: 'payment-create', component: PaymentCreateComponent, canActivate: [AdminAuthGuard] },
   { path: 'payment-list', component: PaymentListComponent, canActivate: [AdminAuthGuard] },
   { path: 'payment-update/:id', component: PaymentUpdateComponent, canActivate: [AdminAuthGuard] },
-
+  
 
   {
     path: 'productAttributes',
@@ -115,7 +116,12 @@ const routes: Routes = [
   {
     path: 'product/edit/:id',
     component: ProductEditComponent
-  }
+  },
+
+  {path:'createGroup',component:CreateDiscountGroupComponent},
+//  {path:'createDiscount/productSelection',component:ProductSelectionComponent}
+{path:'createDiscount',component:CreateDiscountComponent}
+
 ];
 
 @NgModule({

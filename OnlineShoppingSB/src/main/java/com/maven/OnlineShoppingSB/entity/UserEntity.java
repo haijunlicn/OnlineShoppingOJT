@@ -1,7 +1,6 @@
 package com.maven.OnlineShoppingSB.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -43,13 +42,14 @@ public class UserEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<OtpEntity> otp;
 
-    // New relationship: user can join many discount groups
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<DiscountUserGroupMemberEntity> discountUserGroupMembers;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserAddressEntity> addresses;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WishlistTitleEntity> wishlistTitles;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CustomerGroupEntity> customerGroup;
+
 }

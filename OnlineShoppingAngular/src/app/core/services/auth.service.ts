@@ -120,7 +120,8 @@ export class AuthService {
           isVerified: res.isVerified,
           delFg: res.delFg,
           createdDate: res.createdDate,
-          updatedDate: res.updatedDate
+          updatedDate: res.updatedDate,
+          groupIds: res.groupIds || []
         };
         return user;
       }),

@@ -1,80 +1,103 @@
 package com.maven.OnlineShoppingSB.controller;
 
 import com.maven.OnlineShoppingSB.dto.*;
-
-import com.maven.OnlineShoppingSB.entity.DiscountUserGroupMemberEntity;
-import com.maven.OnlineShoppingSB.repository.DiscountUserGroupMemberRepository;
 import com.maven.OnlineShoppingSB.service.DiscountService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
-@CrossOrigin(origins="http://localhost:4200")
 @RestController
-@RequestMapping("discount")
+@RequestMapping("/api/discounts")
 public class DiscountController {
+  @Autowired
+private  DiscountService discountService;
 
-    @Autowired private  DiscountService discountGroupService;
-    @Autowired private DiscountUserGroupMemberRepository discountUserGroupMemberRepository;
-
-    @PostMapping("/discountGroup")
-    public ResponseEntity<String> createDiscountGroup(@RequestBody DiscountGroupRequest request) {
-
-        Long groupId =discountGroupService.createDiscountGroup(request.getName());
-        String groupUrl = "/groups/" + groupId;
-        System.out.println(groupUrl);
-        return ResponseEntity.ok(groupUrl);
+ @GetMapping("/brands")
+    public List<BrandDTO> getAllActiveBrands() {
+        return discountService.getAllActiveBrands();
+    }
+ @GetMapping("/categories")
+    public List<CategoryDTO> getAllActiveCategories() {
+        return discountService.getAllActiveCategories();
     }
 
-    @GetMapping("/discountgroupList")
-    public ResponseEntity<List<DiscountGroupResponseDTO>> getAllDiscountGroupsWithMembers() {
-        List<DiscountGroupResponseDTO> responseList = discountGroupService.getAllDiscountGroupsWithMembers();
-        return ResponseEntity.ok(responseList);
+     @GetMapping("/groups")
+    public List<GroupES_G> getAllGroups() {
+        return discountService.getAllGroups();
     }
 
-
-    @GetMapping("/getUsers")
-    public ResponseEntity<List<UserResponseDTO>> getUsers() {
-        List<UserResponseDTO> users = discountGroupService.getAllUsers();
-        return ResponseEntity.ok(users);
+    @GetMapping("/groups/{id}")
+    public GroupES_G getGroupById(@PathVariable Integer id) {
+        return discountService.getGroupById(id);
     }
 
-    @PostMapping("/assignUsers")
-    public ResponseEntity<String> assignUsersToGroup(@RequestBody AssignUsersToGroupRequest request) {
-        try {
-            discountGroupService.assignUsersToGroup(request.getGroupId(), request.getUserIds());
-            return ResponseEntity.ok("Users assigned successfully");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
-        }
+    @PostMapping("/groups")
+    public GroupES_G createGroup(@RequestBody GroupES_G groupDto) {
+        return discountService.createGroup(groupDto);
     }
 
-
-    @PostMapping("/deleteGroup")
-    public ResponseEntity<String> deleteDiscountGroup(@RequestBody Map<String, Long> request) {
-        Long groupId = request.get("groupId");
-        try {
-            discountGroupService.deleteGroupById(groupId);
-            return ResponseEntity.ok("delete success"); //✅ ဒီမှာ စာသား ပြန်ပေးတယ်
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete group: " + e.getMessage());
-        }
+    @PutMapping("/groups/{id}")
+    public GroupES_G updateGroup(@PathVariable Integer id, @RequestBody GroupES_G groupDto) {
+        groupDto.setId(id);
+        return discountService.updateGroup(groupDto);
     }
 
-    @PutMapping("/updateName")
-    public ResponseEntity<String> updateGroupName(@RequestBody UpdateGroupNameRequest request) {
-        try {
-            discountGroupService.updateGroupName(request.getId(), request.getName());
-            return ResponseEntity.ok("Group name updated successfully");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
-        }
+    @DeleteMapping("/groups/{id}")
+    public void deleteGroup(@PathVariable Integer id) {
+        discountService.deleteGroup(id);
+    }
+    
+    @GetMapping("/products")
+    public List<ProductDTO> getAllProductsForSelection() {
+        return discountService.getAllProductsForSelection();
     }
 
+    // //for main
+    // @PostMapping("/createDiscount")
+    // public DiscountES_A createDiscount(@RequestBody DiscountES_A dto) {
+    //     return discountService.createDiscount(dto);
+    // }
 
-
+@PostMapping("/createDiscount")
+public ResponseEntity<String> createDiscount(@RequestBody DiscountES_A dto) {
+    try {
+        discountService.createDiscount(dto);
+        return ResponseEntity.ok("success");
+    } catch (Exception e) {
+        // Error message ကို client ကိုပေးမယ်
+        return ResponseEntity.status(500).body(e.getMessage());
+    }
 }
+
+    @GetMapping("/selectallDiscount")
+    public List<DiscountES_A> getAllDiscounts() {
+        return discountService.getAllDiscounts();
+    }
+
+    @GetMapping("/selectdiscountbyId/{id}")
+    public DiscountES_A getDiscountById(@PathVariable Integer id) {
+        return discountService.getDiscountById(id);
+    }
+
+    @PutMapping("/updateDiscount/{id}")
+    public DiscountES_A updateDiscount(@PathVariable Integer id, @RequestBody DiscountES_A dto) {
+        return discountService.updateDiscount(id, dto);
+    }
+
+    @DeleteMapping("/deleteDisount/{id}")
+    public void deleteDiscount(@PathVariable Integer id) {
+        discountService.deleteDiscount(id);
+    }
+
+
+  @PostMapping("/groups/{groupId}/conditions")
+    public ResponseEntity<?> saveGroupConditions(
+            @PathVariable Integer groupId,
+            @RequestBody GroupES_G groupDto) {
+        discountService.saveGroupConditions(groupId, groupDto.getDiscountConditionGroups());
+        return ResponseEntity.ok("success");
+    }
+}
+
