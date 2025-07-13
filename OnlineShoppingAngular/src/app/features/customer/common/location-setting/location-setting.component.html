@@ -1,0 +1,146 @@
+<div class="content-section">
+  <div class="section-header mb-4">
+    <h2 class="text-primary fw-bold mb-2">Location Settings</h2>
+    <p class="text-muted mb-0">Manage your saved addresses</p>
+  </div>
+
+  <!-- Success/Error Messages -->
+  <div class="alert alert-success d-flex align-items-center mb-4" *ngIf="successMessage">
+    <i class="bi bi-check-circle me-2"></i>
+    {{ successMessage }}
+  </div>
+  <div class="alert alert-danger d-flex align-items-center mb-4" *ngIf="errorMessage">
+    <i class="bi bi-exclamation-circle me-2"></i>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Add New Address Button -->
+  <div class="mb-4">
+    <button class="btn btn-primary" (click)="openAddressModal()">
+      <i class="bi bi-plus-circle me-2"></i>
+      Add New Address
+    </button>
+  </div>
+
+  <!-- Addresses List -->
+  <div class="row">
+    <div class="col-md-6 mb-4" *ngFor="let address of addresses">
+      <div class="card shadow-sm border-0 address-card" [class.border-primary]="address.isDefault">
+        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3">
+          <div class="d-flex align-items-center">
+            <h6 class="card-title mb-0 text-primary fw-semibold me-2">{{ address.type }}</h6>
+            <span class="badge bg-primary" *ngIf="address.isDefault">Default</span>
+          </div>
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+              <i class="bi bi-three-dots"></i>
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#" (click)="openAddressModal(address)">
+                <i class="bi bi-pencil me-2"></i>Edit
+              </a></li>
+              <li><a class="dropdown-item" href="#" (click)="setDefaultAddress(address)" *ngIf="!address.isDefault">
+                <i class="bi bi-star me-2"></i>Set as Default
+              </a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="#" (click)="deleteAddress(address)">
+                <i class="bi bi-trash me-2"></i>Delete
+              </a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card-body">
+          <h6 class="fw-medium mb-2">{{ address.name }}</h6>
+          <p class="text-muted mb-1">{{ address.address }}</p>
+          <p class="text-muted mb-0">{{ address.city }}, {{ address.state }} {{ address.zipCode }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Address Modal -->
+<div class="modal fade" id="addressModal" tabindex="-1" [class.show]="showAddressModal" [style.display]="showAddressModal ? 'block' : 'none'">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-bottom">
+        <h5 class="modal-title text-primary fw-semibold">
+          {{ editingAddress ? 'Edit Address' : 'Add New Address' }}
+        </h5>
+        <button type="button" class="btn-close" (click)="closeAddressModal()"></button>
+      </div>
+      <form [formGroup]="addressForm" (ngSubmit)="onAddressSubmit()">
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="type" class="form-label fw-medium">Address Type *</label>
+              <select class="form-select" id="type" formControlName="type">
+                <option value="">Select Type</option>
+                <option value="Home">Home</option>
+                <option value="Office">Office</option>
+                <option value="Other">Other</option>
+              </select>
+              <div class="text-danger small mt-1" *ngIf="getFieldError(addressForm, 'type')">
+                {{ getFieldError(addressForm, 'type') }}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="name" class="form-label fw-medium">Full Name *</label>
+              <input type="text" class="form-control" id="name" formControlName="name">
+              <div class="text-danger small mt-1" *ngIf="getFieldError(addressForm, 'name')">
+                {{ getFieldError(addressForm, 'name') }}
+              </div>
+            </div>
+            <div class="col-12">
+              <label for="address" class="form-label fw-medium">Street Address *</label>
+              <textarea class="form-control" id="address" rows="2" formControlName="address"></textarea>
+              <div class="text-danger small mt-1" *ngIf="getFieldError(addressForm, 'address')">
+                {{ getFieldError(addressForm, 'address') }}
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label for="city" class="form-label fw-medium">City *</label>
+              <input type="text" class="form-control" id="city" formControlName="city">
+              <div class="text-danger small mt-1" *ngIf="getFieldError(addressForm, 'city')">
+                {{ getFieldError(addressForm, 'city') }}
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label for="state" class="form-label fw-medium">State/Region *</label>
+              <input type="text" class="form-control" id="state" formControlName="state">
+              <div class="text-danger small mt-1" *ngIf="getFieldError(addressForm, 'state')">
+                {{ getFieldError(addressForm, 'state') }}
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label for="zipCode" class="form-label fw-medium">ZIP Code *</label>
+              <input type="text" class="form-control" id="zipCode" formControlName="zipCode">
+              <div class="text-danger small mt-1" *ngIf="getFieldError(addressForm, 'zipCode')">
+                {{ getFieldError(addressForm, 'zipCode') }}
+              </div>
+            </div>
+          </div>
+
+          <div class="alert alert-success d-flex align-items-center mt-3" *ngIf="successMessage">
+            <i class="bi bi-check-circle me-2"></i>
+            {{ successMessage }}
+          </div>
+          <div class="alert alert-danger d-flex align-items-center mt-3" *ngIf="errorMessage">
+            <i class="bi bi-exclamation-circle me-2"></i>
+            {{ errorMessage }}
+          </div>
+        </div>
+        <div class="modal-footer border-top">
+          <button type="button" class="btn btn-outline-secondary" (click)="closeAddressModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="!addressForm.valid || isUpdating">
+            <span *ngIf="isUpdating" class="spinner-border spinner-border-sm me-2"></span>
+            {{ isUpdating ? 'Saving...' : (editingAddress ? 'Update Address' : 'Add Address') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Backdrop -->
+<div class="modal-backdrop fade show" *ngIf="showAddressModal" (click)="closeAddressModal()"></div>

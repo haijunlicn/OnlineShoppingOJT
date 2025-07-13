@@ -109,25 +109,8 @@ export class NotificationModalService {
 
   constructor(private zone: NgZone) { }
 
-  // openNotificationDetail(notification: UserNotificationDTO): void {
-  //   // Update the BehaviorSubject value
-  //   this.currentNotificationSubject.next(notification);
-
-  //   console.log("Modal detail set, waiting for view to render...");
-
-  //   // Wait for Angular view to update, then show modal outside Angular zone
-  //   this.zone.runOutsideAngular(() => {
-  //     requestAnimationFrame(() => {
-  //       const modalElement = document.getElementById("notificationDetailModal");
-  //       if (modalElement) {
-  //         const modal = new bootstrap.Modal(modalElement, { backdrop: 'static' });
-  //         modal.show();
-  //       }
-  //     });
-  //   });
-  // }
-
   openNotificationDetail(notification: UserNotificationDTO): void {
+    console.log("noti detail : ", notification);
     this.currentNotificationSubject.next(notification);
     this.zone.runOutsideAngular(() => {
       setTimeout(() => {

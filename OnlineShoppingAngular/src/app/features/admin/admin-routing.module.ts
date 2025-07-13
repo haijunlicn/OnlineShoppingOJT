@@ -44,6 +44,9 @@ import { PolicyUpdateComponent } from './policy-management/policy-update/policy-
 import { ChartTestingComponent } from './SaleAnalysis/chart-testing/chart-testing.component';
 import { AdminLayoutComponent } from './common/admin-layout/admin-layout.component';
 import { NotificationCreateComponent } from './notificationManagement/notification-create/notification-create.component';
+import { AdminNotificationListComponent } from './notificationManagement/admin-notification-list/admin-notification-list.component';
+import { AdminNotiTypesComponent } from './notificationManagement/admin-noti-types/admin-noti-types.component';
+import { AdminSentNotisComponent } from './notificationManagement/admin-sent-notis/admin-sent-notis.component';
 
 
 const routes: Routes = [
@@ -107,6 +110,9 @@ const routes: Routes = [
       // Optional default redirect
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'notificationCreate', component: NotificationCreateComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
+      { path: 'notifications', component: AdminNotificationListComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
+      { path: 'notificationTypes', component: AdminNotiTypesComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
+      { path: 'sentNotifications', component: AdminSentNotisComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
     ]
   }
 ];

@@ -77,6 +77,11 @@ import { PolicyUpdateComponent } from './policy-management/policy-update/policy-
 import { ChartTestingComponent } from './SaleAnalysis/chart-testing/chart-testing.component';
 import { AdminLayoutComponent } from './common/admin-layout/admin-layout.component';
 import { NotificationCreateComponent } from './notificationManagement/notification-create/notification-create.component';
+import { AdminNotificationBellComponent } from './notificationManagement/admin-notification-bell/admin-notification-bell.component';
+import { AdminNotificationListComponent } from './notificationManagement/admin-notification-list/admin-notification-list.component';
+import { AdminNotificationDetailComponent } from './notificationManagement/admin-notification-detail/admin-notification-detail.component';
+import { AdminNotiTypesComponent } from './notificationManagement/admin-noti-types/admin-noti-types.component';
+import { AdminSentNotisComponent } from './notificationManagement/admin-sent-notis/admin-sent-notis.component';
 
 @NgModule({
   declarations: [
@@ -135,6 +140,11 @@ import { NotificationCreateComponent } from './notificationManagement/notificati
     ChartTestingComponent,
     AdminLayoutComponent,
     NotificationCreateComponent,
+    AdminNotificationBellComponent,
+    AdminNotificationDetailComponent,
+    AdminNotificationListComponent,
+    AdminNotiTypesComponent,
+    AdminSentNotisComponent,
   ],
   imports: [
     CommonModule,

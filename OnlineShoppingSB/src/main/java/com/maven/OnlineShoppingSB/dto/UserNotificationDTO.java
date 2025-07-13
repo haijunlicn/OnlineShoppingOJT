@@ -17,4 +17,6 @@ public class UserNotificationDTO {
     private LocalDateTime deliveredAt;
     private LocalDateTime readAt;
     private NotiMethod method;
+    private String imageUrl;
+    private boolean showToast;
 }

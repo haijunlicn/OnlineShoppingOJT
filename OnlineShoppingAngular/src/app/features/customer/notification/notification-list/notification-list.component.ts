@@ -122,7 +122,7 @@ export class NotificationListComponent implements OnInit, OnDestroy {
         this.filteredNotifications.sort((a, b) => a.type.localeCompare(b.type))
         break
     }
-
+    console.log("noti list : ", this.filteredNotifications);
     this.updatePagination()
   }
 

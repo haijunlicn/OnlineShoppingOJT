@@ -93,6 +93,10 @@ export class CategoryDropdownComponent {
     return encodeURIComponent(name.toLowerCase().replace(/\s+/g, '-'));
   }
 
+  goToProductList() {
+      this.router.navigate(['/customer/productList'])
+  }
+
   openDropdown() {
     this.isDropdownOpen = true
   }

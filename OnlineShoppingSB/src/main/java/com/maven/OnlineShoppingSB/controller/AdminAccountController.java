@@ -1,10 +1,7 @@
 package com.maven.OnlineShoppingSB.controller;
 
 import com.maven.OnlineShoppingSB.config.JwtService;
-import com.maven.OnlineShoppingSB.dto.LoginRequest;
-import com.maven.OnlineShoppingSB.dto.ResetPasswordRequest;
-import com.maven.OnlineShoppingSB.dto.otpDTO;
-import com.maven.OnlineShoppingSB.dto.userDTO;
+import com.maven.OnlineShoppingSB.dto.*;
 import com.maven.OnlineShoppingSB.entity.OtpEntity;
 import com.maven.OnlineShoppingSB.entity.RoleEntity;
 import com.maven.OnlineShoppingSB.entity.UserEntity;
@@ -18,6 +15,7 @@ import com.maven.OnlineShoppingSB.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -56,6 +54,11 @@ public class AdminAccountController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Unexpected error: " + e.getMessage()));
         }
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<List<userDTO>> getAllUsers() {
+        return ResponseEntity.ok(adminAccountService.getAllUsers());
     }
 
 }

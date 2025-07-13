@@ -73,6 +73,21 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
       heading: "Payment Management",
       items: [{ label: "Payment", route: "/admin/payment-list", icon: "fas fa-credit-card" }],
     },
+    {
+      heading: "Notification Management",
+      items: [
+        {
+          label: "Notification Types",
+          route: "/admin/notificationTypes",
+          icon: "fas fa-tags",
+        },
+        {
+          label: "Sent Notifications",
+          route: "/admin/sentNotifications",
+          icon: "fas fa-paper-plane",
+        },
+      ],
+    }
   ]
 
   router: Router

@@ -32,10 +32,6 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
       this.notifications = notiList.map(noti => this.notificationService.renderNotification(noti));
       this.unreadCount = this.notifications.filter((n) => !n.read).length;
     });
-    // this.subscription = this.notificationService.notifications$.subscribe((notiList) => {
-    //   this.notifications = notiList
-    //   this.unreadCount = notiList.filter((n) => !n.read).length
-    // })
   }
 
   toggleDropdown(): void {

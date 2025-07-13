@@ -31,6 +31,9 @@ import { AccountSettingsComponent } from './common/account-settings/account-sett
 import { NotificationListComponent } from './notification/notification-list/notification-list.component';
 import { PaymentGuard } from '@app/core/services/payment-guard.service';
 import { RefundEligibilityGuard } from '@app/core/guards/refund-eligibility.guard';
+import { LocationSettingComponent } from './common/location-setting/location-setting.component';
+import { NotiSettingComponent } from './common/noti-setting/noti-setting.component';
+import { ProfileInfoSettingComponent } from './common/profile-info-setting/profile-info-setting.component';
 
 const routes: Routes = [
 
@@ -109,11 +112,15 @@ const routes: Routes = [
   { path: 'orderDetail/:id', component: OrderDetailComponent, canActivate: [AuthGuard] },
   { path: 'orders', component: OrderListComponent, canActivate: [AuthGuard] },
   { path: 'order', component: OrderManagementComponent, canActivate: [AuthGuard] },
-  { path: 'refundRequest/:orderId', 
-    component: RefundRequestFormComponent, 
-    canActivate: [AuthGuard, RefundEligibilityGuard] 
+  {
+    path: 'refundRequest/:orderId',
+    component: RefundRequestFormComponent,
+    canActivate: [AuthGuard, RefundEligibilityGuard]
   },
   { path: 'notifications', component: NotificationListComponent, canActivate: [AuthGuard] },
+  { path: 'account/settings/location', component: LocationSettingComponent, canActivate: [AuthGuard] },
+  { path: 'account/settings/notifications', component: NotiSettingComponent, canActivate: [AuthGuard] },
+  { path: 'account/settings/profile', component: ProfileInfoSettingComponent, canActivate: [AuthGuard] },
 ];
 
 @NgModule({
