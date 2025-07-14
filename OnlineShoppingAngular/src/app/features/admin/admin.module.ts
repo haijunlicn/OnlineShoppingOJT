@@ -150,6 +150,7 @@ import { AdminSentNotisComponent } from './notificationManagement/admin-sent-not
     RefundReasonListComponent,
     RefundRequestListComponent,
     RefundRequestDetailComponent,
+   
     PolicyUpdateComponent,
     ChartTestingComponent,
     AdminLayoutComponent,
@@ -183,6 +184,7 @@ import { AdminSentNotisComponent } from './notificationManagement/admin-sent-not
     FormsModule,
     NgxChartsModule,
     NgxMaskModule.forRoot(),
+
   ]
 })
 export class AdminModule { }

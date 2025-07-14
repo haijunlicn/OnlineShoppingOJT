@@ -7,6 +7,8 @@ import { AuthService } from '@app/core/services/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { log } from "node:console";
 import Swal from 'sweetalert2';
+import { PdfExportService } from '@app/core/services/pdf-export.service';
+import { ExcelExportService } from '@app/core/services/excel-export.service';
 import { ORDER_STATUS, ORDER_STATUS_LABELS, OrderDetail, PAYMENT_STATUS } from "@app/core/models/order.dto";
 import { AlertService } from "@app/core/services/alert.service";
 
@@ -121,14 +123,57 @@ export class AdminOrdersControlComponent implements OnInit, OnDestroy {
       icon: "bi bi-credit-card-fill",
     },
   }
+  // DB -> UI mapping
+  dbToUiStatus: any = {
+    PENDING: 'pending',
+    ORDER_CONFIRMED: 'order_confirmed',
+    PACKED: 'packed',
+    OUT_FOR_DELIVERY: 'out_for_delivery',
+    DELIVERED: 'delivered',
+    CANCELLED: 'cancelled'
+  };
+
+  // allowedTransitions: Record<Order['status'], Order['status'][]> = {
+  //   pending: ['order_confirmed', 'cancelled'],
+  //   order_confirmed: ['packed', 'cancelled'],
+  //   packed: ['out_for_delivery'],
+  //   out_for_delivery: ['delivered'],
+  //   delivered: [],
+  //   cancelled: []
+  // };
+
+  // statusList: Order['status'][] = [
+  //   'pending',
+  //   'order_confirmed',
+  //   'packed',
+  //   'out_for_delivery',
+  //   'delivered',
+  //   'cancelled'
+  // ];
+
+  // Export columns definition
+  orderExportColumns = [
+    { header: 'Order ID', field: 'id', width: 20 },
+    { header: 'Tracking Number', field: 'trackingNumber', width: 50 },
+    { header: 'Customer', field: 'customer', width: 40 },
+    { header: 'Date', field: 'date', width: 35 },
+    { header: 'Status', field: 'status', width: 45 },
+    { header: 'Total', field: 'total', width: 40 },
+    { header: 'Items', field: 'items', width: 20 },
+    { header: 'Payment Method', field: 'paymentMethod', width: 50 }
+  ];
 
   constructor(
-    private orderService: OrderService,
-    private router: Router,
-    private authService: AuthService,
+    private orderService: OrderService, 
+    private router: Router, 
+    private location: Location, 
+    private authService: AuthService, 
+    private snackBar: MatSnackBar,
+    private pdfExportService: PdfExportService,
+    private excelExportService: ExcelExportService,
     private alertService: AlertService,
   ) {
-    // Setup search debouncing
+        // Setup search debouncing
     this.searchSubject.pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$)).subscribe(() => {
       this.applyFilters()
     })
@@ -657,5 +702,33 @@ export class AdminOrdersControlComponent implements OnInit, OnDestroy {
       .filter((city) => city.length > 0)
 
     return [...new Set(cities)].sort()
+  }
+
+  // Export PDF function
+  exportOrdersToPdf() {
+    const filename = this.filteredOrders.length === this.orders.length
+      ? 'OrderList_All.pdf'
+      : `OrderList_Filtered_${this.filteredOrders.length}.pdf`;
+    this.pdfExportService.exportTableToPdf(
+      this.filteredOrders,
+      this.orderExportColumns,
+      filename,
+      'Order List Report',
+      'order' // Pass the type as 'order' for correct footer
+    );
+  }
+
+  // Export Excel function
+  async exportOrdersToExcel() {
+    const filename = this.filteredOrders.length === this.orders.length
+      ? 'OrderList_All.xlsx'
+      : `OrderList_Filtered_${this.filteredOrders.length}.xlsx`;
+    await this.excelExportService.exportToExcel(
+      this.filteredOrders,
+      this.orderExportColumns,
+      filename,
+      'Orders',
+      'Order List Report'
+    );
   }
 }

@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { RefundRequestDTO, RefundStatus } from '@app/core/models/refund.model';
 import { RefundRequestService } from '@app/core/services/refundRequestService';
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
+import { PdfExportService } from '@app/core/services/pdf-export.service';
+import { ExcelExportService } from '@app/core/services/excel-export.service';
 
 interface FilterParams {
   status: string
@@ -50,9 +52,21 @@ export class RefundRequestListComponent implements OnInit, OnDestroy {
   // Expose enum for template use
   refundStatus = RefundStatus
 
+  // Export columns definition
+  exportColumns = [
+    { header: 'Refund ID', field: 'id', width: 20 },
+    { header: 'Order ID', field: 'orderId', width: 20 },
+    { header: 'User ID', field: 'userId', width: 20 },
+    { header: 'Items', field: 'items.length', width: 15 },
+    { header: 'Status', field: 'status', width: 25 },
+    { header: 'Created Date', field: 'createdAt', width: 35 }
+  ];
+
   constructor(
     private refundRequestService: RefundRequestService,
     private router: Router,
+    private pdfExportService: PdfExportService,
+    private excelExportService: ExcelExportService
   ) {
     // Setup search debouncing
     this.searchSubject.pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$)).subscribe(() => {
@@ -363,4 +377,52 @@ export class RefundRequestListComponent implements OnInit, OnDestroy {
   }
 
   Math = Math
+
+  exportRefundsToPdf() {
+    const filename = this.filteredRequests.length === this.refundRequests.length
+      ? 'RefundRequestList_All.pdf'
+      : `RefundRequestList_Filtered_${this.filteredRequests.length}.pdf`;
+    this.pdfExportService.exportTableToPdf(
+      this.filteredRequests,
+      this.exportColumns,
+      filename,
+      'Refund Request List Report',
+      'refund' // Pass a custom type to suppress total value/products in footer
+    );
+  }
+
+  async exportRefundsToExcel() {
+    const filename = this.filteredRequests.length === this.refundRequests.length
+      ? 'RefundRequests_All.xlsx'
+      : `RefundRequests_Filtered_${this.filteredRequests.length}.xlsx`;
+    await this.excelExportService.exportToExcel(
+      this.filteredRequests,
+      this.exportColumns,
+      filename,
+      'RefundRequests',
+      'Refund Request List Report'
+    );
+  }
+
+  exportSingleRefundToPdf(request: any) {
+    const filename = `RefundRequest_${request.id}.pdf`;
+    this.pdfExportService.exportTableToPdf(
+      [request],
+      this.exportColumns,
+      filename,
+      'Refund Request Detail',
+      'refund'
+    );
+  }
+
+  async exportSingleRefundToExcel(request: any) {
+    const filename = `RefundRequest_${request.id}.xlsx`;
+    await this.excelExportService.exportToExcel(
+      [request],
+      this.exportColumns,
+      filename,
+      'Refund Request Detail',
+      'Refund Request Detail'
+    );
+  }
 }

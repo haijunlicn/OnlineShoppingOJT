@@ -1,3 +1,4 @@
+
 <div class="container-fluid">
   <!-- Page Header -->
   <div class="page-header">
@@ -11,6 +12,29 @@
           <i class="bi bi-funnel"></i>
           {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
         </button>
+         <div class="dropdown">
+                  <button pButton type="button" class="p-button p-button-info dropdown-toggle" 
+                    data-bs-toggle="dropdown" aria-expanded="false" icon="pi pi-download" label="Export">
+                  </button>
+                  <ul class="dropdown-menu">
+                    <li>
+                      <a class="dropdown-item" href="javascript:void(0)" (click)="exportProfessionalPdf()">
+                        <i class="pi pi-file-pdf me-2"></i>Professional PDF
+                        <span *ngIf="isExportingLayoutPdf" class="ms-2">
+                          <i class="pi pi-spin pi-spinner"></i>
+                        </span>
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="javascript:void(0)" (click)="exportToExcel()">
+                        <i class="pi pi-file-excel me-2"></i>Excel
+                        <span *ngIf="isExportingExcel" class="ms-2">
+                          <i class="pi pi-spin pi-spinner"></i>
+                        </span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>F
         <button *ngIf="canCreateProduct" class="btn btn-success" routerLink="/admin/productCreate">
           <i class="bi bi-plus-circle"></i>
           Add Product
