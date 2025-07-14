@@ -7,7 +7,7 @@ export interface User {
   email: string;
   name: string;
   role?:string;
-  groupIds:number[] ;
+  groupIds?:number[] ;
   customerGroup?: CustomerGroupEA_H[]
   phone?: string; // Optional
   roleName?: string; // Must match DTO's roleName
