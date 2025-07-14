@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core"
 import { BehaviorSubject, Observable, of } from "rxjs"
-import { Brand, Category, City, DiscountEA_A, GroupEA_G } from "../models/discount"
+import { Brand, Category, City, DiscountConditionGroupEA_C, DiscountEA_A, GroupEA_G } from "../models/discount"
 import { User } from "../models/User"
 import { HttpClient } from "@angular/common/http"
 import { ProductDTO } from "../models/product.model"
@@ -80,4 +80,14 @@ export class DiscountService {
     // POST to /groups/{id}/conditions
     return this.http.post(`${this.apiUrl}/groups/${group.id}/conditions`, group, { responseType: 'text' });
   }
+
+  // Get all condition groups for a group
+getGroupConditions(groupId: number): Observable<DiscountConditionGroupEA_C[]> {
+  return this.http.get<DiscountConditionGroupEA_C[]>(`${this.apiUrl}/groups/${groupId}/conditions`);
+}
+
+// Delete a condition group by id
+deleteConditionGroup(conditionGroupId: number): Observable<string> {
+  return this.http.delete(`${this.apiUrl}/conditionGroups/${conditionGroupId}`, { responseType: 'text' });
+}
 }

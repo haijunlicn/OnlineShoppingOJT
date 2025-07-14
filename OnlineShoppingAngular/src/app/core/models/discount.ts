@@ -62,7 +62,7 @@ export enum ConditionType {
   PRODUCT = 'PRODUCT',
   CUSTOMER_GROUP = 'CUSTOMER_GROUP',
   ORDER = 'ORDER',
-  USER_STATUS = 'User_Status'
+  USER_STATUS = 'USER_STATUS'
 }
 export enum Operator {
   EQUAL = 'EQUAL',

@@ -1,13 +1,7 @@
 
 
-<app-admin-header></app-admin-header>
-<div class="d-flex" style="min-height: 100vh;">
-  <app-admin-sidebar></app-admin-sidebar>
-  
-  <main class="flex-grow-1 bg-light py-3 px-3">
 
-
-<div *ngIf="!showProductSelection" style="margin-top: 40px; margin-left: -200px;">
+<div *ngIf="!showProductSelection" style="margin-top: 40px; ">
   <div class="mb-6">
     <button 
       class="btn btn-ghost mb-4 flex items-center gap-2"
@@ -557,6 +551,3 @@
   (onBack)="showProductSelection = false"
   (onProductsSelected)="handleProductsSelected($event)">
 </app-product-selection>
-</main>
-</div>
-<app-admin-footer></app-admin-footer>

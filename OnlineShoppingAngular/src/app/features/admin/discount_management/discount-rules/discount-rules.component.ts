@@ -54,6 +54,7 @@ export class DiscountRulesComponent implements OnInit {
   @Input() currentMechanismIndex = -1
   @Input() selectedOfferType = ""
   @Input() group: Group | null = null
+  @Input() groupMode: boolean = false;
   @Input() rules: Rule[] = []
   @Input() selectedProductsMap: { [key: string]: any[] } = {}
   @Output() onBack = new EventEmitter<void>()
@@ -132,14 +133,14 @@ export class DiscountRulesComponent implements OnInit {
 
  
   get ruleTypes() {
-  return this.group
-    ? [{ value: "status", label: "Status" }]
-    : [
-        { value: "product", label: "Product" },
-        { value: "order", label: "Order" },
-        { value: "customer_group", label: "Customer Group" },
-      ];
-}
+    return this.groupMode
+      ? [{ value: "status", label: "Status" }]
+      : [
+          { value: "product", label: "Product" },
+          { value: "order", label: "Order" },
+          { value: "customer_group", label: "Customer Group" },
+        ];
+  }
 
   get fieldOptions(): { [key: string]: { value: string; label: string }[] } {
   return {
