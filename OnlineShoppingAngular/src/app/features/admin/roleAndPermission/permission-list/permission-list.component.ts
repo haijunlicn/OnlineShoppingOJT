@@ -3,6 +3,8 @@
 import { Component, OnInit } from "@angular/core";
 import { PermissionDTO } from "@app/core/models/permissionDTO";
 import { PermissionService } from "@app/core/services/permission.service";
+import { PdfExportService } from '@app/core/services/pdf-export.service';
+import { ExcelExportService } from '@app/core/services/excel-export.service';
 
 interface PermissionGroup {
   resource: string
@@ -24,7 +26,19 @@ export class PermissionListComponent implements OnInit {
   selectedResource = ""
   uniqueResources: string[] = []
 
-  constructor(private permissionService: PermissionService) { }
+  // Export columns definition
+  exportColumns = [
+    { header: 'ID', field: 'id', width: 20 },
+    { header: 'Code', field: 'code', width: 50 },
+    { header: 'Description', field: 'description', width: 80 },
+    { header: 'Resource', field: 'resource', width: 70 }
+  ];
+
+  constructor(
+    private permissionService: PermissionService,
+    private pdfExportService: PdfExportService,
+    private excelExportService: ExcelExportService
+  ) { }
 
   ngOnInit(): void {
     this.loadPermissions()
@@ -122,5 +136,31 @@ export class PermissionListComponent implements OnInit {
         p.code!.includes("UPDATE") ||
         p.code!.includes("DELETE"),
     ).length
+  }
+
+  exportPermissionsToPdf() {
+    const filename = this.filteredPermissions.length === this.permissions.length
+      ? 'PermissionList_All.pdf'
+      : `PermissionList_Filtered_${this.filteredPermissions.length}.pdf`;
+    this.pdfExportService.exportTableToPdf(
+      this.filteredPermissions,
+      this.exportColumns,
+      filename,
+      'Permission List Report',
+      'permission' // Pass a custom type to suppress total value/products in footer
+    );
+  }
+
+  async exportPermissionsToExcel() {
+    const filename = this.filteredPermissions.length === this.permissions.length
+      ? 'PermissionList_All.xlsx'
+      : `PermissionList_Filtered_${this.filteredPermissions.length}.xlsx`;
+    await this.excelExportService.exportToExcel(
+      this.filteredPermissions,
+      this.exportColumns,
+      filename,
+      'Permissions',
+      'Permission List Report'
+    );
   }
 }

@@ -34,8 +34,6 @@ import { ProductEditComponent } from './product_management/product-edit/product-
 import { CreateDiscountComponent } from './discount_management/create-discount/create-discount.component';
 import { CreateDiscountGroupComponent } from './discount_management/create-discount-group/create-discount-group.component';
 import { ProductSelectionComponent } from './discount_management/product-selection/product-selection.component';
-
-
 import { SaleAnalysisComponent } from './policy-management/sale-analysis/sale-analysis.component';
 import { PermissionGuard } from '@app/core/guards/permission.guard';
 import { AdminAccountCreateComponent } from './roleAndPermission/admin-account-create/admin-account-create.component';
@@ -68,7 +66,6 @@ const routes: Routes = [
     canActivate: [AdminAuthGuard], // shared guard
     children: [
       { path: 'dashboard', component: DashboardComponent },
-
       { path: 'productList', component: ProductListComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['PRODUCT_READ'], ['SUPERADMIN_PERMISSION']] } },
       { path: 'productCreate', component: ProductCreateComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['PRODUCT_CREATE'], ['SUPERADMIN_PERMISSION']] } },
       // { path: 'group', component: DiscountGroupComponent },
@@ -119,7 +116,11 @@ const routes: Routes = [
       { path: 'notificationTypes', component: AdminNotiTypesComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
       { path: 'sentNotifications', component: AdminSentNotisComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
       { path: 'createGroup', component: CreateDiscountGroupComponent },
-      { path: 'createDiscount', component: CreateDiscountComponent }
+      { path: 'createDiscount', component: CreateDiscountComponent },
+      {
+        path: 'sale-analysis', component
+        :SaleAnalysisComponent, canActivate: [AdminAuthGuard]
+      },
     ]
   }
 ];

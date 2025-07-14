@@ -1278,3 +1278,24 @@ input[type="checkbox"]:disabled {
   background-color: #f8d7da;
   color: #721c24;
 }
+
+.orders-table th:nth-child(7),
+.orders-table td:nth-child(7) {
+  min-width: 130px;
+  width: 150px;
+  max-width: 200px;
+}
+
+.orders-table th:nth-child(5),
+.orders-table td:nth-child(5) {
+  min-width: 120px;
+  width: 140px;
+  max-width: 180px;
+}
+
+.orders-table th:nth-child(2),
+.orders-table td:nth-child(2) {
+  min-width: 70px;
+  width: 90px;
+  max-width: 110px;
+}

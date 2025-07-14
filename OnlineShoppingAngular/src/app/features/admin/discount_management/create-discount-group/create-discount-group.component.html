@@ -1,5 +1,3 @@
-
-
 <!-- Main UI & Popup only visible when isRuleBuilderOpen is false -->
 <div *ngIf="!isRuleBuilderOpen">
   <div class="user-management-container" *ngIf="!isConditionBuilderOpen">
@@ -19,41 +17,32 @@
             <span class="search-icon">
               <i class="fas fa-search"></i>
             </span>
-            <input 
-              type="text"
-              placeholder="Search groups..." 
-              [(ngModel)]="groupSearchTerm"
-              (input)="onGroupSearchChange()"
-              class="search-input">
+            <input type="text" placeholder="Search groups..." [(ngModel)]="groupSearchTerm"
+              (input)="onGroupSearchChange()" class="search-input">
           </div>
         </div>
         <!-- Groups List -->
         <div class="groups-list">
-          <div class="group-item" 
-               [class.selected]="selectedGroup === 'all'"
-               (click)="selectedGroup = 'all'; onGroupFilterChange()">
+          <div class="group-item" [class.selected]="selectedGroup === 'all'"
+            (click)="selectedGroup = 'all'; onGroupFilterChange()">
             <span class="group-name">All Customers from groups</span>
           </div>
-          <div *ngFor="let group of filteredGroups" 
-               class="group-item"
-               [class.selected]="selectedGroup === group.id.toString()"
-               (click)="selectedGroup = group.id.toString(); onGroupFilterChange()">
+          <div *ngFor="let group of filteredGroups" class="group-item"
+            [class.selected]="selectedGroup === group.id.toString()"
+            (click)="selectedGroup = group.id.toString(); onGroupFilterChange()">
             <span class="group-icon"><i class="fas fa-users"></i></span>
             <span class="group-name">{{ group.name }}</span>
             <div class="group-actions">
-              <button class="action-btn edit-btn" 
-                      (click)="openEditGroupDialog(group); $event.stopPropagation()" 
-                      title="Edit">
+              <button class="action-btn edit-btn" (click)="openEditGroupDialog(group); $event.stopPropagation()"
+                title="Edit">
                 <i class="fas fa-pen"></i>
               </button>
-              <button class="action-btn delete-btn" 
-                      (click)="confirmDeleteGroup(group.id); $event.stopPropagation()" 
-                      title="Delete">
+              <button class="action-btn delete-btn" (click)="confirmDeleteGroup(group.id); $event.stopPropagation()"
+                title="Delete">
                 <i class="fas fa-trash"></i>
               </button>
-              <button class="action-btn condition-btn" 
-                      (click)="openConditionPopup(group); $event.stopPropagation()" 
-                      title="Condition">
+              <button class="action-btn condition-btn" (click)="openConditionPopup(group); $event.stopPropagation()"
+                title="Condition">
                 <i class="fas fa-cog"></i>
               </button>
             </div>
@@ -68,11 +57,7 @@
         <div class="search-bar">
           <div class="search-input-wrapper">
             <span class="search-icon"><i class="fas fa-search"></i></span>
-            <input 
-              type="text"
-              placeholder="Search users..." 
-              [(ngModel)]="searchTerm"
-              (input)="onSearchChange()"
+            <input type="text" placeholder="Search users..." [(ngModel)]="searchTerm" (input)="onSearchChange()"
               class="search-input">
           </div>
         </div>
@@ -133,11 +118,7 @@
         <h2>Create New Group</h2>
         <div class="form-group">
           <label>Group Name</label>
-          <input 
-            type="text"
-            [(ngModel)]="newGroupName" 
-            placeholder="Enter group name"
-            class="form-input">
+          <input type="text" [(ngModel)]="newGroupName" placeholder="Enter group name" class="form-input">
         </div>
         <div class="dialog-actions">
           <button class="btn btn-outline" (click)="closeCreateGroupDialog()">Cancel</button>
@@ -151,11 +132,7 @@
         <h2>Edit Group</h2>
         <div class="form-group">
           <label>Group Name</label>
-          <input 
-            type="text"
-            [(ngModel)]="newGroupName" 
-            placeholder="Enter group name"
-            class="form-input">
+          <input type="text" [(ngModel)]="newGroupName" placeholder="Enter group name" class="form-input">
         </div>
         <div class="dialog-actions">
           <button class="btn btn-outline" (click)="closeEditGroupDialog()">Cancel</button>
@@ -171,16 +148,10 @@
           <button class="close-btn" (click)="closeConditionPopup()">×</button>
         </div>
         <div class="dialog-tabs">
-          <button 
-            class="tab-btn" 
-            [class.active]="conditionPopupTab === 'add'" 
-            (click)="conditionPopupTab = 'add'">
+          <button class="tab-btn" [class.active]="conditionPopupTab === 'add'" (click)="conditionPopupTab = 'add'">
             Add Condition
           </button>
-          <button 
-            class="tab-btn" 
-            [class.active]="conditionPopupTab === 'view'" 
-            (click)="conditionPopupTab = 'view'">
+          <button class="tab-btn" [class.active]="conditionPopupTab === 'view'" (click)="conditionPopupTab = 'view'">
             View Condition
           </button>
         </div>
@@ -210,9 +181,7 @@
           </ng-container>
         </div>
         <div class="dialog-footer">
-          <button 
-            class="btn btn-success save-conditions-btn" 
-            *ngIf="conditionPopupTab === 'add'" 
+          <button class="btn btn-success save-conditions-btn" *ngIf="conditionPopupTab === 'add'"
             (click)="saveAllConditions()">
             <i class="fas fa-save"></i> Save Conditions
           </button>
@@ -222,19 +191,19 @@
     </div>
   </div>
   <ng-container *ngIf="isConditionBuilderOpen">
-    <app-discount-rules
-      [group]="conditionGroup"
-      [rules]="conditionRules"
-      (onBack)="closeConditionBuilder()"
+    <app-discount-rules [group]="conditionGroup" [rules]="conditionRules" (onBack)="closeConditionBuilder()"
       (onSaveConditions)="onConditionsSaved($event)">
     </app-discount-rules>
   </ng-container>
 </div>
 <!-- discount-rules component only visible when isRuleBuilderOpen is true -->
 <div *ngIf="isRuleBuilderOpen">
-  <app-discount-rules
-    [rules]="editingConditionIndex !== null ? getConditionRules(editingConditionIndex) : []"
-    (onSaveConditions)="onRuleBuilderSave($event)"
-    (onBack)="closeRuleBuilder()">
+  <app-discount-rules [rules]="editingConditionIndex !== null ? getConditionRules(editingConditionIndex) : []"
+    (onSaveConditions)="onRuleBuilderSave($event)" (onBack)="closeRuleBuilder()">
   </app-discount-rules>
+</div>
+
+
+
+</main>
 </div>
