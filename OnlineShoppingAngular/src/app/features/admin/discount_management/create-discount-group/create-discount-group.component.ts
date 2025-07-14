@@ -164,7 +164,7 @@ export class CreateDiscountGroupComponent implements OnInit {
           user.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
           user.email.toLowerCase().includes(this.searchTerm.toLowerCase());
         const matchesGroup =
-          this.selectedGroup === "all" || user.groupIds.includes(Number.parseInt(this.selectedGroup));
+          this.selectedGroup === "all" || user.groupIds!.includes(Number.parseInt(this.selectedGroup));
         return matchesSearch && matchesGroup;
       }))
     );
@@ -188,7 +188,7 @@ export class CreateDiscountGroupComponent implements OnInit {
   }
 
   getUserGroups(user: User, groups: GroupEA_G[]): GroupEA_G[] {
-    return groups.filter((group) => user.groupIds.includes(group.id));
+    return groups.filter((group) => user.groupIds!.includes(group.id));
   }
 
   // --- Group management methods ---
