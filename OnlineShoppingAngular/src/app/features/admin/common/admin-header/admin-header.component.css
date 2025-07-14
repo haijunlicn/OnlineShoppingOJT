@@ -328,7 +328,7 @@
 }
 
 /* Version 2: Light Header with White Sidebar */
-/* 
+
 .admin-header {
   background: #ffffff;
   border-bottom: 1px solid #dee2e6;
@@ -447,4 +447,4 @@
   background: rgba(22, 48, 43, 0.08);
   color: var(--color-primary);
   border-left: 3px solid var(--color-primary);
-}  */
+}

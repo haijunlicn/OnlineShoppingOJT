@@ -11,7 +11,7 @@ import { PolicyListComponent } from './policy-management/policy-list/policy-list
 import { FaqCreateComponent } from './policy-management/faq-create/faq-create.component';
 import { FaqListComponent } from './policy-management/faq-list/faq-list.component';
 import { FaqUpdateComponent } from './policy-management/faq-update/faq-update.component';
-import { DiscountGroupComponent } from './discount_management/discount-group/discount-group.component';
+
 import { ProductCreateComponent } from './product_management/product-create/product-create.component';
 import { ProductBulkUploadComponent } from './product_management/product-bulk-upload/product-bulk-upload.component';
 import { RoleListComponent } from './roleAndPermission/role-list/role-list.component';
@@ -31,6 +31,9 @@ import { AdminOrdersControlComponent } from './adminOrderManagement/admin-orders
 import { AdminOrdersDetailComponent } from './adminOrderManagement/admin-orders-detail/admin-orders-detail.component';
 import { ProductDetailComponent } from './product_management/product-detail/product-detail.component';
 import { ProductEditComponent } from './product_management/product-edit/product-edit.component';
+import { CreateDiscountComponent } from './discount_management/create-discount/create-discount.component';
+import { CreateDiscountGroupComponent } from './discount_management/create-discount-group/create-discount-group.component';
+import { ProductSelectionComponent } from './discount_management/product-selection/product-selection.component';
 import { SaleAnalysisComponent } from './policy-management/sale-analysis/sale-analysis.component';
 import { PermissionGuard } from '@app/core/guards/permission.guard';
 import { AdminAccountCreateComponent } from './roleAndPermission/admin-account-create/admin-account-create.component';
@@ -44,6 +47,9 @@ import { PolicyUpdateComponent } from './policy-management/policy-update/policy-
 import { ChartTestingComponent } from './SaleAnalysis/chart-testing/chart-testing.component';
 import { AdminLayoutComponent } from './common/admin-layout/admin-layout.component';
 import { NotificationCreateComponent } from './notificationManagement/notification-create/notification-create.component';
+import { AdminNotificationListComponent } from './notificationManagement/admin-notification-list/admin-notification-list.component';
+import { AdminNotiTypesComponent } from './notificationManagement/admin-noti-types/admin-noti-types.component';
+import { AdminSentNotisComponent } from './notificationManagement/admin-sent-notis/admin-sent-notis.component';
 
 
 const routes: Routes = [
@@ -60,10 +66,9 @@ const routes: Routes = [
     canActivate: [AdminAuthGuard], // shared guard
     children: [
       { path: 'dashboard', component: DashboardComponent },
-
       { path: 'productList', component: ProductListComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['PRODUCT_READ'], ['SUPERADMIN_PERMISSION']] } },
       { path: 'productCreate', component: ProductCreateComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['PRODUCT_CREATE'], ['SUPERADMIN_PERMISSION']] } },
-      { path: 'group', component: DiscountGroupComponent },
+      // { path: 'group', component: DiscountGroupComponent },
       { path: 'policy/policy-create', component: PolicyCreateComponent },
       { path: 'policy/policy-list', component: PolicyListComponent },
       { path: 'policy/policy-update', component: PolicyUpdateComponent },
@@ -107,6 +112,15 @@ const routes: Routes = [
       // Optional default redirect
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'notificationCreate', component: NotificationCreateComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
+      { path: 'notifications', component: AdminNotificationListComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
+      { path: 'notificationTypes', component: AdminNotiTypesComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
+      { path: 'sentNotifications', component: AdminSentNotisComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
+      { path: 'createGroup', component: CreateDiscountGroupComponent },
+      { path: 'createDiscount', component: CreateDiscountComponent },
+      {
+        path: 'sale-analysis', component
+        :SaleAnalysisComponent, canActivate: [AdminAuthGuard]
+      },
     ]
   }
 ];

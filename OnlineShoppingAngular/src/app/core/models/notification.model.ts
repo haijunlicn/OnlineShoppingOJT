@@ -7,7 +7,9 @@ export interface UserNotificationDTO {
   deliveredAt: string
   userId: string
   metadata?: string;
+  imageUrl?: string | null; 
   richContent?: NotificationRichContent
+  showToast?: boolean;
 }
 
 export interface NotificationRichContent {

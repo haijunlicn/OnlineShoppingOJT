@@ -38,13 +38,13 @@ public class VariantController {
     }
 
 
-@PutMapping("/update-stock-bulk")
-public ResponseEntity<List<StockUpdateResponse>> updateStockBulk(@RequestBody List<StockUpdateRequest> requests) {
-    List<StockUpdateResponse> responses = new ArrayList<>();
-    for (StockUpdateRequest req : requests) {
-        responses.add(variantService.updateStock(req.getVariantId(), req.getQuantity()));
+    @PutMapping("/update-stock-bulk")
+    public ResponseEntity<List<StockUpdateResponse>> updateStockBulk(@RequestBody List<StockUpdateRequest> requests) {
+        List<StockUpdateResponse> responses = new ArrayList<>();
+        for (StockUpdateRequest req : requests) {
+            responses.add(variantService.updateStock(req.getVariantId(), req.getQuantity()));
+        }
+        return ResponseEntity.ok(responses);
     }
-    return ResponseEntity.ok(responses);
-}
 
 }

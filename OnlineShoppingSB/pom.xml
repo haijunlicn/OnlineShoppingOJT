@@ -51,6 +51,7 @@
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
 
+
         <!-- JAXB API -->
         <dependency>
             <groupId>javax.xml.bind</groupId>
@@ -144,6 +145,20 @@
             <groupId>com.cloudinary</groupId>
             <artifactId>cloudinary-http44</artifactId>
             <version>1.30.0</version>
+        </dependency>
+
+        <!-- Jasper Reports -->
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports</artifactId>
+            <version>6.20.6</version>
+        </dependency>
+        
+        <!-- Jasper Reports Fonts -->
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports-fonts</artifactId>
+            <version>6.20.6</version>
         </dependency>
 
     </dependencies>

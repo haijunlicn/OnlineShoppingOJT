@@ -1323,3 +1323,24 @@ input[type="checkbox"]:disabled {
   color: var(--color-primary);
   font-size: 0.85rem;
 }
+
+.orders-table th:nth-child(7),
+.orders-table td:nth-child(7) {
+  min-width: 130px;
+  width: 150px;
+  max-width: 200px;
+}
+
+.orders-table th:nth-child(5),
+.orders-table td:nth-child(5) {
+  min-width: 120px;
+  width: 140px;
+  max-width: 180px;
+}
+
+.orders-table th:nth-child(2),
+.orders-table td:nth-child(2) {
+  min-width: 70px;
+  width: 90px;
+  max-width: 110px;
+}

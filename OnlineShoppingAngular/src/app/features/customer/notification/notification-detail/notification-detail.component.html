@@ -91,6 +91,13 @@
                     </div>
                 </div>
 
+                <!-- Display Image if notification.imageUrl exists -->
+                <div *ngIf="notification.imageUrl" class="content-section text-center my-2">
+                    <img [src]="notification.imageUrl" [alt]="notification.title" class="img-fluid rounded"
+                        style="max-height: 200px;" />
+                </div>
+
+
                 <!-- Status Indicator -->
                 <div class="notification-status">
                     <div class="status-item">

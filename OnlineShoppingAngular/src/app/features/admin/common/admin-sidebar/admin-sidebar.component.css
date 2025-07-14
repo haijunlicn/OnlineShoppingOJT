@@ -116,8 +116,8 @@
   left: 0;
   width: 25px;
   height: 30px;
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid #e0e0e0;
+  background: rgba(17, 48, 43, 0.65);
+  border: 1px solid #749189;
   border-radius: 0 6px 6px 0;
   color: white;
   display: flex;
@@ -164,7 +164,7 @@
 
 /* Sidebar Header */
 .sidebar-header {
-  padding: 1.5rem;
+  padding: 1rem 1.5rem;
   border-bottom: 1px solid #e0e0e0;
   background: #ffffff;
 }
@@ -218,7 +218,7 @@
   border: 1px solid #e0e0e0;
   color: #495057;
   font-size: 0.85rem;
-  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  padding: 0.5rem 2.5rem 0.5rem 1rem;
   border-radius: 8px;
   transition: all 0.2s ease;
   font-family: inherit;

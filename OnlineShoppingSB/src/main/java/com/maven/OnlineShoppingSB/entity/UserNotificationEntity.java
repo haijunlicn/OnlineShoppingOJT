@@ -39,8 +39,10 @@ public class UserNotificationEntity {
     /**
      * Timestamp when the notification was delivered to this user.
      */
-    @Column(nullable = false)
-    private LocalDateTime deliveredAt = LocalDateTime.now();
+    @Column(nullable = true) // make nullable
+    private LocalDateTime deliveredAt;
+//    @Column(nullable = false)
+//    private LocalDateTime deliveredAt = LocalDateTime.now();
 
     /**
      * Timestamp when the user marked this notification as read (nullable).

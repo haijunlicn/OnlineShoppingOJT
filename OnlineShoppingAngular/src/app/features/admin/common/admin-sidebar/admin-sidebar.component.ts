@@ -37,7 +37,7 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
       heading: "Dashboard",
       items: [
         { label: "Overview", route: "/admin/dashboard", icon: "fas fa-chart-line" },
-        { label: "Analytics", route: "/admin/analytics", icon: "fas fa-chart-bar" },
+        { label: "Analytics", route: "/admin/sale-analysis", icon: "fas fa-chart-bar" },
       ],
     },
     {
@@ -73,6 +73,21 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
       heading: "Payment Management",
       items: [{ label: "Payment", route: "/admin/payment-list", icon: "fas fa-credit-card" }],
     },
+    {
+      heading: "Notification Management",
+      items: [
+        {
+          label: "Notification Types",
+          route: "/admin/notificationTypes",
+          icon: "fas fa-tags",
+        },
+        {
+          label: "Sent Notifications",
+          route: "/admin/sentNotifications",
+          icon: "fas fa-paper-plane",
+        },
+      ],
+    }
   ]
 
   router: Router

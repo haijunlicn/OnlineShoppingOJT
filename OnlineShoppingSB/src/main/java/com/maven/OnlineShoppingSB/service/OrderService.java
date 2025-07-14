@@ -1,11 +1,15 @@
 package com.maven.OnlineShoppingSB.service;
 
 import com.cloudinary.utils.ObjectUtils;
+import com.maven.OnlineShoppingSB.audit.Audit;
+import com.maven.OnlineShoppingSB.audit.AuditEventDTO;
 import com.maven.OnlineShoppingSB.dto.*;
 import com.maven.OnlineShoppingSB.entity.*;
 import com.maven.OnlineShoppingSB.helperClasses.RefundRequestMapper;
 import com.maven.OnlineShoppingSB.repository.*;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,6 +18,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -49,8 +54,13 @@ public class OrderService {
     private RefundItemRepository refundItemRepository;
     @Autowired
     private RefundRequestRepository refundRequestRepository;
+    @Autowired
+    private ApplicationEventPublisher publisher;
+    @Autowired
+    private HttpServletRequest request;
 
 
+    @Audit(action = "CREATE", entityType = "Order")
     @Transactional
     public OrderEntity createOrder(OrderDto dto, MultipartFile paymentProof) throws Exception {
         OrderEntity order = new OrderEntity();
@@ -280,6 +290,7 @@ public class OrderService {
         return dto;
     }
 
+    @Audit(action = "BULK_UPDATE_STATUS", entityType = "Order")
     @Transactional
     public List<OrderEntity> bulkUpdateOrderStatus(BulkOrderStatusUpdateRequest request) {
         List<OrderEntity> updatedOrders = new ArrayList<>();
@@ -320,18 +331,25 @@ public class OrderService {
             }
             order.getStatusHistoryList().add(history);
 
-            updatedOrders.add(orderRepository.save(order));
+            OrderEntity savedOrder = orderRepository.save(order);
+            updatedOrders.add(savedOrder);
+
+            // *** Add notification call ***
+            Long userId = savedOrder.getUser().getId(); // get order's user id
+            notificationService.notifyOrderStatusUpdate(userId, savedOrder.getId(), request.getStatusCode());
         }
 
         return updatedOrders;
     }
 
+    @Audit(action = "UPDATE_PAYMENT_STATUS", entityType = "Order")
     @Transactional
     public OrderDetailDto updatePaymentStatus(
             Long orderId,
             String newStatus,
-            UserEntity adminUser, // Optional for PAID, required for FAILED
-            PaymentRejectionReasonDTO.PaymentRejectionRequestDTO rejectionRequest // Optional, required for FAILED
+            UserEntity adminUser,
+            PaymentRejectionReasonDTO.PaymentRejectionRequestDTO rejectionRequest,
+            PaymentStatusUpdateAuditDto auditDto  // <-- add this here
     ) {
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
@@ -343,9 +361,35 @@ public class OrderService {
             throw new IllegalArgumentException("Invalid payment status: " + newStatus);
         }
 
+        // Prepare rejection details map (empty if none)
+        Map<String, Object> rejectionDetails = new HashMap<>();
+        if (rejectionRequest != null) {
+            rejectionDetails.put("reasonId", rejectionRequest.getReasonId());
+            rejectionDetails.put("customReason", rejectionRequest.getCustomReason());
+        }
+        Long adminUserId = adminUser != null ? adminUser.getId() : null;
+
+        // Publish audit event BEFORE making changes (optional, can also do after)
+//        PaymentStatusUpdateAuditDto auditDto = new PaymentStatusUpdateAuditDto(orderId, newStatus, adminUserId, rejectionDetails);
+//        AuditEventDTO auditEvent = new AuditEventDTO(
+//                "UPDATE_PAYMENT_STATUS",
+//                "Order",
+//                orderId,
+//                auditDto.toAuditMap(),
+//                adminUserId,
+//                adminUser != null ? adminUser.getRole().getName() : "UNKNOWN",
+//                request.getRemoteAddr(),
+//                request.getHeader("User-Agent")
+//        );
+//        publisher.publishEvent(auditEvent);
+
         if (status == PaymentStatus.FAILED) {
             // --- Validation ---
             if (adminUser == null) throw new IllegalArgumentException("Admin user is required for payment rejection");
+
+            Long userId = order.getUser().getId();
+
+            notificationService.notifyOrderStatusUpdate(userId, order.getId(), "ORDER_CANCELLED");
 
             if (order.getPaymentStatus() != PaymentStatus.PENDING) {
                 throw new IllegalStateException("Only pending payments can be rejected.");
@@ -357,31 +401,20 @@ public class OrderService {
 
             PaymentRejectionReasonEntity reasonEntity = null;
 
-            System.out.println("reason id : " + rejectionRequest.getReasonId());
-
             if (rejectionRequest.getReasonId() != null) {
                 reasonEntity = paymentRejectionReasonRepository.findById(rejectionRequest.getReasonId())
                         .orElseThrow(() -> new IllegalArgumentException("Rejection reason not found"));
             }
 
-            // If no reasonId and no custom reason => reject
             if (reasonEntity == null && (rejectionRequest.getCustomReason() == null || rejectionRequest.getCustomReason().isBlank())) {
                 throw new IllegalArgumentException("Custom rejection reason is required if no predefined reason is selected.");
             }
 
-            // If reasonEntity is present AND it requires custom text, then validate customReason
             if (reasonEntity != null && reasonEntity.getAllowCustomText() &&
                     (rejectionRequest.getCustomReason() == null || rejectionRequest.getCustomReason().isBlank())) {
                 throw new IllegalArgumentException("Custom reason is required for the selected rejection reason.");
             }
 
-
-//            if (rejectionRequest == null || (rejectionRequest.getReasonId() == null &&
-//                    (rejectionRequest.getCustomReason() == null || rejectionRequest.getCustomReason().isBlank()))) {
-//                throw new IllegalArgumentException("Rejection reason is required.");
-//            }
-
-            // --- Save Rejection Reason ---
             PaymentRejectionLogEntity rejectionLog = new PaymentRejectionLogEntity();
             rejectionLog.setOrder(order);
 
@@ -396,11 +429,19 @@ public class OrderService {
             rejectionLog.setRejectedAt(LocalDateTime.now());
             paymentRejectionLogRepository.save(rejectionLog);
 
-            // --- Status Change to ORDER_CANCELLED ---
             OrderStatusTypeEntity cancelledStatus = orderStatusTypeRepository.findByCode("ORDER_CANCELLED")
                     .orElseThrow(() -> new RuntimeException("Status 'ORDER_CANCELLED' not found"));
 
             order.setCurrentStatus(cancelledStatus);
+
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("orderId", order.getId());
+            String reasonText = rejectionRequest.getCustomReason();
+            if ((reasonText == null || reasonText.isBlank()) && reasonEntity != null) {
+                reasonText = reasonEntity.getLabel();
+            }
+            metadata.put("reason", reasonText);
+            notificationService.sendNamedNotification("PAYMENT_CANCELLED", metadata, List.of(userId));
 
             OrderStatusHistoryEntity history = new OrderStatusHistoryEntity();
             history.setOrder(order);
@@ -411,7 +452,6 @@ public class OrderService {
             history.setUpdatedBy(adminUser.getId());
             orderStatusHistoryRepository.save(history);
 
-            // roll back stock
             for (OrderItemEntity item : order.getItems()) {
                 ProductVariantEntity variant = item.getVariant();
                 if (variant != null) {
@@ -428,16 +468,28 @@ public class OrderService {
 
             order.setCurrentStatus(confirmedStatus);
 
+            Long userId = order.getUser().getId();
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("orderId", order.getId());
+            notificationService.sendNamedNotification("ORDER_CONFIRMED", metadata, List.of(userId));
+
             OrderStatusHistoryEntity history = new OrderStatusHistoryEntity();
             history.setOrder(order);
             history.setStatus(confirmedStatus);
             history.setNote("Payment approved, status set to ORDER_CONFIRMED");
             history.setCreatedAt(LocalDateTime.now());
-            history.setUpdatedBy(adminUser != null ? adminUser.getId() : 1L); // fallback
+            history.setUpdatedBy(adminUser != null ? adminUser.getId() : 1L);
             orderStatusHistoryRepository.save(history);
+
+            for (OrderItemEntity item : order.getItems()) {
+                ProductVariantEntity variant = item.getVariant();
+                if (variant != null) {
+                    notificationService.checkAndNotifyLowStock(variant);
+                    notificationService.checkAndNotifyOutOfStock(variant);
+                }
+            }
         }
 
-        // Update and save
         order.setPaymentStatus(status);
         order.setUpdatedDate(LocalDateTime.now());
         orderRepository.save(order);
@@ -445,65 +497,155 @@ public class OrderService {
         return convertToOrderDetailDto(order);
     }
 
+//    @Audit(action = "UPDATE_PAYMENT_STATUS", entityType = "Order")
+//    @Transactional
+//    public OrderDetailDto updatePaymentStatus(
+//            Long orderId,
+//            String newStatus,
+//            UserEntity adminUser, // Optional for PAID, required for FAILED
+//            PaymentRejectionReasonDTO.PaymentRejectionRequestDTO rejectionRequest // Optional, required for FAILED
+//    ) {
+//        OrderEntity order = orderRepository.findById(orderId)
+//                .orElseThrow(() -> new RuntimeException("Order not found"));
+//
+//        PaymentStatus status;
+//        try {
+//            status = PaymentStatus.valueOf(newStatus.toUpperCase());
+//        } catch (IllegalArgumentException e) {
+//            throw new IllegalArgumentException("Invalid payment status: " + newStatus);
+//        }
+//
+//        if (status == PaymentStatus.FAILED) {
+//            // --- Validation ---
+//            if (adminUser == null) throw new IllegalArgumentException("Admin user is required for payment rejection");
+//
+//            // Notify user about cancellation due to payment failure
+//            Long userId = order.getUser().getId();
+//            notificationService.notifyOrderStatusUpdate(userId, order.getId(), "ORDER_CANCELLED");
+//
+//
+//            if (order.getPaymentStatus() != PaymentStatus.PENDING) {
+//                throw new IllegalStateException("Only pending payments can be rejected.");
+//            }
+//
+//            if (rejectionRequest == null) {
+//                throw new IllegalArgumentException("Rejection reason is required.");
+//            }
+//
+//            PaymentRejectionReasonEntity reasonEntity = null;
+//
+//            System.out.println("reason id : " + rejectionRequest.getReasonId());
+//
+//            if (rejectionRequest.getReasonId() != null) {
+//                reasonEntity = paymentRejectionReasonRepository.findById(rejectionRequest.getReasonId())
+//                        .orElseThrow(() -> new IllegalArgumentException("Rejection reason not found"));
+//            }
+//
+//            // If no reasonId and no custom reason => reject
+//            if (reasonEntity == null && (rejectionRequest.getCustomReason() == null || rejectionRequest.getCustomReason().isBlank())) {
+//                throw new IllegalArgumentException("Custom rejection reason is required if no predefined reason is selected.");
+//            }
+//
+//            // If reasonEntity is present AND it requires custom text, then validate customReason
+//            if (reasonEntity != null && reasonEntity.getAllowCustomText() &&
+//                    (rejectionRequest.getCustomReason() == null || rejectionRequest.getCustomReason().isBlank())) {
+//                throw new IllegalArgumentException("Custom reason is required for the selected rejection reason.");
+//            }
+//
+//            // --- Save Rejection Reason ---
+//            PaymentRejectionLogEntity rejectionLog = new PaymentRejectionLogEntity();
+//            rejectionLog.setOrder(order);
+//
+//            if (rejectionRequest.getReasonId() != null) {
+//                PaymentRejectionReasonEntity reason = paymentRejectionReasonRepository.findById(rejectionRequest.getReasonId())
+//                        .orElseThrow(() -> new IllegalArgumentException("Rejection reason not found"));
+//                rejectionLog.setReason(reason);
+//            }
+//
+//            rejectionLog.setCustomReason(rejectionRequest.getCustomReason());
+//            rejectionLog.setRejectedBy(adminUser);
+//            rejectionLog.setRejectedAt(LocalDateTime.now());
+//            paymentRejectionLogRepository.save(rejectionLog);
+//
+//            // --- Status Change to ORDER_CANCELLED ---
+//            OrderStatusTypeEntity cancelledStatus = orderStatusTypeRepository.findByCode("ORDER_CANCELLED")
+//                    .orElseThrow(() -> new RuntimeException("Status 'ORDER_CANCELLED' not found"));
+//
+//            order.setCurrentStatus(cancelledStatus);
+//
+//            // === SEND PAYMENT_CANCELLED NOTIFICATION HERE ===
+//            Map<String, Object> metadata = new HashMap<>();
+//            metadata.put("orderId", order.getId());
+//            String reasonText = rejectionRequest.getCustomReason();
+//            if ((reasonText == null || reasonText.isBlank()) && reasonEntity != null) {
+//                reasonText = reasonEntity.getLabel();
+//            }
+//            metadata.put("reason", reasonText);
+//            notificationService.sendNamedNotification("PAYMENT_CANCELLED", metadata, List.of(userId));
+//            // === END NOTIFICATION ===
+//
+//            OrderStatusHistoryEntity history = new OrderStatusHistoryEntity();
+//            history.setOrder(order);
+//            history.setStatus(cancelledStatus);
+//            history.setNote("Payment rejected by admin: " +
+//                    (rejectionRequest.getCustomReason() != null ? rejectionRequest.getCustomReason() : "Reason #" + rejectionRequest.getReasonId()));
+//            history.setCreatedAt(LocalDateTime.now());
+//            history.setUpdatedBy(adminUser.getId());
+//            orderStatusHistoryRepository.save(history);
+//
+//            // roll back stock
+//            for (OrderItemEntity item : order.getItems()) {
+//                ProductVariantEntity variant = item.getVariant();
+//                if (variant != null) {
+//                    int currentStock = variant.getStock();
+//                    variant.setStock(currentStock + item.getQuantity());
+//                    variantRepository.save(variant);
+//                }
+//            }
+//        }
+//
+//        if (status == PaymentStatus.PAID) {
+//            OrderStatusTypeEntity confirmedStatus = orderStatusTypeRepository.findByCode("ORDER_CONFIRMED")
+//                    .orElseThrow(() -> new RuntimeException("ORDER_CONFIRMED status not found"));
+//
+//            order.setCurrentStatus(confirmedStatus);
+//
+//            // === SEND ORDER_CONFIRMED NOTIFICATION HERE ===
+//            Long userId = order.getUser().getId();
+//            Map<String, Object> metadata = new HashMap<>();
+//            metadata.put("orderId", order.getId());
+//            notificationService.sendNamedNotification("ORDER_CONFIRMED", metadata, List.of(userId));
+//            // === END NOTIFICATION ===
+//
+//            OrderStatusHistoryEntity history = new OrderStatusHistoryEntity();
+//            history.setOrder(order);
+//            history.setStatus(confirmedStatus);
+//            history.setNote("Payment approved, status set to ORDER_CONFIRMED");
+//            history.setCreatedAt(LocalDateTime.now());
+//            history.setUpdatedBy(adminUser != null ? adminUser.getId() : 1L); // fallback
+//            orderStatusHistoryRepository.save(history);
+//
+//            // check stock and notify
+//            for (OrderItemEntity item : order.getItems()) {
+//                ProductVariantEntity variant = item.getVariant();
+//                if (variant != null) {
+//                    notificationService.checkAndNotifyLowStock(variant);
+//                    notificationService.checkAndNotifyOutOfStock(variant);
+//                }
+//            }
+//        }
+//
+//        // Update and save
+//        order.setPaymentStatus(status);
+//        order.setUpdatedDate(LocalDateTime.now());
+//        orderRepository.save(order);
+//
+//        return convertToOrderDetailDto(order);
+//    }
+
     // New method to fetch all orders for admin
     public List<OrderEntity> getAllOrders() {
         return orderRepository.findByDeletedFalseOrderByCreatedDateDesc();
-    }
-
-    @Transactional
-    public OrderDetailDto rejectPayment(
-            Long orderId,
-            PaymentRejectionReasonDTO.PaymentRejectionRequestDTO request,
-            UserEntity adminUser
-    ) {
-        OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-
-        if (order.getPaymentStatus() != PaymentStatus.PENDING) {
-            throw new IllegalStateException("Only pending payments can be rejected.");
-        }
-
-        // --- Validate Reason ---
-        if (request.getReasonId() == null && (request.getCustomReason() == null || request.getCustomReason().isBlank())) {
-            throw new IllegalArgumentException("Rejection reason is required.");
-        }
-
-        // --- Save Payment Status Update ---
-        order.setPaymentStatus(PaymentStatus.FAILED); // Assuming enum
-        order.setUpdatedDate(LocalDateTime.now());
-        orderRepository.save(order);
-
-        // --- Save Rejection Reason (in separate table) ---
-        PaymentRejectionLogEntity rejectionLog = new PaymentRejectionLogEntity();
-        rejectionLog.setOrder(order);
-
-        if (request.getReasonId() != null) {
-            PaymentRejectionReasonEntity reason = paymentRejectionReasonRepository.findById(request.getReasonId())
-                    .orElseThrow(() -> new IllegalArgumentException("Rejection reason not found"));
-            rejectionLog.setReason(reason);
-        }
-
-        rejectionLog.setCustomReason(request.getCustomReason());
-        rejectionLog.setRejectedBy(adminUser);
-        rejectionLog.setRejectedAt(LocalDateTime.now());
-
-        paymentRejectionLogRepository.save(rejectionLog);
-
-
-        // --- Save Order Status History (optional but recommended) ---
-        OrderStatusTypeEntity cancelledStatus = orderStatusTypeRepository.findByCode("ORDER_CANCELLED")
-                .orElseThrow(() -> new RuntimeException("Status 'ORDER_CANCELLED' not found"));
-
-        OrderStatusHistoryEntity history = new OrderStatusHistoryEntity();
-        history.setOrder(order);
-        history.setStatus(cancelledStatus);
-        history.setNote("Payment rejected by admin: " +
-                (request.getCustomReason() != null ? request.getCustomReason() : "Reason #" + request.getReasonId()));
-        history.setCreatedAt(LocalDateTime.now());
-        history.setUpdatedBy(adminUser.getId());
-        orderStatusHistoryRepository.save(history);
-
-        return convertToOrderDetailDto(order);
     }
 
     public int getAlreadyReturnedOrProcessingQty(Long orderItemId) {

@@ -1,3 +1,4 @@
+
 <!-- Clean Navigation Bar -->
 <div class="navigation-bar mb-3">
     <div class="nav-left">
@@ -19,9 +20,17 @@
         </div>
     </div>
     <div class="nav-right">
-        <button class="btn btn-outline btn-sm nav-btn" (click)="refreshData()" [disabled]="isLoading" title="Refresh">
-            <i class="fas fa-sync-alt me-1" [class.fa-spin]="isLoading"></i>Refresh
-        </button>
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-outline-secondary btn-sm" (click)="refreshData()" [disabled]="isLoading">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" (click)="exportRefundsToPdf()">
+                            <i class="bi bi-file-earmark-pdf me-1"></i>Export PDF
+                        </button>
+                        <button class="btn btn-outline-success btn-sm" (click)="exportRefundsToExcel()">
+                            <i class="bi bi-file-earmark-excel me-1"></i>Export Excel
+                        </button>
+                    </div>
     </div>
 </div>
 
@@ -45,6 +54,7 @@
                         *ngIf="filterParams.status || filterParams.dateFrom || filterParams.dateTo || filterParams.search.trim()">
                         <i class="fas fa-times me-1"></i>Clear All
                     </button>
+
                 </div>
             </div>
             <div class="card-body">
@@ -72,6 +82,7 @@
                             <option value="COMPLETED">Completed</option>
                             <option value="REJECTED">Rejected</option>
                         </select>
+
                     </div>
 
                     <!-- Date Range -->
@@ -211,37 +222,39 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <div class="action-buttons">
-                                        <button class="btn btn-outline-primary btn-sm me-1"
-                                            (click)="viewDetails(request.id!)" title="View Details">
-                                            <i class="fas fa-eye"></i>
-                                            <span class="d-none d-sm-inline ms-1">View</span>
-                                        </button>
-                                        <div class="btn-group">
-                                            <button
-                                                class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split"
-                                                data-bs-toggle="dropdown" aria-expanded="false" title="More Actions">
-                                                <span class="visually-hidden">More Actions</span>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                <li>
-                                                    <a class="dropdown-item" (click)="viewDetails(request.id!)">
-                                                        <i class="fas fa-eye me-2"></i>View Details
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <hr class="dropdown-divider">
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item text-muted" href="#"
-                                                        onclick="return false;">
-                                                        <i class="fas fa-download me-2"></i>Export
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </td>
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-outline-primary btn-sm"
+                                                    (click)="viewDetails(request.id!)" title="View Details">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                <button
+                                                    class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split"
+                                                    data-bs-toggle="dropdown" aria-expanded="false"
+                                                    title="More Actions">
+                                                    <span class="visually-hidden">Toggle Dropdown</span>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li>
+                                                        <a class="dropdown-item" (click)="viewDetails(request.id!)">
+                                                            <i class="bi bi-eye me-2"></i>View Details
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <hr class="dropdown-divider">
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item" (click)="exportSingleRefundToPdf(request)">
+                                                            <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Export as PDF
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item" (click)="exportSingleRefundToExcel(request)">
+                                                            <i class="bi bi-file-earmark-excel me-2 text-success"></i>Export as Excel
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
                             </tr>
                         </tbody>
                     </table>

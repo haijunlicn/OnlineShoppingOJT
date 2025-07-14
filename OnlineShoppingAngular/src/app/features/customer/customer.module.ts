@@ -48,6 +48,9 @@ import { SearchBarComponent } from './common/search-bar/search-bar.component';
 import { LocationCardComponent } from './account/location-card/location-card.component';
 import { NotificationDetailComponent } from './notification/notification-detail/notification-detail.component';
 import { NotificationListComponent } from './notification/notification-list/notification-list.component';
+import { LocationSettingComponent } from './common/location-setting/location-setting.component';
+import { ProfileInfoSettingComponent } from './common/profile-info-setting/profile-info-setting.component';
+import { NotiSettingComponent } from './common/noti-setting/noti-setting.component';
 
 @NgModule({
   declarations: [
@@ -83,13 +86,15 @@ import { NotificationListComponent } from './notification/notification-list/noti
     FileUploadComponent,
     RefundRequestFormComponent,
     AccountSettingsComponent,
-
     NotificationBellComponent,
     NotificationListComponent,
     SearchBarComponent,
     LocationCardComponent,
     NotificationDetailComponent,
-    NotificationListComponent
+    NotificationListComponent,
+    LocationSettingComponent,
+    ProfileInfoSettingComponent,
+    NotiSettingComponent
   ],
   imports: [
     CommonModule,

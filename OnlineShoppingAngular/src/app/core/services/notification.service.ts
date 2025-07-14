@@ -5,6 +5,7 @@ import SockJS from 'sockjs-client';
 import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
 import { StorageService } from './StorageService';
 import { CreateNotificationPayload, UserNotificationDTO } from '../models/notification.model';
+import { AlertService } from './alert.service';
 
 @Injectable({
   providedIn: 'root'
@@ -19,10 +20,17 @@ export class NotificationService {
 
   baseUrl = "http://localhost:8080/notifications";
 
-  constructor(private http: HttpClient, private storageService: StorageService) { }
+  constructor(
+    private http: HttpClient,
+    private storageService: StorageService,
+    private alertService: AlertService,
+  ) { }
 
   connectWebSocket() {
-    if (this.wsStompClient) return;
+    if (this.wsStompClient && this.wsStompClient.connected) {
+      console.log("WebSocket already connected.");
+      return;
+    }
 
     const token = this.storageService.getItem('token');
 
@@ -37,16 +45,38 @@ export class NotificationService {
       },
       reconnectDelay: 5000,
       onConnect: () => {
-        this.wsStompClient!.subscribe('/user/queue/notifications', (message: IMessage) => {
+        // Save subscription so we can unsubscribe later
+        this.stompSubscription = this.wsStompClient!.subscribe('/user/queue/notifications', (message: IMessage) => {
           if (message.body) {
             const notification: UserNotificationDTO = JSON.parse(message.body);
             this.addNotification(notification);
           }
         });
+        console.log("WebSocket connected and subscribed.");
+      },
+      onStompError: (frame) => {
+        console.error("Broker reported error: " + frame.headers['message']);
+        console.error("Details: " + frame.body);
+      },
+      onWebSocketClose: (event) => {
+        console.log("WebSocket closed", event);
+        this.stompSubscription = undefined;
       }
     });
 
     this.wsStompClient.activate();
+  }
+
+  disconnectWebSocket() {
+    if (this.stompSubscription) {
+      this.stompSubscription.unsubscribe();
+      this.stompSubscription = undefined;
+    }
+
+    if (this.wsStompClient) {
+      this.wsStompClient.deactivate();
+      this.wsStompClient = undefined;
+    }
   }
 
   loadInAppNotificationsForUser(userId: number): void {
@@ -68,21 +98,28 @@ export class NotificationService {
     return this.http.put<void>(`${this.baseUrl}/mark-all-read`, {});
   }
 
+  // addNotification(notification: UserNotificationDTO) {
+  //   const current = this.notificationsSubject.value;
+  //   this.notificationsSubject.next([notification, ...current]);
+  // }
+
   addNotification(notification: UserNotificationDTO) {
     const current = this.notificationsSubject.value;
     this.notificationsSubject.next([notification, ...current]);
+
+    const rendered = this.renderNotification(notification); // ✅ interpolate title/message with metadata
+
+    // 🔔 Optional toast display logic
+    if (notification.showToast) {
+      const message = rendered.richContent?.messageParts?.map(p => p.text).join('') || '';
+      const title = rendered.richContent?.titleParts?.map(p => p.text).join('') || 'Notification';
+
+      console.log("🚨 Showing toast:", { title, message });
+      this.alertService.toast(`${title}: ${message}`, 'info');
+    }
+
   }
 
-  disconnectWebSocket() {
-    if (this.stompSubscription) {
-      this.stompSubscription.unsubscribe();
-      this.stompSubscription = undefined;
-    }
-    if (this.wsStompClient) {
-      this.wsStompClient.deactivate();
-      this.wsStompClient = undefined;
-    }
-  }
 
   renderNotification(notification: UserNotificationDTO): UserNotificationDTO {
     let metadata: { [key: string]: string } = {};

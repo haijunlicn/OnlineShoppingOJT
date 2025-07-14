@@ -19,4 +19,7 @@ public class ProductDTO {
     private BigDecimal basePrice;
     private List<ProductImageDTO> productImages;
     private LocalDateTime createdDate;
+    private BrandDTO brand;
+    private CategoryDTO category;
+    private  List<ProductVariantDTO> productVariants;
 }

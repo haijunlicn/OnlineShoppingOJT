@@ -9,6 +9,8 @@ import { RefundReasonService } from '@app/core/services/refund-reason.service';
 import { RefundRequestService } from '@app/core/services/refundRequestService';
 import { RejectionReasonService } from '@app/core/services/rejection-reason.service';
 import { Subject, takeUntil } from 'rxjs';
+import { PdfExportService } from '@app/core/services/pdf-export.service';
+import { ExcelExportService } from '@app/core/services/excel-export.service';
 
 // Interface for per-item decisions
 interface ItemDecision {
@@ -88,6 +90,20 @@ export class RefundRequestDetailComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>()
 
+  // Export columns definition
+  exportColumns = [
+    { header: 'Refund Item ID', field: 'id', width: 20 },
+    { header: 'Product Name', field: 'productName', width: 50 },
+    { header: 'SKU', field: 'sku', width: 30 },
+    { header: 'Quantity', field: 'quantity', width: 20 },
+    { header: 'Requested Action', field: 'requestedAction', width: 35 },
+    { header: 'Status', field: 'status', width: 30 },
+    { header: 'Reason', field: 'reasonId', width: 40 },
+    { header: 'Custom Reason', field: 'customReasonText', width: 50 },
+    { header: 'Admin Comment', field: 'adminComment', width: 50 },
+    { header: 'Created At', field: 'createdAt', width: 40 }
+  ];
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -96,6 +112,8 @@ export class RefundRequestDetailComponent implements OnInit, OnDestroy {
     private rejectionReasonService: RejectionReasonService,
     private formBuilder: FormBuilder,
     private authService: AuthService,
+    private pdfExportService: PdfExportService,
+    private excelExportService: ExcelExportService,
   ) {
     // Initialize reactive forms
     this.rejectionForm = this.formBuilder.group({
@@ -1058,6 +1076,30 @@ export class RefundRequestDetailComponent implements OnInit, OnDestroy {
 
     // Second to last status
     return sorted[sorted.length - 2]?.status || null;
+  }
+
+  exportDetailToPdf() {
+    if (!this.refundRequest) return;
+    const filename = `RefundRequestDetail_${this.refundRequest.id}.pdf`;
+    this.pdfExportService.exportTableToPdf(
+      this.refundRequest.items,
+      this.exportColumns,
+      filename,
+      `Refund Request Detail #${this.refundRequest.id}`,
+      'refund'
+    );
+  }
+
+  async exportDetailToExcel() {
+    if (!this.refundRequest) return;
+    const filename = `RefundRequestDetail_${this.refundRequest.id}.xlsx`;
+    await this.excelExportService.exportToExcel(
+      this.refundRequest.items,
+      this.exportColumns,
+      filename,
+      `Refund Request Detail #${this.refundRequest.id}`,
+      `Refund Request Detail #${this.refundRequest.id}`
+    );
   }
 
 }

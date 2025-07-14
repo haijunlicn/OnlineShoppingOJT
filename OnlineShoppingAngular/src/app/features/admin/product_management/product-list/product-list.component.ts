@@ -1,4 +1,18 @@
-import { Component, type OnInit } from "@angular/core"
+
+// <<<<<<< HEAD
+// import { Component, OnInit, ViewChild } from '@angular/core';
+// import { Table } from 'primeng/table';
+// import { BrandDTO, ProductListItemDTO } from '../../../../core/models/product.model';
+// import { ProductService } from '../../../../core/services/product.service';
+// import { CategoryService } from '../../../../core/services/category.service';
+// import { CategoryDTO } from '../../../../core/models/category-dto';
+// import { BrandService } from '@app/core/services/brand.service';
+// import { Router } from '@angular/router';
+// import { AccessControlService } from '@app/core/services/AccessControl.service';
+// import { PdfExportService } from '@app/core/services/pdf-export.service';
+// import { ExcelExportService } from '@app/core/services/excel-export.service';
+// =======
+import { Component, OnInit, viewChild, ViewChild } from "@angular/core"
 import { Router } from "@angular/router"
 import type { CategoryDTO } from "@app/core/models/category-dto"
 import type { BrandDTO, ProductListItemDTO } from "@app/core/models/product.model"
@@ -6,6 +20,10 @@ import { AccessControlService } from "@app/core/services/AccessControl.service"
 import { BrandService } from "@app/core/services/brand.service"
 import { CategoryService } from "@app/core/services/category.service"
 import { ProductService } from "@app/core/services/product.service"
+import { Table } from "primeng/table"
+import { PdfExportService } from '@app/core/services/pdf-export.service';
+import { ExcelExportService } from '@app/core/services/excel-export.service';
+
 
 
 interface ExtendedProductListItemDTO extends ProductListItemDTO {
@@ -19,6 +37,9 @@ interface ExtendedProductListItemDTO extends ProductListItemDTO {
   styleUrls: ["./product-list.component.css"],
 })
 export class ProductListComponent implements OnInit {
+
+  @ViewChild("dt") dt!: Table
+
   // Data arrays
   products: ExtendedProductListItemDTO[] = []
   filteredProducts: ExtendedProductListItemDTO[] = []
@@ -49,22 +70,38 @@ export class ProductListComponent implements OnInit {
 
   // Math object for template
   Math = Math
+  // Filter states
+  priceRange: number[] = [0, 1000]
+  maxPrice = 1000
+  minPrice = 0
+  // selectedCategory: any = null
+  // selectedBrand: any = null
+  // selectedStatus: any = null
+  // globalFilterValue = ""
+  // showFilters = false
 
+  // Filter values
+  selectedCategory: any = null;
+  selectedBrand: any = null;
+  selectedStatus: any = null;
+  globalFilterValue: string = '';
+
+  showFilters = false;
+  isExportingExcel = false;
+  isExportingLayoutPdf = false;
   // Loading states
   isLoading = false
   errorMessage = ""
-
-  // Price range
-  maxPrice = 1000
-  minPrice = 0
 
   constructor(
     private productService: ProductService,
     private categoryService: CategoryService,
     private brandService: BrandService,
     private accessControl: AccessControlService,
-    private router: Router,
-  ) {}
+    private pdfExportService: PdfExportService,
+    private excelExportService: ExcelExportService,
+    private router: Router
+  ) { }
 
   ngOnInit() {
     this.loadInitialData()
@@ -427,6 +464,23 @@ export class ProductListComponent implements OnInit {
     this.applyFilters()
   }
 
+  
+  toggleFilters() {
+    this.showFilters = !this.showFilters
+    if (!this.showFilters) {
+      this.clearAllFilters()
+    }
+  }
+
+  clearAllFilters() {
+    this.dt.clear()
+    this.selectedCategory = null
+    this.selectedBrand = null
+    this.selectedStatus = null
+    this.globalFilterValue = ""
+    this.priceRange = [this.minPrice, this.maxPrice]
+  }
+
   getStockStatus(product: ProductListItemDTO): string {
     const totalStock = this.getTotalStock(product)
     if (totalStock === 0) return "OUT_OF_STOCK"
@@ -499,4 +553,81 @@ export class ProductListComponent implements OnInit {
   }
 
  
+  /**
+   * Get filtered products count
+   */
+  get filteredProductsCount(): number {
+    return this.dt?.filteredValue?.length ?? this.products.length
+  }
+
+  // 🔍 Helper method to get filtered data for export
+  getExportData(): ProductListItemDTO[] {
+    // If filters are applied, use filteredValue; otherwise, use all products
+    return this.dt && this.dt.filteredValue ? this.dt.filteredValue : this.products;
+  }
+
+  // 🎨 Professional Table PDF Export (Client-side) - Filtered Data
+  async exportProfessionalPdf() {
+    this.isExportingLayoutPdf = true;
+    try {
+      const columns = [
+        { header: 'Product Name', field: 'product.name', width: 60 },
+        { header: 'Brand', field: 'brand.name', width: 40 },
+        { header: 'Category', field: 'category.name', width: 40 },
+        { header: 'Price (MMK)', field: 'product.basePrice', width: 35 },
+        { header: 'Stock Status', field: 'status', width: 30 },
+        { header: 'Created Date', field: 'product.createdDate', width: 45 }
+      ];
+
+      const exportData = this.getExportData();
+      const filename = exportData.length === this.products.length 
+        ? 'ProductList_All_Products.pdf' 
+        : `ProductList_Filtered_${exportData.length}_Products.pdf`;
+
+      this.pdfExportService.exportTableToPdf(
+        exportData, // Use filtered data instead of all products
+        columns,
+        filename,
+        'Product List Report',
+        'product' // Pass type as 'product' for correct footer
+      );
+    } catch (error: any) {
+      console.error('Error exporting professional PDF:', error);
+      alert('Error exporting professional PDF. Please try again.');
+    } finally {
+      this.isExportingLayoutPdf = false;
+    }
+  }
+
+  // 🅱️ Excel Export - Filtered Data
+  async exportToExcel() {
+    this.isExportingExcel = true;
+    try {
+      const columns = [
+        { header: 'Product Name', field: 'product.name', width: 25 },
+        { header: 'Brand', field: 'brand.name', width: 15 },
+        { header: 'Category', field: 'category.name', width: 15 },
+        { header: 'Price (MMK)', field: 'product.basePrice', width: 15 },
+        { header: 'Stock Status', field: 'status', width: 15 },
+        { header: 'Created Date', field: 'product.createdDate', width: 20 }
+      ];
+
+      const exportData = this.getExportData();
+      const filename = exportData.length === this.products.length 
+        ? 'ProductList_All_Products.xlsx' 
+        : `ProductList_Filtered_${exportData.length}_Products.xlsx`;
+
+      await this.excelExportService.exportToExcel(
+        exportData, // Use filtered data instead of all products
+        columns,
+        filename,
+        'Products'
+      );
+    } catch (error: any) {
+      console.error('Error exporting to Excel:', error);
+      alert('Error exporting to Excel. Please try again.');
+    } finally {
+      this.isExportingExcel = false;
+    }
+  }
 }

@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -156,12 +157,43 @@ public class OrderController {
             UserEntity adminUser = principal != null ? principal.getUser() : null;
             PaymentRejectionReasonDTO.PaymentRejectionRequestDTO rejectionRequest = request.getRejectionRequest();
 
-            OrderDetailDto updatedDto = orderService.updatePaymentStatus(id, newStatus, adminUser, rejectionRequest);
+            // Build audit DTO here
+            Map<String, Object> rejectionDetails = new HashMap<>();
+            if (rejectionRequest != null) {
+                rejectionDetails.put("reasonId", rejectionRequest.getReasonId());
+                rejectionDetails.put("customReason", rejectionRequest.getCustomReason());
+            }
+            Long adminUserId = adminUser != null ? adminUser.getId() : null;
+
+            PaymentStatusUpdateAuditDto auditDto = new PaymentStatusUpdateAuditDto(id, newStatus, adminUserId, rejectionDetails);
+
+            // Pass audit DTO to service
+            OrderDetailDto updatedDto = orderService.updatePaymentStatus(id, newStatus, adminUser, rejectionRequest, auditDto);
             return ResponseEntity.ok(updatedDto);
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
+
+
+//    @PutMapping("/{id}/payment-status")
+//    public ResponseEntity<?> updatePaymentStatus(
+//            @PathVariable Long id,
+//            @RequestBody PaymentRejectionReasonDTO.PaymentStatusUpdateRequest request,
+//            @AuthenticationPrincipal CustomUserDetails principal
+//    ) {
+//        try {
+//            String newStatus = request.getStatus();
+//            UserEntity adminUser = principal != null ? principal.getUser() : null;
+//            PaymentRejectionReasonDTO.PaymentRejectionRequestDTO rejectionRequest = request.getRejectionRequest();
+//
+//            OrderDetailDto updatedDto = orderService.updatePaymentStatus(id, newStatus, adminUser, rejectionRequest);
+//            return ResponseEntity.ok(updatedDto);
+//
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+//        }
+//    }
 
 }

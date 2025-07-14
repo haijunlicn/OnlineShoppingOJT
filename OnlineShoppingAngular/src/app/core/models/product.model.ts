@@ -38,13 +38,16 @@ export interface ProductDTO {
   productImages?: ProductImageDTO[];
   discountPrice?: number;
    originalPrice?: number;
-  }
+  
+  productVariants?: { stock: number }[];
+}
 
 // Brand DTO
 export interface BrandDTO {
   id: string;
+ 
   name: string;
-  logo: string;
+  logo?: string;
 }
 
 // Create Product Request DTO
