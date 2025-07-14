@@ -99,5 +99,18 @@ public ResponseEntity<String> createDiscount(@RequestBody DiscountES_A dto) {
         discountService.saveGroupConditions(groupId, groupDto.getDiscountConditionGroups());
         return ResponseEntity.ok("success");
     }
+    
+    // Get all condition groups for a group
+@GetMapping("/groups/{groupId}/conditions")
+public List<DiscountConditionGroupES_C> getGroupConditions(@PathVariable Integer groupId) {
+    return discountService.getGroupConditions(groupId);
+}
+
+// Delete a condition group by id (and cascade delete its conditions)
+@DeleteMapping("/conditionGroups/{conditionGroupId}")
+public ResponseEntity<?> deleteConditionGroup(@PathVariable Integer conditionGroupId) {
+    discountService.deleteConditionGroup(conditionGroupId);
+    return ResponseEntity.ok("Deleted");
+}
 }
 

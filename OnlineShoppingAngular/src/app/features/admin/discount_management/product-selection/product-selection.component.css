@@ -475,16 +475,17 @@ th {
 
 /* Table scroll container */
 .table-scroll-container {
-  max-height: 400px;
+  max-height: 410px;
   overflow-y: auto;
   border-radius: 0.5rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   background: #fff;
 }
 
+
 .discount-product-filter-sidebar {
   overflow-y: auto;
-  height: 410px;;
+  height: 410px;
 }
 
 /* Sticky table header */

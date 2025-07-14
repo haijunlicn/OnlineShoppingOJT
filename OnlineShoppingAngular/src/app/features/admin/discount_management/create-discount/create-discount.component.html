@@ -352,7 +352,7 @@
 
                   <div class="action-buttons-container">
                       
-
+                    <label class="dashed-add-label" style="margin-bottom: -10px;">Product</label> 
                     <div class="button-with-status">
                       <!-- <button class="smooth-btn"   (click)="onAddDiscountProduct(i)"
                       [disabled]="hasDiscountProducts(i)">
@@ -360,11 +360,13 @@
                       <span class="smooth-btn-plus"><i class="fa-solid fa-plus"></i></span>
                        Product
                       </button> -->
-                      <button class="smooth-btn" type="button" (click)="onAddDiscountProduct(i)"
-                                 [disabled]="hasDiscountProducts(i)">
-                           <span class="smooth-btn-plus"><i class="fa-solid fa-plus"></i></span>
-                             Product
-                                    </button>
+                     
+                     
+                      <button type="button" class="dashed-add-btn" (click)="onAddDiscountProduct(i)" [disabled]="hasDiscountProducts(i)" style="margin-bottom: 5px;" >
+                       
+                        <span class="dashed-add-icon" style="margin-bottom: 5px;">+</span>
+                       
+                      </button>
                       <div *ngIf="hasDiscountProducts(i)" class="product-status">
                         <span class="status-text">{{ getDiscountProductCount(i) }} products selected</span>
                         <button type="button" class="clear-btn" (click)="clearDiscountProducts(i)">
@@ -377,14 +379,14 @@
                     </div>
 
 
-
+                    <span class="dashed-add-label" style="margin-bottom: -10px;">Service</span>
                                                 <div class="button-with-status">
                      
                  
-                                              <button  type="button" class="smooth-btn" (click)="openServiceDescriptionModal(i)"
-                                             [disabled]="hasServiceDescription(i)">
-                                              <span class="smooth-btn-plus"><i class="fa-solid fa-plus"></i></span>
-                                                                 Service
+                                              <button  type="button" class="dashed-add-btn" (click)="openServiceDescriptionModal(i)"
+                                             [disabled]="hasServiceDescription(i)" style="margin-bottom: 5px;">
+                                              <span class="dashed-add-icon" style="margin-bottom: 5px;">+</span>
+                                             
                                                                                    </button>
                       <div *ngIf="hasServiceDescription(i)" class="service-status">
                         <span class="status-text">{{ getServiceDescription(i) | slice:0:30 }}{{ getServiceDescription(i).length > 30 ? '...' : '' }}</span>
@@ -397,12 +399,12 @@
                       </div>
                     </div>
                     
+                    <span class="dashed-add-label"  style="margin-bottom: -10px;">Condition</span>
                     <div class="button-with-status">
                   
-                      <button class="smooth-btn"   type="button"   (click)="openConditionBuilder(i)"
-                    >
-                      <span class="smooth-btn-plus"><i class="fa-solid fa-plus"></i></span>
-                       condition
+                      <button type="button" class="dashed-add-btn" (click)="openConditionBuilder(i)" style="margin-bottom: 5px;">
+                        <span class="dashed-add-icon" style="margin-bottom: 5px;">+</span>
+                       
                       </button>
                       <div class="condition-tags">
                         <div *ngFor="let condition of getConditionsForMechanism(i); let condIndex = index" class="condition-tag">
@@ -483,11 +485,9 @@
                     </div>
                     
                     <div class="button-with-status">
-                      <button type="button" class="condition-btn" (click)="openConditionBuilder(i)">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M9 11H15M9 15H15M17 21H7C5.89543 21 5 20.1046 5 19V5C5 3.89543 5.89543 3 7 3H12.5858C12.851 3 13.1054 3.10536 13.2929 3.29289L19.7071 9.70711C19.8946 9.89464 20 10.149 20 10.4142V19C20 20.1046 19.1046 21 18 21H17Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        Add Condition
+                      <button type="button" class="dashed-add-btn" (click)="openConditionBuilder(i)">
+                        <span class="dashed-add-icon">+</span>
+                        <span class="dashed-add-label">Condition</span>
                       </button>
                       <div class="condition-tags">
                         <div *ngFor="let condition of getConditionsForMechanism(i); let condIndex = index" class="condition-tag">

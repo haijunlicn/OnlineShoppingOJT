@@ -148,10 +148,16 @@
           <button class="close-btn" (click)="closeConditionPopup()">×</button>
         </div>
         <div class="dialog-tabs">
-          <button class="tab-btn" [class.active]="conditionPopupTab === 'add'" (click)="conditionPopupTab = 'add'">
+          <button 
+            class="tab-btn" 
+            [class.active]="conditionPopupTab === 'add'"  (click)="onTabChange('add')"
+            >
             Add Condition
           </button>
-          <button class="tab-btn" [class.active]="conditionPopupTab === 'view'" (click)="conditionPopupTab = 'view'">
+          <button 
+            class="tab-btn" 
+            [class.active]="conditionPopupTab === 'view'" (click)="onTabChange('view')"
+           >
             View Condition
           </button>
         </div>
@@ -176,7 +182,39 @@
           </ng-container>
           <ng-container *ngIf="conditionPopupTab === 'view'">
             <div class="view-condition-section">
-              <!-- (Backend data bind logic will be added later) -->
+              <ng-container *ngIf="viewConditionGroups.length > 0; else noConditions">
+                <div *ngFor="let group of viewConditionGroups">
+                  <!-- Logic Row -->
+                  <div class="logic-row" style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <span style="font-weight: bold;">Apply When</span>
+                    <span style="display: flex; align-items: center;">
+                      <span style="margin-right: 4px;">
+                        <svg width="12" height="12" style="vertical-align: middle;"><polyline points="2,4 6,8 10,4" style="fill:none;stroke:black;stroke-width:2"/></svg>
+                      </span>
+                      <span>
+                        {{ getLogicLabel(group.logicOperator) }}
+                      </span>
+                    </span>
+                  </div>
+                  <!-- Condition Rows -->
+                  <ul style="list-style: none; padding-left: 0;">
+                    <li *ngFor="let cond of group.discountCondition" style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                      <span style="font-size: 18px; color: #007bff;">•</span>
+                      <span>
+                        {{ getConditionDisplay(cond) }}
+                      </span>
+                      <button 
+                        *ngIf="group.id != null"
+                        class="btn btn-danger btn-sm" 
+                        style="margin-left: auto;"
+                        (click)="deleteConditionGroup(group.id)">Delete</button>
+                    </li>
+                  </ul>
+                </div>
+              </ng-container>
+              <ng-template #noConditions>
+                <div>No conditions found.</div>
+              </ng-template>
             </div>
           </ng-container>
         </div>

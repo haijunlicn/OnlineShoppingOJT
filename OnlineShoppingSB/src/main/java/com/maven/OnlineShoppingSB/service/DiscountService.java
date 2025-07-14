@@ -588,6 +588,44 @@ public class DiscountService {
     }
 }
 
+// Get all condition groups for a group
+public List<DiscountConditionGroupES_C> getGroupConditions(Integer groupId) {
+    GroupEntity group = groupRepository.findById(groupId)
+        .orElseThrow(() -> new RuntimeException("Group not found"));
+    List<DiscountConditionGroupEntity> groupEntities = group.getDiscountConditionGroups();
+    List<DiscountConditionGroupES_C> dtos = new ArrayList<>();
+    for (DiscountConditionGroupEntity entity : groupEntities) {
+        DiscountConditionGroupES_C dto = new DiscountConditionGroupES_C();
+        dto.setId(entity.getId());
+        dto.setLogicOperator(entity.getLogicOperator());
+        dto.setGroupId(groupId);
+        // Map conditions
+        List<DiscountConditionES_D> condDtos = new ArrayList<>();
+        if (entity.getDiscountCondition() != null) {
+            for (DiscountConditionEntity cond : entity.getDiscountCondition()) {
+                DiscountConditionES_D condDto = new DiscountConditionES_D();
+                condDto.setId(cond.getId());
+                condDto.setConditionType(cond.getConditionType());
+                condDto.setConditionDetail(cond.getConditionDetail());
+                condDto.setDelFg(cond.getDelFg());
+                condDto.setCreatedDate(cond.getCreatedDate());
+                condDto.setUpdatedDate(cond.getUpdatedDate());
+                condDto.setOperator(cond.getOperator());
+                // Parse value string to array
+                condDto.setValue(parseValueJsonToList(cond.getValue()).toArray(new String[0]));
+                condDto.setDiscountConditionGroupId(entity.getId());
+                condDtos.add(condDto);
+            }
+        }
+        dto.setDiscountCondition(condDtos);
+        dtos.add(dto);
+    }
+    return dtos;
+}
 
+// Delete a condition group and its conditions
+public void deleteConditionGroup(Integer conditionGroupId) {
+    conditionGroupRepository.deleteById(conditionGroupId);
+}
 
 }

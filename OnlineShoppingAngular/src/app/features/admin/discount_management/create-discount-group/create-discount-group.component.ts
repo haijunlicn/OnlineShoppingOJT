@@ -230,10 +230,12 @@ export class CreateDiscountGroupComponent implements OnInit {
   }
 
   openAddCondition(): void {
-   
+    // Open rule builder in group mode
     this.isRuleBuilderOpen = true;
     this.isConditionPopupOpen = false;
     this.editingConditionIndex = null; // new condition
+    // Pass group mode to discount-rules component via [group]
+    // (No code change needed here, but ensure [group] is set in the template)
   }
 
   editCondition(index: number): void {
@@ -257,7 +259,7 @@ export class CreateDiscountGroupComponent implements OnInit {
     const discountConditionGroup: DiscountConditionGroupEA_C = {
       logicOperator: data.logicType,
       discountCondition: data.rules.map((rule, index) => ({
-        conditionType: rule.type,
+        conditionType: rule.type === 'status' ? 'USER_STATUS' : rule.type.toUpperCase(),
         conditionDetail: rule.field,
         operator: this.mapOperator(rule.operator),
         value: rule.values,
@@ -278,20 +280,6 @@ export class CreateDiscountGroupComponent implements OnInit {
     this.closeRuleBuilder();
   }
 
-  // saveAllConditions(): void {
-  //   if (this.conditionGroup) {
-  //     const updatedGroup: GroupEA_G = {
-  //       ...this.conditionGroup,
-  //       discountConditionGroups: [...this.tempConditionGroups]
-  //     };
-      
-  //     console.log('Complete Group Data:', updatedGroup);
-  //     console.log('=========================================');
-    
-      
-  //     this.closeConditionPopup();
-  //   }
-  // }
 
   saveAllConditions(): void {
     if (this.conditionGroup) {
@@ -300,6 +288,7 @@ export class CreateDiscountGroupComponent implements OnInit {
         discountConditionGroups: [...this.tempConditionGroups]
       };
       console.log("HI");
+      console.log(updatedGroup);
       // Call backend to save
       this.discountService.saveGroupConditions(updatedGroup).subscribe({
         next: (res) => {
@@ -319,6 +308,38 @@ export class CreateDiscountGroupComponent implements OnInit {
   removeCondition(index: number): void {
     this.tempConditionGroups.splice(index, 1);
   }
+
+
+
+// Add to component state
+viewConditionGroups: DiscountConditionGroupEA_C[] = [];
+
+// When opening View Condition tab
+loadViewConditions() {
+  if (this.conditionGroup?.id) {
+    this.discountService.getGroupConditions(this.conditionGroup.id).subscribe(data => {
+      this.viewConditionGroups = data;
+    });
+  }
+}
+
+// Delete handler
+deleteConditionGroup(conditionGroupId: number) {
+  if (confirm('Are you sure you want to delete this condition group?')) {
+    this.discountService.deleteConditionGroup(conditionGroupId).subscribe(() => {
+      this.loadViewConditions();
+    });
+  }
+}
+// When switching to View Condition tab
+onTabChange(tab: 'add' | 'view') {
+  this.conditionPopupTab = tab;
+  if (tab === 'view') {
+    this.loadViewConditions();
+  }
+}
+
+
 
   // --- Condition builder methods (legacy - keeping for compatibility) ---
   openConditionBuilder(group: GroupEA_G): void {
@@ -351,7 +372,7 @@ export class CreateDiscountGroupComponent implements OnInit {
       const discountConditionGroup = {
         logicOperator: data.logicType,
         discountCondition: data.rules.map((rule, index) => ({
-          conditionType: rule.type,
+          conditionType: rule.type === 'status' ? 'USER_STATUS' : rule.type.toUpperCase(),
           conditionDetail: rule.field,
           operator: this.mapOperator(rule.operator),
           value: rule.values,
@@ -399,5 +420,47 @@ export class CreateDiscountGroupComponent implements OnInit {
       operator: c.operator || '',
       values: c.value || [],
     }));
+  }
+
+  // User-friendly logic label
+  getLogicLabel(logicOperator: string | boolean): string {
+    // logicOperator may be string ('true'/'false') or boolean (true/false)
+    if (logicOperator === true || logicOperator === 'true') {
+      return 'All of the conditions are matched';
+    } else {
+      return 'Any of the conditions are matched';
+    }
+  }
+
+  // User-friendly condition display
+  getConditionDisplay(cond: any): string {
+    const operatorMap: { [key: string]: string } = {
+      EQUAL: 'is equal to',
+      GREATER_THAN: 'is greater than',
+      LESS_THAN: 'is less than',
+      GREATER_THAN_OR_EQUAL: 'is greater than or equal to',
+      LESS_THAN_OR_EQUAL: 'is less than or equal to',
+      IS_ONE_OF: 'is one of',
+      equals: 'is equal to',
+      greater_than: 'is greater than',
+      less_than: 'is less than',
+      greater_equal: 'is greater than or equal to',
+      less_equal: 'is less than or equal to',
+      one_of: 'is one of',
+    };
+    return `${this.getFieldLabel(cond.conditionDetail)} ${operatorMap[cond.operator] || cond.operator} ${cond.value ? cond.value.join(', ') : ''}`;
+  }
+
+  // Field label mapping
+  getFieldLabel(field: string): string {
+    const fieldMap: { [key: string]: string } = {
+      last_login_date: 'Last Login Date',
+      days_since_signup: 'Days Since Signup',
+      total_spent: 'Total Spent',
+      days_since_last_purchase: 'Days Since Last Purchase',
+      account_age_days: 'Account Age Days',
+      // Add more as needed
+    };
+    return fieldMap[field] || field;
   }
 }
