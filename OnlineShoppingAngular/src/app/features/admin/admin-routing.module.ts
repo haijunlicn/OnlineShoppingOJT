@@ -31,11 +31,13 @@ import { AdminOrdersControlComponent } from './adminOrderManagement/admin-orders
 import { AdminOrdersDetailComponent } from './adminOrderManagement/admin-orders-detail/admin-orders-detail.component';
 import { ProductDetailComponent } from './product_management/product-detail/product-detail.component';
 import { ProductEditComponent } from './product_management/product-edit/product-edit.component';
-import { SaleAnalysisComponent } from './policy-management/sale-analysis/sale-analysis.component';
+
 import { PermissionGuard } from '@app/core/guards/permission.guard';
 import { AdminAccountCreateComponent } from './roleAndPermission/admin-account-create/admin-account-create.component';
 import { RefundRequestListComponent } from './RefundManagement/refund-request-list/refund-request-list.component';
 import { RefundRequestDetailComponent } from './RefundManagement/refund-request-detail/refund-request-detail.component';
+import { SaleAnalysisComponent } from './policy-management/sale-analysis/sale-analysis.component';
+
 
 
 const routes: Routes = [
@@ -49,6 +51,11 @@ const routes: Routes = [
     component: DashboardComponent,
     canActivate: [AdminAuthGuard]
   },
+  //  {
+  //   path: 'analytics',
+  //   component:AnalyticsDashboardComponent,
+  //   canActivate: [AdminAuthGuard]
+  // },
   {
     path: 'productList',
     component: ProductListComponent,
@@ -151,7 +158,8 @@ const routes: Routes = [
   { path: 'payment-list', component: PaymentListComponent, canActivate: [AdminAuthGuard] },
   { path: 'payment-update/:id', component: PaymentUpdateComponent, canActivate: [AdminAuthGuard] },
   {
-    path: 'sale-analysis', component: SaleAnalysisComponent, canActivate: [AdminAuthGuard]
+    path: 'sale-analysis', component
+    :SaleAnalysisComponent, canActivate: [AdminAuthGuard]
   },
 
   {
@@ -220,6 +228,11 @@ const routes: Routes = [
     path: 'refundRequestList',
     component: RefundRequestListComponent,
     canActivate: [AdminAuthGuard, PermissionGuard],
+    data: {
+      permissionGroups: [
+        ['SUPERADMIN_PERMISSION']
+      ]
+    }
   },
   { path: 'storelocation', component: StoreAddressComponent },
 

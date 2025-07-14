@@ -29,6 +29,7 @@ import { ColorPickerModule } from 'primeng/colorpicker';
 import { TreeModule } from 'primeng/tree';
 import { MenuModule } from 'primeng/menu';
 import { NgxMaskModule } from 'ngx-mask';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
 
 import { ProductListComponent } from './product_management/product-list/product-list.component';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
@@ -121,6 +122,7 @@ import { RefundRequestDetailComponent } from './RefundManagement/refund-request-
     AdminAccountCreateComponent,
     RefundRequestListComponent,
     RefundRequestDetailComponent,
+   
   ],
   imports: [
     CommonModule,
@@ -143,7 +145,9 @@ import { RefundRequestDetailComponent } from './RefundManagement/refund-request-
     TreeModule,
     MenuModule,
     FormsModule,
-    NgxMaskModule.forRoot()
+    NgxChartsModule,
+    NgxMaskModule.forRoot(),
+
   ]
 })
 export class AdminModule { }

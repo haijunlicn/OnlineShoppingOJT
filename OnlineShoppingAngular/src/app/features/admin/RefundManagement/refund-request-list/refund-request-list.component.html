@@ -14,7 +14,12 @@
                         <button class="btn btn-outline-secondary btn-sm" (click)="refreshData()" [disabled]="isLoading">
                             <i class="bi bi-arrow-clockwise me-1"></i>Refresh
                         </button>
-                        <!-- <span class="text-muted small">{{ totalItems }} total</span> -->
+                        <button class="btn btn-outline-danger btn-sm" (click)="exportRefundsToPdf()">
+                            <i class="bi bi-file-earmark-pdf me-1"></i>Export PDF
+                        </button>
+                        <button class="btn btn-outline-success btn-sm" (click)="exportRefundsToExcel()">
+                            <i class="bi bi-file-earmark-excel me-1"></i>Export Excel
+                        </button>
                     </div>
                 </div>
 
@@ -201,9 +206,13 @@
                                                         <hr class="dropdown-divider">
                                                     </li>
                                                     <li>
-                                                        <a class="dropdown-item text-muted" href="#"
-                                                            onclick="return false;">
-                                                            <i class="bi bi-download me-2"></i>Export
+                                                        <a class="dropdown-item" (click)="exportSingleRefundToPdf(request)">
+                                                            <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Export as PDF
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item" (click)="exportSingleRefundToExcel(request)">
+                                                            <i class="bi bi-file-earmark-excel me-2 text-success"></i>Export as Excel
                                                         </a>
                                                     </li>
                                                 </ul>

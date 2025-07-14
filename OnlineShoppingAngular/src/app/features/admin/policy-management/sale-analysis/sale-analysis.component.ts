@@ -1,453 +1,454 @@
-import { Component, type OnInit, type OnDestroy } from "@angular/core"
-import type { RoleDTO } from "@app/core/models/roleDTO"
-import type { User } from "@app/core/models/User"
-import { AnalysisService } from "@app/core/services/analysis.service"
-import dayjs from "dayjs"
-import type { Subscription } from "rxjs"
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { CacheStats, DataEntry, GroupOption, MetricOption, TimePeriod, SalesChartDetail } from '@app/core/models/sale.model';
+import { SalesDataService } from '@app/core/services/sales-data.service';
+import { Subject, takeUntil } from 'rxjs';
+import { curveLinear } from 'd3-shape';
 
-interface DailyRegistration {
-  date: string
-  count: number
-  formattedDate: string
-  users: (User & { roleName: string })[]
-  color: string
+interface TableRow {
+  category: string;
+  product: string;
+  variant: string;
+  city: string;
+  date: string;
+  value: number;
+  index: number;
 }
 
-interface RoleAnalysis {
-  name: string
-  count: number
-  percentage: number
-  color: string
-  activeCount: number
-  inactiveCount: number
-}
-
-interface CustomerStats {
-  totalCustomers: number
-  activeCustomers: number
-  inactiveCustomers: number
-  roleAnalysis: RoleAnalysis[]
-  dailyRegistrations: DailyRegistration[] // Daily registration data
-  recentCustomers: (User & { roleName: string })[]
-  growthRate: number
-  peakRegistrationDay: DailyRegistration | null
+interface StatCard {
+  title: string
+  value: string
+  change: number
+  isPositive: boolean
+  period: string
 }
 
 @Component({
   selector: "app-sale-analysis",
-  standalone: false,
+  standalone:false,
   templateUrl: "./sale-analysis.component.html",
   styleUrls: ["./sale-analysis.component.css"],
 })
 export class SaleAnalysisComponent implements OnInit, OnDestroy {
-  // Loading states
-  isLoading = true
-  hasError = false
-  errorMessage = ""
+  private destroy$ = new Subject<void>()
+
+  // Filter options
+  groupBy: GroupOption = "Category"
+  metric: MetricOption = "Total Revenue"
+  timePeriod: TimePeriod = "week"
 
   // Data
-  customerRoles: RoleDTO[] = []
-  customerStats: CustomerStats = {
-    totalCustomers: 0,
-    activeCustomers: 0,
-    inactiveCustomers: 0,
-    roleAnalysis: [],
-    dailyRegistrations: [],
-    recentCustomers: [],
-    growthRate: 0,
-    peakRegistrationDay: null,
-  }
+  chartData: DataEntry[] = []
+  tableData: TableRow[] = []
+  loading = false
+  error: string | null = null
+  totalCount = 0
+  hasMore = false
+  currentPage = 1
 
-  private subscriptions: Subscription[] = []
+  // UI State
+  showTable = false
+  showPerformanceMonitor = false
+  sortField = ""
+  sortDirection: "asc" | "desc" = "desc"
 
-  // Color palette for daily bars
-  private dailyColors = [
-    "#3498DB",
-    "#E74C3C",
-    "#2ECC71",
-    "#F39C12",
-    "#9B59B6",
-    "#1ABC9C",
-    "#E67E22",
-    "#34495E",
-    "#16A085",
-    "#27AE60",
-    "#2980B9",
-    "#8E44AD",
-    "#2C3E50",
-    "#F1C40F",
-    "#E91E63",
-    "#FF6B6B",
-    "#4ECDC4",
-    "#45B7D1",
-    "#96CEB4",
-    "#FFEAA7",
+  // Options
+  groupOptions: GroupOption[] = ["Category", "Product", "ProductVariant", "City"]
+  metricOptions: MetricOption[] = ["Total Revenue", "Total Orders"]
+  timePeriodOptions = [
+    { value: "week" as TimePeriod, label: "Last 7 Days" },
+    { value: "month" as TimePeriod, label: "Last 12 Months" },
+    { value: "year" as TimePeriod, label: "Last Year" },
   ]
 
-  // Role color mapping
-  private roleColorMap: { [key: string]: string } = {
-    Admin: "#FF6B6B",
-    Manager: "#4ECDC4",
-    Customer: "#45B7D1",
-    User: "#96CEB4",
-    Moderator: "#FFEAA7",
-    Support: "#DDA0DD",
-    "Unknown Role": "#BDC3C7",
+  // Chart configuration
+  view: [number, number] = [900, 400]
+  colorScheme = {
+    name: "custom",
+    selectable: true,
+    group: "Ordinal" as any,
+    domain: ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d", "#d88488"],
   }
 
-  constructor(private analysisService: AnalysisService) {}
+  // Statistics
+  statsCards: StatCard[] = []
+  cacheStats: CacheStats = { size: 0, keys: [] }
+  renderTime = 0
+  curve = curveLinear;
 
-  ngOnInit() {
-    this.loadCustomerData()
-  }
+  constructor(
+    private salesDataService: SalesDataService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
-  ngOnDestroy() {
-    this.subscriptions.forEach((sub) => sub.unsubscribe())
-  }
+  ngOnInit(): void {
+    this.loadData()
+    this.updateStats()
 
-  loadCustomerData() {
-    this.isLoading = true
-    this.hasError = false
-
-    const subscription = this.analysisService.getCustomerRoles().subscribe({
-      next: (data: RoleDTO[]) => {
-        this.customerRoles = data
-        console.log("Customer roles data: ", data)
-        this.processCustomerData()
-        this.isLoading = false
-      },
-      error: (error: any) => {
-        console.error("Error loading customer data:", error)
-        this.hasError = true
-        this.errorMessage = "Failed to load customer data. Please try again."
-        this.isLoading = false
-      },
+    // Monitor loading state
+    this.salesDataService.loading$.pipe(takeUntil(this.destroy$)).subscribe((loading) => {
+      this.loading = loading
+      this.cdr.detectChanges()
     })
-
-    this.subscriptions.push(subscription)
   }
 
-  // processCustomerData method ကို update လုပ်ပါ
-  processCustomerData() {
-    console.log("Starting processCustomerData...")
+  ngOnDestroy(): void {
+    this.destroy$.next()
+    this.destroy$.complete()
+  }
 
-    // Flatten all users from roles
-    const allUsers: (User & { roleName: string })[] = this.customerRoles.flatMap((role) =>
-      (role.users || []).map((user) => ({
-        ...user,
-        roleName: role.name || "Unknown Role",
-      })),
-    )
+  // Load data based on current filters
+  loadData(): void {
+    const startTime = performance.now();
 
-    console.log(`Total users found in roles: ${allUsers.length}`)
+    this.salesDataService
+      .fetchSalesDetailDataWithGroupBy(this.timePeriod, this.groupBy, this.metric)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data: SalesChartDetail[]) => {
+          // For chart: group by composite name, fill missing dates
+          this.chartData = this.transformToChartData(data, this.timePeriod);
 
-    // If no users, create mock data for testing
-    if (allUsers.length === 0) {
-      console.log("No users found, creating mock data for testing...")
-      const mockUsers = this.createMockUsers()
-      allUsers.push(...mockUsers)
+          // For table: flat data
+          this.tableData = data.map((row, idx) => ({
+            category: row.category || "",
+            product: row.product || "",
+            variant: row.variant || "",
+            city: row.city || "",
+            date: row.timePoint,
+            value: row.value,
+            index: idx,
+          }));
+
+          this.totalCount = data.length;
+          this.error = null;
+          this.renderTime = performance.now() - startTime;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.error = err.message || "An error occurred while loading data";
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
+  // Filter change handlers
+  onGroupChange(value: GroupOption): void {
+    this.groupBy = value
+    this.currentPage = 1
+    this.loadData()
+  }
+
+  onMetricChange(value: MetricOption): void {
+    this.metric = value
+    this.currentPage = 1
+    this.loadData()
+  }
+
+  onTimePeriodChange(value: TimePeriod): void {
+    this.timePeriod = value
+    this.currentPage = 1
+    this.loadData()
+  }
+
+  // Load more data
+  loadMore(): void {
+    if (!this.loading && this.hasMore) {
+      this.currentPage++
+      this.loadData()
     }
-
-    // Add fallback dates for users without dates
-    const usersWithFallbackDates = allUsers.map((user, index) => {
-      // If user doesn't have createdDate, create a fallback date
-      if (!user.createdDate && !user.updatedDate) {
-        // Distribute users across last 30 days randomly
-        const daysAgo = Math.floor(Math.random() * 30)
-        const fallbackDate = dayjs().subtract(daysAgo, "day").format("YYYY-MM-DD") + "T10:00:00.000Z"
-
-        console.log(`Creating fallback date for User ${user.id}: ${fallbackDate}`)
-
-        return {
-          ...user,
-          createdDate: fallbackDate,
-          updatedDate: fallbackDate,
-        }
-      }
-      return user
-    })
-
-    console.log(`Users with fallback dates: ${usersWithFallbackDates.length}`)
-
-    // Replace allUsers with usersWithFallbackDates
-    const finalUsers = usersWithFallbackDates
-
-    const totalCustomers = finalUsers.length
-    const activeCustomers = finalUsers.filter((user) => user.delFg === true).length
-    const inactiveCustomers = totalCustomers - activeCustomers
-
-    // Process daily registrations
-    const dailyRegistrations = this.processDailyRegistrations(finalUsers)
-    console.log("Processed daily registrations:", dailyRegistrations)
-
-    // Find peak registration day
-    const peakRegistrationDay =
-      dailyRegistrations.length > 0
-        ? dailyRegistrations.reduce((max, current) => (current.count > max.count ? current : max))
-        : null
-
-    // Group by role name for role analysis
-    const roleGroups: { [key: string]: (User & { roleName: string })[] } = {}
-    finalUsers.forEach((user) => {
-      const roleName = user.roleName || "Unknown Role"
-      if (!roleGroups[roleName]) {
-        roleGroups[roleName] = []
-      }
-      roleGroups[roleName].push(user)
-    })
-
-    // Create role analysis
-    const roleAnalysis: RoleAnalysis[] = Object.entries(roleGroups).map(([roleName, users]) => {
-      const count = users.length
-      const percentage = totalCustomers > 0 ? (count / totalCustomers) * 100 : 0
-      const activeCount = users.filter((user) => user.delFg === true).length
-      const inactiveCount = count - activeCount
-
-      return {
-        name: roleName,
-        count,
-        percentage: Math.round(percentage * 10) / 10,
-        color: this.getRoleColor(roleName),
-        activeCount,
-        inactiveCount,
-      }
-    })
-
-    roleAnalysis.sort((a, b) => b.count - a.count)
-
-    // Get recent users
-    const recentCustomers = finalUsers
-      .filter((user) => user.createdDate)
-      .sort((a, b) => dayjs(b.createdDate).valueOf() - dayjs(a.createdDate).valueOf())
-      .slice(0, 8)
-
-    const growthRate = totalCustomers > 0 ? Math.round(Math.random() * 20 + 5) : 0
-
-    this.customerStats = {
-      totalCustomers,
-      activeCustomers,
-      inactiveCustomers,
-      roleAnalysis,
-      dailyRegistrations,
-      recentCustomers,
-      growthRate,
-      peakRegistrationDay,
-    }
-
-    console.log("Final customerStats set:", this.customerStats)
-    console.log("Daily registrations count:", dailyRegistrations.length)
   }
 
-  // Mock data creation method အသစ် ထည့်ပါ
-  private createMockUsers(): (User & { roleName: string })[] {
-    const mockUsers: (User & { roleName: string })[] = []
-    const roles = ["Admin", "Customer", "User", "Manager"]
+  // Refresh data
+  refresh(): void {
+    this.currentPage = 1;
+    this.loadData();
+  }
 
-    // Create mock users for the last 15 days
-    for (let i = 0; i < 15; i++) {
-      const date = dayjs().subtract(i, "day").format("YYYY-MM-DD")
-      const usersPerDay = Math.floor(Math.random() * 8) + 1 // 1-8 users per day
+  // Export functionality
+  exportData(): void {
+    this.salesDataService.exportToCSV(this.chartData, this.metric, this.groupBy)
+  }
 
-      for (let j = 0; j < usersPerDay; j++) {
-        mockUsers.push({
-          id: mockUsers.length + 1,
-          name: `User ${mockUsers.length + 1}`,
-          email: `user${mockUsers.length + 1}@example.com`,
-          roleName: roles[Math.floor(Math.random() * roles.length)],
-          delFg: Math.random() > 0.3, // 70% active
-          createdDate: date + "T" + String(Math.floor(Math.random() * 24)).padStart(2, "0") + ":00:00.000Z",
-          updatedDate: date + "T" + String(Math.floor(Math.random() * 24)).padStart(2, "0") + ":00:00.000Z",
+  // Update table data
+  private updateTableData(): void {
+    const flattened: TableRow[] = []
+
+    this.chartData.forEach((entry, entryIndex) => {
+      entry.series.forEach((item, itemIndex) => {
+        flattened.push({
+          category: entry.name,
+          product: '',   // or a real value if available
+          variant: '',   // or a real value if available
+          city: '',      // or a real value if available
+          date: item.name,
+          value: item.value,
+          index: entryIndex * 1000 + itemIndex,
         })
-      }
-    }
-
-    console.log("Created mock users:", mockUsers.length)
-    return mockUsers
-  }
-
-  // processDailyRegistrations method ကို update လုပ်ပါ
-  private processDailyRegistrations(users: (User & { roleName: string })[]): DailyRegistration[] {
-    console.log("Processing daily registrations for users:", users.length)
-
-    // Filter users with valid creation dates
-    const usersWithDates = users
-      .filter((user) => {
-        // Check only existing date fields from User interface
-        const hasDate = user.createdDate || user.updatedDate
-        console.log(
-          `User ${user.id}: createdDate=${user.createdDate}, updatedDate=${user.updatedDate}, hasDate=${!!hasDate}`,
-        )
-        return hasDate
       })
-      .map((user) => ({
-        ...user,
-        // Use available date field or create current date
-        createdDate: user.createdDate || user.updatedDate || new Date().toISOString(),
-      }))
-    console.log("Users with valid dates:", usersWithDates.length)
-
-    if (usersWithDates.length === 0) {
-      console.log("No users with valid dates found")
-      return []
-    }
-
-    // Group users by date
-    const dateGroups: { [key: string]: (User & { roleName: string })[] } = {}
-
-    usersWithDates.forEach((user) => {
-      const date = dayjs(user.createdDate).format("YYYY-MM-DD")
-      if (!dateGroups[date]) {
-        dateGroups[date] = []
-      }
-      dateGroups[date].push(user)
     })
 
-    console.log("Date groups:", Object.keys(dateGroups).length)
+    // Apply sorting
+    if (this.sortField) {
+      flattened.sort((a, b) => {
+        let aVal: any = (a as any)[this.sortField]
+        let bVal: any = (b as any)[this.sortField]
 
-    // Convert to DailyRegistration array
-    const dailyRegistrations: DailyRegistration[] = Object.entries(dateGroups)
-      .map(([date, users], index) => ({
-        date,
-        count: users.length,
-        formattedDate: dayjs(date).format("MMM DD"),
-        users,
-        color: this.dailyColors[index % this.dailyColors.length],
-      }))
-      .sort((a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf())
+        if (typeof aVal === "string") {
+          aVal = aVal.toLowerCase()
+          bVal = bVal.toLowerCase()
+        }
 
-    console.log("Daily registrations before slice:", dailyRegistrations.length)
-
-    // Return last 30 days for better visualization
-    const result = dailyRegistrations.slice(-30)
-    console.log("Final daily registrations:", result.length)
-    console.log("Sample daily registration:", result[0])
-
-    return result
-  }
-
-  private getRoleColor(roleName: string): string {
-    if (this.roleColorMap[roleName]) {
-      return this.roleColorMap[roleName]
+        if (this.sortDirection === "asc") {
+          return aVal < bVal ? -1 : aVal > bVal ? 1 : 0
+        } else {
+          return aVal > bVal ? -1 : aVal < bVal ? 1 : 0
+        }
+      })
     }
 
-    // Generate consistent color for unknown roles
-    const hash = this.hashString(roleName)
-    const colors = ["#98D8C8", "#F7DC6F", "#BB8FCE", "#85C1E9", "#F8C471", "#82E0AA"]
-    return colors[hash % colors.length]
+    this.tableData = flattened
   }
 
-  private hashString(str: string): number {
-    let hash = 0
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i)
-      hash = (hash << 5) - hash + char
-      hash = hash & hash
+  // Sort table
+  sortTable(field: string): void {
+    if (this.sortField === field) {
+      this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc"
+    } else {
+      this.sortField = field
+      this.sortDirection = "desc"
     }
-    return Math.abs(hash)
+    this.updateTableData()
   }
 
-  refreshData() {
-    this.loadCustomerData()
+  // Update statistics
+  private updateStats(): void {
+    const stats = this.getStatsForPeriod(this.timePeriod)
+    this.statsCards = [
+      {
+        title: "Total Revenue",
+        value: this.formatCurrency(stats.totalRevenue.value),
+        change: stats.totalRevenue.change,
+        isPositive: stats.totalRevenue.isPositive,
+        period: stats.period,
+      },
+      {
+        title: "Total Orders",
+        value: this.formatNumber(stats.totalOrders.value),
+        change: stats.totalOrders.change,
+        isPositive: stats.totalOrders.isPositive,
+        period: stats.period,
+      },
+      {
+        title: "Average Order Value",
+        value: `$${stats.avgOrderValue.value}`,
+        change: stats.avgOrderValue.change,
+        isPositive: stats.avgOrderValue.isPositive,
+        period: stats.period,
+      },
+    ]
+
   }
 
-  getActivePercentage(): number {
-    if (this.customerStats.totalCustomers === 0) return 0
-    return Math.round((this.customerStats.activeCustomers / this.customerStats.totalCustomers) * 100)
+  private getStatsForPeriod(period: TimePeriod) {
+    switch (period) {
+      case "week":
+        return {
+          totalRevenue: { value: 156420, change: 12.5, isPositive: true },
+          totalOrders: { value: 1247, change: 8.2, isPositive: true },
+          avgOrderValue: { value: 125.45, change: 3.8, isPositive: true },
+          period: "last 7 days",
+        }
+      case "month":
+        return {
+          totalRevenue: { value: 2450000, change: 15.3, isPositive: true },
+          totalOrders: { value: 18500, change: 11.7, isPositive: true },
+          avgOrderValue: { value: 132.43, change: 5.2, isPositive: true },
+          period: "last 12 months",
+        }
+      case "year":
+        return {
+          totalRevenue: { value: 28500000, change: 22.8, isPositive: true },
+          totalOrders: { value: 215000, change: 18.5, isPositive: true },
+          avgOrderValue: { value: 132.56, change: 3.7, isPositive: true },
+          period: "last year",
+        }
+    }
   }
 
-  formatDate(date: string): string {
-    return dayjs(date).format("MMM DD, YYYY")
+  // Utility methods
+  formatValue(value: number): string {
+    if (this.metric === "Total Revenue") {
+      return `$${value.toLocaleString()}`
+    }
+    return value.toString()
   }
 
-  formatFullDate(date: string): string {
-    return dayjs(date).format("MMMM DD, YYYY")
+  private formatCurrency(value: number): string {
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(1)}M`
+    } else if (value >= 1000) {
+      return `$${(value / 1000).toFixed(0)}K`
+    }
+    return `$${value.toLocaleString()}`
   }
 
-  getRoleTypeLabel(type: number | undefined): string {
-    switch (type) {
-      case 0:
-        return "Customer"
-      case 1:
-        return "Admin"
-      case 2:
-        return "Manager"
+  private formatNumber(value: number): string {
+    if (value >= 1000000) {
+      return `${(value / 1000000).toFixed(1)}M`
+    } else if (value >= 1000) {
+      return `${(value / 1000).toFixed(0)}K`
+    }
+    return value.toLocaleString()
+  }
+
+  // Toggle functions
+  toggleTable(): void {
+    this.showTable = !this.showTable
+  }
+
+  togglePerformanceMonitor(): void {
+    this.showPerformanceMonitor = !this.showPerformanceMonitor
+  }
+
+  // Get chart data for ngx-charts
+  get chartDataFormatted() {
+    return this.chartData
+  }
+
+  // Get sort icon
+  getSortIcon(field: string): string {
+    if (this.sortField !== field) return ""
+    return this.sortDirection === "asc" ? "↑" : "↓"
+  }
+
+  // Get time period label
+  getTimePeriodLabel(): string {
+    switch (this.timePeriod) {
+      case "week":
+        return "Last 7 Days";
+      case "month":
+        return "Last 12 Months";
+      case "year":
+        return "Last Year";
       default:
-        return "User"
+        return "Last 7 Days";
     }
   }
 
-  getStatusBadgeClass(delFg: boolean | undefined): string {
-    return delFg === true ? "badge-success" : "badge-danger"
+  trackByIndex(index: number, item: any): number {
+    return index;
   }
 
-  getStatusText(delFg: boolean | undefined): string {
-    return delFg === true ? "Active" : "Inactive"
-  }
-
-  getTopRole(): RoleAnalysis | null {
-    return this.customerStats.roleAnalysis.length > 0 ? this.customerStats.roleAnalysis[0] : null
-  }
-
-  // Chart helper methods for daily registrations
-  getMaxDailyValue(): number {
-    if (this.customerStats.dailyRegistrations.length === 0) {
-      console.log("No daily registrations, returning default max value")
-      return 10
+  // Get table columns based on grouping
+  getTableColumns(): string[] {
+    switch (this.groupBy) {
+      case "Category":
+        return ["category", "date", "value"];
+      case "Product":
+        return ["category", "product", "date", "value"];
+      case "ProductVariant":
+        return ["category", "product", "variant", "date", "value"];
+      case "City":
+        return ["city", "date", "value"];
+      default:
+        return ["category", "product", "variant", "date", "value"];
     }
-
-    const counts = this.customerStats.dailyRegistrations.map((day) => day.count)
-    const maxValue = Math.max(...counts, 1)
-    console.log("Daily registration counts:", counts)
-    console.log("Max daily value:", maxValue)
-
-    return maxValue
   }
 
-  getDailyYAxisValues(): number[] {
-    const maxValue = this.getMaxDailyValue()
-    const step = Math.ceil(maxValue / 5)
-    const values = []
-    for (let i = 0; i <= 5; i++) {
-      values.push(i * step)
+  // Get column display name
+  getColumnDisplayName(column: string): string {
+    switch (column) {
+      case "category": return "Category";
+      case "product": return "Product";
+      case "variant": return "Variant";
+      case "city": return "City";
+      case "date": return "Date";
+      case "value": return this.metric;
+      default: return column;
     }
-    return values.reverse()
   }
 
-  // getDailyBarHeightPercentage method ကို update လုပ်ပါ
-  getDailyBarHeightPercentage(count: number): number {
-    const maxValue = this.getMaxDailyValue()
-    console.log(`Calculating bar height: count=${count}, maxValue=${maxValue}`)
-
-    if (maxValue === 0) return 0
-
-    const percentage = (count / maxValue) * 100
-    // Minimum 10% height for visibility
-    const result = Math.max(percentage, count > 0 ? 10 : 0)
-
-    console.log(`Bar height percentage: ${result}%`)
-    return result
+  // Check if column should be shown
+  shouldShowColumn(column: string): boolean {
+    const columns = this.getTableColumns();
+    return columns.includes(column);
   }
 
-  getGridLines(): number[] {
-    return [0, 20, 40, 60, 80, 100]
+  // Generate continuous date range for the selected period
+  private generateDateRange(period: TimePeriod): string[] {
+    const result: string[] = [];
+    const today = new Date();
+    let start: Date;
+    let format: (d: Date) => string;
+    
+    if (period === "week") {
+      // Last 7 days
+      start = new Date(today);
+      start.setDate(today.getDate() - 6); // 7 days including today
+      format = (d) => d.toISOString().slice(0, 10);
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
+        result.push(format(d));
+      }
+    } else if (period === "month") {
+      // Last 12 months
+      start = new Date(today.getFullYear(), today.getMonth() - 11, 1); // 12 months ago
+      format = (d) => d.toISOString().slice(0, 7); // YYYY-MM format
+      for (let m = 0; m < 12; m++) {
+        const d = new Date(today.getFullYear(), today.getMonth() - 11 + m, 1);
+        result.push(format(d));
+      }
+    } else if (period === "year") {
+      // Last 1 year (12 months)
+      start = new Date(today.getFullYear() - 1, today.getMonth(), 1);
+      format = (d) => `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}`;
+      for (let m = 0; m < 12; m++) {
+        const d = new Date(today.getFullYear() - 1, today.getMonth() + m, 1);
+        result.push(format(d));
+      }
+    }
+    return result;
   }
 
-  getUserDisplayName(user: User): string {
-    return user.name || user.email || "Unknown User"
-  }
+  // Update transformToChartData to fill missing dates
+  private transformToChartData(data: SalesChartDetail[], period: TimePeriod): any[] {
+    // Group by composite name based on grouping option
+    const groupMap: { [key: string]: { name: string, series: { name: string, value: number }[] } } = {};
+    const dateRange = this.generateDateRange(period);
 
-  // Get total registrations for a specific date range
-  getTotalRegistrationsInRange(days: number): number {
-    const cutoffDate = dayjs().subtract(days, "day")
-    return this.customerStats.dailyRegistrations
-      .filter((day) => dayjs(day.date).isAfter(cutoffDate))
-      .reduce((total, day) => total + day.count, 0)
-  }
+    // Group data by composite key based on grouping option
+    data.forEach(item => {
+      let groupName: string;
+      switch (this.groupBy) {
+        case "Category":
+          groupName = item.category;
+          break;
+        case "Product":
+          groupName = `${item.category} - ${item.product}`;
+          break;
+        case "ProductVariant":
+          groupName = `${item.category} - ${item.product} - ${item.variant}`;
+          break;
+        case "City":
+          groupName = item.city;
+          break;
+        default:
+          groupName = `${item.category} - ${item.product} - ${item.variant}`;
+      }
+      
+      if (!groupMap[groupName]) {
+        groupMap[groupName] = { name: groupName, series: [] };
+      }
+      groupMap[groupName].series.push({ name: item.timePoint, value: item.value });
+    });
 
-  // Get average daily registrations
-  getAverageDailyRegistrations(): number {
-    if (this.customerStats.dailyRegistrations.length === 0) return 0
-    const total = this.customerStats.dailyRegistrations.reduce((sum, day) => sum + day.count, 0)
-    return Math.round((total / this.customerStats.dailyRegistrations.length) * 10) / 10
+    // Fill missing dates with 0
+    Object.values(groupMap).forEach(group => {
+      const dateMap = new Map(group.series.map(s => [s.name, s.value]));
+      group.series = dateRange.map(date => ({ name: date, value: dateMap.get(date) ?? 0 }));
+    });
+
+    return Object.values(groupMap);
   }
 }

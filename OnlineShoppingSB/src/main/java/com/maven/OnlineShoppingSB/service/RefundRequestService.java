@@ -141,7 +141,7 @@ public class RefundRequestService {
 
         refundRequest.setItems(new HashSet<>(refundItems));
         refundRequest = refundRequestRepository.save(refundRequest);
-        notificationService.notifyRefundRequested(order.getId(), user.getName());
+        // notificationService.notifyRefundRequested(order.getId(), user.getName());
 
         return refundRequest;
 
@@ -348,23 +348,23 @@ public class RefundRequestService {
         refundStatusHistoryRepository.save(statusHistory);
 
         // Notify customer and/or admin based on request status
-        switch (newStatus) {
-            case COMPLETED -> notificationService.notify(
-                    "REFUND_COMPLETED",
-                    Map.of("orderId", refundRequest.getOrder().getId()),
-                    null // to customer
-            );
-            case REJECTED -> notificationService.notify(
-                    "REFUND_REJECTED",
-                    Map.of("orderId", refundRequest.getOrder().getId()),
-                    null // to customer
-            );
-            case IN_PROGRESS -> notificationService.notify(
-                    "REFUND_IN_PROGRESS",
-                    Map.of("orderId", refundRequest.getOrder().getId()),
-                    null // to customer
-            );
-        }
+//        switch (newStatus) {
+//            case COMPLETED -> notificationService.notify(
+//                    "REFUND_COMPLETED",
+//                    Map.of("orderId", refundRequest.getOrder().getId()),
+//                    null // to customer
+//            );
+//            case REJECTED -> notificationService.notify(
+//                    "REFUND_REJECTED",
+//                    Map.of("orderId", refundRequest.getOrder().getId()),
+//                    null // to customer
+//            );
+//            case IN_PROGRESS -> notificationService.notify(
+//                    "REFUND_IN_PROGRESS",
+//                    Map.of("orderId", refundRequest.getOrder().getId()),
+//                    null // to customer
+//            );
+//        }
     }
 
     @Transactional
@@ -475,11 +475,11 @@ public class RefundRequestService {
 
 
         if (notificationType != null) {
-            notificationService.notify(
-                    notificationType,
-                    Map.of("orderId", refundRequest.getOrder().getId()),
-                    null // notify the customer
-            );
+//            notificationService.notify(
+//                    notificationType,
+//                    Map.of("orderId", refundRequest.getOrder().getId()),
+//                    null // notify the customer
+//            );
         }
 
     }

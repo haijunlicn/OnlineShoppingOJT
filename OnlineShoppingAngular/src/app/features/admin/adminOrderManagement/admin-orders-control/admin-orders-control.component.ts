@@ -7,6 +7,8 @@ import { AuthService } from '@app/core/services/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { log } from "node:console";
 import Swal from 'sweetalert2';
+import { PdfExportService } from '@app/core/services/pdf-export.service';
+import { ExcelExportService } from '@app/core/services/excel-export.service';
 
 interface Order {
   id: number
@@ -142,7 +144,27 @@ export class AdminOrdersControlComponent implements OnInit, OnDestroy {
     'cancelled'
   ];
 
-  constructor(private orderService: OrderService, private router: Router, private location: Location, private authService: AuthService, private snackBar: MatSnackBar) {}
+  // Export columns definition
+  orderExportColumns = [
+    { header: 'Order ID', field: 'id', width: 20 },
+    { header: 'Tracking Number', field: 'trackingNumber', width: 50 },
+    { header: 'Customer', field: 'customer', width: 40 },
+    { header: 'Date', field: 'date', width: 35 },
+    { header: 'Status', field: 'status', width: 45 },
+    { header: 'Total', field: 'total', width: 40 },
+    { header: 'Items', field: 'items', width: 20 },
+    { header: 'Payment Method', field: 'paymentMethod', width: 50 }
+  ];
+
+  constructor(
+    private orderService: OrderService, 
+    private router: Router, 
+    private location: Location, 
+    private authService: AuthService, 
+    private snackBar: MatSnackBar,
+    private pdfExportService: PdfExportService,
+    private excelExportService: ExcelExportService
+  ) {}
 
   ngOnInit(): void {
     // Get adminId from AuthService
@@ -479,5 +501,33 @@ export class AdminOrdersControlComponent implements OnInit, OnDestroy {
     this.statusFilter = 'all';
     this.priorityFilter = 'all';
     this.filterOrders();
+  }
+
+  // Export PDF function
+  exportOrdersToPdf() {
+    const filename = this.filteredOrders.length === this.orders.length
+      ? 'OrderList_All.pdf'
+      : `OrderList_Filtered_${this.filteredOrders.length}.pdf`;
+    this.pdfExportService.exportTableToPdf(
+      this.filteredOrders,
+      this.orderExportColumns,
+      filename,
+      'Order List Report',
+      'order' // Pass the type as 'order' for correct footer
+    );
+  }
+
+  // Export Excel function
+  async exportOrdersToExcel() {
+    const filename = this.filteredOrders.length === this.orders.length
+      ? 'OrderList_All.xlsx'
+      : `OrderList_Filtered_${this.filteredOrders.length}.xlsx`;
+    await this.excelExportService.exportToExcel(
+      this.filteredOrders,
+      this.orderExportColumns,
+      filename,
+      'Orders',
+      'Order List Report'
+    );
   }
 }

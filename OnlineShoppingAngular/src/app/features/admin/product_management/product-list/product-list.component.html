@@ -13,6 +13,32 @@
                 <button pButton type="button" class="p-button p-button-outlined" icon="pi pi-filter"
                   [label]="showFilters ? 'Hide Filters' : 'Show Filters'" (click)="toggleFilters()">
                 </button>
+                
+                <!-- Export Dropdown -->
+                <div class="dropdown">
+                  <button pButton type="button" class="p-button p-button-info dropdown-toggle" 
+                    data-bs-toggle="dropdown" aria-expanded="false" icon="pi pi-download" label="Export">
+                  </button>
+                  <ul class="dropdown-menu">
+                    <li>
+                      <a class="dropdown-item" href="javascript:void(0)" (click)="exportProfessionalPdf()">
+                        <i class="pi pi-file-pdf me-2"></i>Professional PDF
+                        <span *ngIf="isExportingLayoutPdf" class="ms-2">
+                          <i class="pi pi-spin pi-spinner"></i>
+                        </span>
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="javascript:void(0)" (click)="exportToExcel()">
+                        <i class="pi pi-file-excel me-2"></i>Excel
+                        <span *ngIf="isExportingExcel" class="ms-2">
+                          <i class="pi pi-spin pi-spinner"></i>
+                        </span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+                
                 <button *ngIf="canCreateProduct" pButton type="button" routerLink="/admin/productCreate" class="p-button p-button-success"
                   icon="pi pi-plus" label="Add Product">
                 </button>
@@ -22,11 +48,12 @@
               </div>
             </div>
 
-            <p-table #dt [value]="products" [paginator]="true" [rows]="10" [sortMode]="'multiple'"
-              [globalFilterFields]="['product.name', 'brand.name', 'category.name']" [responsiveLayout]="'scroll'"
-              [rowsPerPageOptions]="[10,20,50]" styleClass="p-datatable-products hoverable-rows"
-              [tableStyle]="{ 'min-width': '100%' }"
-              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products">
+            <div id="product-table-container">
+              <p-table #dt [value]="products" [paginator]="true" [rows]="10" [sortMode]="'multiple'"
+                [globalFilterFields]="['product.name', 'brand.name', 'category.name']" [responsiveLayout]="'scroll'"
+                [rowsPerPageOptions]="[10,20,50]" styleClass="p-datatable-products hoverable-rows"
+                [tableStyle]="{ 'min-width': '100%' }"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products">
 
               <!-- Table header and filters -->
               <ng-template pTemplate="header">
@@ -244,6 +271,7 @@
                 </tr>
               </ng-template>
             </p-table>
+            </div>
           </div>
         </div>
       </div>
