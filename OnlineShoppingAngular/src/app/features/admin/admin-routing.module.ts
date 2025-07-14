@@ -113,6 +113,7 @@ const routes: Routes = [
       { path: 'notifications', component: AdminNotificationListComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
       { path: 'notificationTypes', component: AdminNotiTypesComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
       { path: 'sentNotifications', component: AdminSentNotisComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
+
     ]
   }
 ];
