@@ -544,3 +544,20 @@
 .table-responsive::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
 }
+.custom-pagination .page-link {
+  background-color: #f8f9fa; /* Light grey background */
+  color: var(--color-primary); /* Bootstrap primary blue */
+  border: 1px solid var(--color-primary);
+  transition: all 0.3s ease;
+}
+
+.custom-pagination .page-link:hover {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.custom-pagination .page-item.active .page-link {
+  background-color: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}

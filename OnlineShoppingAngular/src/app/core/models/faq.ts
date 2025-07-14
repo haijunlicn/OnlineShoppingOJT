@@ -3,4 +3,5 @@ export interface Faq {
   question: string;
   answer: string;
   delFg?: number;
+  createdDate?: string;
 }

@@ -10,6 +10,7 @@
   --color-highlight: #d6b56c; /* Lighter golden accent */
   --color-success: #198754; /* Bootstrap success green (kept) */
   --color-danger: #470505; /* Rich crimson */
+  --color-accents:#fafafa;
 }
 
 body {

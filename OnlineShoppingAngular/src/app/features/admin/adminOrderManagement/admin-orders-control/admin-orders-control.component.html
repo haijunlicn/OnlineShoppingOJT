@@ -114,7 +114,7 @@
                   [required]="bulkStatus === 'ORDER_CANCELLED'" />
 
                 <button (click)="confirmBulkStatusUpdate()" 
-                        [disabled]="!bulkStatus || bulkStatusLoading || (bulkStatus === 'ORDER_CANCELLED' && !bulkNote?.trim())" 
+                        [disabled]="!bulkStatus || bulkStatusLoading || (bulkStatus === 'ORDER_CANCELLED' && !bulkNote.trim())" 
                         class="btn btn-primary">
                   <span *ngIf="!bulkStatusLoading">Update Status</span>
                   <span *ngIf="bulkStatusLoading">

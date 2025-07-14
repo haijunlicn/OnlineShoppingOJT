@@ -36,7 +36,9 @@ export interface ProductDTO {
   basePrice: number;
   createdDate?: string;
   productImages?: ProductImageDTO[];
-}
+  discountPrice?: number;
+   originalPrice?: number;
+  }
 
 // Brand DTO
 export interface BrandDTO {
