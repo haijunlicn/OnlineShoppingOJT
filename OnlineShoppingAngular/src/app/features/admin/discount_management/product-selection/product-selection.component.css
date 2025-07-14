@@ -482,6 +482,11 @@ th {
   background: #fff;
 }
 
+.discount-product-filter-sidebar {
+  overflow-y: auto;
+  height: 410px;;
+}
+
 /* Sticky table header */
 .sticky-header th {
   position: sticky;

@@ -184,7 +184,6 @@ import { AdminSentNotisComponent } from './notificationManagement/admin-sent-not
     FormsModule,
     NgxChartsModule,
     NgxMaskModule.forRoot(),
-
   ]
 })
 export class AdminModule { }
