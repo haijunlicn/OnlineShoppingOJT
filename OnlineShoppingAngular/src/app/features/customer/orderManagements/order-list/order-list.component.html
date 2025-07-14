@@ -1,266 +1,310 @@
 <app-header></app-header>
 
-  <div class="main-container">
-    <!-- Hero Section -->
-    <div class="hero-section">
-      <div class="hero-content">
-        <div class="breadcrumb-nav">
-          <a routerLink="/customer/home" class="breadcrumb-link">
-            <i class="fas fa-home"></i>
-            <span>Home</span>
-          </a>
-          <i class="fas fa-chevron-right breadcrumb-separator"></i>
-          <span class="breadcrumb-current">My Orders</span>
-        </div>
-        
-        <div class="hero-header">
-          <div class="hero-text">
-            <h1 class="hero-title">
-              <i class="fas fa-shopping-bag"></i>
-              My Orders
-            </h1>
-            <p class="hero-subtitle">Track and manage all your orders in one place</p>
-          </div>
-          <button class="btn-back" (click)="goBackToHome()">
-            <i class="fas fa-arrow-left"></i>
-            <span>Back to Shop</span>
-          </button>
-        </div>
-      </div>
+<main class="main-content">
+  <!-- Integrated Header with Stats -->
+  <div class="page-header">
+    <div class="breadcrumb-nav">
+      <a routerLink="/customer/home" class="breadcrumb-link">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+      </a>
+      <i class="fas fa-chevron-right breadcrumb-separator"></i>
+      <span class="breadcrumb-current">My Orders</span>
     </div>
 
-    <!-- Loading State -->
-    <div *ngIf="loading" class="loading-section">
-      <div class="loading-card">
-        <div class="loading-spinner">
-          <div class="spinner-ring"></div>
-          <div class="spinner-ring"></div>
-          <div class="spinner-ring"></div>
+    <div class="header-main">
+      <div class="header-left">
+        <div class="header-title-section">
+          <h1>
+            <i class="fas fa-shopping-bag"></i>
+            My Orders
+          </h1>
+          <p class="header-subtitle">Track and manage all your orders in one place</p>
         </div>
-        <h3>Loading your orders...</h3>
-        <p>Please wait while we fetch your order history</p>
       </div>
+
+      <button class="btn-back" (click)="goBackToHome()">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Shop</span>
+      </button>
     </div>
+  </div>
 
-    <!-- Error State -->
-    <div *ngIf="error && !loading" class="error-section">
-      <div class="error-card">
-        <div class="error-icon">
-          <i class="fas fa-exclamation-triangle"></i>
-        </div>
-        <h3>Something went wrong</h3>
-        <p>{{ error }}</p>
-        <button class="btn-retry" (click)="loadOrders()">
-          <i class="fas fa-redo"></i>
-          <span>Try Again</span>
-        </button>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-section">
+    <div class="loading-card">
+      <div class="loading-spinner">
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring"></div>
       </div>
+      <h3>Loading your orders...</h3>
+      <p>Please wait while we fetch your order history</p>
     </div>
+  </div>
 
-    <!-- Empty State -->
-    <div *ngIf="!loading && !error && orders.length === 0" class="empty-section">
-      <div class="empty-card">
-        <div class="empty-illustration">
-          <i class="fas fa-shopping-bag"></i>
-          <div class="empty-dots">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-        </div>
-        <h3>No orders found</h3>
-        <p>You haven't placed any orders yet. Start shopping to see your orders here!</p>
-        <button class="btn-start-shopping" (click)="goBackToHome()">
-          <i class="fas fa-shopping-cart"></i>
-          <span>Start Shopping</span>
-        </button>
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-section">
+    <div class="error-card">
+      <div class="error-icon">
+        <i class="fas fa-exclamation-triangle"></i>
       </div>
+      <h3>Something went wrong</h3>
+      <p>{{ error }}</p>
+      <button class="btn-retry" (click)="loadOrders()">
+        <i class="fas fa-redo"></i>
+        <span>Try Again</span>
+      </button>
     </div>
+  </div>
 
-    <!-- Orders Content -->
-    <div *ngIf="!loading && !error && orders.length > 0" class="orders-section">
-      
-      <!-- Statistics Cards -->
-      <div class="stats-grid">
-        <div class="stat-card total">
-          <div class="stat-icon">
-            <i class="fas fa-box"></i>
-          </div>
-          <div class="stat-content">
-            <h3>{{ orders.length }}</h3>
-            <p>Total Orders</p>
-          </div>
-        </div>
-        
-        <div class="stat-card pending">
-          <div class="stat-icon">
-            <i class="fas fa-clock"></i>
-          </div>
-          <div class="stat-content">
-            <h3>{{ getPendingOrders() }}</h3>
-            <p>Pending</p>
-          </div>
-        </div>
-        
-        <div class="stat-card completed">
-          <div class="stat-icon">
-            <i class="fas fa-check-circle"></i>
-          </div>
-          <div class="stat-content">
-            <h3>{{ getCompletedOrders() }}</h3>
-            <p>Completed</p>
-          </div>
-        </div>
-
-        <div class="stat-card shipped">
-          <div class="stat-icon">
-            <i class="fas fa-shipping-fast"></i>
-          </div>
-          <div class="stat-content">
-            <h3>{{ getShippedOrders() }}</h3>
-            <p>Shipped</p>
-          </div>
-        </div>
-
-        <div class="stat-card cancelled">
-          <div class="stat-icon">
-            <i class="fas fa-ban"></i>
-          </div>
-          <div class="stat-content">
-            <h3>{{ getCancelledOrders() }}</h3>
-            <p>Cancelled</p>
-          </div>
+  <!-- Empty State -->
+  <div *ngIf="!loading && !error && orders.length === 0" class="empty-section">
+    <div class="empty-card">
+      <div class="empty-illustration">
+        <i class="fas fa-shopping-bag"></i>
+        <div class="empty-dots">
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
       </div>
+      <h3>No orders found</h3>
+      <p>You haven't placed any orders yet. Start shopping to see your orders here!</p>
+      <button class="btn-start-shopping" (click)="goBackToHome()">
+        <i class="fas fa-shopping-cart"></i>
+        <span>Start Shopping</span>
+      </button>
+    </div>
+  </div>
 
-      <!-- Filters and Search -->
-      <div class="controls-section">
+  <!-- Orders Content -->
+  <div *ngIf="!loading && !error && orders.length > 0" class="orders-section">
+
+    <!-- Professional Controls with Enhanced Filters -->
+    <div class="controls-section">
+      <div class="controls-header">
+        <h6 class="controls-title">
+          {{ getFilterTitle() }}
+          <span class="filter-badge">{{ filteredOrders.length }}</span>
+        </h6>
+      </div>
+
+      <div class="controls-actions">
         <div class="search-box">
           <i class="fas fa-search"></i>
-          <input 
-            type="text" 
-            placeholder="Search orders by tracking number or product..."
-            (input)="onSearchChange($event)"
-            [value]="searchTerm">
+          <input type="text" placeholder="Search orders by tracking number or product..."
+            (input)="onSearchChange($event)" [value]="searchTerm">
         </div>
-        
-        <div class="filter-tabs">
-          <button 
-            class="filter-tab" 
-            [class.active]="selectedFilter === 'all'"
-            (click)="filterOrders('all')">
-            All Orders
-            <span class="filter-count">{{ getFilteredOrdersCount('all') }}</span>
+
+        <!-- Order Type Filter -->
+        <div class="filter-dropdown order-type-dropdown">
+          <button class="filter-btn" (click)="toggleOrderTypeDropdown()" [class.active]="orderTypeDropdownOpen">
+            <i class="fas fa-tags"></i>
+            <span>{{ getOrderTypeLabel() }}</span>
+            <i class="fas fa-chevron-down" [style.transform]="orderTypeDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'"></i>
           </button>
-          <button 
-            class="filter-tab" 
-            [class.active]="selectedFilter === 'pending'"
-            (click)="filterOrders('pending')">
-            Pending
-            <span class="filter-count">{{ getFilteredOrdersCount('pending') }}</span>
-          </button>
-          <button 
-            class="filter-tab" 
-            [class.active]="selectedFilter === 'paid'"
-            (click)="filterOrders('paid')">
-            Paid
-            <span class="filter-count">{{ getFilteredOrdersCount('paid') }}</span>
-          </button>
-          <button 
-            class="filter-tab" 
-            [class.active]="selectedFilter === 'delivered'"
-            (click)="filterOrders('delivered')">
-            Delivered
-            <span class="filter-count">{{ getFilteredOrdersCount('delivered') }}</span>
-          </button>
+
+          <div class="filter-dropdown-menu" [class.show]="orderTypeDropdownOpen">
+            <button class="filter-dropdown-item" [class.active]="selectedOrderType === 'NORMAL'"
+              (click)="selectOrderType('NORMAL')">
+              Normal Orders
+              <span class="filter-count">{{ getOrderTypeCount('NORMAL') }}</span>
+            </button>
+            <button class="filter-dropdown-item" [class.active]="selectedOrderType === 'REPLACEMENT'"
+              (click)="selectOrderType('REPLACEMENT')">
+              Replacement Orders
+              <span class="filter-count">{{ getOrderTypeCount('REPLACEMENT') }}</span>
+            </button>
+            <div class="filter-dropdown-divider"></div>
+            <button class="filter-dropdown-item" [class.active]="selectedOrderType === 'all'"
+              (click)="selectOrderType('all')">
+              All Types
+              <span class="filter-count">{{ getOrderTypeCount('all') }}</span>
+            </button>
+          </div>
         </div>
-      </div>
 
-      <!-- Orders Grid -->
-      <div class="orders-grid">
-        <div 
-          *ngFor="let order of filteredOrders; trackBy: trackByOrderId" 
-          class="order-card"
-          (click)="viewOrderDetail(order.id)">
-          
-          <div class="order-header">
-            <div class="order-info">
-              <h3 class="order-number">#{{ order.trackingNumber }}</h3>
-              <p class="order-date">
-                <i class="fas fa-calendar-alt"></i>
-                {{ formatDate(order.createdDate) }}
-              </p>
-              <!-- Payment Method Info -->
-              <p *ngIf="order.paymentMethod || order.paymentType" class="payment-info">
-                <i [class]="getPaymentMethodIcon(order)" [ngClass]="getPaymentMethodClass(order)"></i>
-                {{ getPaymentMethodName(order) }}
-              </p>
-            </div>
-            <div class="order-status">
-              <span class="status-badge" [ngClass]="getOrderStatusClass(order.paymentStatus)">
-                <i [class]="getOrderStatusIcon(order.paymentStatus)"></i>
-                {{ order.paymentStatus }}
-              </span>
-            </div>
-          </div>
+        <!-- Order Status Filter -->
+        <div class="filter-dropdown">
+          <button class="filter-btn" (click)="toggleDropdown()" [class.active]="dropdownOpen">
+            <i class="fas fa-filter"></i>
+            <span>{{ getFilterLabel() }}</span>
+            <i class="fas fa-chevron-down" [style.transform]="dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'"></i>
+          </button>
 
-          <div class="order-body">
-            <div class="order-items">
-              <div class="items-preview">
-                <div *ngFor="let item of order.items.slice(0, 4)" class="item-image">
-                  <img 
-                    [src]="item.variant.imgPath || item.product.imgPath" 
-                    [alt]="item.product.name"
-                    (error)="onImageError($event)">
-                  <span class="item-qty">x{{ item.quantity }}</span>
-                </div>
-                <div *ngIf="order.items.length > 4" class="more-items">
-                  +{{ order.items.length - 4 }} more
-                </div>
-              </div>
-              <div class="items-summary">
-                <span class="items-count">{{ getTotalItems(order) }} items</span>
-              </div>
-            </div>
-
-            <div class="order-pricing">
-              <div class="price-row">
-                <span>Subtotal:</span>
-                <span>{{ formatCurrency(getSubtotal(order)) }}</span>
-              </div>
-              <div class="price-row">
-                <span>Shipping:</span>
-                <span>{{ formatCurrency(order.shippingFee) }}</span>
-              </div>
-              <div class="price-divider"></div>
-              <div class="price-row total">
-                <span>Total:</span>
-                <span class="total-amount">{{ formatCurrency(order.totalAmount) }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="order-footer">
-            <button 
-              class="btn-view-order" 
-              (click)="viewOrderDetail(order.id); $event.stopPropagation()">
-              <i class="fas fa-eye"></i>
-              <span>View Details</span>
+          <div class="filter-dropdown-menu" [class.show]="dropdownOpen">
+            <button class="filter-dropdown-item" [class.active]="selectedFilter === 'all'"
+              (click)="selectFilter('all')">
+              All Statuses
+              <span class="filter-count">{{ getFilteredOrdersCount('all') }}</span>
+            </button>
+            <div class="filter-dropdown-divider"></div>
+            <button class="filter-dropdown-item" [class.active]="selectedFilter === 'pending'"
+              (click)="selectFilter('pending')">
+              Pending
+              <span class="filter-count">{{ getFilteredOrdersCount('pending') }}</span>
+            </button>
+            <button class="filter-dropdown-item" [class.active]="selectedFilter === 'confirmed'"
+              (click)="selectFilter('confirmed')">
+              Confirmed
+              <span class="filter-count">{{ getFilteredOrdersCount('confirmed') }}</span>
+            </button>
+            <button class="filter-dropdown-item" [class.active]="selectedFilter === 'packed'"
+              (click)="selectFilter('packed')">
+              Packed
+              <span class="filter-count">{{ getFilteredOrdersCount('packed') }}</span>
+            </button>
+            <button class="filter-dropdown-item" [class.active]="selectedFilter === 'shipped'"
+              (click)="selectFilter('shipped')">
+              Shipped
+              <span class="filter-count">{{ getFilteredOrdersCount('shipped') }}</span>
+            </button>
+            <button class="filter-dropdown-item" [class.active]="selectedFilter === 'out_for_delivery'"
+              (click)="selectFilter('out_for_delivery')">
+              Out for Delivery
+              <span class="filter-count">{{ getFilteredOrdersCount('out_for_delivery') }}</span>
+            </button>
+            <button class="filter-dropdown-item" [class.active]="selectedFilter === 'delivered'"
+              (click)="selectFilter('delivered')">
+              Delivered
+              <span class="filter-count">{{ getFilteredOrdersCount('delivered') }}</span>
+            </button>
+            <button class="filter-dropdown-item" [class.active]="selectedFilter === 'cancelled'"
+              (click)="selectFilter('cancelled')">
+              Cancelled
+              <span class="filter-count">{{ getFilteredOrdersCount('cancelled') }}</span>
             </button>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- No Results -->
-      <div *ngIf="filteredOrders.length === 0" class="no-results">
-        <div class="no-results-icon">
-          <i class="fas fa-search"></i>
-        </div>
-        <h3>No orders found</h3>
-        <p>Try adjusting your search or filter criteria</p>
-        <button class="btn-clear-filters" (click)="selectedFilter = 'all'; searchTerm = ''; applyFilters()">
-          Clear Filters
-        </button>
+    <!-- Professional Orders Table -->
+    <div class="orders-container">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>Order Details</th>
+            <th>Items</th>
+            <th>Payment</th>
+            <th>Status</th>
+            <th>Total</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let order of paginatedOrders; trackBy: trackByOrderId" class="order-row"
+            (click)="viewOrderDetail(order.id)">
+
+            <!-- Order Details Column -->
+            <td>
+              <div class="order-number">
+                #{{ order.trackingNumber }}
+                <span *ngIf="order.orderType === 'REPLACEMENT'" class="order-type-badge">
+                  <i class="fas fa-exchange-alt"></i> Replacement
+                </span>
+              </div>
+              <div class="order-date">
+                <i class="fas fa-calendar-alt"></i>
+                {{ formatDate(order.createdDate) }}
+              </div>
+              <div *ngIf="order.paymentMethod || order.paymentType" class="payment-info">
+                <i [class]="getPaymentMethodIcon(order)" [ngClass]="getPaymentMethodClass(order)"></i>
+                {{ getPaymentMethodName(order) }}
+              </div>
+            </td>
+
+            <!-- Items Column -->
+            <td>
+              <div class="items-preview">
+                <div *ngFor="let item of order.items.slice(0, 3)" class="item-image">
+                  <img [src]="item.variant.imgPath || item.product.imgPath" [alt]="item.product.name"
+                    (error)="onImageError($event)">
+                  <span class="item-qty">{{ item.quantity }}</span>
+                </div>
+                <div *ngIf="order.items.length > 3" class="more-items">
+                  +{{ order.items.length - 3 }}
+                </div>
+              </div>
+              <div class="items-count">{{ getTotalItems(order) }} items</div>
+            </td>
+
+            <!-- Payment Column -->
+            <td>
+              <div *ngIf="order.orderType !== 'REPLACEMENT'">
+                <div>Subtotal: {{ formatCurrency(getSubtotal(order)) }}</div>
+                <div>Shipping: {{ formatCurrency(order.shippingFee) }}</div>
+              </div>
+              <div *ngIf="order.orderType === 'REPLACEMENT'" class="replacement-note">
+                <i class="fas fa-info-circle"></i>
+                <span>No payment required</span>
+              </div>
+            </td>
+
+            <!-- Status Column - Now using currentOrderStatus -->
+            <td>
+              <span class="status-badge" [ngClass]="getOrderStatusClass(order.currentOrderStatus)">
+                <i [class]="getOrderStatusIcon(order.currentOrderStatus)"></i>
+                {{ getOrderStatusLabel(order.currentOrderStatus) }}
+              </span>
+            </td>
+
+            <!-- Total Column -->
+            <td>
+              <div *ngIf="order.orderType !== 'REPLACEMENT'" class="order-total">
+                {{ formatCurrency(order.totalAmount) }}
+              </div>
+              <div *ngIf="order.orderType === 'REPLACEMENT'" class="replacement-total">
+                <i class="fas fa-gift"></i>
+                <span>Free</span>
+              </div>
+            </td>
+
+            <!-- Actions Column -->
+            <td>
+              <button class="btn-view-order" (click)="viewOrderDetail(order.id); $event.stopPropagation()">
+                <i class="fas fa-eye"></i>
+                <span>View</span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="pagination-controls">
+      <div class="pagination-buttons">
+        <button (click)="prevPage()" [disabled]="currentPage === 1">&laquo; Prev</button>
+        <ng-container *ngFor="let page of [].constructor(totalPages); let i = index">
+          <button (click)="goToPage(i + 1)" [class.active]="currentPage === i + 1">
+            {{ i + 1 }}
+          </button>
+        </ng-container>
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next &raquo;</button>
+      </div>
+      <div class="pagination-size">
+        <label for="pageSizeSelect">Rows per page:</label>
+        <select id="pageSizeSelect" #pageSizeSelect (change)="setPageSize(+pageSizeSelect.value)">
+          <option [selected]="pageSize == 5" value="5">5</option>
+          <option [selected]="pageSize == 10" value="10">10</option>
+          <option [selected]="pageSize == 20" value="20">20</option>
+          <option [selected]="pageSize == 50" value="50">50</option>
+        </select>
       </div>
     </div>
+
+    <!-- No Results -->
+    <div *ngIf="filteredOrders.length === 0" class="no-results">
+      <div class="no-results-icon">
+        <i class="fas fa-search"></i>
+      </div>
+      <h3>No orders found</h3>
+      <p>Try adjusting your search or filter criteria</p>
+      <button class="btn-clear-filters" (click)="clearFilters()">
+        Clear Filters
+      </button>
+    </div>
   </div>
+</main>

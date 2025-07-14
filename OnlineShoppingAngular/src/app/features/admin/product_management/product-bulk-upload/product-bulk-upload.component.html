@@ -1,17 +1,316 @@
-<div class="upload-container">
-    <h3>📤 Upload ZIP File (Excel + Images)</h3>
 
-    <button (click)="downloadTemplate()" [disabled]="isLoading">
-        Download Excel Template
-    </button>
+      <div class="bulk-upload-container">
+        <!-- Page Header -->
+        <div class="page-header mb-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h2 class="mb-1">Product Bulk Upload</h2>
+              <p class="text-muted mb-0">Upload multiple products using Excel template and ZIP file</p>
+            </div>
+            <button class="btn btn-outline-secondary" routerLink="/admin/product-list">
+              <i class="bi bi-arrow-left me-2"></i>Back to Products
+            </button>
+          </div>
+        </div>
 
-    <p>{{ uploadStatus }}</p>
+        <!-- Alert Messages -->
+        <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          {{ errorMessage }}
+          <button type="button" class="btn-close" (click)="clearMessages()" aria-label="Close"></button>
+        </div>
 
-    <input type="file" (change)="onZipFileSelected($event)" accept=".zip" />
+        <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+          <i class="bi bi-check-circle me-2"></i>
+          {{ successMessage }}
+          <button type="button" class="btn-close" (click)="clearMessages()" aria-label="Close"></button>
+        </div>
+
+        <!-- Instructions Card -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="bi bi-info-circle me-2"></i>Upload Instructions
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <h6 class="text-primary mb-3">Step 1: Download Template</h6>
+                <ul class="list-unstyled">
+                  <li class="mb-2">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    Download the Excel template file
+                  </li>
+                  <li class="mb-2">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    Fill in product information
+                  </li>
+                  <li class="mb-2">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    Follow the column format exactly
+                  </li>
+                </ul>
+              </div>
+              <div class="col-md-6">
+                <h6 class="text-primary mb-3">Step 2: Prepare ZIP File</h6>
+                <ul class="list-unstyled">
+                  <li class="mb-2">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    Create a ZIP file containing:
+                  </li>
+                  <li class="mb-2 ms-4">
+                    <i class="bi bi-file-earmark-excel text-info me-2"></i>
+                    Your filled Excel file
+                  </li>
+                  <li class="mb-2 ms-4">
+                    <i class="bi bi-images text-warning me-2"></i>
+                    Product images (JPG, PNG)
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row gy-4">
+  <!-- Template Download Section -->
+  <div class="col-12">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="bi bi-download me-2"></i>Download Template
+        </h5>
+      </div>
+      <div class="card-body d-flex flex-column">
+        <div class="template-info mb-4">
+          <div class="d-flex align-items-center mb-3">
+            <div class="template-icon me-3">
+              <i class="bi bi-file-earmark-excel text-success"></i>
+            </div>
+            <div>
+              <h6 class="mb-1">Excel Template</h6>
+              <small class="text-muted">Product upload template with sample data</small>
+            </div>
+          </div>
+          <div class="template-features">
+            <div class="feature-item">
+              <i class="bi bi-check2 text-success me-2"></i>
+              <span>Pre-formatted columns</span>
+            </div>
+            <div class="feature-item">
+              <i class="bi bi-check2 text-success me-2"></i>
+              <span>Sample product data</span>
+            </div>
+            <div class="feature-item">
+              <i class="bi bi-check2 text-success me-2"></i>
+              <span>Validation rules included</span>
+            </div>
+          </div>
+        </div>
+        <div class="mt-auto">
+          <button 
+            class="btn btn-success w-100" 
+            (click)="downloadTemplate()" 
+            [disabled]="isDownloading">
+            <span *ngIf="isDownloading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+            <i *ngIf="!isDownloading" class="bi bi-download me-2"></i>
+            {{ isDownloading ? 'Downloading...' : 'Download Template' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- File Upload Section -->
+  <div class="col-12">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="bi bi-upload me-2"></i>Upload ZIP File
+        </h5>
+      </div>
+      <div class="card-body d-flex flex-column">
+        <!-- File Drop Zone -->
+        <div class="file-drop-zone" 
+             [class.dragover]="isDragOver"
+             [class.has-file]="zipFile"
+             (dragover)="onDragOver($event)"
+             (dragleave)="onDragLeave($event)"
+             (drop)="onDrop($event)">
+          
+          <div *ngIf="!zipFile" class="drop-zone-content">
+            <i class="bi bi-cloud-upload drop-icon"></i>
+            <h6 class="mb-2">Drag & drop your ZIP file here</h6>
+            <p class="text-muted mb-3">or</p>
+            <button type="button" class="btn btn-outline-primary" (click)="triggerFileInput()">
+              <i class="bi bi-folder2-open me-1"></i>Browse Files
+            </button>
+            <input #fileInput type="file" class="d-none" (change)="onZipFileSelected($event)" accept=".zip">
+            <small class="text-muted d-block mt-2">Maximum file size: 50MB</small>
+          </div>
+
+          <div *ngIf="zipFile" class="file-preview">
+            <div class="file-info">
+              <i class="bi bi-file-zip text-warning file-icon"></i>
+              <div class="file-details">
+                <h6 class="mb-1">{{ zipFile.name }}</h6>
+                <small class="text-muted">{{ formatFileSize(zipFile.size) }}</small>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeFile()">
+                <i class="bi bi-x"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upload Progress -->
+        <div *ngIf="uploadProgress > 0 && uploadProgress < 100" class="upload-progress mt-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <small class="text-muted">Uploading...</small>
+            <small class="text-muted">{{ uploadProgress }}%</small>
+          </div>
+          <div class="progress">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                 role="progressbar" 
+                 [style.width.%]="uploadProgress">
+            </div>
+          </div>
+        </div>
+
+        <!-- Upload Button -->
+        <div class="mt-auto pt-3">
+          <button 
+            class="btn btn-primary w-100" 
+            (click)="uploadZipFile()" 
+            [disabled]="!zipFile || isUploading">
+            <span *ngIf="isUploading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+            <i *ngIf="!isUploading" class="bi bi-upload me-2"></i>
+            {{ isUploading ? 'Uploading...' : 'Upload ZIP File' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 
-    <div class="status-message">{{ uploadStatus }}</div>
-    <button (click)="uploadZipFile()" [disabled]="!zipFile || isLoading">
-        {{ isLoading ? 'Uploading...' : 'Upload ZIP' }}
-    </button>
+        <!-- Upload History -->
+        <div class="card shadow-sm mt-4" *ngIf="uploadHistory.length > 0">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="bi bi-clock-history me-2"></i>Recent Uploads
+            </h5>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>File Name</th>
+                    <th>Upload Time</th>
+                    <th>Status</th>
+                    <th>Products</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let upload of uploadHistory">
+                    <td>
+                      <i class="bi bi-file-zip text-warning me-2"></i>
+                      {{ upload.fileName }}
+                    </td>
+                    <td>{{ upload.uploadTime | date:'MMM d, y, h:mm a' }}</td>
+                    <td>
+                      <span class="badge" [class]="getStatusBadgeClass(upload.status)">
+                        <i class="bi" [class]="getStatusIcon(upload.status)" class="me-1"></i>
+                        {{ upload.status }}
+                      </span>
+                    </td>
+                    <td>{{ upload.productsCount || 0 }}</td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-info" (click)="viewUploadDetails(upload)">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tips Card -->
+        <div class="card shadow-sm mt-4">
+          <div class="card-header">
+            <h5 class="mb-0">
+              <i class="bi bi-lightbulb me-2"></i>Tips for Successful Upload
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <h6 class="text-info mb-3">Excel File Tips</h6>
+                <ul class="tips-list">
+                  <li>Use the exact column headers from template</li>
+                  <li>Don't leave required fields empty</li>
+                  <li>Use proper date format (YYYY-MM-DD)</li>
+                  <li>Keep product names under 100 characters</li>
+                </ul>
+              </div>
+              <div class="col-md-6">
+                <h6 class="text-info mb-3">Image File Tips</h6>
+                <ul class="tips-list">
+                  <li>Use JPG or PNG format only</li>
+                  <li>Keep image names matching Excel data</li>
+                  <li>Recommended size: 800x800 pixels</li>
+                  <li>Maximum file size: 5MB per image</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+<!-- Upload Details Modal -->
+<div class="modal fade" id="uploadDetailsModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Upload Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" *ngIf="selectedUpload">
+        <div class="row">
+          <div class="col-md-6">
+            <h6 class="text-muted mb-2">File Information</h6>
+            <p><strong>File Name:</strong> {{ selectedUpload.fileName }}</p>
+            <p><strong>Upload Time:</strong> {{ selectedUpload.uploadTime | date:'full' }}</p>
+            <p><strong>File Size:</strong> {{ selectedUpload.fileSize }}</p>
+          </div>
+          <div class="col-md-6">
+            <h6 class="text-muted mb-2">Processing Results</h6>
+            <p><strong>Status:</strong> 
+              <span class="badge" [class]="getStatusBadgeClass(selectedUpload.status)">
+                {{ selectedUpload.status }}
+              </span>
+            </p>
+            <p><strong>Products Processed:</strong> {{ selectedUpload.productsCount || 0 }}</p>
+            <p><strong>Errors:</strong> {{ selectedUpload.errorCount || 0 }}</p>
+          </div>
+        </div>
+        <div *ngIf="selectedUpload.errors && selectedUpload.errors.length > 0">
+          <h6 class="text-muted mb-2">Error Details</h6>
+          <div class="alert alert-warning">
+            <ul class="mb-0">
+              <li *ngFor="let error of selectedUpload.errors">{{ error }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
 </div>

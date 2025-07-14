@@ -1,4 +1,4 @@
-import { OrderDetail } from "../services/order.service";
+import { OrderDetail } from "./order.dto";
 
 // RefundStatus enum in Angular
 export enum RefundStatus {

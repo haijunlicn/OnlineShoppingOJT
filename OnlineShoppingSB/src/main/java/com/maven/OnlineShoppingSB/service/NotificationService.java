@@ -1,11 +1,14 @@
 package com.maven.OnlineShoppingSB.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.maven.OnlineShoppingSB.dto.*;
 import com.maven.OnlineShoppingSB.entity.*;
 import com.maven.OnlineShoppingSB.repository.*;
 import org.apache.commons.text.StringSubstitutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -60,13 +64,17 @@ public class NotificationService {
         }
 
         for (UserEntity user : usersToNotify) {
-            Optional<UserNotificationPreferenceEntity> prefOpt =
-                    userNotificationPreferenceRepository.findByUserIdAndNotificationTypeId(user.getId(), type.getId());
-            if (prefOpt.isPresent() && !prefOpt.get().isEnabled()) continue;
 
             for (NotificationTypeMethodEntity methodMapping : type.getSupportedMethods()) {
                 NotiMethod method = methodMapping.getMethod();
 
+                // ✅ Check if already exists
+                boolean exists = userNotificationRepository
+                        .existsByUserIdAndNotificationIdAndMethod(user.getId(), notification.getId(), method);
+
+                if (exists) continue; // 🔒 skip duplicate
+
+                // ✅ Otherwise, save
                 UserNotificationEntity userNotification = new UserNotificationEntity();
                 userNotification.setUser(user);
                 userNotification.setNotification(notification);
@@ -97,19 +105,121 @@ public class NotificationService {
         return notification;
     }
 
+    public void createCustomNotification(NotificationDTO dto) {
+        System.out.println("Starting custom notification creation...");
+
+        System.out.println("Received notification DTO: title='" + dto.getTitle() + "', message='" + dto.getMessage() +
+                "', imageUrl='" + dto.getImageUrl() + "', scheduledAt='" + dto.getScheduledAt() + "', metadata=" + dto.getMetadata());
+
+        NotificationTypeEntity customType = notificationTypeRepository.findByName("CUSTOM")
+                .orElseThrow(() -> new RuntimeException("Custom notification type not found"));
+
+        NotificationEntity notification = new NotificationEntity();
+        notification.setType(customType);
+        notification.setTitle(dto.getTitle());
+        notification.setMessage(dto.getMessage());
+        notification.setImageUrl(dto.getImageUrl());
+        notification.setMetadata(dto.getMetadata());
+        notification.setScheduledAt(dto.getScheduledAt());
+        notification.setDelivered(false);
+        notification.setCreatedAt(LocalDateTime.now());
+
+        notificationRepository.save(notification);
+        System.out.println("Saved NotificationEntity with ID: " + notification.getId());
+
+        List<Long> userIds = dto.getTargetUserIdsFromMetadata();
+        System.out.println("Parsed user IDs from metadata: " + userIds);
+
+        if (userIds == null || userIds.isEmpty()) {
+            System.out.println("No user IDs found in metadata. Skipping user notification.");
+            return;
+        }
+
+        List<UserEntity> usersToNotify = userRepository.findAllById(userIds);
+        System.out.println("Resolved users to notify: " + usersToNotify.size() + " users found");
+
+        boolean isScheduledInFuture = dto.getScheduledAt() != null && dto.getScheduledAt().isAfter(LocalDateTime.now());
+
+        for (UserEntity user : usersToNotify) {
+            NotiMethod method = NotiMethod.IN_APP;
+
+            boolean exists = userNotificationRepository
+                    .existsByUserIdAndNotificationIdAndMethod(user.getId(), notification.getId(), method);
+            if (exists) continue;
+
+            UserNotificationEntity userNotification = new UserNotificationEntity();
+            userNotification.setUser(user);
+            userNotification.setNotification(notification);
+            userNotification.setRead(false);
+            userNotification.setMethod(method);
+
+            if (!isScheduledInFuture) {
+
+                System.out.println("it's not scheduled!");
+
+                userNotification.setDeliveredAt(LocalDateTime.now());
+                userNotificationRepository.save(userNotification);
+
+                // WebSocket push
+                messagingTemplate.convertAndSendToUser(
+                        user.getEmail(),
+                        "/queue/notifications",
+                        toDto(userNotification)
+                );
+            } else {
+                System.out.println("it's scheduled!");
+                userNotificationRepository.save(userNotification);
+            }
+        }
+
+        System.out.println("Custom notification processing completed.");
+    }
+
+    @Scheduled(fixedRate = 60_000) // Every 1 minute
+    @Transactional
+    public void deliverScheduledNotifications() {
+        List<UserNotificationEntity> pending = userNotificationRepository
+                .findUndeliveredScheduledNotifications(LocalDateTime.now());
+
+        System.out.println("schedule is working");
+
+        for (UserNotificationEntity userNotification : pending) {
+            userNotification.setDeliveredAt(LocalDateTime.now());
+            userNotificationRepository.save(userNotification);
+
+            messagingTemplate.convertAndSendToUser(
+                    userNotification.getUser().getEmail(),
+                    "/queue/notifications",
+                    toDto(userNotification)
+            );
+        }
+    }
+
+
     private UserNotificationDTO toDto(UserNotificationEntity entity) {
-        NotificationTypeEntity type = entity.getNotification().getType();
-        Map<String, Object> metadata = jsonService.fromJson(entity.getNotification().getMetadata());
+        NotificationEntity notification = entity.getNotification();
+        NotificationTypeEntity type = notification.getType();
+        Map<String, Object> metadata = jsonService.fromJson(notification.getMetadata());
 
         UserNotificationDTO dto = new UserNotificationDTO();
         dto.setId(entity.getId());
-        dto.setTitle(jsonService.renderTemplate(type.getTitleTemplate(), metadata));
-        dto.setMessage(jsonService.renderTemplate(type.getMessageTemplate(), metadata));
-        dto.setMetadata(entity.getNotification().getMetadata());
         dto.setRead(entity.isRead());
         dto.setDeliveredAt(entity.getDeliveredAt());
         dto.setReadAt(entity.getReadAt());
         dto.setMethod(entity.getMethod());
+        dto.setMetadata(notification.getMetadata());
+        dto.setImageUrl(notification.getImageUrl());
+        dto.setShowToast(type.isShowToast());
+
+        // 👇 Logic: use custom content if present, else fallback to template rendering
+        if (notification.getTitle() != null || notification.getMessage() != null) {
+            dto.setTitle(notification.getTitle());
+            dto.setMessage(notification.getMessage());
+        } else {
+            dto.setTitle(type.getTitleTemplate());  // raw template, no rendering here
+            dto.setMessage(type.getMessageTemplate()); // raw template
+        }
+
         return dto;
     }
 
@@ -124,6 +234,27 @@ public class NotificationService {
         userNotificationRepository.save(un);
     }
 
+    public void markAllAsRead(Long userId) {
+        List<UserNotificationEntity> notifications = userNotificationRepository.findAllByUserIdAndReadIsFalse(userId);
+
+        for (UserNotificationEntity n : notifications) {
+            n.setRead(true);
+            n.setReadAt(LocalDateTime.now());
+
+            // Optional: WebSocket notify client of the update
+            if (n.getMethod() == NotiMethod.IN_APP) {
+                messagingTemplate.convertAndSendToUser(
+                        n.getUser().getEmail(),
+                        "/queue/notifications/read",
+                        Map.of("id", n.getId())
+                );
+            }
+        }
+
+        userNotificationRepository.saveAll(notifications);
+    }
+
+
     public void sendNamedNotification(String typeName, Map<String, Object> metadata, List<Long> targetUserIds) {
         createNotificationAndDeliver(typeName, metadata, targetUserIds);
     }
@@ -135,30 +266,80 @@ public class NotificationService {
         sendNamedNotification(typeName, metadata, targetUserIds);
     }
 
-    // ✅ Updated usage
-    public void notifyOrderPlaced(Long orderId, BigDecimal totalAmount) {
+    public void notifyOrderPending(Long userId, Long orderId, BigDecimal totalAmount) {
         Map<String, Object> metadata = Map.of(
                 "orderId", orderId,
-                "totalAmount", totalAmount
+                "totalAmount", totalAmount,
+                "orderIdLink", "/customer/orderDetail/" + orderId
         );
-        List<Long> adminIds = getAdminIdsWithPermission("ORDER_READ");
-        sendNamedNotification("ORDER_PLACED", metadata, adminIds);
+        sendNamedNotification("ORDER_PENDING", metadata, List.of(userId));
     }
 
-    public void notifyRefundRequested(Long orderId, String customerName) {
+    public void notifyOrderStatusUpdate(Long userId, Long orderId, String statusCode) {
         Map<String, Object> metadata = Map.of(
                 "orderId", orderId,
-                "customerName", customerName
+                "orderIdLink", "/customer/orderDetail/" + orderId
+        );
+        sendNamedNotification(statusCode, metadata, List.of(userId));
+    }
+
+
+//    public void notifyOrderPlaced(Long orderId, BigDecimal totalAmount) {
+//        Map<String, Object> metadata = Map.of(
+//                "orderId", orderId,
+//                "totalAmount", totalAmount,
+//                "orderIdLink", "/customer/orderDetail/" + orderId
+//        );
+//        List<Long> adminIds = getAdminIdsWithPermission("ORDER_READ");
+//        sendNamedNotification("ORDER_PLACED", metadata, adminIds);
+//    }
+
+    public void notifyRefundRequested(Long orderId, Long customerId, String customerName) {
+        Map<String, Object> metadata = Map.of(
+                "orderId", orderId,
+                "customerId", customerId,
+                "customerName", customerName,
+                "orderIdLink", "/customer/orderDetail/" + orderId,
+                "customerIdLink", "/admin/customers/" + customerId
         );
         List<Long> adminIds = getAdminIdsWithPermission("ORDER_REFUND");
         sendNamedNotification("REFUND_REQUESTED", metadata, adminIds);
     }
 
-    public void notifyLowStock(String productName) {
-        Map<String, Object> metadata = Map.of("productName", productName);
-        List<Long> adminIds = getAdminIdsWithPermission("PRODUCT_STOCK_UPDATE");
-        sendNamedNotification("LOW_STOCK_ALERT", metadata, adminIds);
+    public void checkAndNotifyLowStock(ProductVariantEntity variant) {
+        final int LOW_STOCK_THRESHOLD = 5;
+
+        if (variant.getStock() <= LOW_STOCK_THRESHOLD & variant.getStock() != 0) {
+            // Optionally check for recent notifications to avoid duplicates (implement if needed)
+
+            Map<String, Object> metadata = Map.of(
+                    "productId", variant.getProduct().getId(),
+                    "productName", variant.getProduct().getName(),
+                    "variantName", variant.getSku(),
+                    "stock", variant.getStock(),
+                    "productNameLink", "/admin/product/" + variant.getProduct().getId()
+            );
+
+            List<Long> adminIds = getAdminIdsWithPermission("PRODUCT_STOCK_UPDATE");
+            sendNamedNotification("LOW_STOCK_ALERT", metadata, adminIds);
+        }
     }
+
+    public void checkAndNotifyOutOfStock(ProductVariantEntity variant) {
+        if (variant.getStock() <= 0) {  // Out of stock condition
+
+            Map<String, Object> metadata = Map.of(
+                    "productId", variant.getProduct().getId(),
+                    "productName", variant.getProduct().getName(),
+                    "variantName", variant.getSku(),
+                    "productNameLink", "/admin/product/" + variant.getProduct().getId()
+            );
+
+            List<Long> adminIds = getAdminIdsWithPermission("PRODUCT_STOCK_UPDATE");
+            sendNamedNotification("OUT_OF_STOCK_ALERT", metadata, adminIds);
+        }
+    }
+
 
     // ----------- Permission Checker -----------
 

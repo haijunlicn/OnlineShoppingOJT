@@ -19,17 +19,6 @@ public class JwtService {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
 
-//    public String generateTokenWithUserDetails(UserEntity u) {
-//        long expirationTime = 7 * 24 * 60 * 60 * 1000L; // 7 days
-//
-//        return Jwts.builder()
-//                .setSubject(u.getEmail())
-//                .setIssuedAt(new Date())
-//                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
-//                .signWith(getSignInKey()) // ✅ consistent
-//                .compact();
-//    }
-
     public String generateTokenWithUserDetails(UserEntity u) {
         long expirationTime = 7 * 24 * 60 * 60 * 1000L; // 7 days
 

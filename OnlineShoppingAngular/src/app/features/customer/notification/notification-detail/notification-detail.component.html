@@ -1,0 +1,144 @@
+<div class="modal fade" id="notificationDetailModal" tabindex="-1" aria-labelledby="notificationDetailModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" *ngIf="notification">
+            <!-- Modal Header -->
+            <div class="modal-header" [ngClass]="getModalHeaderClass(notification.type)">
+                <div class="modal-title-container">
+                    <div class="notification-icon">
+                        <i [class]="getNotificationIcon(notification.type)"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title" id="notificationDetailModalLabel">
+                            <ng-container *ngIf="notification?.richContent?.titleParts as titleParts; else plainTitle">
+                                <ng-container *ngFor="let part of titleParts">
+                                    <ng-container *ngIf="part.routerLink; else plainTitleText">
+                                        <a [routerLink]="part.routerLink">{{ part.text }}</a>
+                                    </ng-container>
+                                    <ng-template #plainTitleText>{{ part.text }}</ng-template>
+                                </ng-container>
+                            </ng-container>
+                            <ng-template #plainTitle>
+                                {{ notification.title }}
+                            </ng-template>
+                        </h5>
+
+                        <div class="notification-meta">
+                            <span class="notification-type-badge" [ngClass]="'badge-' + notification.type">
+                                {{ getTypeLabel(notification.type) }}
+                            </span>
+                            <span class="notification-date">{{ notification.deliveredAt | date:'full' }}</span>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body">
+                <!-- Main Message -->
+                <div class="notification-message">
+                    <p>
+                        <ng-container
+                            *ngIf="notification?.richContent?.messageParts as messageParts; else plainMessage">
+                            <ng-container *ngFor="let part of messageParts">
+                                <ng-container *ngIf="part.routerLink; else plainMessageText">
+                                    <a [routerLink]="part.routerLink">{{ part.text }}</a>
+                                </ng-container>
+                                <ng-template #plainMessageText>{{ part.text }}</ng-template>
+                            </ng-container>
+                        </ng-container>
+                        <ng-template #plainMessage>
+                            {{ notification.message }}
+                        </ng-template>
+                    </p>
+                </div>
+
+                <!-- Rich Content -->
+                <div *ngIf="notification.richContent" class="rich-content">
+                    <!-- Image Content -->
+                    <div *ngIf="notification.richContent.image" class="content-section">
+                        <img [src]="notification.richContent.image" [alt]="notification.title" class="content-image" />
+                    </div>
+
+                    <!-- Additional Text Content -->
+                    <div *ngIf="notification.richContent.content" class="content-section">
+                        <div class="content-text" [innerHTML]="notification.richContent.content"></div>
+                    </div>
+
+                    <!-- Links -->
+                    <div *ngIf="notification.richContent.links && notification.richContent.links.length > 0"
+                        class="content-section">
+                        <h6>Related Links</h6>
+                        <div class="content-links">
+                            <a *ngFor="let link of notification.richContent.links" [href]="link.url"
+                                [target]="link.external ? '_blank' : '_self'" class="content-link">
+                                <i [class]="link.icon || 'fas fa-external-link-alt'"></i>
+                                {{ link.label }}
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Data/Details -->
+                    <div *ngIf="notification.richContent.data" class="content-section">
+                        <h6>Details</h6>
+                        <div class="content-data">
+                            <div *ngFor="let item of notification.richContent.data | keyvalue" class="data-item">
+                                <span class="data-label">{{ item.key | titlecase }}:</span>
+                                <span class="data-value">{{ item.value }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Display Image if notification.imageUrl exists -->
+                <div *ngIf="notification.imageUrl" class="content-section text-center my-2">
+                    <img [src]="notification.imageUrl" [alt]="notification.title" class="img-fluid rounded"
+                        style="max-height: 200px;" />
+                </div>
+
+
+                <!-- Status Indicator -->
+                <div class="notification-status">
+                    <div class="status-item">
+                        <i class="fas fa-circle" [class.text-success]="notification.read"
+                            [class.text-warning]="!notification.read"></i>
+                        <span>{{ notification.read ? 'Read' : 'Unread' }}</span>
+                    </div>
+                    <div class="status-item">
+                        <i class="fas fa-clock"></i>
+                        <span>{{ getTimeAgo(notification.deliveredAt) }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+                <div class="footer-actions">
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <button *ngIf="!notification.read" class="btn btn-outline-success btn-sm"
+                            (click)="markAsRead()">
+                            <i class="fas fa-check me-1"></i>
+                            Mark as Read
+                        </button>
+                    </div>
+
+                    <!-- Rich Content Actions -->
+                    <div *ngIf="notification.richContent?.actions" class="content-actions">
+                        <button *ngFor="let action of notification.richContent!.actions" class="btn btn-sm me-2"
+                            [ngClass]="getActionButtonClass(action.style)" (click)="handleAction(action)">
+                            <i *ngIf="action.icon" [class]="action.icon + ' me-1'"></i>
+                            {{ action.label }}
+                        </button>
+                    </div>
+
+                    <!-- Default Actions -->
+                    <div class="default-actions">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

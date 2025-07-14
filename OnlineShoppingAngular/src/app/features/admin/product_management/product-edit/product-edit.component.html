@@ -1,8 +1,4 @@
-<div class="admin-layout">
-    <app-admin-header></app-admin-header>
-    <div class="admin-main">
-        <app-admin-sidebar></app-admin-sidebar>
-        <main class="admin-content">
+
             <div class="main-content container-fluid">
                 <div class="card shadow-sm border-0 mb-3">
                     <div class="card-header bg-primary text-white py-2">
@@ -371,8 +367,8 @@
                                                     <button type="button" class="btn btn-outline-primary btn-sm"
                                                         (click)="toggleBulkAssignmentMode()">
                                                         <i class="fas fa-images me-1"></i>
-                                                        {{ bulkAssignmentMode ? 'Exit Bulk Mode' : 'Bulk Image
-                                                        Assignment'
+                                                        {{ bulkAssignmentMode ? 'Exit Bulk Mode' 
+                                                        : 'Bulk Image Assignment'
                                                         }}
                                                     </button>
                                                 </div>
@@ -613,12 +609,8 @@
                     </div>
                 </div>
             </div>
-        </main>
-    </div>
-
+            
     <!-- Dialogs (same as before) -->
-    <app-admin-footer></app-admin-footer>
-
     <app-brand-dialog [(visible)]="brandDialogVisible" [editingBrand]="null" (save)="onBrandCreated()">
     </app-brand-dialog>
 

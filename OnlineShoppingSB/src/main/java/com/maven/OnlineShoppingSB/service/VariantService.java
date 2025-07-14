@@ -26,15 +26,6 @@ public class VariantService {
 
         StockUpdateResponse response = new StockUpdateResponse();
 
-        // Already reserved? Don't reserve again!
-//        if (reservedStockMap.containsKey(variantId)) {
-//            response.setSuccess(true);
-//            System.out.println("already reserved");
-//            response.setMessage("Already reserved");
-//            response.setUpdatedStock(variant.getStock());
-//            return response;
-//        }
-
         // Check if enough stock
         if (variant.getStock() < quantity) {
             response.setSuccess(false);
@@ -84,23 +75,6 @@ public class VariantService {
         response.setMessage("Stock rolled back");
         response.setUpdatedStock(variant.getStock());
         return response;
-
-//        Integer reservedQty = reservedStockMap.getOrDefault(variantId, 0);
-//        if (reservedQty == 0) {
-//            response.setSuccess(true);
-//            response.setMessage("No rollback needed");
-//            response.setUpdatedStock(variant.getStock());
-//            return response;
-//        }
-//
-//        variant.setStock(variant.getStock() + reservedQty);
-//        variantRepo.save(variant);
-//        reservedStockMap.remove(variantId);
-//        System.out.println("ppppp");
-//        response.setSuccess(true);
-//        response.setMessage("Stock rolled back");
-//        response.setUpdatedStock(variant.getStock());
-//        return response;
     }
 
     // NEW: Bulk rollback for a list of requests

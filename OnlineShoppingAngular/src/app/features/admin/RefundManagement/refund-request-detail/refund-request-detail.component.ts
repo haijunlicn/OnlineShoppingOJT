@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { OrderItemDetail } from '@app/core/models/order.dto';
 import { RefundReasonDTO, RejectionReasonDTO } from '@app/core/models/refund-reason';
 import { RefundItemDTO, RefundItemStatus, RefundItemStatusHistoryDTO, RefundRequestDTO, RefundStatus, RefundStatusHistoryDTO, RequestedRefundAction } from '@app/core/models/refund.model';
 import { AuthService } from '@app/core/services/auth.service';
@@ -634,7 +635,7 @@ export class RefundRequestDetailComponent implements OnInit, OnDestroy {
         return item.status === RefundItemStatus.APPROVED && item.requestedAction === RequestedRefundAction.REFUND_ONLY
       })
       .reduce((total, refundItem) => {
-        const orderItem = this.refundRequest!.orderDetail!.items.find((oi) => oi.id === refundItem.orderItemId)
+        const orderItem = this.refundRequest!.orderDetail!.items.find((oi : OrderItemDetail) => oi.id === refundItem.orderItemId)
         const unitPrice = orderItem?.price || 0
         return total + unitPrice * refundItem.quantity
       }, 0)
@@ -657,7 +658,7 @@ export class RefundRequestDetailComponent implements OnInit, OnDestroy {
         return isApprovedOrReceived && item.requestedAction === RequestedRefundAction.RETURN_AND_REFUND
       })
       .reduce((total, refundItem) => {
-        const orderItem = this.refundRequest!.orderDetail!.items.find((oi) => oi.id === refundItem.orderItemId)
+        const orderItem = this.refundRequest!.orderDetail!.items.find((oi : OrderItemDetail) => oi.id === refundItem.orderItemId)
         const unitPrice = orderItem?.price || 0
         return total + unitPrice * refundItem.quantity
       }, 0)
@@ -675,7 +676,7 @@ export class RefundRequestDetailComponent implements OnInit, OnDestroy {
         )
       })
       .reduce((total, refundItem) => {
-        const orderItem = this.refundRequest!.orderDetail!.items.find((oi) => oi.id === refundItem.orderItemId)
+        const orderItem = this.refundRequest!.orderDetail!.items.find((oi : OrderItemDetail) => oi.id === refundItem.orderItemId)
         const unitPrice = orderItem?.price || 0
         return total + unitPrice * refundItem.quantity
       }, 0)
@@ -688,7 +689,7 @@ export class RefundRequestDetailComponent implements OnInit, OnDestroy {
     return this.refundRequest.items
       .filter(item => item.status === RefundItemStatus.REFUNDED)
       .reduce((total, refundItem) => {
-        const orderItem = this.refundRequest!.orderDetail!.items.find(oi => oi.id === refundItem.orderItemId);
+        const orderItem = this.refundRequest!.orderDetail!.items.find((oi : OrderItemDetail) => oi.id === refundItem.orderItemId);
         const unitPrice = orderItem?.price || 0;
         return total + unitPrice * refundItem.quantity;
       }, 0);

@@ -23,11 +23,6 @@ public class NotificationEntity {
     @JoinColumn(name = "type_id", nullable = false)
     private NotificationTypeEntity type;
 
-//    @Column(nullable = false, length = 255)
-//    private String title;
-//    @Column(nullable = false, columnDefinition = "TEXT")
-//    private String message;
-
     /**
      * Optional JSON metadata stored as string (e.g. { "orderId": 123, "status": "SHIPPED" }).
      */
@@ -39,5 +34,36 @@ public class NotificationEntity {
      */
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    /**
+     * Optional title (nullable, for custom notifications)
+     */
+    @Column(length = 255)
+    private String title;
+
+    /**
+     * Optional message body (nullable, for custom notifications)
+     */
+    @Column(columnDefinition = "TEXT")
+    private String message;
+
+    /**
+     * Optional image URL for custom notifications
+     */
+    @Column(length = 500)
+    private String imageUrl;
+
+    /**
+     * Optional timestamp to schedule notification delivery.
+     */
+    @Column
+    private LocalDateTime scheduledAt;
+
+    /**
+     * Whether this notification has been delivered.
+     */
+    @Column(nullable = false)
+    private boolean delivered = false;
+
 
 }

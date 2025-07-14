@@ -8,7 +8,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AdminHeaderComponent } from './common/admin-header/admin-header.component';
 import { AdminSidebarComponent } from './common/admin-sidebar/admin-sidebar.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
-import { AdminFooterComponent } from './common/admin-footer/admin-footer.component';
 import { HeaderComponent } from './layout/header/header.component';
 import { FooterComponent } from './layout/footer/footer.component';
 import { SidebarComponent } from './layout/sidebar/sidebar.component';
@@ -42,7 +41,7 @@ import { PolicyListComponent } from './policy-management/policy-list/policy-list
 import { FaqListComponent } from './policy-management/faq-list/faq-list.component';
 import { FaqCreateComponent } from './policy-management/faq-create/faq-create.component';
 import { FaqUpdateComponent } from './policy-management/faq-update/faq-update.component';
-import { DiscountGroupComponent } from './discount_management/discount-group/discount-group.component';
+
 import { ProductCreateComponent } from './product_management/product-create/product-create.component';
 import { ProductBulkUploadComponent } from './product_management/product-bulk-upload/product-bulk-upload.component';
 import { RoleListComponent } from './roleAndPermission/role-list/role-list.component';
@@ -66,11 +65,32 @@ import { AdminOrdersControlComponent } from './adminOrderManagement/admin-orders
 import { AdminOrdersDetailComponent } from './adminOrderManagement/admin-orders-detail/admin-orders-detail.component';
 import { ProductDetailComponent } from './product_management/product-detail/product-detail.component';
 import { StockUpdateModalComponent } from './product_management/stock-update-modal/stock-update-modal.component';
+import { CreateDiscountComponent } from './discount_management/create-discount/create-discount.component';
+
+import { DiscountRulesComponent } from './discount_management/discount-rules/discount-rules.component';
+
+import { CreateDiscountGroupComponent } from './discount_management/create-discount-group/create-discount-group.component';
+import { ProductSelectionComponent } from './discount_management/product-selection/product-selection.component';
+
+
+
 import { SaleAnalysisComponent } from './policy-management/sale-analysis/sale-analysis.component';
 import { AdminAccountCreateComponent } from './roleAndPermission/admin-account-create/admin-account-create.component';
+import { RefundReasonFormComponent } from './policy-management/refund-reason-form/refund-reason.component';
+import { RejectionReasonFormComponent } from './policy-management/rejection-reason-form/rejection-reason-form.component';
+import { RejectionReasonListComponent } from './policy-management/rejection-reason-list/rejection-reason-list.component';
+import { RefundReasonListComponent } from './policy-management/refund-reason-list/refund-reason-list.component';
 import { RefundRequestListComponent } from './RefundManagement/refund-request-list/refund-request-list.component';
 import { RefundRequestDetailComponent } from './RefundManagement/refund-request-detail/refund-request-detail.component';
-
+import { PolicyUpdateComponent } from './policy-management/policy-update/policy-update.component';
+import { ChartTestingComponent } from './SaleAnalysis/chart-testing/chart-testing.component';
+import { AdminLayoutComponent } from './common/admin-layout/admin-layout.component';
+import { NotificationCreateComponent } from './notificationManagement/notification-create/notification-create.component';
+import { AdminNotificationBellComponent } from './notificationManagement/admin-notification-bell/admin-notification-bell.component';
+import { AdminNotificationListComponent } from './notificationManagement/admin-notification-list/admin-notification-list.component';
+import { AdminNotificationDetailComponent } from './notificationManagement/admin-notification-detail/admin-notification-detail.component';
+import { AdminNotiTypesComponent } from './notificationManagement/admin-noti-types/admin-noti-types.component';
+import { AdminSentNotisComponent } from './notificationManagement/admin-sent-notis/admin-sent-notis.component';
 
 @NgModule({
   declarations: [
@@ -79,7 +99,6 @@ import { RefundRequestDetailComponent } from './RefundManagement/refund-request-
     AdminHeaderComponent,
     AdminSidebarComponent,
     DashboardComponent,
-    AdminFooterComponent,
     HeaderComponent,
     FooterComponent,
     SidebarComponent,
@@ -96,7 +115,7 @@ import { RefundRequestDetailComponent } from './RefundManagement/refund-request-
     FaqListComponent,
     FaqCreateComponent,
     FaqUpdateComponent,
-    DiscountGroupComponent,
+  
     ProductBulkUploadComponent,
     RoleListComponent,
     RoleFormComponent,
@@ -118,11 +137,29 @@ import { RefundRequestDetailComponent } from './RefundManagement/refund-request-
     AdminOrdersDetailComponent,
     ProductDetailComponent,
     StockUpdateModalComponent,
+    CreateDiscountComponent,
+    ProductSelectionComponent,
+    DiscountRulesComponent,
+     CreateDiscountGroupComponent,
+  
     SaleAnalysisComponent,
     AdminAccountCreateComponent,
+    RefundReasonFormComponent,
+    RejectionReasonFormComponent,
+    RejectionReasonListComponent,
+    RefundReasonListComponent,
     RefundRequestListComponent,
     RefundRequestDetailComponent,
    
+    PolicyUpdateComponent,
+    ChartTestingComponent,
+    AdminLayoutComponent,
+    NotificationCreateComponent,
+    AdminNotificationBellComponent,
+    AdminNotificationDetailComponent,
+    AdminNotificationListComponent,
+    AdminNotiTypesComponent,
+    AdminSentNotisComponent,
   ],
   imports: [
     CommonModule,

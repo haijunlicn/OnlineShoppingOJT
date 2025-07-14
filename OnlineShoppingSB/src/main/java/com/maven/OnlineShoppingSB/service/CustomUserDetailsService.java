@@ -1,6 +1,8 @@
 package com.maven.OnlineShoppingSB.service;
 
 import com.maven.OnlineShoppingSB.config.CustomUserDetails;
+import com.maven.OnlineShoppingSB.dto.UserResponseDTO;
+import com.maven.OnlineShoppingSB.dto.userDTO;
 import com.maven.OnlineShoppingSB.entity.PermissionEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -54,17 +56,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new CustomUserDetails(user, authorities);
     }
 
-
-//    public UserDetails loadUserByUsernameAndRoleType(String email, Integer roleType) throws UsernameNotFoundException {
-//        return userRepository.findByEmailAndRoleType(email, roleType)
-//                .map(user -> new org.springframework.security.core.userdetails.User(
-//                        user.getEmail(),
-//                        user.getPassword(),
-//                        new ArrayList<>()
-//                ))
-//                .orElseThrow(() -> new UsernameNotFoundException("User not found with email and roleType"));
-//    }
-
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsernameAndRoleType(String email, Integer roleType) throws UsernameNotFoundException {
         UserEntity user = userRepository.findByEmailAndRoleType(email, roleType)
@@ -90,5 +81,69 @@ public class CustomUserDetailsService implements UserDetailsService {
                 authorities
         );
     }
+
+//
+//    @Transactional(readOnly = true)
+//    public userDTO getProfile(String email, Integer roleType) {
+//        UserEntity user = userRepository.findByEmailAndRoleType(email, roleType)
+//                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+//
+//        userDTO dto = new userDTO();
+//        dto.setName(user.getName());
+//        dto.setEmail(user.getEmail());
+//        dto.setPhone(user.getPhone());
+//        return dto;
+//    }
+//    @Transactional
+//    public userDTO updateProfile(String email, Integer roleType, userDTO updatedProfile) {
+//        UserEntity user = userRepository.findByEmailAndRoleType(email, roleType)
+//                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+//
+//        user.setName(updatedProfile.getName());
+//        user.setPhone(updatedProfile.getPhone());
+//        // Email usually shouldn't change for login users, but update if allowed
+//        user.setEmail(updatedProfile.getEmail());
+//
+//        userRepository.save(user);
+//
+//        userDTO dto = new userDTO();
+//        dto.setName(user.getName());
+//        dto.setEmail(user.getEmail());
+//        dto.setPhone(user.getPhone());
+//        return dto;
+//    }
+
+    @Transactional(readOnly = true)
+    public UserResponseDTO getProfile(String email, Integer roleType) {
+        UserEntity user = userRepository.findByEmailAndRoleType(email, roleType)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        UserResponseDTO dto = new UserResponseDTO();
+        dto.setName(user.getName());
+        dto.setEmail(user.getEmail());
+        dto.setPhone(user.getPhone());
+        return dto;
+    }
+
+    @Transactional
+    public UserResponseDTO updateProfile(String email, Integer roleType, UserResponseDTO updatedProfile) {
+        UserEntity user = userRepository.findByEmailAndRoleType(email, roleType)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        user.setName(updatedProfile.getName());
+        user.setPhone(updatedProfile.getPhone());
+
+        // Optional: consider if you want to allow email change here
+        user.setEmail(updatedProfile.getEmail());
+
+        userRepository.save(user);
+
+        UserResponseDTO dto = new UserResponseDTO();
+        dto.setName(user.getName());
+        dto.setEmail(user.getEmail());
+        dto.setPhone(user.getPhone());
+        return dto;
+    }
+
 
 }

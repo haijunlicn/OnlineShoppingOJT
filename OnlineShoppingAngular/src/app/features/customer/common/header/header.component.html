@@ -14,16 +14,14 @@
       <div class="col d-none d-lg-block">
         <nav class="main-nav">
           <a routerLink="/customer/general/home" class="nav-item">Home</a>
-          
+
           <!-- Shop Dropdown Component -->
-          <app-category-dropdown 
-            [categories]="categories" 
-            (categorySelected)="onCategorySelected($event)"
+          <app-category-dropdown [categories]="categories" (categorySelected)="onCategorySelected($event)"
             (viewAllCategories)="onViewAllCategories()">
           </app-category-dropdown>
-          
-          <a href="/customer/about" class="nav-item">About</a>
-          <a href="/customer/contact" class="nav-item">Contact</a>
+
+          <a [routerLink]="['/customer/about']" class="nav-item">About</a>
+          <a [routerLink]="['/customer/contact']" class="nav-item">Contact</a>
         </nav>
       </div>
 
@@ -89,7 +87,7 @@
                 <div class="profile-dropdown-divider"></div>
 
                 <div class="profile-dropdown-menu">
-                  <button class="profile-menu-item" (click)="onProfile()">
+                 <button class="profile-menu-item" (click)="onProfile()">
                     <i class="fas fa-user"></i>
                     <span>Profile</span>
                   </button>
@@ -133,19 +131,19 @@
           <i class="fas fa-home"></i>
           Home
         </a>
-        
+
         <!-- Mobile Categories Link -->
         <a routerLink="/customer/productList" class="mobile-nav-item" (click)="toggleMenu()">
           <i class="fas fa-store"></i>
           Shop
         </a>
 
-        <a href="/customer/about" class="mobile-nav-item" (click)="toggleMenu()">
+        <a [routerLink]="['/customer/about']" class="mobile-nav-item" (click)="toggleMenu()">
           <i class="fas fa-info-circle"></i>
           About
         </a>
-        
-        <a href="/customer/contact" class="mobile-nav-item" (click)="toggleMenu()">
+
+        <a [routerLink]="['/customer/contact']" class="mobile-nav-item" (click)="toggleMenu()">
           <i class="fas fa-envelope"></i>
           Contact
         </a>
@@ -203,3 +201,4 @@
 <app-register *ngIf="(registerVisible$ | async)" class="register-modal-overlay"></app-register>
 <app-login *ngIf="(loginVisible$ | async)" class="login-modal-overlay"></app-login>
 <app-forget-password *ngIf="(forgotVisible$ | async)" class="forgot-modal-overlay"></app-forget-password>
+<app-notification-detail></app-notification-detail>

@@ -1,23 +1,212 @@
-<div class="admin-layout">
-  <app-admin-header></app-admin-header>
-  <div class="admin-main">
-    <app-admin-sidebar></app-admin-sidebar>
-    <main class="admin-content">
-      <div class="form-container">
-        <h2>Update FAQ</h2>
-        <form [formGroup]="faqForm" (ngSubmit)="onSubmit()">
 
-          <label>Question</label>
-          <input type="text" formControlName="question" required>
+      <div class="faq-update-container">
+        <!-- Page Header -->
+        <div class="page-header mb-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h2 class="mb-1">Update FAQ</h2>
+              <p class="text-muted mb-0">Modify frequently asked question details</p>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-secondary" routerLink="/admin/policy/faq-list">
+                <i class="bi bi-arrow-left me-2"></i>Back to List
+              </button>
+              <button class="btn btn-outline-info" (click)="viewPreview()" *ngIf="faq.id">
+                <i class="bi bi-eye me-2"></i>Preview
+              </button>
+            </div>
+          </div>
+        </div>
 
-          <label>Answer</label>
-          <app-rich-text-editor formControlName="answer" placeholder="Enter answer with formatting...">
-          </app-rich-text-editor>
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center py-5">
+          <div class="spinner-border text-primary me-3" role="status"></div>
+          <span class="text-muted">Loading FAQ...</span>
+        </div>
 
-          <button type="submit">Update</button>
-          <button type="button" class="cancel" routerLink="/admin/policy/faq-list">Cancel</button>
-        </form>
+        <!-- Alert Messages -->
+        <div *ngIf="message" class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          {{ message }}
+          <button type="button" class="btn-close" (click)="message = ''" aria-label="Close"></button>
+        </div>
+
+        <!-- Main Form Card -->
+        <div *ngIf="!isLoading" class="card shadow-sm">
+          <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">
+                <i class="bi bi-pencil-square me-2"></i>FAQ Details
+              </h5>
+              <div class="d-flex align-items-center gap-2">
+                <small class="text-muted">ID: #{{ faq.id }}</small>
+                <span class="badge bg-primary">
+                  <i class="bi bi-question-circle me-1"></i>FAQ
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <form [formGroup]="faqForm" (ngSubmit)="onSubmit()">
+              <div class="row">
+                <!-- Question Section -->
+                <div class="col-12">
+                  <div class="form-section mb-4">
+                    <h6 class="form-section-title">Question</h6>
+                    
+                    <div class="mb-3">
+                      <label for="question" class="form-label required">FAQ Question</label>
+                      <input 
+                        type="text" 
+                        id="question"
+                        class="form-control"
+                        formControlName="question" 
+                        placeholder="Enter the frequently asked question"
+                        maxlength="500"
+                        [class.is-invalid]="question?.invalid && question?.touched">
+                      <div class="invalid-feedback" *ngIf="question?.invalid && question?.touched">
+                        <div *ngIf="question?.errors?.['required']">Question is required</div>
+                        <div *ngIf="question?.errors?.['maxlength']">Question cannot exceed 500 characters</div>
+                      </div>
+                      <div class="form-text">
+                        <span class="text-muted">{{ faqForm.get('question')?.value?.length || 0 }}/500 characters</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Answer Section -->
+                <div class="col-12">
+                  <div class="form-section">
+                    <h6 class="form-section-title">Answer</h6>
+                    
+                    <div class="mb-3">
+                      <label for="answer" class="form-label required">FAQ Answer</label>
+                      <div class="rich-text-wrapper">
+                        <app-rich-text-editor 
+                          formControlName="answer" 
+                          placeholder="Enter the detailed answer with formatting..."
+                          [class.is-invalid]="answer?.invalid && answer?.touched">
+                        </app-rich-text-editor>
+                      </div>
+                      <div class="invalid-feedback" *ngIf="answer?.invalid && answer?.touched">
+                        <div *ngIf="answer?.errors?.['required']">Answer is required</div>
+                      </div>
+                      <div class="form-text">Use the rich text editor to format your answer with bold, italic, lists, etc.</div>
+                    </div>
+
+                    <!-- Preview Section -->
+                    <div class="preview-section" *ngIf="faqForm.get('answer')?.value">
+                      <h6 class="text-muted mb-2">Live Preview</h6>
+                      <div class="preview-content" [innerHTML]="faqForm.get('answer')?.value"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Card Footer with Actions -->
+          <div class="card-footer bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="form-text">
+                <i class="bi bi-info-circle me-1"></i>
+                {{ hasChanges() ? 'You have unsaved changes' : 'No changes detected' }}
+              </div>
+              <div class="btn-group">
+                <button type="button" class="btn btn-outline-secondary" (click)="resetForm()">
+                  <i class="bi bi-arrow-clockwise me-1"></i>Reset
+                </button>
+                <button type="button" class="btn btn-outline-secondary" routerLink="/admin/policy/faq-list">
+                  <i class="bi bi-x-lg me-1"></i>Cancel
+                </button>
+                <button 
+                  type="button" 
+                  class="btn btn-primary"
+                  (click)="onSubmit()"
+                  [disabled]="isSubmitting || faqForm.invalid || !hasChanges()">
+                  <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                  <i *ngIf="!isSubmitting" class="bi bi-check-lg me-1"></i>
+                  {{ isSubmitting ? 'Updating...' : 'Update FAQ' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Changes Summary -->
+        <div *ngIf="hasChanges() && !isSubmitting" class="card shadow-sm mt-3 border-warning">
+          <div class="card-header bg-warning bg-opacity-10">
+            <h6 class="mb-0 text-warning">
+              <i class="bi bi-exclamation-triangle me-2"></i>Pending Changes
+            </h6>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-12">
+                <h6 class="text-muted mb-2">Modified Fields</h6>
+                <ul class="list-unstyled mb-0">
+                  <li *ngIf="isQuestionChanged()" class="mb-1">
+                    <i class="bi bi-dot text-warning"></i>
+                    <span class="fw-semibold">Question</span>
+                  </li>
+                  <li *ngIf="isAnswerChanged()" class="mb-1">
+                    <i class="bi bi-dot text-warning"></i>
+                    <span class="fw-semibold">Answer</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Validation Summary -->
+        <div *ngIf="faqForm.invalid && (faqForm.touched || faqForm.dirty)" class="card shadow-sm mt-3 border-danger">
+          <div class="card-header bg-danger bg-opacity-10">
+            <h6 class="mb-0 text-danger">
+              <i class="bi bi-exclamation-triangle me-2"></i>Form Validation Errors
+            </h6>
+          </div>
+          <div class="card-body">
+            <ul class="list-unstyled mb-0">
+              <li *ngIf="question?.errors?.['required']" class="mb-1">
+                <i class="bi bi-dot text-danger"></i>
+                <span class="text-danger">Question is required</span>
+              </li>
+              <li *ngIf="answer?.errors?.['required']" class="mb-1">
+                <i class="bi bi-dot text-danger"></i>
+                <span class="text-danger">Answer is required</span>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
-    </main>
+      
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">FAQ Preview</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <h6 class="text-muted mb-2">Question</h6>
+          <p class="fw-semibold fs-5">{{ faqForm.get('question')?.value }}</p>
+        </div>
+        <div class="mb-3">
+          <h6 class="text-muted mb-2">Answer</h6>
+          <div class="answer-content" [innerHTML]="faqForm.get('answer')?.value"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" (click)="onSubmit()" data-bs-dismiss="modal" 
+                [disabled]="faqForm.invalid || !hasChanges()">
+          <i class="bi bi-check-lg me-1"></i>Save Changes
+        </button>
+      </div>
+    </div>
   </div>
-  <app-admin-footer></app-admin-footer>
+</div>

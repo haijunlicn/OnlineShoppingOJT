@@ -32,8 +32,13 @@ public class OrderEntity {
     @Column(name = "tracking_number", length = 100)
     private String trackingNumber;
 
-    @Column(name = "payment_status", length = 20)
-    private String paymentStatus;
+//    @Column(name = "payment_status", length = 20)
+//    private String paymentStatus;
+
+    @Column(name = "payment_status")
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus paymentStatus;
+
 
     @Column(name = "totalAmount")
     private Integer totalAmount;
@@ -68,4 +73,13 @@ public class OrderEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_method_id", nullable = true)
     private PaymentEntity paymentMethod;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "current_status_id")
+    private OrderStatusTypeEntity currentStatus;
+
+    @Column(name = "order_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private OrderType orderType = OrderType.NORMAL;
+
 }

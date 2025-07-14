@@ -12,6 +12,7 @@ import { jwtDecode } from 'jwt-decode';
 import { StorageService } from './StorageService';
 import { AccessControlService } from './AccessControl.service';
 import { AuthGuard } from '../guards/auth.guard';
+import { NotificationService } from './notification.service';
 
 
 @Injectable({
@@ -28,7 +29,8 @@ export class AuthService {
     private registerModalService: RegisterModalService,
     private alertService: AlertService,
     private storageService: StorageService,
-    private accessControlService: AccessControlService
+    private accessControlService: AccessControlService,
+    private notificationService: NotificationService,
   ) { }
 
   private userLoadedSubject = new BehaviorSubject<boolean>(false);
@@ -48,29 +50,67 @@ export class AuthService {
     map(user => !!user && user.roleName === 'CUSTOMER')
   );
 
-  initializeUserFromToken(): void {
-    const token = this.storageService.getItem('token');
+  // initializeUserFromToken(): void {
+  //   const token = this.storageService.getItem('token');
 
-    if (token && !this.isTokenExpired(token)) {
-      const decoded: any = jwtDecode(token);
-      const email = decoded.sub;
-      const roleType = decoded.roleType;
+  //   if (token && !this.isTokenExpired(token)) {
+  //     const decoded: any = jwtDecode(token);
+  //     const email = decoded.sub;
+  //     const roleType = decoded.roleType;
 
-      // this.getCurrentUserByEmailAndRoleType(email, roleType).subscribe({
-      this.fetchCurrentUser().subscribe({
-        next: () => {
-          this.userLoadedSubject.next(true); // ✅ Done
-        },
-        error: () => {
-          this.userSubject.next(null);
-          this.storageService.removeItem('token');
-          this.userLoadedSubject.next(true); // ✅ Still done
-        }
-      });
-    } else {
-      this.userSubject.next(null);
-      this.userLoadedSubject.next(true); // ✅ Still done
-    }
+  //     // this.getCurrentUserByEmailAndRoleType(email, roleType).subscribe({
+  //     this.fetchCurrentUser().subscribe({
+  //       next: (user) => {
+  //         this.userLoadedSubject.next(true); // ✅ Done
+  //         // 👇 NEW: connect WebSocket
+  //         if (user?.roleName === 'CUSTOMER' || user?.roleName === 'ADMIN') {
+  //           this.notificationService.connectWebSocket();
+  //           this.notificationService.loadInAppNotificationsForUser(user.id);
+  //         }
+  //       },
+  //       error: () => {
+  //         this.userSubject.next(null);
+  //         this.storageService.removeItem('token');
+  //         this.userLoadedSubject.next(true); // ✅ Still done
+  //       }
+  //     });
+  //   } else {
+  //     this.userSubject.next(null);
+  //     this.userLoadedSubject.next(true); // ✅ Still done
+  //   }
+  // }
+
+  initializeUserFromToken(): Promise<void> {
+    return new Promise((resolve) => {
+      const token = this.storageService.getItem('token');
+
+      if (token && !this.isTokenExpired(token)) {
+        this.fetchCurrentUser().subscribe({
+          next: (user) => {
+            this.userSubject.next(user);
+            this.accessControlService.setPermissions(user.permissions!);
+
+            if (user?.roleName === 'CUSTOMER' || user?.roleName === 'ADMIN') {
+              this.notificationService.connectWebSocket();
+              this.notificationService.loadInAppNotificationsForUser(user.id);
+            }
+
+            this.userLoadedSubject.next(true);
+            resolve(); // ✅ Done loading
+          },
+          error: () => {
+            this.userSubject.next(null);
+            this.storageService.removeItem('token');
+            this.userLoadedSubject.next(true);
+            resolve(); // ✅ Even if error
+          }
+        });
+      } else {
+        this.userSubject.next(null);
+        this.userLoadedSubject.next(true);
+        resolve(); // ✅ No token? Still resolve
+      }
+    });
   }
 
   register(userData: any): Observable<any> {
@@ -131,10 +171,7 @@ export class AuthService {
           updatedDate: res.updatedDate,
           permissions: res.permissions
         };
-
         console.log("/me called : ", user);
-
-
         return user;
       }),
       tap((user: User) => {
@@ -164,22 +201,21 @@ export class AuthService {
       tap((user: User) => {
         this.userSubject.next(user);
         this.accessControlService.setPermissions(user.permissions!);
+
+        // Add this block
+        if (user?.roleName === 'CUSTOMER' || user?.roleName === 'ADMIN') {
+          this.notificationService.connectWebSocket();
+          this.notificationService.loadInAppNotificationsForUser(user.id);
+        }
       })
     );
   }
 
-
   logout() {
-    console.log('[Logout] Start logout process');
-
     this.storageService.removeItem('token');
+    this.notificationService.disconnectWebSocket();
     this.userSubject.next(null);
-    console.log('[Logout] Token removed and userSubject cleared');
-
     const currentUrl = this.router.url;
-    console.log('[Logout] Redirecting back to current URL:', currentUrl);
-
-    // Redirect to the current URL to trigger AuthGuard
     this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
       this.router.navigateByUrl(currentUrl);
     });
@@ -241,13 +277,9 @@ export class AuthService {
         const decodedToken: any = jwtDecode(token);
         const userEmail = decodedToken.sub;
 
-        // ✅ Wait for user fetch to complete
-        // return this.getCurrentUserByEmailAndRoleType(userEmail, 1);
         return this.fetchCurrentUser();
       }),
       catchError((error) => throwError(() => error))
     );
   }
-
-
 }

@@ -18,7 +18,7 @@ public class RefundReasonEntity {
 
     @Column(name = "label", nullable = false, unique = true)
     private String label;
-
+    
     @Column(name = "allow_custom_text", nullable = false)
     private Boolean allowCustomText;
 

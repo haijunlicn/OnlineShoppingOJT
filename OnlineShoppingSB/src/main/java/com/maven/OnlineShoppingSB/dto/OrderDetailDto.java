@@ -1,5 +1,7 @@
 package com.maven.OnlineShoppingSB.dto;
 
+import com.maven.OnlineShoppingSB.entity.OrderType;
+import com.maven.OnlineShoppingSB.entity.PaymentStatus;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -14,29 +16,20 @@ import java.util.List;
 public class OrderDetailDto {
     private Long id;
     private String trackingNumber;
-    private String paymentStatus;
+    private PaymentStatus paymentStatus;
+    private String currentOrderStatus;
     private Integer totalAmount;
     private Integer shippingFee;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private String paymentProofPath;
-    
-    // Payment method information
     private PaymentDTO paymentMethod;
     private String paymentType;
-    
-    // User information
     private userDTO user;
-    
-    // Address information
     private UserAddressDto shippingAddress;
-    
-    // Delivery method
     private DeliveryMethodDto deliveryMethod;
-    
-    // Order items
     private List<OrderItemDetailDto> items;
-    
-    // Status history
     private List<OrderStatusHistoryDto> statusHistory;
+    private List<RefundRequestAdminDTO> refunds;
+    private OrderType orderType;
 } 

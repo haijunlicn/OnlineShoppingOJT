@@ -1,0 +1,286 @@
+
+      <div class="policy-update-container">
+        <!-- Page Header -->
+        <div class="page-header mb-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h2 class="mb-1">Update Policy</h2>
+              <p class="text-muted mb-0">Modify policy document details and content</p>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-secondary" routerLink="/admin/policy/policy-list">
+                <i class="bi bi-arrow-left me-2"></i>Back to List
+              </button>
+              <button class="btn btn-outline-info" (click)="viewPreview()" *ngIf="policy.id">
+                <i class="bi bi-eye me-2"></i>Preview
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center py-5">
+          <div class="spinner-border text-primary me-3" role="status"></div>
+          <span class="text-muted">Loading policy...</span>
+        </div>
+
+        <!-- Alert Messages -->
+        <div *ngIf="message" class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          {{ message }}
+          <button type="button" class="btn-close" (click)="message = ''" aria-label="Close"></button>
+        </div>
+
+        <!-- Main Form Card -->
+        <div *ngIf="!isLoading" class="card shadow-sm">
+          <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">
+                <i class="bi bi-pencil-square me-2"></i>Policy Details
+              </h5>
+              <div class="d-flex align-items-center gap-2">
+                <small class="text-muted">ID: #{{ policy.id }}</small>
+                <span class="badge" [class]="getTypeBadgeClass(policy.type || '')">
+                  <i class="bi" [class]="getTypeIcon(policy.type || '')" class="me-1"></i>
+                  {{ getTypeLabel(policy.type || '') }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <form [formGroup]="policyForm" (ngSubmit)="onSubmit()">
+              <div class="row">
+                <!-- Left Column - Basic Information -->
+                <div class="col-lg-6">
+                  <div class="form-section">
+                    <h6 class="form-section-title">Basic Information</h6>
+                    
+                    <!-- Title Field -->
+                    <div class="mb-3">
+                      <label for="title" class="form-label required">Policy Title</label>
+                      <input 
+                        type="text" 
+                        id="title"
+                        class="form-control"
+                        formControlName="title" 
+                        placeholder="Enter policy title"
+                        maxlength="200"
+                        [class.is-invalid]="isFieldInvalid('title')">
+                      <div class="invalid-feedback" *ngIf="isFieldInvalid('title')">
+                        {{ getFieldError('title') }}
+                      </div>
+                      <div class="form-text">
+                        <span class="text-muted">{{ getCharacterCount('title') }}/200 characters</span>
+                      </div>
+                    </div>
+
+                    <!-- Type Field -->
+                    <div class="mb-3">
+                      <label for="type" class="form-label required">Policy Type</label>
+                      <select 
+                        id="type" 
+                        formControlName="type" 
+                        class="form-select" 
+                        [class.is-invalid]="isFieldInvalid('type')">
+                        <option value="">Select policy type</option>
+                        <option *ngFor="let type of policyTypes" [value]="type.value">
+                          {{ type.label }}
+                        </option>
+                      </select>
+                      <div class="invalid-feedback" *ngIf="isFieldInvalid('type')">
+                        {{ getFieldError('type') }}
+                      </div>
+                      <div class="form-text">Choose the appropriate policy type for classification</div>
+                    </div>
+
+                    <!-- Metadata -->
+                    <div class="metadata-section">
+                      <h6 class="text-muted mb-2">Metadata</h6>
+                      <div class="row">
+                        <div class="col-6">
+                          <small class="text-muted d-block">Policy ID</small>
+                          <span class="fw-semibold">#{{ policy.id }}</span>
+                        </div>
+                        <div class="col-6">
+                          <small class="text-muted d-block">Policy Type</small>
+                          <span class="fw-semibold">{{ getTypeLabel(policy.type || '') }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right Column - Preview -->
+                <div class="col-lg-6">
+                  <div class="form-section">
+                    <h6 class="form-section-title">Live Preview</h6>
+                    
+                    <div class="policy-preview">
+                      <div class="preview-header">
+                        <h6 class="preview-title">{{ policyForm.get('title')?.value || 'Policy Title' }}</h6>
+                        <span class="badge" [class]="getTypeBadgeClass(policyForm.get('type')?.value || '')">
+                          <i class="bi" [class]="getTypeIcon(policyForm.get('type')?.value || '')" class="me-1"></i>
+                          {{ getTypeLabel(policyForm.get('type')?.value || '') || 'Select Type' }}
+                        </span>
+                      </div>
+                      <div class="preview-content">
+                        <div *ngIf="policyForm.get('description')?.value; else noContent" 
+                             [innerHTML]="policyForm.get('description')?.value">
+                        </div>
+                        <ng-template #noContent>
+                          <p class="text-muted fst-italic">Description will appear here...</p>
+                        </ng-template>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Full Width - Description -->
+                <div class="col-12">
+                  <div class="form-section">
+                    <h6 class="form-section-title">Policy Content</h6>
+                    
+                    <div class="mb-3">
+                      <label for="description" class="form-label required">Policy Description</label>
+                      <div class="rich-text-wrapper">
+                        <app-rich-text-editor 
+                          formControlName="description" 
+                          placeholder="Enter the detailed policy content with formatting..."
+                          [class.is-invalid]="isFieldInvalid('description')">
+                        </app-rich-text-editor>
+                      </div>
+                      <div class="invalid-feedback" *ngIf="isFieldInvalid('description')">
+                        {{ getFieldError('description') }}
+                      </div>
+                      <div class="form-text">Use the rich text editor to format your policy content with headings, lists, links, etc.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Card Footer with Actions -->
+          <div class="card-footer bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="form-text">
+                <i class="bi bi-info-circle me-1"></i>
+                {{ hasChanges() ? 'You have unsaved changes' : 'No changes detected' }}
+              </div>
+              <div class="btn-group">
+                <button type="button" class="btn btn-outline-secondary" (click)="resetForm()">
+                  <i class="bi bi-arrow-clockwise me-1"></i>Reset
+                </button>
+                <button type="button" class="btn btn-outline-secondary" (click)="onCancel()">
+                  <i class="bi bi-x-lg me-1"></i>Cancel
+                </button>
+                <button 
+                  type="button" 
+                  class="btn btn-primary"
+                  (click)="onSubmit()"
+                  [disabled]="isSubmitting || policyForm.invalid || !hasChanges()">
+                  <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                  <i *ngIf="!isSubmitting" class="bi bi-check-lg me-1"></i>
+                  {{ isSubmitting ? 'Updating...' : 'Update Policy' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Changes Summary -->
+        <div *ngIf="hasChanges() && !isSubmitting" class="card shadow-sm mt-3 border-warning">
+          <div class="card-header bg-warning bg-opacity-10">
+            <h6 class="mb-0 text-warning">
+              <i class="bi bi-exclamation-triangle me-2"></i>Pending Changes
+            </h6>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-12">
+                <h6 class="text-muted mb-2">Modified Fields</h6>
+                <ul class="list-unstyled mb-0">
+                  <li *ngIf="isTitleChanged()" class="mb-1">
+                    <i class="bi bi-dot text-warning"></i>
+                    <span class="fw-semibold">Title</span>
+                  </li>
+                  <li *ngIf="isTypeChanged()" class="mb-1">
+                    <i class="bi bi-dot text-warning"></i>
+                    <span class="fw-semibold">Type</span>
+                  </li>
+                  <li *ngIf="isDescriptionChanged()" class="mb-1">
+                    <i class="bi bi-dot text-warning"></i>
+                    <span class="fw-semibold">Description</span>
+                  </li>
+                  <li *ngIf="isStatusChanged()" class="mb-1">
+                    <i class="bi bi-dot text-warning"></i>
+                    <span class="fw-semibold">Status</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Validation Summary -->
+        <div *ngIf="policyForm.invalid && (policyForm.touched || policyForm.dirty)" class="card shadow-sm mt-3 border-danger">
+          <div class="card-header bg-danger bg-opacity-10">
+            <h6 class="mb-0 text-danger">
+              <i class="bi bi-exclamation-triangle me-2"></i>Form Validation Errors
+            </h6>
+          </div>
+          <div class="card-body">
+            <ul class="list-unstyled mb-0">
+              <li *ngIf="title?.errors?.['required']" class="mb-1">
+                <i class="bi bi-dot text-danger"></i>
+                <span class="text-danger">Policy title is required</span>
+              </li>
+              <li *ngIf="type?.errors?.['required']" class="mb-1">
+                <i class="bi bi-dot text-danger"></i>
+                <span class="text-danger">Policy type is required</span>
+              </li>
+              <li *ngIf="description?.errors?.['required']" class="mb-1">
+                <i class="bi bi-dot text-danger"></i>
+                <span class="text-danger">Policy description is required</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Policy Preview</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <h6 class="text-muted mb-2">Title</h6>
+          <p class="fw-semibold fs-5">{{ policyForm.get('title')?.value }}</p>
+        </div>
+        <div class="mb-3">
+          <h6 class="text-muted mb-2">Type</h6>
+          <span class="badge" [class]="getTypeBadgeClass(policyForm.get('type')?.value || '')">
+            <i class="bi" [class]="getTypeIcon(policyForm.get('type')?.value || '')" class="me-1"></i>
+            {{ getTypeLabel(policyForm.get('type')?.value || '') }}
+          </span>
+        </div>
+        <div class="mb-3">
+          <h6 class="text-muted mb-2">Content</h6>
+          <div class="policy-content" [innerHTML]="policyForm.get('description')?.value"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" (click)="onSubmit()" data-bs-dismiss="modal" 
+                [disabled]="policyForm.invalid || !hasChanges()">
+          <i class="bi bi-check-lg me-1"></i>Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

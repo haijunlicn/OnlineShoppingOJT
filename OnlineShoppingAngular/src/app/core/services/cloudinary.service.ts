@@ -12,14 +12,6 @@ export class CloudinaryService {
 
   constructor(private http: HttpClient) { }
 
-
-  // uploadCategoryImage(imageFile: File): Observable<string> {
-  //   const formData = new FormData();
-  //   formData.append('file', imageFile);
-
-  //   return this.http.post(`${this.baseUrl}/upload`, formData, { responseType: 'text' });
-  // }
-
   uploadProductImage(file: File): Observable<ImageUploadResponse> {
     const formData = new FormData()
     formData.append("image", file)

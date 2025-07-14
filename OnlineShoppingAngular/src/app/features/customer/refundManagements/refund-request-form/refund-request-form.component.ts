@@ -1,11 +1,12 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { OrderDetail, OrderItemDetail } from '@app/core/models/order.dto';
 import { RefundReasonDTO } from '@app/core/models/refund-reason';
 import { RefundRequestDTO, RequestedRefundAction, ReturnRequestPayload, ReturnRequestResponse } from '@app/core/models/refund.model';
 import { AuthService } from '@app/core/services/auth.service';
 import { CloudinaryService } from '@app/core/services/cloudinary.service';
-import { OrderDetail, OrderItemDetail, OrderService } from '@app/core/services/order.service';
+import { OrderService } from '@app/core/services/order.service';
 import { RefundReasonService } from '@app/core/services/refund-reason.service';
 import { RefundRequestService } from '@app/core/services/refundRequestService';
 
@@ -78,16 +79,12 @@ export class RefundRequestFormComponent implements OnInit {
       .then(([reasons, order]) => {
         this.refundReasons = reasons || []
         this.order = order || null
-
-        console.log("Refund Reasons:", this.refundReasons)
-
         if (this.order) {
           this.returnRequestForm.patchValue({ orderId: this.order.id })
           this.populateItemsFormArray()
         } else {
           this.errorMessage = "Order not found"
         }
-
         this.isLoading = false
       })
       .catch((error) => {
@@ -105,7 +102,7 @@ export class RefundRequestFormComponent implements OnInit {
       itemsArray.removeAt(0)
     }
 
-    this.order?.items.forEach((item) => {
+    this.order?.items.forEach((item : OrderItemDetail) => {
       const itemGroup = this.createItemFormGroup(item)
       itemsArray.push(itemGroup)
     })
@@ -129,42 +126,6 @@ export class RefundRequestFormComponent implements OnInit {
 
     return group
   }
-
-  // private itemValidator(control: AbstractControl): { [key: string]: any } | null {
-  //   const requestedAction = control.get("requestedAction")?.value
-  //   const returnQty = control.get("returnQty")?.value || 0
-  //   const reasonId = control.get("reasonId")?.value
-  //   const customReasonText = control.get("customReasonText")?.value || ""
-  //   const proofs = control.get("proofs")?.value || []
-
-  //   // If no action selected, no validation needed
-
-  //   if (!requestedAction || requestedAction === "") {
-  //     return null; // no validation errors if no action selected
-  //   }
-
-  //   // If action is selected, validate step 2 fields
-  //   if (requestedAction !== "") {
-  //     if (returnQty <= 0) {
-  //       return { returnQtyRequired: true }
-  //     }
-  //     if (!reasonId) {
-  //       return { reasonRequired: true }
-  //     }
-  //     const reason = this.refundReasons.find((r) => r.id == reasonId)
-  //     if (reason?.allowCustomText && !customReasonText.trim()) {
-  //       return { customReasonRequired: true }
-  //     }
-  //     if (!proofs.length) {
-  //       return { proofRequired: true }
-  //     }
-  //     if (proofs.length > 5) {
-  //       return { proofLimitExceeded: true }
-  //     }
-  //   }
-
-  //   return null
-  // }
 
   private itemValidator(control: AbstractControl): { [key: string]: any } | null {
     const requestedAction = control.get("requestedAction")?.value;
@@ -207,59 +168,6 @@ export class RefundRequestFormComponent implements OnInit {
     console.log("✅ Item is valid");
     return null;
   }
-
-
-  // private itemValidator(control: AbstractControl): { [key: string]: any } | null {
-  //   const requestedAction = control.get("requestedAction")?.value;
-  //   const returnQty = control.get("returnQty")?.value || 0;
-  //   const reasonId = control.get("reasonId")?.value;
-  //   const customReasonText = control.get("customReasonText")?.value || "";
-  //   const proofs = control.get("proofs")?.value || [];
-
-  //   console.log("🧪 Validating item:", {
-  //     requestedAction,
-  //     returnQty,
-  //     reasonId,
-  //     customReasonText,
-  //     proofs,
-  //   });
-
-  //   // If no action selected, skip validation
-  //   if (!requestedAction || requestedAction === "") {
-  //     console.log("✅ No action selected — skipping validation.");
-  //     return null;
-  //   }
-
-  //   // Begin field validation
-  //   if (returnQty <= 0) {
-  //     console.warn("❌ Return quantity invalid");
-  //     return { returnQtyRequired: true };
-  //   }
-
-  //   if (!reasonId) {
-  //     console.warn("❌ Reason required");
-  //     return { reasonRequired: true };
-  //   }
-
-  //   const reason = this.refundReasons.find((r) => r.id == reasonId);
-  //   if (reason?.allowCustomText && !customReasonText.trim()) {
-  //     console.warn("❌ Custom reason required");
-  //     return { customReasonRequired: true };
-  //   }
-
-  //   if (!proofs.length) {
-  //     console.warn("❌ Proof image required");
-  //     return { proofRequired: true };
-  //   }
-
-  //   if (proofs.length > 5) {
-  //     console.warn("❌ Too many proofs");
-  //     return { proofLimitExceeded: true };
-  //   }
-
-  //   console.log("✅ Item is valid");
-  //   return null;
-  // }
 
   get itemsFormArray(): FormArray {
     return this.returnRequestForm.get("items") as FormArray
@@ -326,38 +234,6 @@ export class RefundRequestFormComponent implements OnInit {
 
     this.logFinalReturnRequest();
   }
-
-
-  // onActionChange(index: number): void {
-  //   const itemGroup = this.getItemFormGroup(index)
-  //   const requestedAction = itemGroup.get("requestedAction")?.value
-
-  //   if (!requestedAction) {
-  //     // Reset step 2 fields when no action selected
-  //     itemGroup.patchValue({
-  //       returnQty: 0,
-  //       reasonId: null,
-  //       customReasonText: "",
-  //       proofs: [],
-  //     })
-
-  //     // ✅ Mark as untouched and update validity
-  //     itemGroup.markAsPristine();
-  //     itemGroup.markAsUntouched();
-  //     itemGroup.updateValueAndValidity({ onlySelf: false, emitEvent: true });
-  //   } else {
-  //     // Set default return quantity to 1 when action is selected
-  //     if (itemGroup.get("returnQty")?.value === 0) {
-  //       itemGroup.patchValue({
-  //         returnQty: 1,
-  //       })
-  //     }
-  //     // Ensure validity rechecked in case user toggled back from "no action"
-  //     itemGroup.updateValueAndValidity({ onlySelf: false, emitEvent: true });
-  //   }
-
-  //   this.logFinalReturnRequest();
-  // }
 
   logFinalReturnRequest(): void {
     const payload = this.returnRequestForm.getRawValue(); // or build your actual payload manually

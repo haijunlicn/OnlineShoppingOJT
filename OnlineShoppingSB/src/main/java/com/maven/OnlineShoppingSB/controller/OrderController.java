@@ -1,27 +1,33 @@
 package com.maven.OnlineShoppingSB.controller;
 
-import com.maven.OnlineShoppingSB.dto.BulkOrderStatusUpdateRequest;
-import com.maven.OnlineShoppingSB.dto.OrderDetailDto;
-import com.maven.OnlineShoppingSB.dto.OrderDto;
+import com.maven.OnlineShoppingSB.config.CustomUserDetails;
+import com.maven.OnlineShoppingSB.dto.*;
 import com.maven.OnlineShoppingSB.entity.OrderEntity;
+import com.maven.OnlineShoppingSB.entity.UserEntity;
 import com.maven.OnlineShoppingSB.service.OrderService;
+import com.maven.OnlineShoppingSB.service.RefundRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/orders")
-@CrossOrigin(origins = {"http://localhost:4200", "http://127.0.0.1:4200"}, 
-             allowedHeaders = "*", 
-             methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
+@CrossOrigin(origins = {"http://localhost:4200", "http://127.0.0.1:4200"},
+        allowedHeaders = "*",
+        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 public class OrderController {
 
     @Autowired
     private OrderService orderService;
+    @Autowired
+    private RefundRequestService refundRequestService;
 
     @PostMapping("/create")
     public ResponseEntity<?> createOrder(
@@ -70,20 +76,55 @@ public class OrderController {
     public ResponseEntity<OrderDetailDto> getOrderByIdWithDetails(@PathVariable Long orderId) {
         try {
             OrderEntity order = orderService.getOrderByIdWithDetails(orderId);
-            return ResponseEntity.ok(orderService.convertToOrderDetailDto(order));
+            OrderDetailDto dto = orderService.convertToOrderDetailDto(order);
+
+            // Use simplified refund mapping
+            List<RefundRequestAdminDTO> refunds = refundRequestService.getRefundsForOrderDetailPage(orderId);
+            dto.setRefunds(refunds);
+
+            return ResponseEntity.ok(dto);
         } catch (Exception e) {
             System.err.println("Error getting order details: " + e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }
 
+
+//    @GetMapping("/{orderId}/details")
+//    public ResponseEntity<OrderDetailDto> getOrderByIdWithDetails(@PathVariable Long orderId) {
+//        try {
+//            OrderEntity order = orderService.getOrderByIdWithDetails(orderId);
+//            OrderDetailDto dto = orderService.convertToOrderDetailDto(order);
+//
+//            // ✅ Fetch and set refund DTOs directly from RefundRequestService
+//            List<RefundRequestAdminDTO> refunds = refundRequestService.getRefundsByOrderId(orderId);
+//            dto.setRefunds(refunds);
+//
+//            return ResponseEntity.ok(dto);
+//        } catch (Exception e) {
+//            System.err.println("Error getting order details: " + e.getMessage());
+//            return ResponseEntity.badRequest().build();
+//        }
+//    }
+
+//    @GetMapping("/{orderId}/details")
+//    public ResponseEntity<OrderDetailDto> getOrderByIdWithDetails(@PathVariable Long orderId) {
+//        try {
+//            OrderEntity order = orderService.getOrderByIdWithDetails(orderId);
+//            return ResponseEntity.ok(orderService.convertToOrderDetailDto(order));
+//        } catch (Exception e) {
+//            System.err.println("Error getting order details: " + e.getMessage());
+//            return ResponseEntity.badRequest().build();
+//        }
+//    }
+
     @PostMapping("/admin/bulk-status")
     public ResponseEntity<List<OrderDetailDto>> bulkUpdateOrderStatus(@RequestBody BulkOrderStatusUpdateRequest request) {
         try {
             List<OrderEntity> updatedOrders = orderService.bulkUpdateOrderStatus(request);
             List<OrderDetailDto> updatedOrderDtos = updatedOrders.stream()
-                .map(orderService::convertToOrderDetailDto)
-                .collect(Collectors.toList());
+                    .map(orderService::convertToOrderDetailDto)
+                    .collect(Collectors.toList());
             return ResponseEntity.ok(updatedOrderDtos);
         } catch (Exception e) {
             System.err.println("Error updating order status: " + e.getMessage());
@@ -104,4 +145,55 @@ public class OrderController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    @PutMapping("/{id}/payment-status")
+    public ResponseEntity<?> updatePaymentStatus(
+            @PathVariable Long id,
+            @RequestBody PaymentRejectionReasonDTO.PaymentStatusUpdateRequest request,
+            @AuthenticationPrincipal CustomUserDetails principal
+    ) {
+        try {
+            String newStatus = request.getStatus();
+            UserEntity adminUser = principal != null ? principal.getUser() : null;
+            PaymentRejectionReasonDTO.PaymentRejectionRequestDTO rejectionRequest = request.getRejectionRequest();
+
+            // Build audit DTO here
+            Map<String, Object> rejectionDetails = new HashMap<>();
+            if (rejectionRequest != null) {
+                rejectionDetails.put("reasonId", rejectionRequest.getReasonId());
+                rejectionDetails.put("customReason", rejectionRequest.getCustomReason());
+            }
+            Long adminUserId = adminUser != null ? adminUser.getId() : null;
+
+            PaymentStatusUpdateAuditDto auditDto = new PaymentStatusUpdateAuditDto(id, newStatus, adminUserId, rejectionDetails);
+
+            // Pass audit DTO to service
+            OrderDetailDto updatedDto = orderService.updatePaymentStatus(id, newStatus, adminUser, rejectionRequest, auditDto);
+            return ResponseEntity.ok(updatedDto);
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+
+//    @PutMapping("/{id}/payment-status")
+//    public ResponseEntity<?> updatePaymentStatus(
+//            @PathVariable Long id,
+//            @RequestBody PaymentRejectionReasonDTO.PaymentStatusUpdateRequest request,
+//            @AuthenticationPrincipal CustomUserDetails principal
+//    ) {
+//        try {
+//            String newStatus = request.getStatus();
+//            UserEntity adminUser = principal != null ? principal.getUser() : null;
+//            PaymentRejectionReasonDTO.PaymentRejectionRequestDTO rejectionRequest = request.getRejectionRequest();
+//
+//            OrderDetailDto updatedDto = orderService.updatePaymentStatus(id, newStatus, adminUser, rejectionRequest);
+//            return ResponseEntity.ok(updatedDto);
+//
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+//        }
+//    }
+
 }

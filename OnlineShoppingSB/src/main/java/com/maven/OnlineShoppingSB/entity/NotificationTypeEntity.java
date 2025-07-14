@@ -53,4 +53,7 @@ public class NotificationTypeEntity {
                 .anyMatch(m -> m.getMethod() == method);
     }
 
+    @Column(nullable = false)
+    private boolean showToast = false;  // Default to false
+
 }

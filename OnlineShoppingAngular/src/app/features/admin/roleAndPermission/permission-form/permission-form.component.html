@@ -1,8 +1,4 @@
-<div class="admin-layout">
-  <app-admin-header></app-admin-header>
-  <div class="admin-main">
-    <app-admin-sidebar></app-admin-sidebar>
-    <main class="admin-content">
+
       <div class="container">
         <h2>Create Permission</h2>
         <form [formGroup]="permissionForm" (ngSubmit)="submit()">
@@ -22,6 +18,3 @@
           <button class="btn btn-success" type="submit" [disabled]="permissionForm.invalid">Create</button>
         </form>
       </div>
-    </main>
-  </div>
-  <app-admin-footer></app-admin-footer>
