@@ -1,8 +1,9 @@
-import { Component, OnInit } from "@angular/core"
+import { Component, type OnInit } from "@angular/core"
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser"
 import { Router } from "@angular/router"
 import { PolicyDTO } from "@app/core/models/policyDTO"
 import { PolicyService } from "@app/core/services/policy.service"
+
 
 declare var bootstrap: any
 
@@ -32,6 +33,7 @@ export class PolicyListComponent implements OnInit {
   itemsPerPage = 10
   totalPages = 0
   totalItems = 0
+  itemsPerPageOptions = [5, 10, 25, 50]
 
   // Sorting properties
   sortField = ""
@@ -195,9 +197,9 @@ export class PolicyListComponent implements OnInit {
 
   getSortIcon(field: string): string {
     if (this.sortField !== field) {
-      return "bi-chevron-expand"
+      return "fa-sort text-muted"
     }
-    return this.sortDirection === "asc" ? "bi-chevron-up" : "bi-chevron-down"
+    return this.sortDirection === "asc" ? "fa-sort-up text-primary" : "fa-sort-down text-primary"
   }
 
   // Pagination methods
@@ -225,7 +227,6 @@ export class PolicyListComponent implements OnInit {
   getPageNumbers(): number[] {
     const pages: number[] = []
     const maxPagesToShow = 5
-
     if (this.totalPages <= maxPagesToShow) {
       for (let i = 1; i <= this.totalPages; i++) {
         pages.push(i)
@@ -243,28 +244,27 @@ export class PolicyListComponent implements OnInit {
         pages.push(i)
       }
     }
-
     return pages
+  }
+
+  getItemsPerPageOptions(): number[] {
+    return this.itemsPerPageOptions
   }
 
   // Content processing methods
   getDescriptionPreview(description: string): string {
     if (!description) return ""
-
     // Remove HTML tags and get plain text
     const plainText = this.getPlainTextDescription(description)
-
     // Truncate to 150 characters
     if (plainText.length > 150) {
       return plainText.substring(0, 150) + "..."
     }
-
     return plainText
   }
 
   getPlainTextDescription(description: string): string {
     if (!description) return ""
-
     // Create a temporary div to strip HTML tags
     const tempDiv = document.createElement("div")
     tempDiv.innerHTML = description
@@ -284,30 +284,30 @@ export class PolicyListComponent implements OnInit {
   getTypeBadgeClass(type: string): string {
     switch (type) {
       case "privacy":
-        return "type-privacy"
+        return "badge type-privacy"
       case "terms":
-        return "type-terms"
+        return "badge type-terms"
       case "cookie":
-        return "type-cookie"
+        return "badge type-cookie"
       default:
-        return "type-default"
+        return "badge type-default"
     }
   }
 
   getTypeIcon(type: string): string {
     switch (type) {
       case "privacy":
-        return "bi-shield-lock"
+        return "fa-shield-alt"
       case "terms":
-        return "bi-file-text"
+        return "fa-file-contract"
       case "cookie":
-        return "bi-cookie"
+        return "fa-cookie-bite"
       case "refund":
-        return "bi-arrow-return-left"
+        return "fa-undo"
       case "shipping":
-        return "bi-truck"
+        return "fa-shipping-fast"
       default:
-        return "bi-file-earmark-text"
+        return "fa-file-alt"
     }
   }
 
@@ -347,6 +347,10 @@ export class PolicyListComponent implements OnInit {
         this.policyToDelete = null
       },
     })
+  }
+
+  refreshData(): void {
+    this.loadPolicies()
   }
 
   // Utility methods

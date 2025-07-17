@@ -79,7 +79,6 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
-
 .card-header {
   background: #f9fafb;
   border-bottom: 1px solid #e5e7eb;
@@ -544,4 +543,21 @@
 
 .table-responsive::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
+}
+.custom-pagination .page-link {
+  background-color: #f8f9fa; /* Light grey background */
+  color: var(--color-primary); /* Bootstrap primary blue */
+  border: 1px solid var(--color-primary);
+  transition: all 0.3s ease;
+}
+
+.custom-pagination .page-link:hover {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.custom-pagination .page-item.active .page-link {
+  background-color: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
 }
