@@ -1,0 +1,347 @@
+<ng-container *ngIf="!showProductSelectionModal">
+  <div class="discount-management" (click)="hideAllMenus()">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-content">
+        <h1>Discount Management</h1>
+        <p>Create and manage promotional campaigns</p>
+      </div>
+      <button class="create-btn" (click)="createDiscount()">
+        <span class="plus-icon">+</span>
+        Create Discount
+      </button>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-content">
+          <div class="stat-label">Active Discounts</div>
+          <div class="stat-value green">{{ activeDiscounts }}</div>
+        </div>
+        <div class="stat-indicator green"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-content">
+          <div class="stat-label">Total Discounts</div>
+          <div class="stat-value blue">{{ totalDiscounts }}</div>
+        </div>
+        <div class="stat-indicator blue"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-content">
+          <div class="stat-label">Total Mechanisms</div>
+          <div class="stat-value purple">{{ totalMechanisms }}</div>
+        </div>
+        <div class="stat-indicator purple"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-content">
+          <div class="stat-label">Avg. Discount</div>
+          <div class="stat-value orange">{{ averageDiscount }}%</div>
+        </div>
+        <div class="stat-indicator orange"></div>
+      </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="search-section">
+      <div class="search-container">
+        <div class="search-icon">🔍</div>
+        <input 
+          type="text"
+          class="search-input"
+          placeholder="Search discounts..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearch()"
+        >
+      </div>
+      
+      <div class="filter-buttons">
+        <button 
+          *ngFor="let filter of filterOptions"
+          class="filter-btn"
+          [class.active]="currentFilter === filter.key"
+          (click)="setFilter(filter.key)"
+        >
+          {{ filter.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Discount List -->
+    <div class="discount-section">
+      <h2>All Discounts</h2>
+      
+      <div class="discount-list" *ngIf="!loading; else loadingTemplate">
+        <div 
+          class="discount-card"
+          *ngFor="let discount of filteredDiscounts"
+          [class.expired]="isExpired(discount)"
+          [class.inactive]="!isActive(discount) && !isExpired(discount)"
+          (click)="hideAllDropdowns(); hideAllMenus()"
+        >
+          <div class="discount-header">
+            <div class="discount-left">
+              <div class="discount-title-row">
+                <h3 class="discount-name">{{ discount.name }}</h3>
+                <!-- Removed discount-value (10%) display -->
+              </div>
+              <div class="discount-badges">
+                <span 
+                  class="status-badge"
+                  [class.active]="isActive(discount)"
+                  [class.inactive]="!isActive(discount) && !isExpired(discount)"
+                  [class.expired]="isExpired(discount)"
+                >
+                  {{ isActive(discount) ? 'Active' : (isExpired(discount) ? 'Expired' : 'Inactive') }}
+                </span>
+               
+              </div>
+            </div>
+            <!-- Always show offer-dropdown-section, even for one mechanism -->
+            <div class="discount-right">
+              <div class="discount-actions">
+                <div class="offer-dropdown-section">
+                  <button class="offer-dropdown-btn" (click)="toggleDropdown($event, discount.id)"
+                    style="background: #349d1f; color: #fff; border-radius: 20px; padding: 2px 24px; font-weight: 600; box-shadow: 0 2px 8px rgba(59,130,246,0.10); border: none; text-align: center; font-size: 15px;">
+                    {{  'Offers ' }}
+                  </button>
+                  <div class="offer-dropdown" [id]="'dropdown-' + discount.id" (click)="$event.stopPropagation()">
+                    <div *ngFor="let mech of discount.discountMechanisms; let i = index" class="mechanism-item">
+                      <div class="mechanism-item-left">
+                        <div class="mechanism-number">#{{ i + 1 }}</div>
+                        <div class="mechanism-details">
+                          <div class="offer-type">{{ mech.mechanismType || 'Coupon' }}</div>
+                          <div class="offer-subtype">{{ mech.discountType || 'PERCENTAGE' }}</div>
+                        </div>
+                      </div>
+                      <div class="offer-value">
+                      
+                        {{ mech.value || '10' }}{{ mech.discountType === 'PERCENTAGE' ? '%' : '' }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <label class="toggle-switch">
+                  <input 
+                    type="checkbox"
+                    [checked]="discount.isActive"
+                    (change)="toggleDiscountStatus(discount)"
+                  >
+                  <span class="toggle-slider"></span>
+                </label>
+                
+                <button class="menu-btn" (click)="showActionMenu($event, discount.id)">⋮</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="discount-description" *ngIf="discount.description">
+            {{ discount.description }}
+          </div>
+
+          <div class="discount-details">
+            <span class="detail-item">
+              <strong>Valid:</strong> {{ formatDate(discount.startDate) }} - {{ formatDate(discount.endDate) }}
+            </span>
+            <span class="detail-item">
+              <strong>Usage:</strong> {{ discount.currentRedemptionCount || 0 }} / {{ discount.usageLimit || '∞' }}
+            </span>
+            <span class="detail-item">
+              <strong>Avg.Offers:</strong> {{ getMechanismWisePercent(discount) }}%
+            </span>
+          </div>
+
+          <!-- Action Menu -->
+          <div class="action-menu" [id]="'menu-' + discount.id" (click)="$event.stopPropagation()">
+            <button (click)="viewDiscountDetails(discount)">View Details</button>
+            <button (click)="editDiscount(discount)">Edit</button>
+            <button class="delete-action" (click)="deleteDiscount(discount.id)">Delete</button>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #loadingTemplate>
+        <div class="loading">Loading discounts...</div>
+      </ng-template>
+
+      <div class="empty-state" *ngIf="!loading && filteredDiscounts.length === 0">
+        <p>No discounts found</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Professional Edit Discount Popup Modal -->
+  <div class="edit-popup-backdrop" *ngIf="showEditPopup && !showProductSelectionModal" (click)="closeEditPopup()"></div>
+  <div class="edit-popup modern-modal" *ngIf="showEditPopup && !showProductSelectionModal" style="margin-left: 100px; margin-top: 40px;height: 550px; width: 800px;border-radius: 0px;">
+    
+    <!-- Professional Header -->
+    <!-- <div class="modal-header">
+      <h2>✨ Edit Discount</h2>
+      <p>Configure your promotional campaign with precision and style</p>
+    </div> -->
+
+    <!-- Enhanced Tab Navigation -->
+    <div class="modal-tabs">
+      <button [class.active]="activeTab === 'info'" (click)="activeTab = 'info'">
+         Basic Information
+      </button>
+      <button [class.active]="activeTab === 'mechanisms'" (click)="activeTab = 'mechanisms'">
+         Discount Mechanisms
+      </button>
+    </div>
+
+    <!-- Modal Content -->
+    <div class="modal-body">
+      <!-- Basic Information Tab -->
+      <form *ngIf="activeTab === 'info'" [formGroup]="editForm" (ngSubmit)="saveEditDiscount()" autocomplete="off" (click)="$event.stopPropagation()">
+        <div class="edit-card">
+          <div class="edit-row">
+            <div class="edit-section">
+              <label> Discount Name</label>
+              <input type="text" formControlName="name" placeholder="Enter a compelling discount name" />
+            </div>
+            <div class="edit-section code-section">
+              <label> Promotional Code</label>
+              <div class="code-input-group">
+                <input type="text" formControlName="code" placeholder="Enter or generate unique code" />
+                <button type="button" class="generate-btn" (click)="generateCouponCode()">
+                   Generate
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="edit-row">
+            <div class="edit-section">
+              <label> Start Date</label>
+              <input type="datetime-local" formControlName="startDate" />
+            </div>
+            <div class="edit-section">
+              <label> End Date</label>
+              <input type="datetime-local" formControlName="endDate" />
+            </div>
+          </div>
+
+          <div class="edit-row">
+            <div class="edit-section">
+              <label> Usage Limit</label>
+              <input type="number" formControlName="usageLimit" min="0" placeholder="Maximum total uses" />
+            </div>
+            <div class="edit-section">
+              <label> Per User Limit</label>
+              <input type="number" formControlName="perUserLimit" min="0" placeholder="Uses per customer" />
+            </div>
+          </div>
+
+          <div class="edit-section">
+            <label> Description</label>
+            <textarea rows="3" formControlName="description" placeholder="Enter a detailed description of your discount"></textarea>
+          </div>
+
+          <div class="actions">
+            <button type="button" (click)="activeTab = 'mechanisms'">
+              Next
+            </button>
+            <button type="button" (click)="closeEditPopup()">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Discount Mechanisms Tab -->
+      <div *ngIf="activeTab === 'mechanisms'">
+        <div class="mechanism-list">
+          <div *ngFor="let mech of mechanisms; let i = index">
+            <div class="mech-accordion-header" (click)="toggleAccordion(i)">
+              <span> <strong>{{ i + 1 }}</strong></span>
+              <span>{{ mech.mechanismType || 'Configure Mechanism' }}</span>
+              <span>{{ mech.discountType || '' }}</span>
+              <span><strong>{{ mech.value || '' }}{{ mech.discountType === 'PERCENTAGE' ? '%' : '' }}</strong></span>
+              <span style="margin-left: auto;">
+               
+              </span>
+            </div>
+
+            <div class="mech-accordion-body" *ngIf="accordionOpenIndex === i">
+              <div class="edit-row">
+                <div class="edit-section">
+                  <label> Offer type</label>
+                  <select [(ngModel)]="mech.mechanismType" name="mechType{{i}}">
+                    <option value="">Select Offer Type</option>
+                    <option value="freeGift">Free gift</option>
+                    <option value="Disocunt">Percentage</option>
+                    <option value="Coupon">Coupon</option>
+                    <option value="B2B">Business to Business </option>
+                  </select>
+                </div>
+                <div class="edit-section">
+                  <label> Discount Type</label>
+                  <select [(ngModel)]="mech.discountType" name="mechDiscountType{{i}}">
+                    <option value="">Select Discount Type</option>
+                    <option value="PERCENTAGE">Percentage</option>
+                    <option value="FIXED_AMOUNT">Fixed Amount</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="edit-row">
+                <div class="edit-section">
+                  <label> Value</label>
+                  <input type="number" [(ngModel)]="mech.value" name="mechValue{{i}}" placeholder="Enter discount value" />
+                </div>
+                <div class="edit-section">
+                  <label> Max Discount Amount</label>
+                  <input type="number" [(ngModel)]="mech.maxDiscountAmount" name="mechMaxAmount{{i}}" placeholder="Maximum discount cap" />
+                </div>
+              </div>
+
+              <div class="edit-section">
+                <label> Selected Products</label>
+                <div class="selected-products-box">
+                  <span *ngFor="let name of mech.selectedProductNames" class="product-chip">
+                    {{ name }}
+                  </span>
+                  <div *ngIf="!mech.selectedProductNames?.length" style="color: #9ca3af; font-style: italic; display: flex; align-items: center; justify-content: center; width: 100%; min-height: 40px;">
+                    No products selected yet
+                  </div>
+                </div>
+                <div style="display: flex; justify-content: center; margin-top: 16px;">
+                  <button type="button" class="product-edit-btn" (click)="openMechanismProductSelection(i)" style="min-width: 180px;">
+                     Select Products
+                  </button>
+                </div>
+              </div>
+
+              <div style="margin-top: 32px; padding-top: 24px; border-top: 2px solid #f1f5f9;">
+                <button type="button" class="save-btn" (click)="saveMechanism(i)" style="width: 100%;">
+                   Save Mechanism
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="cancel-btn" (click)="closeEditPopup()">
+             Cancel
+          </button>
+          <button type="button" class="save-btn" (click)="saveEditDiscount()">
+             Save All Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="showProductSelectionModal">
+  <app-product-selection
+    [selectedProducts]="getSelectedProductsForProductSelection()"
+    (onProductsSelected)="onProductsSelected($event)"
+    (onBack)="onProductSelectionBack()"
+  ></app-product-selection>
+</ng-container>

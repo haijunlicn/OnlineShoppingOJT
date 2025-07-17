@@ -6,7 +6,6 @@ import { Injectable } from '@angular/core';
 export class ExcelExportService {
 
   constructor() { }
-
   /**
    * Export data to Excel file
    * @param data - Array of objects to export
