@@ -59,7 +59,4 @@ public class DiscountEntity {
     @OneToMany(mappedBy = "discount",cascade = CascadeType.ALL)
     private List<DiscountMechanismEntity> discountMechanisms;
 
-
-
-    // getters and setters
 }

@@ -1,0 +1,196 @@
+/* Grid Display Styles */
+.discount-grid-display {
+  .discount-badges-container {
+    .discount-badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+
+      &.badge-discount {
+        background-color: #dc3545;
+        color: white;
+      }
+
+      &.badge-coupon {
+        background-color: #0d6efd;
+        color: white;
+      }
+
+      &.badge-gift {
+        background-color: #198754;
+        color: white;
+      }
+
+      &.badge-default {
+        background-color: #6c757d;
+        color: white;
+      }
+    }
+  }
+
+  .price-comparison {
+    .current-price {
+      font-size: 1rem;
+      color: #052717 !important;
+    }
+
+    .original-price {
+      font-size: 0.85rem;
+      text-decoration: line-through;
+    }
+
+    .savings-badge {
+      font-size: 0.7rem;
+      padding: 2px 6px;
+    }
+  }
+}
+
+/* Detail Display Styles */
+.discount-detail-display {
+  .section-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #052717;
+    margin-bottom: 1rem;
+  }
+
+  .coupon-cards-container {
+    .coupon-card {
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        border-color: #052717;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .coupon-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #052717;
+      }
+
+      .coupon-code {
+        font-family: "Courier New", monospace;
+        font-size: 0.8rem;
+        font-weight: bold;
+        letter-spacing: 1px;
+        background-color: #052717 !important;
+      }
+
+      .coupon-condition {
+        font-size: 0.75rem;
+        line-height: 1.3;
+      }
+
+      .coupon-actions {
+        .btn {
+          font-size: 0.75rem;
+          padding: 4px 8px;
+          min-width: 60px;
+        }
+      }
+    }
+  }
+
+  .free-gift-section {
+    .free-gift-banner {
+      background-color: #fff3cd;
+      border-color: #ffc107;
+      color: #856404;
+      border-radius: 8px;
+      border-left: 4px solid #ffc107;
+
+      .pi-gift {
+        color: #ffc107;
+      }
+    }
+  }
+
+  .discount-summary {
+    .card {
+      border-radius: 8px;
+
+      .card-header {
+        border-radius: 8px 8px 0 0;
+        background-color: #f8f9fa !important;
+
+        h6 {
+          color: #052717 !important;
+          font-size: 0.9rem;
+        }
+      }
+
+      .discount-item {
+        .discount-name {
+          font-size: 0.85rem;
+          color: #052717;
+        }
+
+        .badge {
+          font-size: 0.7rem;
+
+          &.badge-discount {
+            background-color: #dc3545 !important;
+          }
+
+          &.badge-coupon {
+            background-color: #0d6efd !important;
+          }
+
+          &.badge-gift {
+            background-color: #198754 !important;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 576px) {
+  .discount-detail-display {
+    .coupon-cards-container {
+      .coupon-card .card-body {
+        padding: 0.75rem !important;
+      }
+
+      .coupon-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+
+        .btn {
+          font-size: 0.7rem;
+          padding: 3px 6px;
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  .discount-grid-display {
+    .discount-badges-container {
+      .discount-badge {
+        font-size: 0.65rem;
+        padding: 3px 6px;
+      }
+    }
+  }
+}
+
+/* Animation for copied state */
+.btn:disabled {
+  opacity: 0.7;
+}
+
+.coupon-code {
+  transition: all 0.2s ease;
+}
+
+.coupon-card:hover .coupon-code {
+  transform: scale(1.05);
+}

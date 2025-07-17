@@ -33,6 +33,7 @@ public class userDTO {
     private LocalDateTime updatedDate;
     private String roleName;
     private List<String> permissions;
+    private LocalDateTime lastLoginDate;
 
     @NotBlank(message = "Password is required")
     @Size(min = 6, max = 100, message = "Password must be between 6 and 100 characters")
@@ -40,4 +41,6 @@ public class userDTO {
 
     @NotNull(message = "Role ID is required")
     private Long roleId;
+
+    private List<Long> groupIds;
 }

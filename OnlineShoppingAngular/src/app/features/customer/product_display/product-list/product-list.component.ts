@@ -13,17 +13,18 @@ import { TreeNode } from 'primeng/api';
 import { BrandService } from '@app/core/services/brand.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { FilterSidebarComponent, FilterState } from '../../common/filter-sidebar/filter-sidebar.component';
+import { DiscountDisplayService } from '@app/core/services/discount-display.service';
+import { DiscountDisplayDTO } from '@app/core/models/discount';
 
 @Component({
-  selector: 'app-product-list',
+  selector: "app-product-list",
   standalone: false,
-  templateUrl: './product-list.component.html',
-  styleUrl: './product-list.component.css',
+  templateUrl: "./product-list.component.html",
+  styleUrl: "./product-list.component.css",
 })
 
 export class ProductListComponent {
-
-  @ViewChild(FilterSidebarComponent) filterSidebar!: FilterSidebarComponent;
+  @ViewChild(FilterSidebarComponent) filterSidebar!: FilterSidebarComponent
 
   // Data
   products: ProductCardItem[] = []
@@ -63,7 +64,7 @@ export class ProductListComponent {
   private brandsLoaded = false
   private productsLoaded = false
   private initialUrlParams: any = null
-  private pendingQueryParams: any = null;
+  private pendingQueryParams: any = null
 
   constructor(
     private productService: ProductService,
@@ -74,424 +75,327 @@ export class ProductListComponent {
     private brandService: BrandService,
     private router: Router,
     private route: ActivatedRoute,
-    private authService: AuthService
-  ) { }
+    private authService: AuthService,
+    private discountDisplayService: DiscountDisplayService,
+  ) {}
 
   ngOnInit() {
     // Store initial URL params immediately
-    this.initialUrlParams = this.route.snapshot.queryParams;
-    console.log("Initial URL params:", this.initialUrlParams);
+    this.initialUrlParams = this.route.snapshot.queryParams
+    console.log("Initial URL params:", this.initialUrlParams)
 
-    this.loadCategories();
-    this.loadBrands();
-    this.loadWishlist();
-    this.loadProducts();
+    this.loadCategories()
+    this.loadBrands()
+    this.loadWishlist()
+    this.loadProducts()
 
-    this.checkScreenSize();
-    window.addEventListener("resize", () => this.checkScreenSize());
+    this.checkScreenSize()
+    window.addEventListener("resize", () => this.checkScreenSize())
 
     // Subscribe to future query param changes (for navigation)
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       // Only process if this is not the initial load
       if (this.categoriesLoaded && this.brandsLoaded && this.productsLoaded) {
-        this.restoreFiltersFromUrl(params);
+        this.restoreFiltersFromUrl(params)
       }
-    });
+    })
   }
 
   ngAfterViewInit() {
     // Try to restore filters after view is initialized
     setTimeout(() => {
-      this.tryRestoreInitialFilters();
-    }, 100);
+      this.tryRestoreInitialFilters()
+    }, 100)
   }
 
   private tryRestoreInitialFilters() {
     if (this.categoriesLoaded && this.brandsLoaded && this.productsLoaded && this.initialUrlParams) {
-      console.log("Restoring initial filters:", this.initialUrlParams);
-      this.restoreFiltersFromUrl(this.initialUrlParams);
-      //this.initialUrlParams = null; // Clear after use
+      console.log("Restoring initial filters:", this.initialUrlParams)
+      this.restoreFiltersFromUrl(this.initialUrlParams)
     }
   }
 
-  // ===== ENHANCED URL FILTER MANAGEMENT WITH NAMES =====
-  // private restoreFiltersFromUrl(params: any) {
-  //   console.log("Restoring filters from URL:", params);
-
-  //   if (!params || Object.keys(params).length === 0) {
-  //     console.log("No URL parameters to restore");
-  //     this.clearAllFilters()
-  //     return;
-  //   }
-
-  //   // Restore categories by names (support multiple)
-  //   if (params['categories']) {
-  //     const raw = params['categories'];
-  //     // const categoryNames = raw.split(',').map((name: string) => decodeURIComponent(name));
-  //     const categoryNames = raw.split(',').map((name: string) => decodeURIComponent(name.trim()));
-  //     const categoryIds = this.getCategoryIdsByNames(categoryNames);
-  //   } else if (params['category']) {
-
-  //     // Backward compatibility for single category (by name)
-  //     const decodedName = decodeURIComponent(params['category'].trim());
-  //     const categoryId = this.getCategoryIdByName(decodedName);
-  //     if (categoryId) {
-  //       this.currentFilters.categories = [categoryId];
-  //       console.log("Restored single category:", categoryId);
-  //     }
-  //   }
-
-  //   // Restore brands by names (support multiple)
-  //   if (params['brands']) {
-  //     const brandNames = params['brands']
-  //       .split(',')
-  //       .map((name: string) => decodeURIComponent(name));
-  //     const brandIds = this.getBrandIdsByNames(brandNames);
-  //     this.currentFilters.brands = brandIds;
-  //     console.log("Restored brands:", brandIds);
-  //   }
-
-  //   // Restore price range
-  //   if (params['priceMin'] || params['priceMax']) {
-  //     this.currentFilters.priceRange = {
-  //       min: params['priceMin'] ? parseFloat(params['priceMin']) : null,
-  //       max: params['priceMax'] ? parseFloat(params['priceMax']) : null
-  //     };
-  //     console.log("Restored price range:", this.currentFilters.priceRange);
-  //   }
-
-  //   // Restore availability filters
-  //   this.currentFilters.inStock = params['inStock'] === 'true';
-  //   this.currentFilters.onSale = params['onSale'] === 'true';
-  //   this.currentFilters.isNew = params['isNew'] === 'true';
-
-  //   // Restore rating filter
-  //   if (params['rating']) {
-  //     const rating = parseInt(params['rating']);
-  //     this.currentFilters.rating = !isNaN(rating) ? rating : null;
-  //   }
-
-  //   // Restore sort option
-  //   if (params['sort']) {
-  //     this.currentSort = params['sort'];
-  //     this.currentSortLabel = this.getSortLabel(params['sort']);
-  //   }
-
-  //   // Restore pagination
-  //   if (params['page']) {
-  //     const page = parseInt(params['page']);
-  //     this.currentPage = !isNaN(page) && page > 0 ? page : 1;
-  //   }
-
-  //   // Update filter sidebar to reflect URL filters
-  //   this.updateFilterSidebarFromFilters();
-
-  //   // Apply the restored filters
-  //   this.applyFiltersAndSort();
-  // }
-
   private restoreFiltersFromUrl(params: any) {
-    console.log("🟡 Restoring filters from URL:", params);
+    console.log("🟡 Restoring filters from URL:", params)
 
     if (!params || Object.keys(params).length === 0) {
-      console.warn("⚠️ No URL parameters to restore. Clearing filters.");
-      this.clearAllFilters();
-      return;
+      console.warn("⚠️ No URL parameters to restore. Clearing filters.")
+      this.clearAllFilters()
+      return
     }
 
     // ===== Categories =====
-    if (params['categories']) {
-      const raw = params['categories'];
-      const categoryNames = raw.split(',').map((name: string) => decodeURIComponent(name.trim()));
-      console.log("📁 Decoded category names:", categoryNames);
+    if (params["categories"]) {
+      const raw = params["categories"]
+      const categoryNames = raw.split(",").map((name: string) => decodeURIComponent(name.trim()))
+      console.log("📁 Decoded category names:", categoryNames)
 
-      const categoryIds = this.getCategoryIdsByNames(categoryNames);
-      console.log("✅ Matched category IDs:", categoryIds);
-      // FIX: Actually assign the category IDs to the filter state
-      this.currentFilters.categories = categoryIds; // when I add this line, cates with spaces doesn't work anymore!
-
-    } else if (params['category']) {
-      const decodedName = decodeURIComponent(params['category'].trim());
-      const categoryId = this.getCategoryIdByName(decodedName);
-      console.log("📁 Decoded single category name:", decodedName);
+      const categoryIds = this.getCategoryIdsByNames(categoryNames)
+      console.log("✅ Matched category IDs:", categoryIds)
+      this.currentFilters.categories = categoryIds
+    } else if (params["category"]) {
+      const decodedName = decodeURIComponent(params["category"].trim())
+      const categoryId = this.getCategoryIdByName(decodedName)
+      console.log("📁 Decoded single category name:", decodedName)
       if (categoryId !== null) {
-        this.currentFilters.categories = [categoryId];
-        console.log("✅ Restored single category ID:", categoryId);
+        this.currentFilters.categories = [categoryId]
+        console.log("✅ Restored single category ID:", categoryId)
       } else {
-        console.warn("❌ Category not found for name:", decodedName);
+        console.warn("❌ Category not found for name:", decodedName)
       }
     }
 
     // ===== Brands =====
-    if (params['brands']) {
-      const brandNames = params['brands'].split(',').map((name: string) => decodeURIComponent(name.trim()));
-      console.log("🏷️ Decoded brand names:", brandNames);
+    if (params["brands"]) {
+      const brandNames = params["brands"].split(",").map((name: string) => decodeURIComponent(name.trim()))
+      console.log("🏷️ Decoded brand names:", brandNames)
 
-      const brandIds = this.getBrandIdsByNames(brandNames);
-      console.log("✅ Matched brand IDs:", brandIds);
+      const brandIds = this.getBrandIdsByNames(brandNames)
+      console.log("✅ Matched brand IDs:", brandIds)
 
-      this.currentFilters.brands = brandIds;
+      this.currentFilters.brands = brandIds
     }
 
     // ===== Price Range =====
-    if (params['priceMin'] || params['priceMax']) {
-      const min = params['priceMin'] ? parseFloat(params['priceMin']) : null;
-      const max = params['priceMax'] ? parseFloat(params['priceMax']) : null;
-      this.currentFilters.priceRange = { min, max };
-      console.log("💰 Restored price range:", this.currentFilters.priceRange);
+    if (params["priceMin"] || params["priceMax"]) {
+      const min = params["priceMin"] ? Number.parseFloat(params["priceMin"]) : null
+      const max = params["priceMax"] ? Number.parseFloat(params["priceMax"]) : null
+      this.currentFilters.priceRange = { min, max }
+      console.log("💰 Restored price range:", this.currentFilters.priceRange)
     }
 
     // ===== Availability =====
-    this.currentFilters.inStock = params['inStock'] === 'true';
-    this.currentFilters.onSale = params['onSale'] === 'true';
-    this.currentFilters.isNew = params['isNew'] === 'true';
-    console.log("📦 Restored availability filters: inStock =", this.currentFilters.inStock, ", onSale =", this.currentFilters.onSale, ", isNew =", this.currentFilters.isNew);
+    this.currentFilters.inStock = params["inStock"] === "true"
+    this.currentFilters.onSale = params["onSale"] === "true"
+    this.currentFilters.isNew = params["isNew"] === "true"
+    console.log(
+      "📦 Restored availability filters: inStock =",
+      this.currentFilters.inStock,
+      ", onSale =",
+      this.currentFilters.onSale,
+      ", isNew =",
+      this.currentFilters.isNew,
+    )
 
     // ===== Rating =====
-    if (params['rating']) {
-      const rating = parseInt(params['rating']);
-      this.currentFilters.rating = !isNaN(rating) ? rating : null;
-      console.log("⭐ Restored rating:", this.currentFilters.rating);
+    if (params["rating"]) {
+      const rating = Number.parseInt(params["rating"])
+      this.currentFilters.rating = !isNaN(rating) ? rating : null
+      console.log("⭐ Restored rating:", this.currentFilters.rating)
     }
 
     // ===== Sort Option =====
-    if (params['sort']) {
-      this.currentSort = params['sort'];
-      this.currentSortLabel = this.getSortLabel(params['sort']);
-      console.log("⬇️ Restored sort:", this.currentSort);
+    if (params["sort"]) {
+      this.currentSort = params["sort"]
+      this.currentSortLabel = this.getSortLabel(params["sort"])
+      console.log("⬇️ Restored sort:", this.currentSort)
     }
 
     // ===== Pagination =====
-    if (params['page']) {
-      const page = parseInt(params['page']);
-      this.currentPage = !isNaN(page) && page > 0 ? page : 1;
-      console.log("📄 Restored page:", this.currentPage);
+    if (params["page"]) {
+      const page = Number.parseInt(params["page"])
+      this.currentPage = !isNaN(page) && page > 0 ? page : 1
+      console.log("📄 Restored page:", this.currentPage)
     }
 
     // ===== Final Steps =====
-    console.log("🔄 Syncing filter sidebar with restored filters...");
-    this.updateFilterSidebarFromFilters();
+    console.log("🔄 Syncing filter sidebar with restored filters...")
+    this.updateFilterSidebarFromFilters()
 
-    console.log("🟢 Applying restored filters...");
-    this.applyFiltersAndSort();
+    console.log("🟢 Applying restored filters...")
+    this.applyFiltersAndSort()
   }
 
-
   private getCategoryIdsByNames(names: string[]): number[] {
-    return names
-      .map(name => this.getCategoryIdByName(name))
-      .filter((id): id is number => id !== null);
+    return names.map((name) => this.getCategoryIdByName(name)).filter((id): id is number => id !== null)
   }
 
   private getCategoryIdByName(name: string): number | null {
-    const normalizedInput = this.formatNameForUrl(decodeURIComponent(name));
+    const normalizedInput = this.formatNameForUrl(decodeURIComponent(name))
 
-    console.log("🔍 Normalized input:", normalizedInput);
+    console.log("🔍 Normalized input:", normalizedInput)
 
-    let found = this.categories.find(cat => {
-      const categoryUrlName = this.formatNameForUrl(cat.name!);
-      console.log(`🆚 Comparing: "${categoryUrlName}" === "${normalizedInput}"`);
-      return categoryUrlName === normalizedInput;
-    });
+    const found = this.categories.find((cat) => {
+      const categoryUrlName = this.formatNameForUrl(cat.name!)
+      console.log(`🆚 Comparing: "${categoryUrlName}" === "${normalizedInput}"`)
+      return categoryUrlName === normalizedInput
+    })
 
     if (!found) {
-      console.warn("❌ Category not found for:", normalizedInput);
+      console.warn("❌ Category not found for:", normalizedInput)
     } else {
-      console.log("✅ Matched category:", found.name, "=> ID:", found.id);
+      console.log("✅ Matched category:", found.name, "=> ID:", found.id)
     }
 
-    return found ? +found.id! : null;
+    return found ? +found.id! : null
   }
 
-
-  // private getCategoryIdByName(name: string): number | null {
-  //   const decoded = decodeURIComponent(name);
-  //   const lowerName = decoded.trim().toLowerCase();
-
-  //   console.log("🔍 Looking for category:", lowerName);
-
-  //   // Log comparisons for each category
-  //   this.categories.forEach(cat => {
-  //     const categoryName = cat.name?.trim().toLowerCase();
-  //     console.log(`🆚 Comparing: "${categoryName}" === "${lowerName}"`);
-  //   });
-
-  //   // Actual lookup
-  //   const found = this.categories.find(cat =>
-  //     cat.name?.trim().toLowerCase() === lowerName
-  //   );
-
-  //   if (!found) {
-  //     console.warn("❌ Category not found for:", lowerName);
-  //   } else {
-  //     console.log("✅ Category matched:", found.name, "=> ID:", found.id);
-  //   }
-
-  //   return found ? +found.id! : null;
-  // }
-
-
-
-  // private getCategoryIdByName(name: string): number | null {
-  //   const lowerName = name.trim().toLowerCase();  // 🔄 No decode here!
-  //   const found = this.categories.find(cat =>
-  //     cat.name?.trim().toLowerCase() === lowerName
-  //   );
-  //   if (!found) {
-  //     console.warn("❌ Category not found for:", lowerName);
-  //   }
-  //   return found ? +found.id! : null;
-  // }
-
-
   private getBrandIdsByNames(names: string[]): number[] {
-    return names
-      .map(name => this.getBrandIdByName(name))
-      .filter((id): id is number => id !== null);
+    return names.map((name) => this.getBrandIdByName(name)).filter((id): id is number => id !== null)
   }
 
   private getBrandIdByName(name: string): number | null {
-    const lowerName = name.trim().toLowerCase();
-    const found = this.brands.find(brand => brand.name.toLowerCase() === lowerName);
-    return found ? +found.id : null;
+    const lowerName = name.trim().toLowerCase()
+    const found = this.brands.find((brand) => brand.name.toLowerCase() === lowerName)
+    return found ? +found.id : null
   }
 
-
   private getCategoryNamesByIds(ids: number[]): string[] {
-    return ids.map(id => this.getCategoryNameById(id)).filter(name => name !== null) as string[];
+    return ids.map((id) => this.getCategoryNameById(id)).filter((name) => name !== null) as string[]
   }
 
   private getCategoryNameById(id: number): string | null {
-    const category = this.categories.find(cat => cat.id === id);
-    return category ? this.formatNameForUrl(category.name!) : null;
+    const category = this.categories.find((cat) => cat.id === id)
+    return category ? this.formatNameForUrl(category.name!) : null
   }
 
   private getBrandNamesByIds(ids: number[]): string[] {
-    return ids.map(id => this.getBrandNameById(id)).filter(name => name !== null) as string[];
+    return ids.map((id) => this.getBrandNameById(id)).filter((name) => name !== null) as string[]
   }
 
   private getBrandNameById(id: number): string | null {
-    const brand = this.brands.find(b => +b.id === id);
-    return brand ? this.formatNameForUrl(brand.name) : null;
+    const brand = this.brands.find((b) => +b.id === id)
+    return brand ? this.formatNameForUrl(brand.name) : null
   }
 
   private formatNameForUrl(name: string): string {
-    return encodeURIComponent(name.toLowerCase().replace(/\s+/g, '-'));
+    return encodeURIComponent(name.toLowerCase().replace(/\s+/g, "-"))
   }
 
   private updateFilterSidebarFromFilters() {
     if (this.filterSidebar) {
-      console.log("Updating filter sidebar with filters:", this.currentFilters);
+      console.log("Updating filter sidebar with filters:", this.currentFilters)
 
       // Update categories
-      this.filterSidebar.selectedCategories.clear();
-      this.currentFilters.categories.forEach(categoryId => {
-        this.filterSidebar.selectedCategories.add(categoryId);
-      });
+      this.filterSidebar.selectedCategories.clear()
+      this.currentFilters.categories.forEach((categoryId) => {
+        this.filterSidebar.selectedCategories.add(categoryId)
+      })
 
       // Update brands
-      this.filterSidebar.selectedBrands.clear();
-      this.currentFilters.brands.forEach(brandId => {
-        this.filterSidebar.selectedBrands.add(brandId);
-      });
+      this.filterSidebar.selectedBrands.clear()
+      this.currentFilters.brands.forEach((brandId) => {
+        this.filterSidebar.selectedBrands.add(brandId)
+      })
 
       // Update price range
-      this.filterSidebar.customPriceMin = this.currentFilters.priceRange.min;
-      this.filterSidebar.customPriceMax = this.currentFilters.priceRange.max;
+      this.filterSidebar.customPriceMin = this.currentFilters.priceRange.min
+      this.filterSidebar.customPriceMax = this.currentFilters.priceRange.max
 
       // Update availability filters
-      this.filterSidebar.inStockOnly = this.currentFilters.inStock;
-      this.filterSidebar.onSaleOnly = this.currentFilters.onSale;
-      this.filterSidebar.newItemsOnly = this.currentFilters.isNew;
+      this.filterSidebar.inStockOnly = this.currentFilters.inStock
+      this.filterSidebar.onSaleOnly = this.currentFilters.onSale
+      this.filterSidebar.newItemsOnly = this.currentFilters.isNew
 
       // Update rating
-      this.filterSidebar.minRating = this.currentFilters.rating;
+      this.filterSidebar.minRating = this.currentFilters.rating
 
       // Force change detection
-      this.filterSidebar.emitFilters();
+      this.filterSidebar.emitFilters()
     }
   }
 
   // Enhanced URL update method - stores ALL filters with NAMES
   private updateUrlWithFilters(filters: FilterState) {
-    const queryParams: any = {};
+    const queryParams: any = {}
 
     // Store multiple categories by names
     if (filters.categories.length > 0) {
-      const categoryNames = this.getCategoryNamesByIds(filters.categories);
+      const categoryNames = this.getCategoryNamesByIds(filters.categories)
       if (categoryNames.length > 0) {
-        // queryParams.categories = categoryNames.join(',');
-        queryParams.categories = categoryNames.map(name => this.sanitizeForUrl(name.trim())).join(',');
+        queryParams.categories = categoryNames.map((name) => this.sanitizeForUrl(name.trim())).join(",")
       }
     }
 
     // Store multiple brands by names
     if (filters.brands.length > 0) {
-      const brandNames = this.getBrandNamesByIds(filters.brands);
+      const brandNames = this.getBrandNamesByIds(filters.brands)
       if (brandNames.length > 0) {
-        // queryParams.brands = brandNames.join(',');
-        queryParams.brands = brandNames.map(name => this.sanitizeForUrl(name.trim())).join(',');
+        queryParams.brands = brandNames.map((name) => this.sanitizeForUrl(name.trim())).join(",")
       }
     }
 
     // Store price range
     if (filters.priceRange.min !== null) {
-      queryParams.priceMin = filters.priceRange.min;
+      queryParams.priceMin = filters.priceRange.min
     }
     if (filters.priceRange.max !== null) {
-      queryParams.priceMax = filters.priceRange.max;
+      queryParams.priceMax = filters.priceRange.max
     }
 
     // Store availability filters
     if (filters.inStock) {
-      queryParams.inStock = 'true';
+      queryParams.inStock = "true"
     }
     if (filters.onSale) {
-      queryParams.onSale = 'true';
+      queryParams.onSale = "true"
     }
     if (filters.isNew) {
-      queryParams.isNew = 'true';
+      queryParams.isNew = "true"
     }
 
     // Store rating filter
     if (filters.rating !== null) {
-      queryParams.rating = filters.rating;
+      queryParams.rating = filters.rating
     }
 
     // Store sort option
-    if (this.currentSort !== 'featured') {
-      queryParams.sort = this.currentSort;
+    if (this.currentSort !== "featured") {
+      queryParams.sort = this.currentSort
     }
 
     // Store current page if not first page
     if (this.currentPage > 1) {
-      queryParams.page = this.currentPage;
+      queryParams.page = this.currentPage
     }
 
-    console.log("Updating URL with params:", queryParams);
+    console.log("Updating URL with params:", queryParams)
 
     // Update URL without triggering navigation
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: queryParams,
-      queryParamsHandling: 'replace'
-    });
+      queryParamsHandling: "replace",
+    })
   }
 
-  // ===== DATA LOADING METHODS (Updated) =====
+  // ===== OPTIMIZED DATA LOADING METHODS =====
 
   loadProducts() {
     this.loadingProducts = true
     this.productService.getPublicProductList().subscribe({
       next: (products) => {
+        // Initialize products with basic data
         this.products = products.map((product) => ({
           ...product,
           status: this.getStockStatus(product),
+          // Initialize with default values - will be computed after discount hints are loaded
+          originalPrice: 0,
+          discountedPrice: 0,
         }))
-        this.productsLoaded = true;
+        this.productsLoaded = true
         this.loadingProducts = false
-        console.log("Products loaded, trying to restore filters");
-        this.tryRestoreInitialFilters();
+
+        console.log("Products loaded, trying to restore filters")
+        this.tryRestoreInitialFilters()
+
+        // Load discount hints and precompute prices
+        this.discountDisplayService.getProductDiscountHints().subscribe({
+          next: (hintMap) => {
+            console.log("✅ Discount hints received from backend:", hintMap)
+
+            // OPTIMIZATION: Precompute prices once for all products
+            this.precomputeProductPrices(hintMap)
+
+            this.filteredProducts = [...this.products]
+          },
+          error: (err) => {
+            console.error("Failed to load discount hints", err)
+            // Even without discount hints, compute original prices
+            this.precomputeProductPrices({})
+            this.filteredProducts = [...this.products]
+          },
+        })
       },
       error: (err) => {
         console.error("Failed to load products", err)
@@ -500,15 +404,58 @@ export class ProductListComponent {
     })
   }
 
+  // NEW: Precompute all product prices once to avoid recalculation
+
+  private precomputeProductPrices(hintMap: { [productId: number]: DiscountDisplayDTO[] }) {
+    console.log("🚀 Precomputing product prices for performance optimization...")
+
+    const cart = this.cartService.getCart()
+
+    for (const product of this.products) {
+      // Step 1: Get all discount hints from backend
+      const allHints = hintMap[product.id] || []
+
+      // Step 2: Store all hints for badges
+      product.discountHints = allHints
+
+      // Step 3: Evaluate which hints are actually eligible
+      const eligibleHints = this.discountDisplayService.evaluateEligibleDiscounts(allHints, cart)
+
+      // Step 4: Calculate lowest variant price as base
+      product.originalPrice = this.calculateLowestVariantPrice(product)
+
+      // Step 5: Apply discounts to get final price
+      const result = this.discountDisplayService.calculateDiscountedPrice(product.originalPrice, eligibleHints)
+
+      product.discountedPrice = result.discountedPrice
+      product.discountBreakdown = result.breakdown
+
+      console.log(
+        `💰 Product ${product.id} → from: ${product.discountedPrice}, original: ${product.originalPrice}`,
+        result.breakdown,
+      )
+    }
+
+    console.log("✅ Price precomputation completed!")
+  }
+
+  private calculateLowestVariantPrice(product: ProductCardItem): number {
+    if (product.variants && product.variants.length > 0) {
+      const prices = product.variants.map((v: any) => v.price)
+      return Math.min(...prices)
+    }
+    return product.product.basePrice
+  }
+
   loadCategories() {
     this.loadingCategories = true
     this.categoryService.getAllPublicCategories().subscribe({
       next: (categories) => {
         this.categories = categories
-        this.categoriesLoaded = true;
+        this.categoriesLoaded = true
         this.loadingCategories = false
-        console.log("Categories loaded:", this.categories.length);
-        this.tryRestoreInitialFilters();
+        console.log("Categories loaded:", this.categories.length)
+        this.tryRestoreInitialFilters()
       },
       error: (err) => {
         console.error("Failed to load categories", err)
@@ -522,10 +469,10 @@ export class ProductListComponent {
     this.brandService.getAllPublicBrands().subscribe({
       next: (brands) => {
         this.brands = brands
-        this.brandsLoaded = true;
+        this.brandsLoaded = true
         this.loadingBrands = false
-        console.log("Brands loaded:", this.brands.length);
-        this.tryRestoreInitialFilters();
+        console.log("Brands loaded:", this.brands.length)
+        this.tryRestoreInitialFilters()
       },
       error: (err) => {
         console.error("Failed to load brands", err)
@@ -534,7 +481,7 @@ export class ProductListComponent {
     })
   }
 
-  // ===== EXISTING METHODS (Updated) =====
+  // ===== EXISTING METHODS (Updated to use precomputed values) =====
 
   private checkScreenSize() {
     if (window.innerWidth < 768) {
@@ -544,11 +491,11 @@ export class ProductListComponent {
 
   // Filter methods
   onFiltersChanged(filters: FilterState) {
-    console.log("Filters changed:", filters);
+    console.log("Filters changed:", filters)
     this.currentFilters = filters
     this.currentPage = 1 // Reset to first page
     this.applyFiltersAndSort()
-    this.updateUrlWithFilters(filters);
+    this.updateUrlWithFilters(filters)
   }
 
   private applyFiltersAndSort() {
@@ -565,13 +512,13 @@ export class ProductListComponent {
       filtered = filtered.filter((product) => this.currentFilters.brands.includes(+product.brand.id))
     }
 
-    // Apply price filter
+    // OPTIMIZED: Use precomputed discounted price
     if (this.currentFilters.priceRange.min !== null || this.currentFilters.priceRange.max !== null) {
       filtered = filtered.filter((product) => {
-        const price = this.getLowestPrice(product)
+        const price = product.discountedPrice // Use precomputed value
         const min = this.currentFilters.priceRange.min || 0
         const max = this.currentFilters.priceRange.max || Number.POSITIVE_INFINITY
-        return price >= min && price <= max
+        return price! >= min && price! <= max
       })
     }
 
@@ -597,12 +544,6 @@ export class ProductListComponent {
 
   private getAllDescendantCategoryIds(categoryIds: number[]): number[] {
     const allIds = [...categoryIds]
-
-    // categoryIds.forEach((id) => {
-    //   const descendants = this.getDescendantCategories(id)
-    //   allIds.push(...descendants.map((cat) => cat.id!))
-    // })
-
     return [...new Set(allIds)] // Remove duplicates
   }
 
@@ -617,13 +558,14 @@ export class ProductListComponent {
     return descendants
   }
 
+  // OPTIMIZED: Use precomputed discounted prices for sorting
   private applySorting(products: ProductCardItem[]) {
     switch (this.currentSort) {
       case "price-asc":
-        products.sort((a, b) => this.getLowestPrice(a) - this.getLowestPrice(b))
+        products.sort((a, b) => a.discountedPrice! - b.discountedPrice!) // Use precomputed value
         break
       case "price-desc":
-        products.sort((a, b) => this.getLowestPrice(b) - this.getLowestPrice(a))
+        products.sort((a, b) => b.discountedPrice! - a.discountedPrice!) // Use precomputed value
         break
       case "name-asc":
         products.sort((a, b) => a.product.name.localeCompare(b.product.name))
@@ -713,14 +655,14 @@ export class ProductListComponent {
       onSale: false,
       isNew: false,
       rating: null,
-    };
-    this.currentPage = 1;
+    }
+    this.currentPage = 1
 
-    this.applyFiltersAndSort();
-    this.updateUrlWithFilters(this.currentFilters);
+    this.applyFiltersAndSort()
+    this.updateUrlWithFilters(this.currentFilters)
 
     if (this.filterSidebar) {
-      this.filterSidebar.clearAllFiltersLocal();
+      this.filterSidebar.clearAllFiltersLocal()
     }
   }
 
@@ -730,39 +672,39 @@ export class ProductListComponent {
 
   // Individual filter removal methods
   removeCategoryFilter(categoryId: number) {
-    const categoryIdNumber = +categoryId;
-    this.currentFilters.categories = this.currentFilters.categories.filter((id: number) => id !== categoryIdNumber);
-    this.applyFiltersAndSort();
-    this.updateUrlWithFilters(this.currentFilters);
-    this.updateFilterSidebarFromFilters();
+    const categoryIdNumber = +categoryId
+    this.currentFilters.categories = this.currentFilters.categories.filter((id: number) => id !== categoryIdNumber)
+    this.applyFiltersAndSort()
+    this.updateUrlWithFilters(this.currentFilters)
+    this.updateFilterSidebarFromFilters()
   }
 
   removeBrandFilter(brandId: number) {
     this.currentFilters.brands = this.currentFilters.brands.filter((id: number) => id !== brandId)
     this.applyFiltersAndSort()
-    this.updateUrlWithFilters(this.currentFilters);
-    this.updateFilterSidebarFromFilters();
+    this.updateUrlWithFilters(this.currentFilters)
+    this.updateFilterSidebarFromFilters()
   }
 
   removePriceFilter() {
     this.currentFilters.priceRange = { min: null, max: null }
     this.applyFiltersAndSort()
-    this.updateUrlWithFilters(this.currentFilters);
-    this.updateFilterSidebarFromFilters();
+    this.updateUrlWithFilters(this.currentFilters)
+    this.updateFilterSidebarFromFilters()
   }
 
   removeStockFilter() {
     this.currentFilters.inStock = false
     this.applyFiltersAndSort()
-    this.updateUrlWithFilters(this.currentFilters);
-    this.updateFilterSidebarFromFilters();
+    this.updateUrlWithFilters(this.currentFilters)
+    this.updateFilterSidebarFromFilters()
   }
 
   removeSaleFilter() {
     this.currentFilters.onSale = false
     this.applyFiltersAndSort()
-    this.updateUrlWithFilters(this.currentFilters);
-    this.updateFilterSidebarFromFilters();
+    this.updateUrlWithFilters(this.currentFilters)
+    this.updateFilterSidebarFromFilters()
   }
 
   // Helper methods for filter display
@@ -793,7 +735,7 @@ export class ProductListComponent {
   goToPage(page: number) {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page
-      this.updateUrlWithFilters(this.currentFilters);
+      this.updateUrlWithFilters(this.currentFilters)
       window.scrollTo({ top: 0, behavior: "smooth" })
     }
   }
@@ -820,8 +762,8 @@ export class ProductListComponent {
     if (!this.currentFilters.categories.includes(category.id!)) {
       this.currentFilters.categories.push(category.id!)
       this.applyFiltersAndSort()
-      this.updateUrlWithFilters(this.currentFilters);
-      this.updateFilterSidebarFromFilters();
+      this.updateUrlWithFilters(this.currentFilters)
+      this.updateFilterSidebarFromFilters()
     }
   }
 
@@ -829,14 +771,15 @@ export class ProductListComponent {
     console.log("View all categories")
   }
 
-  // Product helper methods (keep your existing methods)
+  // ===== OPTIMIZED PRODUCT HELPER METHODS (Using precomputed values) =====
+
   getStockStatus(product: ProductListItemDTO): string {
-    return product.variants.some(v => v.stock > 0) ? 'In Stock' : 'Out of Stock';
+    return product.variants.some((v) => v.stock > 0) ? "In Stock" : "Out of Stock"
   }
 
   getMainProductImage(product: ProductDTO): string {
     if (product.productImages && product.productImages.length > 0) {
-      const mainImage = product.productImages.find((img: any) => img.mainImageStatus);
+      const mainImage = product.productImages.find((img: any) => img.mainImageStatus)
 
       if (mainImage) {
         return mainImage.imgPath!
@@ -844,15 +787,17 @@ export class ProductListComponent {
         return product.productImages[0].imgPath!
       }
     }
-    return 'assets/images/placeholder.jpg';
+    return "assets/images/placeholder.jpg"
   }
 
-  getLowestPrice(product: any): number {
-    if (product.variants && product.variants.length > 0) {
-      const prices = product.variants.map((v: any) => v.price);
-      return Math.min(...prices);
-    }
-    return product.product.basePrice;
+  // OPTIMIZED: Use precomputed original price
+  getOriginalPrice(product: ProductCardItem): number {
+    return product.originalPrice!
+  }
+
+  // OPTIMIZED: Use precomputed discounted price
+  getLowestDiscountedPrice(product: ProductCardItem): number {
+    return product.discountedPrice!
   }
 
   hasStock(product: any): boolean {
@@ -862,22 +807,20 @@ export class ProductListComponent {
     return false
   }
 
-  isOnSale(product: any): boolean {
-    if (product.variants && product.variants.length > 0) {
-      return product.variants.some((v: any) => v.price < product.product.basePrice);
-    }
-    return false;
+  // OPTIMIZED: Use precomputed prices for sale detection
+  isOnSale(product: ProductCardItem): boolean {
+    return product.discountedPrice! < product.originalPrice!
   }
 
   isNew(product: any): boolean {
     if (product.product.createdDate) {
-      const createdDate = new Date(product.product.createdDate);
-      const now = new Date();
-      const diffTime = Math.abs(now.getTime() - createdDate.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays <= 14;
+      const createdDate = new Date(product.product.createdDate)
+      const now = new Date()
+      const diffTime = Math.abs(now.getTime() - createdDate.getTime())
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      return diffDays <= 14
     }
-    return false;
+    return false
   }
 
   hasColorVariants(product: any): boolean {
@@ -895,79 +838,80 @@ export class ProductListComponent {
       return colorOption.optionValues
     }
 
-    return [];
+    return []
   }
 
   quickView(product: any, event: Event): void {
-    event.stopPropagation();
-    console.log('Quick view', product);
+    event.stopPropagation()
+    console.log("Quick view", product)
   }
 
   addToWishlist(product: any, event: Event): void {
-    event.stopPropagation();
-    console.log('Add to wishlist', product);
+    event.stopPropagation()
+    console.log("Add to wishlist", product)
   }
 
   viewProduct(product: any): void {
-    console.log('View product', product);
+    console.log("View product", product)
   }
 
   goToDetail(product: ProductCardItem): void {
-    this.router.navigate(['/customer/product', product.id]);
+    this.router.navigate(["/customer/product", product.id])
   }
 
+  // OPTIMIZED: Use precomputed prices for sorting
   sortByPriceAsc() {
-    this.products.sort((a, b) => this.getLowestPrice(a) - this.getLowestPrice(b));
+    this.products.sort((a, b) => a.discountedPrice! - b.discountedPrice!)
   }
 
   sortByBrand() {
-    this.products.sort((a, b) => a.brand.name.localeCompare(b.brand.name));
+    this.products.sort((a, b) => a.brand.name.localeCompare(b.brand.name))
   }
 
   loadWishlist() {
-    const userId = this.authService.getCurrentUser()?.id;
+    const userId = this.authService.getCurrentUser()?.id
     if (!userId) {
-      console.error('User ID not found');
-      return;
+      console.error("User ID not found")
+      return
     }
 
     this.wishlistService.getWishedProductIds(userId).subscribe({
       next: (wishedIds) => {
-        this.wishList = new Set<number>(wishedIds);
+        this.wishList = new Set<number>(wishedIds)
       },
-      error: (err) => console.error('Failed to load wishlist:', err)
-    });
+      error: (err) => console.error("Failed to load wishlist:", err),
+    })
   }
 
   toggleWish(productId: number): void {
-    const userId = this.authService.getCurrentUser()?.id;
+    const userId = this.authService.getCurrentUser()?.id
     if (!userId) {
-      console.error('User ID not found why?');
-      return;
+      console.error("User ID not found why?")
+      return
     }
 
     if (this.isWished(productId)) {
       this.wishlistService.removeProductFromWishlist(userId, productId).subscribe({
         next: () => {
-          this.wishList.delete(productId);
-          this.loadWishlist();
+          this.wishList.delete(productId)
+          this.loadWishlist()
         },
         error: (err) => {
-          console.error('Failed to remove from wishlist:', err);
-        }
-      });
+          console.error("Failed to remove from wishlist:", err)
+        },
+      })
     } else {
       const dialogRef = this.dialog.open(WishlistDialogComponent, {
-        width: '400px',
-        data: { productId }
-      });
+        width: "400px",
+        data: { productId },
+      })
 
-      dialogRef.afterClosed().subscribe(result => {
+      dialogRef.afterClosed().subscribe((result) => {
         if (result && result.added) {
-          this.wishList.add(productId);
-          this.loadWishlist();
+          this.wishList.add(productId)
+          this.loadWishlist()
         }
-      });
+      })
     }
   }
 
@@ -979,7 +923,6 @@ export class ProductListComponent {
   Math = Math
 
   private sanitizeForUrl(name: string): string {
-    return encodeURIComponent(name.trim());
+    return encodeURIComponent(name.trim())
   }
-
 }

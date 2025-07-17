@@ -29,7 +29,7 @@ private  DiscountService discountService;
     }
 
     @GetMapping("/groups/{id}")
-    public GroupES_G getGroupById(@PathVariable Integer id) {
+    public GroupES_G getGroupById(@PathVariable Long id) {
         return discountService.getGroupById(id);
     }
 
@@ -39,13 +39,13 @@ private  DiscountService discountService;
     }
 
     @PutMapping("/groups/{id}")
-    public GroupES_G updateGroup(@PathVariable Integer id, @RequestBody GroupES_G groupDto) {
+    public GroupES_G updateGroup(@PathVariable Long id, @RequestBody GroupES_G groupDto) {
         groupDto.setId(id);
         return discountService.updateGroup(groupDto);
     }
 
     @DeleteMapping("/groups/{id}")
-    public void deleteGroup(@PathVariable Integer id) {
+    public void deleteGroup(@PathVariable Long id) {
         discountService.deleteGroup(id);
     }
     
@@ -94,7 +94,7 @@ public ResponseEntity<String> createDiscount(@RequestBody DiscountES_A dto) {
 
   @PostMapping("/groups/{groupId}/conditions")
     public ResponseEntity<?> saveGroupConditions(
-            @PathVariable Integer groupId,
+            @PathVariable Long groupId,
             @RequestBody GroupES_G groupDto) {
         discountService.saveGroupConditions(groupId, groupDto.getDiscountConditionGroups());
         return ResponseEntity.ok("success");
@@ -102,7 +102,7 @@ public ResponseEntity<String> createDiscount(@RequestBody DiscountES_A dto) {
     
     // Get all condition groups for a group
 @GetMapping("/groups/{groupId}/conditions")
-public List<DiscountConditionGroupES_C> getGroupConditions(@PathVariable Integer groupId) {
+public List<DiscountConditionGroupES_C> getGroupConditions(@PathVariable Long groupId) {
     return discountService.getGroupConditions(groupId);
 }
 

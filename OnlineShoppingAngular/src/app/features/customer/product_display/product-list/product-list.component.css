@@ -151,7 +151,7 @@
   line-height: 1;
 }
 
-/* Category filters */
+/* Category filters - use consistent green */
 .filter-badge.bg-primary {
   background: #052717 !important;
   color: white;
@@ -165,11 +165,11 @@
   border: 1px solid #138496;
 }
 
-/* Price filters */
+/* Price filters - use green theme */
 .filter-badge.bg-success {
-  background: #28a745 !important;
+  background: #052717 !important;
   color: white;
-  border: 1px solid #1e7e34;
+  border: 1px solid #041f12;
 }
 
 /* Stock filters */
@@ -252,7 +252,7 @@
 
 .product-card:hover {
   border-color: #052717;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(5, 39, 23, 0.1);
 }
 
 /* ===== PRODUCT IMAGE WRAPPER ===== */
@@ -287,6 +287,11 @@
 .badge.bg-primary {
   background: #052717 !important;
   color: white;
+}
+
+.badge.bg-warning {
+  background: #ffc107 !important;
+  color: #212529 !important;
 }
 
 /* ===== WISHLIST BUTTON ===== */
@@ -356,23 +361,57 @@
   color: #052717 !important;
 }
 
-/* ===== PRICE SECTION ===== */
-.price-container {
+/* ===== UPDATED PRICE SECTION - FIXED ===== */
+.price-section {
+  min-height: 60px;
   display: flex;
-  align-items: center;
-  gap: 6px;
-  flex: 1;
+  flex-direction: column;
+  justify-content: flex-start;
+  margin-bottom: 8px;
 }
 
-.current-price {
+/* Always show price - this fixes the disappearing price issue */
+.price-display {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.price-display .current-price {
   font-size: 1rem !important;
   font-weight: 700 !important;
   color: #052717 !important;
+  line-height: 1.2;
+  display: block; /* Ensure it's always visible */
+}
+
+/* Fallback price display when no discount component */
+.fallback-price {
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  color: #052717 !important;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+
+.price-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+  min-height: auto;
+}
+
+.original-price-line {
+  display: flex;
+  align-items: center;
 }
 
 .original-price {
-  font-size: 0.8rem !important;
+  font-size: 0.85rem !important;
   color: #9ca3af !important;
+  line-height: 1;
 }
 
 /* ===== STOCK BADGE ===== */
@@ -383,6 +422,7 @@
   font-weight: 600;
   text-transform: uppercase;
   white-space: nowrap;
+  align-self: flex-end;
 }
 
 .stock-badge.in-stock {
@@ -560,7 +600,8 @@
     font-size: 0.85rem !important;
   }
 
-  .current-price {
+  .current-price,
+  .fallback-price {
     font-size: 0.9rem !important;
   }
 }
@@ -609,7 +650,8 @@
     height: 2em;
   }
 
-  .current-price {
+  .current-price,
+  .fallback-price {
     font-size: 0.85rem !important;
   }
 

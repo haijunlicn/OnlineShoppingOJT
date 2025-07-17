@@ -17,4 +17,8 @@ export class AdminAccountService {
     return this.http.get<User[]>(`${this.baseUrl}/users`);
   }
 
+  getAllCustomers(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.baseUrl}/customers`);
+  }
+
 }

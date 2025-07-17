@@ -91,12 +91,12 @@ export class DiscountRulesComponent implements OnInit {
   selectedCity = ""
 
   // Sample data
-  
- 
-  constructor(private discountService: DiscountService,private renderer: Renderer2) {}
+
+
+  constructor(private discountService: DiscountService, private renderer: Renderer2) { }
   categories: Category[] = [];
   brands: Brand[] = [];
-  customerGroups : GroupEA_G[]=[];
+  customerGroups: GroupEA_G[] = [];
   myanmarCities: City[] = [
     { name: "Yangon", region: "Yangon Region" },
     { name: "Mandalay", region: "Mandalay Region" },
@@ -130,45 +130,43 @@ export class DiscountRulesComponent implements OnInit {
     { value: "false", label: "Any of the following conditions are Match" },//or
   ]
 
-
- 
   get ruleTypes() {
     return this.groupMode
       ? [{ value: "status", label: "Status" }]
       : [
-          { value: "product", label: "Product" },
-          { value: "order", label: "Order" },
-          { value: "customer_group", label: "Customer Group" },
-        ];
+        { value: "product", label: "Product" },
+        { value: "order", label: "Order" },
+        { value: "customer_group", label: "Customer Group" },
+      ];
   }
 
   get fieldOptions(): { [key: string]: { value: string; label: string }[] } {
-  return {
-    product: [
-      { value: "product", label: "Product" },
-      { value: "brand", label: "Brand" },
-      { value: "category", label: "Category" },
-    ],
-    order: [
-      { value: "order_total", label: "Order total amount" },
-      { value: "item_count", label: "Number of items in the cart" },
-      { value: "shipping_cost", label: "Shipping cost" },
-      { value: "shipping_city", label: "Shipping city" },
-      { value: "first_order", label: "Customer's first order" },
-    ],
-    customer_group: this.customerGroups.map((group: GroupEA_G) => ({
-      value: group.id.toString(),
-      label: group.name
-    })),
-    status: [
-      { value: "days_since_signup", label: "Days Since Signup" },
-      { value: "last_login_date", label: "Last Login Date" },
-      { value: "total_spent", label: "Total Spent" },
-      { value: "days_since_last_purchase", label: "Days Since Last Purchase" },
-      { value: "account_age_days", label: "Account Age Days" },
-    ],
-  };
-}
+    return {
+      product: [
+        { value: "product", label: "Product" },
+        { value: "brand", label: "Brand" },
+        { value: "category", label: "Category" },
+      ],
+      order: [
+        { value: "order_total", label: "Order total amount" },
+        { value: "item_count", label: "Number of items in the cart" },
+        { value: "shipping_cost", label: "Shipping cost" },
+        { value: "shipping_city", label: "Shipping city" },
+        { value: "first_order", label: "Customer's first order" },
+      ],
+      customer_group: this.customerGroups.map((group: GroupEA_G) => ({
+        value: group.id.toString(),
+        label: group.name
+      })),
+      status: [
+        { value: "days_since_signup", label: "Days Since Signup" },
+        { value: "last_login_date", label: "Last Login Date" },
+        { value: "days_since_last_purchase", label: "Days Since Last Purchase" },
+        { value: "total_spent", label: "Total Spent" },
+        { value: "order_count", label: "Order Count" },
+      ],
+    };
+  }
 
   operatorOptions = [
     { value: "equals", label: "is equal to" },
@@ -186,7 +184,7 @@ export class DiscountRulesComponent implements OnInit {
         name: cat.name
       }));
       this.filteredCategories = [...this.categories];
-    }); 
+    });
     this.discountService.getAllBrands().subscribe((data) => {
       this.brands = data.map((brand) => ({
         id: brand.id,
@@ -201,7 +199,7 @@ export class DiscountRulesComponent implements OnInit {
       }));
       this.filteredBrands = [...this.brands];
     });
-  
+
     // Use input rules if provided
     if (this.rules && this.rules.length > 0) {
       this.rules = [...this.rules]
@@ -223,7 +221,7 @@ export class DiscountRulesComponent implements OnInit {
       case "product":
         return this.operatorOptions.filter((op) => op.value === "equals" || op.value === "one_of")
       case "order":
-        if (rule && rule.field === "shipping_city" || rule && rule.field==="first_order") {
+        if (rule && rule.field === "shipping_city" || rule && rule.field === "first_order") {
           return this.operatorOptions.filter((op) => op.value === "equals")
         }
         return this.operatorOptions.filter((op) => op.value !== "one_of")
@@ -235,7 +233,7 @@ export class DiscountRulesComponent implements OnInit {
   }
 
   addRule() {
-    
+
     const newRule: Rule = {
       id: `${Date.now()}_${this.currentMechanismIndex}`,
       type: "",
@@ -290,7 +288,7 @@ export class DiscountRulesComponent implements OnInit {
     }
     this.focusInput(valueIndex);
   }
- 
+
   openProductSelectionModal(ruleId: string, valueIndex: number) {
     const rule = this.rules.find((r) => r.id === ruleId)
     if (!rule) return
@@ -311,13 +309,13 @@ export class DiscountRulesComponent implements OnInit {
       .filter((p) => p && p.id !== undefined && p.id !== null)
       .map((p) => p.id!.toString());
     this.updateValue(ruleId, valueIndex, productIds.join(","));
-  
+
     // ** Add this line to see what's in rule.values **
     const rule = this.rules.find(r => r.id === ruleId);
     if (rule) {
       console.log('Current rule.values:', rule.values);
     }
-  
+
     this.showProductSelection = false;
     this.currentEditingRule = null;
   }
@@ -410,7 +408,7 @@ export class DiscountRulesComponent implements OnInit {
     }
     return rule.values.filter((v) => v.trim()).join('", "');
   }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   handleSaveConditions() {
     if (!this.canSaveConditions()) {
       alert("Please complete all rules and fix validation errors before saving.")
@@ -421,6 +419,9 @@ export class DiscountRulesComponent implements OnInit {
       logicType: this.logicType,
       rules: this.rules,
     }
+
+    console.log("condition data : ", conditionData);
+
 
     // console.log("=== SAVING CONDITIONS FOR SPECIFIC MECHANISM ===")
     // console.log("Mechanism Index:", this.currentMechanismIndex)
@@ -438,7 +439,7 @@ export class DiscountRulesComponent implements OnInit {
     this.logicType = "true"
     this.validationErrors = []
     this.selectedProductsMap = {}
-    
+
   }
 
   handleCancel() {
@@ -471,14 +472,14 @@ export class DiscountRulesComponent implements OnInit {
     const searchTerm = this.citySearchText.toLowerCase()
     this.filteredCities = searchTerm
       ? this.myanmarCities.filter(
-          (city) => city.name.toLowerCase().includes(searchTerm) || city.region.toLowerCase().includes(searchTerm),
-        )
+        (city) => city.name.toLowerCase().includes(searchTerm) || city.region.toLowerCase().includes(searchTerm),
+      )
       : this.myanmarCities
   }
 
   selectCategory(category: Category) {
     if (this.currentEditingRule) {
-      this.updateValue(this.currentEditingRule.ruleId, this.currentEditingRule.valueIndex, category.name)
+      this.updateValue(this.currentEditingRule.ruleId, this.currentEditingRule.valueIndex, category.id.toString())
     }
     this.showCategoryModal = false
     this.currentEditingRule = null
@@ -486,13 +487,12 @@ export class DiscountRulesComponent implements OnInit {
 
   selectBrand(brand: Brand) {
     if (this.currentEditingRule) {
-      this.updateValue(this.currentEditingRule.ruleId, this.currentEditingRule.valueIndex, brand.name)
+      this.updateValue(this.currentEditingRule.ruleId, this.currentEditingRule.valueIndex, brand.id.toString())
     }
     this.showBrandModal = false
     this.currentEditingRule = null
   }
-  
- 
+
   selectedBrandsMap: { [ruleId: string]: Brand[] } = {};
   get currentRuleOperator(): string {
     const rule = this.rules.find(r => r.id === this.currentEditingRule?.ruleId);
@@ -505,26 +505,59 @@ export class DiscountRulesComponent implements OnInit {
     return selected.some(b => b.id === brand.id);
   }
   // Custom dropdown state
-dropdownOpen: { [ruleId: string]: boolean } = {};
-toggleDropdown(ruleId: string) {
-  this.dropdownOpen[ruleId] = !this.dropdownOpen[ruleId];
-}
-closeDropdown(ruleId: string) {
-  this.dropdownOpen[ruleId] = false;
-}
-onCustomDropdownSelect(rule: Rule, fieldValue: string) {
-  this.updateRule(rule.id, { field: fieldValue, operator: "", values: [""] });
-  this.closeDropdown(rule.id);
-}
+  dropdownOpen: { [ruleId: string]: boolean } = {};
+
+  toggleDropdown(ruleId: string) {
+    // Close other dropdowns first
+    Object.keys(this.dropdownOpen).forEach((key) => {
+      if (key !== ruleId) {
+        this.dropdownOpen[key] = false
+      }
+    })
+
+    this.dropdownOpen[ruleId] = !this.dropdownOpen[ruleId]
+
+    // Recalculate positioning after a brief delay to ensure DOM is updated
+    if (this.dropdownOpen[ruleId]) {
+      setTimeout(() => {
+        // Force change detection to update positioning classes
+      }, 10)
+    }
+  }
+
+  shouldShowDropdownUp(ruleId: string): boolean {
+    // Get the dropdown trigger element
+    const element = document.querySelector(`[data-rule-id="${ruleId}"] .dropdown-trigger`)
+    if (!element) return false
+
+    const rect = element.getBoundingClientRect()
+    const viewportHeight = window.innerHeight
+    const spaceBelow = viewportHeight - rect.bottom
+    const spaceAbove = rect.top
+
+    // Show dropdown up if there's more space above and not enough space below
+    return spaceBelow < 200 && spaceAbove > spaceBelow
+  }
+
+  // toggleDropdown(ruleId: string) {
+  //   this.dropdownOpen[ruleId] = !this.dropdownOpen[ruleId];
+  // }
+  closeDropdown(ruleId: string) {
+    this.dropdownOpen[ruleId] = false;
+  }
+  onCustomDropdownSelect(rule: Rule, fieldValue: string) {
+    this.updateRule(rule.id, { field: fieldValue, operator: "", values: [""] });
+    this.closeDropdown(rule.id);
+  }
   selectedCategoriesMap: { [ruleId: string]: Category[] } = {};
   onCategoryClick(category: Category) {
     const ruleId = this.currentEditingRule?.ruleId;
     if (!ruleId) return;
-  
+
     if (!this.selectedCategoriesMap[ruleId]) {
       this.selectedCategoriesMap[ruleId] = [];
     }
-  
+
     if (this.currentRuleOperator === 'one_of') {
       // Multi-select (checkbox)
       const idx = this.selectedCategoriesMap[ruleId].findIndex(c => c.id === category.id);
@@ -538,31 +571,78 @@ onCustomDropdownSelect(rule: Rule, fieldValue: string) {
       this.selectedCategoriesMap[ruleId] = [category];
     }
   }
+
   isCategorySelected(category: Category): boolean {
     const ruleId = this.currentEditingRule?.ruleId;
     if (!ruleId) return false;
     const selected = this.selectedCategoriesMap[ruleId] || [];
     return selected.some(c => c.id === category.id);
   }
+
   confirmCategorySelection() {
     if (this.currentEditingRule) {
       const ruleId = this.currentEditingRule.ruleId;
       const valueIndex = this.currentEditingRule.valueIndex;
       const selected = this.selectedCategoriesMap[ruleId] || [];
-      const categoryNames = selected.map(c => c.name);
-      this.updateValue(ruleId, valueIndex, categoryNames.join(', '));
+      const categoryIds = selected.map(c => c.id).join(','); // "1,2,3"
+      this.updateValue(ruleId, valueIndex, categoryIds);
     }
     this.showCategoryModal = false;
     this.currentEditingRule = null;
   }
+
+  confirmBrandSelection() {
+    if (this.currentEditingRule) {
+      const ruleId = this.currentEditingRule.ruleId;
+      const valueIndex = this.currentEditingRule.valueIndex;
+      const selected = this.selectedBrandsMap[ruleId] || [];
+      const brandIds = selected.map(b => b.id).join(','); // "13,14"
+      this.updateValue(ruleId, valueIndex, brandIds);
+    }
+    this.showBrandModal = false;
+    this.currentEditingRule = null;
+  }
+
+  getCategoryPreview(value: string): string {
+    try {
+      // value is like "1,2,3", split into array of ids as numbers
+      const ids = value.split(',').map(id => parseInt(id, 10));
+      if (!Array.isArray(ids)) return value;
+
+      const names = this.categories
+        .filter(cat => ids.includes(cat.id))
+        .map(cat => cat.name);
+
+      return names.join(', ');
+    } catch {
+      return value;
+    }
+  }
+
+  getBrandPreview(value: string): string {
+    try {
+      // value is like "13,14", split into array of ids as numbers
+      const ids = value.split(',').map(id => parseInt(id, 10));
+      if (!Array.isArray(ids)) return value;
+
+      const names = this.brands
+        .filter(brand => ids.includes(brand.id))
+        .map(b => b.name);
+
+      return names.join(', ');
+    } catch {
+      return value;
+    }
+  }
+
   onBrandClick(brand: Brand) {
     const ruleId = this.currentEditingRule?.ruleId;
     if (!ruleId) return;
-  
+
     if (!this.selectedBrandsMap[ruleId]) {
       this.selectedBrandsMap[ruleId] = [];
     }
-  
+
     if (this.currentRuleOperator === 'one_of') {
       // Multi-select (checkbox)
       const idx = this.selectedBrandsMap[ruleId].findIndex(b => b.id === brand.id);
@@ -576,17 +656,7 @@ onCustomDropdownSelect(rule: Rule, fieldValue: string) {
       this.selectedBrandsMap[ruleId] = [brand];
     }
   }
-  confirmBrandSelection() {
-    if (this.currentEditingRule) {
-      const ruleId = this.currentEditingRule.ruleId;
-      const valueIndex = this.currentEditingRule.valueIndex;
-      const selected = this.selectedBrandsMap[ruleId] || [];
-      const brandNames = selected.map(b => b.name);
-      this.updateValue(ruleId, valueIndex, brandNames.join(', '));
-    }
-    this.showBrandModal = false;
-    this.currentEditingRule = null;
-  }
+
   selectCityFromModal() {
     if (this.currentEditingRule && this.selectedCity) {
       this.updateValue(this.currentEditingRule.ruleId, this.currentEditingRule.valueIndex, this.selectedCity)
@@ -622,4 +692,5 @@ onCustomDropdownSelect(rule: Rule, fieldValue: string) {
   onRuleOperatorChange(rule: Rule, value: string) {
     this.updateRule(rule.id, { operator: value, values: [""] })
   }
+
 }

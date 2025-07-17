@@ -61,4 +61,9 @@ public class AdminAccountController {
         return ResponseEntity.ok(adminAccountService.getAllUsers());
     }
 
+    @GetMapping("/customers")
+    public ResponseEntity<List<userDTO>> getAllCustomers() {
+        return ResponseEntity.ok(adminAccountService.getAllCustomers());
+    }
+
 }
