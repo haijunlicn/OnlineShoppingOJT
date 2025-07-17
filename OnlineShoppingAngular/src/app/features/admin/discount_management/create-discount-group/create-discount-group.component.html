@@ -1,15 +1,10 @@
 <!-- Main UI (hidden when rule builder is open) -->
 <div *ngIf="!isRuleBuilderOpen">
-  <div class="discount-group-container" *ngIf="!isConditionBuilderOpen">
-
-    <!-- Page Header -->
-    <div class="page-header">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <h2>Discount Group Management</h2>
-          <p class="page-subtitle">Manage customer groups and their discount conditions</p>
-        </div>
-        <div class="header-actions">
+  <div class="user-management-container" *ngIf="!isConditionBuilderOpen" style="margin-top: -80px;">
+    <div class="content-wrapper" style="margin-top:25px ;">
+      <!-- Filters Sidebar -->
+      <div class="filters-sidebar">
+        <div class="filters-header">
           <button class="btn btn-primary" (click)="openCreateGroupDialog()">
             <i class="fas fa-plus"></i>
             Create Group

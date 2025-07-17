@@ -91,6 +91,10 @@ import { AdminNotificationListComponent } from './notificationManagement/admin-n
 import { AdminNotificationDetailComponent } from './notificationManagement/admin-notification-detail/admin-notification-detail.component';
 import { AdminNotiTypesComponent } from './notificationManagement/admin-noti-types/admin-noti-types.component';
 import { AdminSentNotisComponent } from './notificationManagement/admin-sent-notis/admin-sent-notis.component';
+import { DiscountListComponent } from './discount_management/discount-list/discount-list.component';
+
+
+
 
 @NgModule({
   declarations: [
@@ -160,6 +164,7 @@ import { AdminSentNotisComponent } from './notificationManagement/admin-sent-not
     AdminNotificationListComponent,
     AdminNotiTypesComponent,
     AdminSentNotisComponent,
+   DiscountListComponent
   ],
   imports: [
     CommonModule,
@@ -184,6 +189,9 @@ import { AdminSentNotisComponent } from './notificationManagement/admin-sent-not
     FormsModule,
     NgxChartsModule,
     NgxMaskModule.forRoot(),
-  ]
+    
+  
+   
+]
 })
 export class AdminModule { }

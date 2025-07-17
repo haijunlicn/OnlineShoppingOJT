@@ -47,14 +47,14 @@
 }
 
 .close-btn:hover {
-  color: #1a1a1a;
+  color: #0e3c01;
   background-color: #f5f5f5;
   border-radius: 50%;
 }
 
 /* Header styling */
 h2 {
-  color: #1a1a1a;
+  color: #0e3c01;
   font-size: 1.75rem;
   margin-bottom: 0.5rem;
   font-weight: 700;
@@ -70,7 +70,7 @@ h2 {
 .divider span {
   height: 3px;
   width: 60px;
-  background-color: #1a1a1a;
+  background-color: #0e3c01;
   border-radius: 3px;
 }
 
@@ -83,7 +83,7 @@ h2 {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  color: #1a1a1a;
+  color: #0e3c01;
   font-size: 0.95rem;
 }
 
@@ -94,7 +94,7 @@ h2 {
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.5;
-  color: #1a1a1a;
+  color: #0e3c01;
   background-color: #fff;
   background-clip: padding-box;
   border: 2px solid #e0e0e0;
@@ -103,7 +103,7 @@ h2 {
 }
 
 .form-control:focus {
-  border-color: #1a1a1a;
+  border-color: #0e3c01;
   outline: 0;
   box-shadow: 0 0 0 0.25rem rgba(26, 26, 26, 0.1);
 }
@@ -163,7 +163,7 @@ h2 {
   align-items: center;
   cursor: pointer;
   font-size: 0.9rem;
-  color: #1a1a1a;
+  color: #0e3c01;
   position: relative;
   padding-left: 25px;
 }
@@ -190,12 +190,12 @@ h2 {
 }
 
 .remember-me:hover input ~ .checkmark {
-  border-color: #1a1a1a;
+  border-color: #0e3c01;
 }
 
 .remember-me input:checked ~ .checkmark {
-  background-color: #1a1a1a;
-  border-color: #1a1a1a;
+  background-color: #0e3c01;
+  border-color: #0e3c01;
 }
 
 .checkmark:after {
@@ -220,7 +220,7 @@ h2 {
 
 /* Forgot password link */
 .forgot-password {
-  color: #1a1a1a;
+  color: #0e3c01;
   font-size: 0.9rem;
   text-decoration: none;
   cursor: pointer;
@@ -252,8 +252,8 @@ h2 {
 
 .primary-btn {
   color: white;
-  background-color: #1a1a1a;
-  border-color: #1a1a1a;
+  background-color: #0e3c01;
+  border-color: #0e3c01;
 }
 
 .primary-btn:hover:not(:disabled) {
@@ -289,14 +289,14 @@ h2 {
 
 .action-buttons .secondary-btn {
   flex: 1;
-  color: #1a1a1a;
+  color: #0e3c01;
   background-color: transparent;
-  border-color: #1a1a1a;
+  border-color: #0e3c01;
 }
 
 .action-buttons .secondary-btn:hover {
   color: white;
-  background-color: #1a1a1a;
+  background-color: #0e3c01;
   transform: translateY(-1px);
 }
 
@@ -313,7 +313,7 @@ h2 {
 }
 
 .login-link {
-  color: #1a1a1a;
+  color: #0e3c01;
   font-weight: 600;
   margin-left: 0.5rem;
   text-decoration: none;

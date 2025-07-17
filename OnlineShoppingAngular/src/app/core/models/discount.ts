@@ -8,7 +8,9 @@ export enum typeCA {
 
 export enum MechanismType {
   DISCOUNT = 'Discount',
-  FREE_GIFT = 'freeGift'
+  FREE_GIFT = 'freeGift',
+  B2B='B2B',
+  Coupon='Coupon'
 }
 
 export enum DiscountType {
@@ -47,7 +49,7 @@ export interface DiscountMechanismEA_B {
   delFg?: boolean;
   createdDate?: string;
   updatedDate?: string;
-
+  couponcode?:string;
   discountId?: number;
   disocunt?: DiscountEA_A;
   discountProducts?: DiscountProductEA_E[];
@@ -62,7 +64,7 @@ export enum ConditionType {
   PRODUCT = 'PRODUCT',
   CUSTOMER_GROUP = 'CUSTOMER_GROUP',
   ORDER = 'ORDER',
-  USER_STATUS = 'USER_STATUS'
+  USER_STATUS = 'USER_STATUS',
 }
 export enum Operator {
   EQUAL = 'EQUAL',

@@ -47,10 +47,7 @@ export class DiscountService {
 
 
 
-  // CREATE for main
-  // createDiscount(discount: DiscountEA_A): Observable<DiscountEA_A> {
-  //   return this.http.post<DiscountEA_A>(`${this.apiUrl}/createDiscount`, discount);
-  // }
+ 
   createDiscount(discount: DiscountEA_A): Observable<string> {
     return this.http.post(`${this.apiUrl}/createDiscount`, discount, { responseType: 'text' });
   }
@@ -65,7 +62,7 @@ export class DiscountService {
     return this.http.get<DiscountEA_A>(`${this.apiUrl}/selectdiscountbyId/${id}`);
   }
 
-  // UPDATE
+  // // UPDATE
   updateDiscount(id: number, discount: DiscountEA_A): Observable<DiscountEA_A> {
     return this.http.put<DiscountEA_A>(`${this.apiUrl}/updateDiscount/${id}`, discount);
   }
@@ -73,6 +70,10 @@ export class DiscountService {
   // DELETE
   deleteDiscount(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/deleteDisount/${id}`);
+  }
+
+  updateDiscountStatus(id: number, payload: { isActive: boolean }) {
+    return this.http.patch(`${this.apiUrl}/updateDiscountStatus/${id}`, payload);
   }
 
   // groupConditions

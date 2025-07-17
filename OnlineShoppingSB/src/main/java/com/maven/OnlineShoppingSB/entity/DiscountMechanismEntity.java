@@ -23,6 +23,8 @@ public class DiscountMechanismEntity {
     @Column(nullable = true)
     private Integer quantity;
 
+    @Column(name = "couponcode", nullable = true)
+    private String couponcode;
     
     private String serviceDiscount;
     @Enumerated(EnumType.STRING)

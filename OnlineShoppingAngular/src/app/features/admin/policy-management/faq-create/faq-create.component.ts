@@ -61,6 +61,7 @@ export class FaqCreateComponent implements OnInit {
       question: this.faqForm.value.question.trim(),
       answer: this.faqForm.value.answer.trim(),
       delFg: 0,
+      createdDate: new Date().toISOString(),
     }
 
     this.faqService.createFaq(faq).subscribe({
