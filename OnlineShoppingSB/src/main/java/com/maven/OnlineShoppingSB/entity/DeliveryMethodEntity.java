@@ -20,6 +20,10 @@ public class DeliveryMethodEntity {
     private Double maxDistance; // in km (inclusive)
     private Integer baseFee; // MMK
     private Integer feePerKm; // MMK per km
+    @Column(name = "icon", length = 100)
+    private String icon; // URL or path to the image
+    @Column(name = "type")
+    private Integer type;
     @OneToMany(mappedBy = "deliveryMethod", cascade = CascadeType.ALL, orphanRemoval = false)
     private List<OrderEntity> orders;
 

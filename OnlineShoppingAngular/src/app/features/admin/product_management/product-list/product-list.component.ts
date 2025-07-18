@@ -468,4 +468,12 @@ export class ProductListComponent implements OnInit {
       this.isExportingExcel = false;
     }
   }
+
+  exportTableToPdf() {
+    this.exportProfessionalPdf();
+  }
+
+  async exportTableToExcel() {
+    await this.exportToExcel();
+  }
 }

@@ -5,13 +5,22 @@
           <div class="text-muted">
             <small>View all system permissions</small>
           </div>
-          <div class="ms-3">
-            <button class="btn btn-outline-danger me-2" (click)="exportPermissionsToPdf()">
-              <i class="fas fa-file-pdf me-1"></i> Export PDF
+          <div class="dropdown d-inline-block ms-3">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-download me-1"></i> Export
             </button>
-            <button class="btn btn-outline-success" (click)="exportPermissionsToExcel()">
-              <i class="fas fa-file-excel me-1"></i> Export Excel
-            </button>
+            <ul class="dropdown-menu shadow">
+              <li>
+                <a class="dropdown-item d-flex align-items-center" href="javascript:void(0)" (click)="exportPermissionsToPdf()">
+                  <i class="bi bi-file-earmark-pdf text-danger me-2"></i> Export PDF
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item d-flex align-items-center" href="javascript:void(0)" (click)="exportPermissionsToExcel()">
+                  <i class="bi bi-file-earmark-excel text-success me-2"></i> Export Excel
+                </a>
+              </li>
+            </ul>
           </div>
         </div>
 

@@ -22,6 +22,9 @@ interface Order {
   items: any[]
   createdDate: Date
   city?: string
+  customer?: string
+  paymentMethod?: string
+  total?: number
 }
 
 interface FilterParams {
@@ -158,8 +161,6 @@ export class AdminOrdersControlComponent implements OnInit, OnDestroy {
     { header: 'Customer', field: 'customer', width: 40 },
     { header: 'Date', field: 'date', width: 35 },
     { header: 'Status', field: 'status', width: 45 },
-    { header: 'Total', field: 'total', width: 40 },
-    { header: 'Items', field: 'items', width: 20 },
     { header: 'Payment Method', field: 'paymentMethod', width: 50 }
   ];
 
@@ -231,6 +232,9 @@ export class AdminOrdersControlComponent implements OnInit, OnDestroy {
       items: order.items || [],
       createdDate: new Date(order.createdDate),
       city: order.shippingAddress?.city || "—",
+      customer: order.user?.name || order.user?.email || "N/A",
+      paymentMethod: order.paymentMethod?.methodName || order.paymentType || "N/A",
+      total: order.totalAmount || 0,
     }
   }
 
@@ -675,7 +679,7 @@ export class AdminOrdersControlComponent implements OnInit, OnDestroy {
   }
 
   onImageError(event: any): void {
-    event.target.src = "assets/img/default-product.jpg"
+   // event.target.src = "assets/img/default-product.jpg"
   }
 
   trackByOrderId(index: number, order: Order): number {
@@ -704,13 +708,24 @@ export class AdminOrdersControlComponent implements OnInit, OnDestroy {
     return [...new Set(cities)].sort()
   }
 
+  getExportData() {
+    return this.filteredOrders.map(order => ({
+      id: order.id,
+      trackingNumber: order.trackingNumber,
+      customer: order.customer || 'N/A',
+      date: order.date,
+      status: this.getOrderStatusLabel(order.orderStatus),
+      paymentMethod: order.paymentMethod || 'N/A',
+    }));
+  }
+
   // Export PDF function
   exportOrdersToPdf() {
     const filename = this.filteredOrders.length === this.orders.length
       ? 'OrderList_All.pdf'
       : `OrderList_Filtered_${this.filteredOrders.length}.pdf`;
     this.pdfExportService.exportTableToPdf(
-      this.filteredOrders,
+      this.getExportData(),
       this.orderExportColumns,
       filename,
       'Order List Report',
@@ -724,7 +739,7 @@ export class AdminOrdersControlComponent implements OnInit, OnDestroy {
       ? 'OrderList_All.xlsx'
       : `OrderList_Filtered_${this.filteredOrders.length}.xlsx`;
     await this.excelExportService.exportToExcel(
-      this.filteredOrders,
+      this.getExportData(),
       this.orderExportColumns,
       filename,
       'Orders',

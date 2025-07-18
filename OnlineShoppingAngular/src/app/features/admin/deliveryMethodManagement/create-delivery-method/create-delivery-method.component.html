@@ -1,0 +1,66 @@
+<div class="create-delivery-method-container">
+  <div class="page-header mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h2 class="mb-1">Create Delivery Method</h2>
+        <p class="text-muted mb-0">Add a new delivery method</p>
+      </div>
+      <a class="btn btn-outline-secondary" [routerLink]="['/admin/delivery-method-list']">
+        <i class="bi bi-arrow-left me-2"></i>Back to List
+      </a>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <form #deliveryForm="ngForm" (ngSubmit)="save()">
+        <div class="mb-3">
+          <label class="form-label">Name</label>
+          <input type="text" class="form-control" [(ngModel)]="method.name" name="name" required #name="ngModel">
+          <div *ngIf="name.invalid && (name.dirty || name.touched)" class="text-danger">
+            Name is required.
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Min Distance</label>
+          <input type="number" class="form-control" [(ngModel)]="method.minDistance" name="minDistance" required min="0" #minDistance="ngModel">
+          <div *ngIf="minDistance.invalid && (minDistance.dirty || minDistance.touched)" class="text-danger">
+            Min Distance is required and must be 0 or greater.
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Max Distance</label>
+          <input type="number" class="form-control" [(ngModel)]="method.maxDistance" name="maxDistance" required min="1" #maxDistance="ngModel">
+          <div *ngIf="maxDistance.invalid && (maxDistance.dirty || maxDistance.touched)" class="text-danger">
+            Max Distance is required and must be at least 1.
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Base Fee</label>
+          <input type="number" class="form-control" [(ngModel)]="method.baseFee" name="baseFee" required min="0" #baseFee="ngModel">
+          <div *ngIf="baseFee.invalid && (baseFee.dirty || baseFee.touched)" class="text-danger">
+            Base Fee is required and must be 0 or greater.
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Fee Per Km</label>
+          <input type="number" class="form-control" [(ngModel)]="method.feePerKm" name="feePerKm" required min="0" #feePerKm="ngModel">
+          <div *ngIf="feePerKm.invalid && (feePerKm.dirty || feePerKm.touched)" class="text-danger">
+            Fee Per Km is required and must be 0 or greater.
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Icon</label>
+          <input type="file" class="form-control" (change)="onIconSelected($event)">
+          <img *ngIf="iconPreview" [src]="iconPreview" alt="icon preview" style="width:60px;height:60px;object-fit:contain;margin-top:8px;">
+        </div>
+        <button type="submit" class="btn btn-primary" [disabled]="isLoading || deliveryForm.invalid">
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm"></span>
+          Save
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

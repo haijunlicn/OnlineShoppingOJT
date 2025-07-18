@@ -3,6 +3,8 @@ import { CacheStats, DataEntry, GroupOption, MetricOption, TimePeriod, SalesChar
 import { SalesDataService } from '@app/core/services/sales-data.service';
 import { Subject, takeUntil } from 'rxjs';
 import { curveLinear } from 'd3-shape';
+import { PdfExportService } from '@app/core/services/pdf-export.service';
+import { ExcelExportService } from '@app/core/services/excel-export.service';
 
 interface TableRow {
   category: string;
@@ -78,6 +80,8 @@ export class SaleAnalysisComponent implements OnInit, OnDestroy {
   constructor(
     private salesDataService: SalesDataService,
     private cdr: ChangeDetectorRef,
+    private pdfExportService: PdfExportService,
+    private excelExportService: ExcelExportService,
   ) {}
 
   ngOnInit(): void {
@@ -167,6 +171,36 @@ export class SaleAnalysisComponent implements OnInit, OnDestroy {
   // Export functionality
   exportData(): void {
     this.salesDataService.exportToCSV(this.chartData, this.metric, this.groupBy)
+  }
+
+  exportTableToPdf() {
+    const columns = this.getTableColumns().map(col => ({
+      header: this.getColumnDisplayName(col),
+      field: col,
+      width: 40
+    }));
+    const filename = `SaleAnalysis_${this.metric.replace(/\s/g, '')}_${this.groupBy}_${new Date().toISOString().slice(0,10)}.pdf`;
+    this.pdfExportService.exportTableToPdf(
+      this.tableData,
+      columns,
+      filename,
+      'Sale Analysis Report'
+    );
+  }
+
+  async exportTableToExcel() {
+    const columns = this.getTableColumns().map(col => ({
+      header: this.getColumnDisplayName(col),
+      field: col,
+      width: 20
+    }));
+    const filename = `SaleAnalysis_${this.metric.replace(/\s/g, '')}_${this.groupBy}_${new Date().toISOString().slice(0,10)}.xlsx`;
+    await this.excelExportService.exportToExcel(
+      this.tableData,
+      columns,
+      filename,
+      'Sale Analysis'
+    );
   }
 
   // Update table data

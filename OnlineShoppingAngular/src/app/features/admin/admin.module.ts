@@ -91,6 +91,9 @@ import { AdminNotificationListComponent } from './notificationManagement/admin-n
 import { AdminNotificationDetailComponent } from './notificationManagement/admin-notification-detail/admin-notification-detail.component';
 import { AdminNotiTypesComponent } from './notificationManagement/admin-noti-types/admin-noti-types.component';
 import { AdminSentNotisComponent } from './notificationManagement/admin-sent-notis/admin-sent-notis.component';
+import { CreateDeliveryMethodComponent } from './deliveryMethodManagement/create-delivery-method/create-delivery-method.component';
+import { DeliveryMethodListComponent } from './deliveryMethodManagement/delivery-method-list/delivery-method-list.component';
+import { EditDeliveryMethodComponent } from './deliveryMethodManagement/edit-delivery-method/edit-delivery-method.component';
 
 @NgModule({
   declarations: [
@@ -160,6 +163,9 @@ import { AdminSentNotisComponent } from './notificationManagement/admin-sent-not
     AdminNotificationListComponent,
     AdminNotiTypesComponent,
     AdminSentNotisComponent,
+    CreateDeliveryMethodComponent,
+    DeliveryMethodListComponent,
+    EditDeliveryMethodComponent,
   ],
   imports: [
     CommonModule,

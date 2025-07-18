@@ -26,4 +26,6 @@ public class StoreBranchDto {
 
     @JsonProperty("zipCode")
     private String zipcode;
+
+    private String email;
 }

@@ -50,6 +50,9 @@ import { NotificationCreateComponent } from './notificationManagement/notificati
 import { AdminNotificationListComponent } from './notificationManagement/admin-notification-list/admin-notification-list.component';
 import { AdminNotiTypesComponent } from './notificationManagement/admin-noti-types/admin-noti-types.component';
 import { AdminSentNotisComponent } from './notificationManagement/admin-sent-notis/admin-sent-notis.component';
+import { DeliveryMethodListComponent } from './deliveryMethodManagement/delivery-method-list/delivery-method-list.component';
+import { CreateDeliveryMethodComponent } from './deliveryMethodManagement/create-delivery-method/create-delivery-method.component';
+import { EditDeliveryMethodComponent } from './deliveryMethodManagement/edit-delivery-method/edit-delivery-method.component';
 
 
 const routes: Routes = [
@@ -84,6 +87,18 @@ const routes: Routes = [
       { path: 'payment-create', component: PaymentCreateComponent },
       { path: 'payment-list', component: PaymentListComponent },
       { path: 'payment-update/:id', component: PaymentUpdateComponent },
+      {
+  path: 'delivery-method-list',
+  component: DeliveryMethodListComponent
+},
+{
+  path: 'delivery-method-create',
+  component: CreateDeliveryMethodComponent
+},
+{
+  path: 'delivery-method-edit/:id',
+  component: EditDeliveryMethodComponent
+},
       { path: 'sale-analysis', component: SaleAnalysisComponent },
       { path: 'refund-reason/list', component: RefundReasonListComponent },
       { path: 'refund-reason/create', component: RefundReasonFormComponent },

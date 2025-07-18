@@ -30,4 +30,12 @@ export class StoreLocationService {
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/delete/${id}`);
   }
+
+  setInUse(id: number): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/set-in-use/${id}`, {});
+  }
+
+  getActive(): Observable<StoreLocationDto> {
+    return this.http.get<StoreLocationDto>(`${this.apiUrl}/active`);
+  }
 }
