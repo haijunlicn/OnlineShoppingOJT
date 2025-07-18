@@ -126,19 +126,25 @@
                   <option value="DELIVERED">Delivered</option>
                   <option value="ORDER_CANCELLED" style="color: #dc3545; font-weight: bold;">Cancel Orders</option>
                 </select>
-                <input [(ngModel)]="bulkNote" placeholder="Note (optional)" class="form-control" style="width: 200px;" />
-                <button (click)="confirmBulkStatusUpdate()" [disabled]="!bulkStatus || bulkStatusLoading" 
-                  class="btn btn-primary">
+
+                <input [(ngModel)]="bulkNote" placeholder="Note (optional)" class="form-control" style="width: 200px;"
+                  [required]="bulkStatus === 'ORDER_CANCELLED'" />
+
+                <button (click)="confirmBulkStatusUpdate()" 
+                        [disabled]="!bulkStatus || bulkStatusLoading || (bulkStatus === 'ORDER_CANCELLED' && !bulkNote.trim())" 
+                        class="btn btn-primary">
                   <span *ngIf="!bulkStatusLoading">Update Status</span>
                   <span *ngIf="bulkStatusLoading">
                     <span class="spinner-border spinner-border-sm me-1"></span>Updating...
                   </span>
                 </button>
               </div>
+
               <div *ngIf="bulkStatusError" class="alert alert-danger mb-0">{{ bulkStatusError }}</div>
             </div>
           </div>
         </div>
+
 
         <!-- Orders Table -->
         <div class="card shadow-sm">
@@ -288,33 +294,32 @@
             </div>
           </div>
 
-          <!-- Pagination -->
-          <div class="card-footer bg-light" *ngIf="!isLoading && totalPages > 1">
-            <div class="d-flex justify-content-between align-items-center">
-              <div class="text-muted small">
-                Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
-                {{ Math.min(currentPage * itemsPerPage, totalItems) }} of {{ totalItems }} entries
-              </div>
-              <nav aria-label="Orders pagination">
-                <ul class="pagination pagination-sm mb-0">
-                  <li class="page-item" [class.disabled]="currentPage === 1">
-                    <button class="page-link" (click)="goToPreviousPage()" [disabled]="currentPage === 1">
-                      <i class="bi bi-chevron-left"></i>
-                    </button>
-                  </li>
+         <!-- Pagination -->
+<div class="card-footer custom-pagination-footer">
+  <div class="d-flex justify-content-between align-items-center">
+    <div class="text-muted small">
+      Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
+      {{ Math.min(currentPage * itemsPerPage, totalItems) }} of {{ totalItems }} entries
+    </div>
+    <nav aria-label="Policy pagination">
+      <ul class="pagination pagination-sm mb-0">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <button class="page-link" (click)="goToPreviousPage()" [disabled]="currentPage === 1">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+        </li>
+        <li *ngFor="let page of getPageNumbers()" class="page-item" [class.active]="page === currentPage">
+          <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <button class="page-link" (click)="goToNextPage()" [disabled]="currentPage === totalPages">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>
 
-                  <li *ngFor="let page of getPageNumbers()" class="page-item" [class.active]="page === currentPage">
-                    <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
-                  </li>
-
-                  <li class="page-item" [class.disabled]="currentPage === totalPages">
-                    <button class="page-link" (click)="goToNextPage()" [disabled]="currentPage === totalPages">
-                      <i class="bi bi-chevron-right"></i>
-                    </button>
-                  </li>
-                </ul>
-              </nav>
-            </div>
-          </div>
         </div>
       </div>

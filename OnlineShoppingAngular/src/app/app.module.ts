@@ -17,25 +17,12 @@ import { AuthService } from './core/services/auth.service';
 import { initializeAuth } from './core/init/auth-init.factory';
 
 
-
-
-
-
-
-
 @NgModule({
   declarations: [
     AppComponent,
-   
-   
-   
- 
-  
-    
-   
-  
 
-
+  
+   
   ],
   imports: [
     BrowserModule,

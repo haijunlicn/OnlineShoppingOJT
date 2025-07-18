@@ -57,14 +57,14 @@
 }
 
 .close-btn:hover {
-  color: #1a1a1a;
+  color: #0e3c01;
   background-color: #f5f5f5;
   border-radius: 50%;
 }
 
 /* Header styling */
 h3 {
-  color: #1a1a1a;
+  color: #0e3c01;
   font-size: 1.75rem;
   margin-bottom: 0.5rem;
   font-weight: 700;
@@ -80,7 +80,7 @@ h3 {
 .divider span {
   height: 3px;
   width: 60px;
-  background-color: #1a1a1a;
+  background-color: #0e3c01;
   border-radius: 3px;
 }
 
@@ -93,7 +93,7 @@ h3 {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  color: #1a1a1a;
+  color: #0e3c01;
   font-size: 0.95rem;
 }
 
@@ -104,7 +104,7 @@ h3 {
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.5;
-  color: #1a1a1a;
+  color: #0e3c01;
   background-color: #fff;
   background-clip: padding-box;
   border: 2px solid #e0e0e0;
@@ -113,7 +113,7 @@ h3 {
 }
 
 .form-control:focus {
-  border-color: #1a1a1a;
+  border-color: #0e3c01;
   outline: 0;
   box-shadow: 0 0 0 0.25rem rgba(26, 26, 26, 0.1);
 }
@@ -154,7 +154,7 @@ h3 {
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.5;
-  color: #1a1a1a;
+  color: #0e3c01;
   text-align: center;
   white-space: nowrap;
   background-color: #fff;
@@ -318,26 +318,26 @@ h3 {
 }
 
 .form-check-input:checked {
-  background-color: #1a1a1a;
-  border-color: #1a1a1a;
+  background-color: #0e3c01;
+  border-color: #0e3c01;
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
 }
 
 .form-check-input:focus {
-  border-color: #1a1a1a;
+  border-color: #0e3c01;
   outline: 0;
   box-shadow: 0 0 0 0.25rem rgba(26, 26, 26, 0.1);
 }
 
 .form-check-label {
-  color: #1a1a1a;
+  color: #0e3c01;
   cursor: pointer;
   font-size: 0.85rem;
   line-height: 1.4;
 }
 
 .form-check-label a {
-  color: #1a1a1a;
+  color: #0e3c01;
   text-decoration: underline;
   font-weight: 500;
 }
@@ -373,8 +373,8 @@ h3 {
 .primary-btn {
   flex: 3;
   color: white;
-  background-color: #1a1a1a;
-  border-color: #1a1a1a;
+  background-color: #0e3c01;
+  border-color: #0e3c01;
 }
 
 .primary-btn:hover:not(:disabled) {
@@ -396,14 +396,14 @@ h3 {
 
 .secondary-btn {
   flex: 1;
-  color: #1a1a1a;
+  color: #0e3c01;
   background-color: transparent;
-  border-color: #1a1a1a;
+  border-color: #0e3c01;
 }
 
 .secondary-btn:hover:not(:disabled) {
   color: white;
-  background-color: #1a1a1a;
+  background-color: #0e3c01;
   transform: translateY(-1px);
 }
 
@@ -444,7 +444,7 @@ h3 {
 
 /* Login link */
 .login-link {
-  color: #1a1a1a;
+  color: #0e3c01;
   font-weight: 600;
   margin-left: 0.5rem;
   text-decoration: none;
@@ -553,7 +553,7 @@ h3 {
 .form-check-input:focus,
 .toggle-btn:focus,
 .btn:focus {
-  outline: 2px solid #1a1a1a;
+  outline: 2px solid #0e3c01;
   outline-offset: 2px;
 }
 

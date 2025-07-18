@@ -32,27 +32,35 @@
         </div>
 
         <!-- Password -->
-        <div class="form-group mb-4">
-          <label class="form-label">Password</label>
-          <div class="input-wrapper">
-            <input 
-              type="password"
-              formControlName="password"
-              class="form-control"
-              [ngClass]="{
-                'error': (password.touched || isSubmitted) && password.invalid
-              }"
-              placeholder="Enter your password"
-            />
-            <i class="error-icon fas fa-exclamation-circle"
-               *ngIf="(password.touched || isSubmitted) && password.invalid">
-            </i>
-          </div>
-          <div class="error-message"
-               *ngIf="(password.touched || isSubmitted) && password.invalid">
-            This is a required field.
-          </div>
-        </div>
+<div class="form-group mb-4">
+  <label class="form-label">Password</label>
+  <div class="input-wrapper position-relative">
+    <input 
+      [type]="showPassword ? 'text' : 'password'"
+      formControlName="password"
+      class="form-control pe-5"
+      [ngClass]="{
+        'error': (password.touched || isSubmitted) && password.invalid
+      }"
+      placeholder="Enter your password"
+    />
+    <i class="error-icon fas fa-exclamation-circle"
+       *ngIf="(password.touched || isSubmitted) && password.invalid">
+    </i>
+
+    <!-- Eye toggle icon -->
+    <i class="toggle-password far"
+       [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+       (click)="togglePasswordVisibility()"
+       style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); cursor: pointer;">
+    </i>
+  </div>
+  <div class="error-message"
+       *ngIf="(password.touched || isSubmitted) && password.invalid">
+    This is a required field.
+  </div>
+</div>
+
 
         <!-- Remember Me + Forgot Password -->
         <div class="options mb-4">

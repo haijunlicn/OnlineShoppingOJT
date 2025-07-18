@@ -94,6 +94,10 @@ import { AdminSentNotisComponent } from './notificationManagement/admin-sent-not
 import { CreateDeliveryMethodComponent } from './deliveryMethodManagement/create-delivery-method/create-delivery-method.component';
 import { DeliveryMethodListComponent } from './deliveryMethodManagement/delivery-method-list/delivery-method-list.component';
 import { EditDeliveryMethodComponent } from './deliveryMethodManagement/edit-delivery-method/edit-delivery-method.component';
+import { DiscountListComponent } from './discount_management/discount-list/discount-list.component';
+
+
+
 
 @NgModule({
   declarations: [
@@ -166,6 +170,7 @@ import { EditDeliveryMethodComponent } from './deliveryMethodManagement/edit-del
     CreateDeliveryMethodComponent,
     DeliveryMethodListComponent,
     EditDeliveryMethodComponent,
+   DiscountListComponent
   ],
   imports: [
     CommonModule,
@@ -190,7 +195,9 @@ import { EditDeliveryMethodComponent } from './deliveryMethodManagement/edit-del
     FormsModule,
     NgxChartsModule,
     NgxMaskModule.forRoot(),
-
-  ]
+    
+  
+   
+]
 })
 export class AdminModule { }

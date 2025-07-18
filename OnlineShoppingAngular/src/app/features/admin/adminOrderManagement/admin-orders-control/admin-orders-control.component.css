@@ -1278,6 +1278,51 @@ input[type="checkbox"]:disabled {
   background-color: #f8d7da;
   color: #721c24;
 }
+/* Pagination container style */
+.custom-pagination-footer {
+  background-color: var(--color-background); /* Soft background */
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+/* Pagination link default */
+.pagination .page-item .page-link {
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  color: var(--color-primary);
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  border-radius: 0.25rem;
+}
+
+/* Hover effect */
+.pagination .page-item .page-link:hover {
+  background-color: var(--color-accent);
+  color: var(--color-secondary);
+  border-color: var(--color-highlight);
+}
+
+/* Active page */
+.pagination .page-item.active .page-link {
+  background-color: var(--color-highlight);
+  color: var(--color-secondary);
+  border-color: var(--color-highlight);
+  font-weight: bold;
+}
+
+/* Disabled page */
+.pagination .page-item.disabled .page-link {
+  background-color: #eee;
+  color: #aaa;
+  pointer-events: none;
+  border-color: #ddd;
+}
+
+/* Icon styling */
+.page-link i {
+  color: var(--color-primary);
+  font-size: 0.85rem;
+}
 
 .orders-table th:nth-child(7),
 .orders-table td:nth-child(7) {

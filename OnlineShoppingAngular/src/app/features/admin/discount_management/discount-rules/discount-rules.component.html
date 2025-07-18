@@ -1,561 +1,615 @@
-
-
-<app-admin-header></app-admin-header>
-<div class="d-flex" style="min-height: 100vh;">
-  <app-admin-sidebar></app-admin-sidebar>
-  
-  <main class="flex-grow-1 bg-light py-3 px-3">
-
-
-<div *ngIf="!showProductSelection" style="margin-top: 40px; margin-left: -200px;">
-  <div class="mb-6">
-    <button 
-      class="btn btn-ghost mb-4 flex items-center gap-2"
-      (click)="handleBack()">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-      </svg>
-      Back to Discount Form
-    </button>
-    <h1 class="text-3xl font-bold">Condition Builder</h1>
+<div *ngIf="!showProductSelection" class="condition-builder-container">
+  <!-- Enhanced Header Section -->
+  <div class="header-section">
+    <div class="header-content">
+      <button 
+        class="back-button enhanced"
+        (click)="handleBack()">
+        <div class="back-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" stroke="currentColor"/>
+          </svg>
+        </div>
+        <span class="back-text">Back to Discount Form</span>
+      </button>
+      
+      <div class="title-section">
+       
+        <div class="title-text">
+          <h1 class="main-title">Condition Builder</h1>
+          <p class="title-subtitle">Define rules for when this discount should apply</p>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <!-- Left Side - ADD RULES -->
-    <div class="card">
-      <div class="card-header">
-        <h2 class="card-title">ADD CONDITIONS</h2>
+  <!-- Enhanced Main Content Card -->
+  <div class="main-card enhanced">
+    <div class="card-content enhanced">
+      <!-- Enhanced Logic Selection Header -->
+      <div class="logic-section enhanced">
+        <div class="logic-header">
+          <div class="logic-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="logic-text">
+            <h2 class="logic-title">Condition Group 1</h2>
+            <p class="logic-subtitle">Choose how conditions should be evaluated</p>
+          </div>
+        </div>
+        
+        <div class="logic-controls">
+          <span class="logic-label">Apply when:</span>
+          <div class="logic-buttons enhanced">
+            <button 
+              type="button"
+              [class]="'logic-btn enhanced ' + (logicType === 'true' ? 'active' : '')"
+              (click)="logicType = 'true'">
+              <div class="logic-btn-content">
+                
+                <div class="logic-btn-text">
+                  <span class="logic-btn-title">All conditions must be matched</span>
+                  
+                </div>
+              </div>
+            </button>
+            <button 
+              type="button"
+              [class]="'logic-btn enhanced ' + (logicType === 'false' ? 'active' : '')"
+              (click)="logicType = 'false'">
+              <div class="logic-btn-content">
+               
+                <div class="logic-btn-text">
+                  <span class="logic-btn-title">Any condition can be matched</span>
+                 
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
       </div>
-      <div class="card-content space-y-6">
-        <!-- Logic Type Selection -->
-        <div class="space-y-2">
-          <label class="label">Apply When</label>
-          <select 
-            class="select select-bordered w-full"
-            [(ngModel)]="logicType">
-            <option *ngFor="let option of logicOptions" [value]="option.value">
-              {{option.label}}
-            </option>
-          </select>
+
+      <!-- Enhanced Conditions Container -->
+      <div class="conditions-wrapper enhanced">
+        <div class="conditions-header">
+          <h3 class="conditions-title">
+            <span class="conditions-icon">⚙️</span>
+            Conditions ({{ rules.length }})
+          </h3>
+          <div class="conditions-badge" *ngIf="rules.length > 0">
+            {{ canSaveConditions() ? 'Ready' : 'Incomplete' }}
+          </div>
         </div>
 
-        <!-- Add Rule Button -->
-        <button 
-          class="btn btn-outline w-full flex items-center gap-2"
-          (click)="addRule()">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-          </svg>
-          Add conditions
-        </button>
-
-        <!-- Rules List -->
-        <div class="space-y-4">
-          <div *ngFor="let rule of rules; let i = index" class="card p-4">
-            <div class="flex justify-between items-center mb-4">
-              <span class="font-medium">condition {{i + 1}}</span>
+        <div class="conditions-list enhanced">
+          <div *ngFor="let rule of rules; let i = index" class="condition-card enhanced">
+            <!-- Condition Header -->
+            <div class="condition-header enhanced">
+              <div class="condition-info">
+                <div class="condition-badge">{{ i + 1 }}</div>
+                <div class="condition-title-text">
+                  <span class="condition-title">Condition {{ i + 1 }}</span>
+                  <span class="condition-status" [class.complete]="isRuleComplete(rule)">
+                    {{ isRuleComplete(rule) ? '✅ Complete' : '⏳ Incomplete' }}
+                  </span>
+                </div>
+              </div>
               <button 
-                class="btn btn-ghost btn-sm"
-                (click)="removeRule(rule.id)">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                class="remove-condition-btn enhanced"
+                (click)="removeRule(rule.id)"
+                title="Remove condition">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </button>
             </div>
 
-            <!-- Rule Type Selection -->
-            <div class="grid grid-cols-2 gap-4 mb-4">
-              <div class="space-y-2">
-                <label class="label text-sm">Filter based on</label>
-                <select 
-                  class="select select-bordered w-full"
-                  [value]="rule.type"
-                  (change)="onRuleTypeChange(rule, $any($event.target).value)">
-                  <option value="">a condition type</option>
-                  <option *ngFor="let type of ruleTypes" [value]="type.value">
-                    {{type.label}}
-                  </option>
-                </select>
-              </div>
-              <div class="space-y-2">
-                <label class="label text-sm">Selected condition</label>
-                <input 
-                  class="input input-bordered bg-gray-100"
-                  [value]="getTypeLabel(rule.type)"
-                  readonly
-                  placeholder="Type will appear here">
-              </div>
-            </div>
-
-            <!-- Field Selection -->
-            <div *ngIf="rule.type" class="grid grid-cols-2 gap-4 mb-4">
-              <!-- Custom Dropdown -->
-              <div class="space-y-2 relative">
-                <label class="label text-sm">Select</label>
-                <button
-                  type="button"
-                  class="input input-bordered w-full flex justify-between items-center"
-                  (click)="toggleDropdown(rule.id)"
-                >
-                  <span>
-                    {{ getFieldLabel(rule.type, rule.field) || 'a condition detail' }}
-                  </span>
-                  <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                <!-- Dropdown Panel -->
-                <div
-                  *ngIf="dropdownOpen[rule.id]"
-                  class="custom-dropdown-panel"
-                  (mouseleave)="closeDropdown(rule.id)"
-                >
-                  <div
-                    *ngFor="let field of fieldOptions[rule.type]"
-                    class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    (click)="onCustomDropdownSelect(rule, field.value)"
-                  >
-                    {{ field.label }}
-                  </div>
-                </div>
-              </div>
- <!-- <div *ngIf="rule.type" class="grid grid-cols-2 gap-4 mb-4">
-              <div class="space-y-2">
-                <label class="label text-sm">Select</label>
-                <select 
-                  class="select select-bordered  w-full"
-                  [value]="rule.field"
-                  (change)="onRuleFieldChange(rule, $any($event.target).value)">
-                  <option value="">a condition detail</option>
-                  <option *ngFor="let field of fieldOptions[rule.type]" [value]="field.value">
-                    {{field.label}}
-                  </option>
-                </select>
-              </div>
-              <div class="space-y-2">
-                <label class="label text-sm">Selected detail</label>
-                <input 
-                  class="input input-bordered bg-gray-100"
-                  [value]="getFieldLabel(rule.type, rule.field)"
-                  readonly
-                  placeholder="Field will appear here">
-              </div>
-            </div> -->
-
-
-
-              <!-- Selected detail -->
-              <div class="space-y-2">
-                <label class="label text-sm">Selected detail</label>
-                <input
-                  class="input input-bordered bg-gray-100"
-                  [value]="getFieldLabel(rule.type, rule.field)"
-                  readonly
-                  placeholder="Field will appear here"
-                >
-              </div>
-            </div>
-
-            <!-- Operator Selection -->
-            <div *ngIf="rule.type && rule.field" class="grid grid-cols-2 gap-4 mb-4">
-              <div class="space-y-2">
-                <label class="label text-sm">Condition rules</label>
-                <select 
-                  class="select select-bordered w-full"
-                  [value]="rule.operator"
-                  (change)="onRuleOperatorChange(rule, $any($event.target).value)">
-                  <option value="">rule</option>
-                  <option *ngFor="let op of getFilteredOperators(rule.type)" [value]="op.value">
-                    {{op.label}}
-                  </option>
-                </select>
-              </div>
-              <div class="space-y-2">
-                <label class="label text-sm">Selected rule</label>
-                <input 
-                  class="input input-bordered bg-gray-100"
-                  [value]="getOperatorLabel(rule.operator)"
-                  readonly
-                  placeholder="Operator will appear here">
-              </div>
-            </div>
-
-            <!-- Values Section -->
-            <div *ngIf="rule.type && rule.field && rule.operator" class="space-y-2">
-              <label class="label text-sm">Enter the value of detail condition</label>
-              <div *ngFor="let value of rule.values; let valueIndex = index">
-                
-                <!-- Product field handling -->
-                 <div *ngIf="rule.type === 'product' && rule.field === 'product'" class="space-y-2">
-                  <!-- <input 
-                    class="input input-bordered bg-gray-100 w-full"
-                    [value]="value"
-                    readonly
-                    placeholder="Click button below to add value">
-                    -->
-                   <input 
-                   class="input input-bordered bg-gray-100 w-full"
-                   [value]="getProductNamesByIds(rule, valueIndex)"
-                   readonly
-                   placeholder="Click button below to add value">
-                  <!-- Selected Products Preview -->
-                  <div *ngIf="hasSelectedProducts(rule.id, valueIndex)" class="selected-products-preview">
-                    <div class="flex flex-wrap gap-2">
-                      <div *ngFor="let product of getSelectedProducts(rule.id, valueIndex); let idx = index"
-                           class="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">
-                        <span>{{product.name}}</span>
-                        <button 
-                          type="button"
-                          (click)="removeSelectedProduct(rule.id, valueIndex, idx)"
-                          class="ml-1 text-blue-600 hover:text-blue-800 hover:bg-blue-200 rounded-full p-0.5">
-                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                          </svg>
-                        </button>
+            <!-- Enhanced Condition Fields -->
+            <div class="condition-fields enhanced">
+              <!-- Filter Type -->
+              <div class="field-wrapper enhanced">
+                <label class="field-label enhanced">
+                  <span class="field-text">Filter based on</span>
+                </label>
+                <div class="field-input-wrapper">
+                  <div class="custom-select enhanced" [class.open]="dropdownOpen[rule.id]">
+                    <button
+                      type="button"
+                      class="select-trigger enhanced"
+                      (click)="toggleDropdown(rule.id)">
+                      <span class="select-value">{{ getTypeLabel(rule.type) || 'Select type' }}</span>
+                      <div class="select-arrow">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" stroke="currentColor"/>
+                        </svg>
+                      </div>
+                    </button>
+                    <div *ngIf="dropdownOpen[rule.id]" class="select-dropdown enhanced">
+                      <div *ngFor="let type of ruleTypes"
+                           class="dropdown-option enhanced"
+                           (click)="onRuleTypeChange(rule, type.value); closeDropdown(rule.id)">
+                        <span class="option-text">{{ type.label }}</span>
                       </div>
                     </div>
                   </div>
-
-                  <!-- Clear All Button -->
-                  <button *ngIf="hasSelectedProducts(rule.id, valueIndex) && getSelectedProducts(rule.id, valueIndex).length > 1"
-                          class="btn btn-outline btn-sm mt-2 text-red-600 hover:text-red-800 hover:bg-red-50"
-                          (click)="clearAllSelectedProducts(rule.id, valueIndex)">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                    Clear All Products
-                  </button>
-
-                  <button 
-                    class="btn btn-outline btn-sm flex items-center gap-2"
-                    (click)="openProductSelectionModal(rule.id, valueIndex)">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                    </svg>
-                    Click to add {{getFieldLabel(rule.type, rule.field)}}'s value
-                  </button>
                 </div>
+              </div>
 
-                <!-- Category field handling -->
-                <div *ngIf="rule.type === 'product' && rule.field === 'category'" class="space-y-2">
-                  <input 
-                    class="input input-bordered bg-gray-100 w-full"
-                    [value]="value"
-                    readonly
-                    placeholder="Click button below to add category">
-                  <button 
-                    class="btn btn-outline btn-sm flex items-center gap-2"
-                    (click)="openCategoryModal(rule.id, valueIndex)">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                    </svg>
-                    Click to add category value
-                  </button>
+              <!-- Field Selection -->
+              <div class="field-wrapper enhanced" *ngIf="rule.type">
+                <label class="field-label enhanced">
+                  <span class="field-text">Field</span>
+                </label>
+                <div class="field-input-wrapper">
+                  <div class="custom-select enhanced" [class.open]="dropdownOpen[rule.id + '_field']">
+                    <button
+                      type="button"
+                      class="select-trigger enhanced"
+                      (click)="toggleDropdown(rule.id + '_field')">
+                      <span class="select-value">{{ getFieldLabel(rule.type, rule.field) || 'Select field' }}</span>
+                      <div class="select-arrow">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" stroke="currentColor"/>
+                        </svg>
+                      </div>
+                    </button>
+                    <div *ngIf="dropdownOpen[rule.id + '_field']" class="select-dropdown enhanced">
+                      <div *ngFor="let field of fieldOptions[rule.type]"
+                           class="dropdown-option enhanced"
+                           (click)="onRuleFieldChange(rule, field.value); closeDropdown(rule.id + '_field')">
+                        <span class="option-text">{{ field.label }}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+              </div>
 
-                <!-- Brand field handling -->
-                <div *ngIf="rule.type === 'product' && rule.field === 'brand'" class="space-y-2">
-                  <input 
-                    class="input input-bordered bg-gray-100 w-full"
-                    [value]="value"
-                    readonly
-                    placeholder="Click button below to add brand">
-                  <button 
-                    class="btn btn-outline btn-sm flex items-center gap-2"
-                    (click)="openBrandModal(rule.id, valueIndex)">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                    </svg>
-                    Click to add brand value
-                  </button>
+              <!-- Operator Selection -->
+              <div class="field-wrapper enhanced" *ngIf="rule.type && rule.field">
+                <label class="field-label enhanced">
+                  <span class="field-text">Operator</span>
+                </label>
+                <div class="field-input-wrapper">
+                  <div class="custom-select enhanced" [class.open]="dropdownOpen[rule.id + '_operator']">
+                    <button
+                      type="button"
+                      class="select-trigger enhanced"
+                      (click)="toggleDropdown(rule.id + '_operator')">
+                      <span class="select-value">{{ getOperatorLabel(rule.operator) || 'Select operator' }}</span>
+                      <div class="select-arrow">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" stroke="currentColor"/>
+                        </svg>
+                      </div>
+                    </button>
+                    <div *ngIf="dropdownOpen[rule.id + '_operator']" class="select-dropdown enhanced">
+                      <div *ngFor="let op of getFilteredOperators(rule.type)"
+                           class="dropdown-option enhanced"
+                           (click)="onRuleOperatorChange(rule, op.value); closeDropdown(rule.id + '_operator')">
+                        <span class="option-text">{{ op.label }}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+              </div>
 
-                <!-- Shipping city handling -->
-                <div *ngIf="rule.type === 'order' && rule.field === 'shipping_city'" class="space-y-2">
-                  <input 
-                    class="input input-bordered bg-gray-100 w-full"
-                    [value]="value"
-                    readonly
-                    placeholder="Click button to add city">
-                  <button 
-                    class="btn btn-outline btn-sm flex items-center gap-2"
-                    (click)="openMyanmarMapModal(rule.id, valueIndex)">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    </svg>
-                    Add City
-                  </button>
+              <!-- Value Input -->
+              <div class="field-wrapper enhanced" *ngIf="rule.type && rule.field && rule.operator">
+                <label class="field-label enhanced">
+                  <span class="field-text">Value</span>
+                </label>
+                <div class="field-input-wrapper">
+                  <div *ngFor="let value of rule.values; let valueIndex = index">
+                    <!-- Product field handling -->
+                    <div *ngIf="rule.type === 'product' && rule.field === 'product'" class="value-input-group enhanced">
+                      <input
+                        class="value-input enhanced"
+                        [value]="getProductNamesByIds(rule, valueIndex)"
+                        readonly
+                        placeholder="Click button to add products">
+                      <button
+                        class="value-action-btn enhanced product"
+                        (click)="openProductSelectionModal(rule.id, valueIndex)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        <span>Add Products</span>
+                      </button>
+                    </div>
+
+                    <!-- Category field handling -->
+                    <div *ngIf="rule.type === 'product' && rule.field === 'category'" class="value-input-group enhanced">
+                      <input
+                        class="value-input enhanced"
+                        [value]="value"
+                        readonly
+                        placeholder="Click button to add category">
+                      <button
+                        class="value-action-btn enhanced category"
+                        (click)="openCategoryModal(rule.id, valueIndex)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        <span>Add Category</span>
+                      </button>
+                    </div>
+
+                    <!-- Brand field handling -->
+                    <div *ngIf="rule.type === 'product' && rule.field === 'brand'" class="value-input-group enhanced">
+                      <input
+                        class="value-input enhanced"
+                        [value]="value"
+                        readonly
+                        placeholder="Click button to add brand">
+                      <button
+                        class="value-action-btn enhanced brand"
+                        (click)="openBrandModal(rule.id, valueIndex)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        <span>Add Brand</span>
+                      </button>
+                    </div>
+
+                    <!-- Shipping city handling -->
+                    <div *ngIf="rule.type === 'order' && rule.field === 'shipping_city'" class="value-input-group enhanced">
+                      <input
+                        class="value-input enhanced"
+                        [value]="value"
+                        readonly
+                        placeholder="Click button to add city">
+                      <button
+                        class="value-action-btn enhanced city"
+                        (click)="openMyanmarMapModal(rule.id, valueIndex)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        <span>Add City</span>
+                      </button>
+                    </div>
+
+                    <!-- First order handling -->
+                    <div *ngIf="rule.type === 'order' && rule.field === 'first_order'">
+                      <select
+                        class="value-select enhanced"
+                        [value]="value"
+                        (change)="updateValue(rule.id, valueIndex, $any($event.target).value)">
+                        <option value="">Select value</option>
+                        <option value="true">True</option>
+                        <option value="false">False</option>
+                      </select>
+                    </div>
+
+                    <!-- CustomerGroup handling -->
+                    <div *ngIf="rule.type === 'customer_group' && rule.field">
+                      <select
+                        class="value-select enhanced"
+                        [value]="rule.values[0]"
+                        (change)="updateValue(rule.id, 0, $any($event.target).value)">
+                        <option value="">Select value</option>
+                        <option value="true">True</option>
+                        <option value="false">False</option>
+                      </select>
+                    </div>
+
+                    <!-- Numeric inputs for order fields and status -->
+                    <div *ngIf="(rule.type === 'order' && ['order_total', 'item_count', 'shipping_cost'].includes(rule.field)) || rule.type === 'status'">
+                      <input
+                        #numInput
+                        type="number"
+                        class="value-input enhanced numeric"
+                        [value]="value"
+                        (input)="updateValue(rule.id, valueIndex, $any($event.target).value)"
+                        placeholder="Enter numeric value">
+                    </div>
+                  </div>
                 </div>
-
-                <!-- First order handling -->
-                <div *ngIf="rule.type === 'order' && rule.field === 'first_order'">
-                  <select 
-                    class="select select-bordered w-full"
-                    [value]="value"
-                    (change)="updateValue(rule.id, valueIndex, $any($event.target).value)">
-                    <option value="">Select value</option>
-                    <option value="true">True</option>
-                    <option value="false">False</option>
-                  </select>
-                </div>
-
-                  
-               <!-- CustomerGroup handling -->
-<div *ngIf="rule.type === 'customer_group' && rule.field">
-  <select 
-    class="select select-bordered w-full"
-    [value]="rule.values[0]"
-    (change)="updateValue(rule.id, 0, $any($event.target).value)">
-    <option value="">Select value</option>
-    <option value="true">True</option>
-    <option value="false">False</option>
-  </select>
-</div>
-
-                <!-- Numeric inputs for order fields and status -->
-                <div *ngIf="(rule.type === 'order' && ['order_total', 'item_count', 'shipping_cost'].includes(rule.field)) || rule.type === 'status'">
-                  <input 
-                   #numInput
-                    type="number"
-                    class="input input-bordered w-full"
-                    [value]="value"
-                    (input)="updateValue(rule.id, valueIndex, $any($event.target).value)"
-                    placeholder="Enter numeric value">
-                </div>
-
-               
               </div>
             </div>
+          </div>
+
+          <!-- Enhanced Add Condition Button -->
+          <div class="add-condition-wrapper">
+            <button
+              class="add-condition-btn enhanced"
+              (click)="addRule()">
+              <div class="add-btn-content">
+                <div class="add-btn-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                    <line x1="12" y1="8" x2="12" y2="16" stroke="currentColor" stroke-width="2"/>
+                    <line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </div>
+                <div class="add-btn-text">
+                  <span class="add-btn-title">Add New Condition</span>
+                  <span class="add-btn-desc">Define another rule for this discount</span>
+                </div>
+              </div>
+            </button>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="rules.length === 0" class="empty-conditions enhanced">
+            <div class="empty-icon">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                <line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2"/>
+                <line x1="12" y1="16" x2="12.01" y2="16" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+            <h3 class="empty-title">No conditions defined</h3>
+            <p class="empty-description">Add your first condition to start building discount rules</p>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Right Side - Preview -->
-    <div class="card">
-      <div class="card-header">
-        <h2 class="card-title">Rule Preview</h2>
-      </div>
-      <div class="card-content">
-        <div class="space-y-4">
-          <div class="p-4 border rounded-lg">
-            <h3 class="font-medium mb-4">{{getLogicLabel()}}</h3>
-            <div *ngIf="rules.length === 0" class="text-center py-8 text-gray-500">
-              <div class="text-4xl mb-2">📋</div>
-              <p>No rules added yet</p>
-              <small>Click "Add Rule" to get started</small>
-            </div>
-            <div *ngIf="rules.length > 0" class="space-y-3">
-              <div *ngFor="let rule of rules; let i = index" class="p-3 border rounded">
-                <div class="flex justify-between items-center mb-2">
-                  <span class="font-medium">Rule {{i + 1}}:</span>
-                  <span [class]="isRuleComplete(rule) ? 'text-green-600 text-sm' : 'text-yellow-600 text-sm'">
-                    {{isRuleComplete(rule) ? '✓' : '⚠'}}
-                  </span>
-                </div>
-                <div *ngIf="isRuleComplete(rule)" class="text-sm space-x-1">
-                  <strong>{{getTypeLabel(rule.type)}}</strong>
-                  <span>→</span>
-                  <em>{{getFieldLabel(rule.type, rule.field)}}</em>
-                  <span class="font-medium">{{getOperatorLabel(rule.operator)}}</span>
-                  <span>"{{getJoinedValues(rule, i)}}"</span>
-                </div>
-                <div *ngIf="!isRuleComplete(rule)" class="text-sm text-gray-500">
-                  Incomplete rule - please fill all fields
-                </div>
-              </div>
-            </div>
+      <!-- Enhanced Action Buttons -->
+      <div class="action-section enhanced">
+        <div class="action-info">
+          <div class="action-summary">
+            <h4 class="summary-title">Ready to save?</h4>
+            <p class="summary-text">
+              {{ rules.length }} condition(s) configured
+              {{ canSaveConditions() ? '• All conditions are complete' : '• Some conditions need completion' }}
+            </p>
           </div>
-          <div class="flex gap-2">
-            <button 
-              class="btn btn-primary flex-1 flex items-center gap-2"
-              [disabled]="!canSaveConditions()"
-              (click)="handleSaveConditions()">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12"></path>
-              </svg>
-              Save Conditions
-            </button>
-            <button 
-              class="btn btn-outline flex items-center gap-2"
-              (click)="handleCancel()">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-              Cancel
-            </button>
-          </div>
+        </div>
+        <div class="action-buttons enhanced">
+          <button
+            class="action-btn secondary enhanced"
+            (click)="handleCancel()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Cancel</span>
+          </button>
+          <button
+            class="action-btn primary enhanced"
+            [disabled]="!canSaveConditions()"
+            (click)="handleSaveConditions()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <polyline points="20,6 9,17 4,12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Save Conditions</span>
+          </button>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Enhanced Modals -->
   <!-- Category Selection Modal -->
-  <div *ngIf="showCategoryModal" class="modal modal-open">
-    <div class="modal-box w-full max-w-2xl max-h-[80vh] overflow-hidden">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-semibold">Select Category</h3>
-        <button 
-          class="btn btn-ghost btn-sm"
+  <div *ngIf="showCategoryModal" class="modal-overlay enhanced">
+    <div class="modal-container enhanced">
+      <div class="modal-header enhanced">
+        <div class="modal-title-section">
+          <div class="modal-icon category">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 4H9V9H4V4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M15 4H20V9H15V4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4 15H9V20H4V15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M15 15H20V20H15V15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="modal-title-text">
+            <h3>Select Category</h3>
+            <p>Choose categories for your discount condition</p>
+          </div>
+        </div>
+        <button
+          class="modal-close-btn enhanced"
           (click)="showCategoryModal = false">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
       </div>
-      <div class="space-y-4">
-        <div class="relative">
-          <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-          <input 
-            class="input input-bordered w-full pl-10"
+      
+      <div class="modal-body enhanced">
+        <div class="search-wrapper enhanced">
+          <div class="search-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+              <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </div>
+          <input
+            class="search-input enhanced"
             placeholder="Search categories..."
             [(ngModel)]="categorySearchText"
             (input)="onCategorySearch()">
         </div>
-        <div class="max-h-60 overflow-y-auto">
-          <div class="space-y-2">
-            <!-- <div *ngFor="let category of filteredCategories"
-                 class="flex justify-between items-center p-2 hover:bg-gray-50 rounded cursor-pointer"
-                 (click)="selectCategory(category)">
-              <span>{{category.name}}</span>
-            </div> -->
-            <div *ngFor="let category of filteredCategories"
-     class="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer"
-     (click)="onCategoryClick(category)">
-  <input
-    [type]="currentRuleOperator === 'one_of' ? 'checkbox' : 'radio'"
-    [checked]="isCategorySelected(category)"
-    (click)="$event.stopPropagation(); onCategoryClick(category)"
-    name="categorySelect"
-  />
-  <span>{{category.name}}</span>
- 
-</div>
-<button class="btn btn-primary mt-4" (click)="confirmCategorySelection()">Done</button>
+        
+        <div class="selection-list enhanced">
+          <div *ngFor="let category of filteredCategories"
+               class="selection-item enhanced"
+               [class.selected]="isCategorySelected(category)"
+               (click)="onCategoryClick(category)">
+            <div class="selection-checkbox">
+              <input
+                [type]="currentRuleOperator === 'one_of' ? 'checkbox' : 'radio'"
+                [checked]="isCategorySelected(category)"
+                (click)="$event.stopPropagation(); onCategoryClick(category)"
+                name="categorySelect" />
+            </div>
+            <div class="selection-content">
+              <span class="selection-name">{{ category.name }}</span>
+            </div>
           </div>
         </div>
       </div>
+      
+      <div class="modal-footer enhanced">
+        <button class="modal-btn secondary" (click)="showCategoryModal = false">Cancel</button>
+        <button class="modal-btn primary" (click)="confirmCategorySelection()">Done</button>
+      </div>
     </div>
-    <div class="modal-backdrop" (click)="showCategoryModal = false"></div>
   </div>
 
   <!-- Brand Selection Modal -->
-  <div *ngIf="showBrandModal" class="modal modal-open">
-    <div class="modal-box w-full max-w-2xl max-h-[80vh] overflow-hidden">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-semibold">Select Brand</h3>
-        <button 
-          class="btn btn-ghost btn-sm"
+  <div *ngIf="showBrandModal" class="modal-overlay enhanced">
+    <div class="modal-container enhanced">
+      <div class="modal-header enhanced">
+        <div class="modal-title-section">
+          <div class="modal-icon brand">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="modal-title-text">
+            <h3>Select Brand</h3>
+            <p>Choose brands for your discount condition</p>
+          </div>
+        </div>
+        <button
+          class="modal-close-btn enhanced"
           (click)="showBrandModal = false">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
       </div>
-      <div class="space-y-4">
-        <div class="relative">
-          <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-          <input 
-            class="input input-bordered w-full pl-10"
+      
+      <div class="modal-body enhanced">
+        <div class="search-wrapper enhanced">
+          <div class="search-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+              <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </div>
+          <input
+            class="search-input enhanced"
             placeholder="Search brands..."
             [(ngModel)]="brandSearchText"
             (input)="onBrandSearch()">
         </div>
-        <div class="max-h-60 overflow-y-auto">
-          <div class="space-y-2">
-           
-            <div *ngFor="let brand of filteredBrands; let i = index"
-     class="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer"
-     (click)="onBrandClick(brand)">
-  <input
-    [type]="currentRuleOperator === 'one_of' ? 'checkbox' : 'radio'"
-    [checked]="isBrandSelected(brand)"
-    (click)="$event.stopPropagation(); onBrandClick(brand)"
-    name="brandSelect"
-  />
-  <span>{{brand.name}}</span>
-</div>
-<button class="btn btn-primary mt-4" (click)="confirmBrandSelection()">Done</button>
+        
+        <div class="selection-list enhanced">
+          <div *ngFor="let brand of filteredBrands"
+               class="selection-item enhanced"
+               [class.selected]="isBrandSelected(brand)"
+               (click)="onBrandClick(brand)">
+            <div class="selection-checkbox">
+              <input
+                [type]="currentRuleOperator === 'one_of' ? 'checkbox' : 'radio'"
+                [checked]="isBrandSelected(brand)"
+                (click)="$event.stopPropagation(); onBrandClick(brand)"
+                name="brandSelect" />
+            </div>
+            <div class="selection-content">
+              <span class="selection-name">{{ brand.name }}</span>
+            </div>
           </div>
         </div>
       </div>
+      
+      <div class="modal-footer enhanced">
+        <button class="modal-btn secondary" (click)="showBrandModal = false">Cancel</button>
+        <button class="modal-btn primary" (click)="confirmBrandSelection()">Done</button>
+      </div>
     </div>
-    <div class="modal-backdrop" (click)="showBrandModal = false"></div>
   </div>
 
   <!-- Myanmar Map Modal -->
-  <div *ngIf="showMyanmarMapModal" class="modal modal-open">
-    <div class="modal-box w-full max-w-4xl max-h-[80vh] overflow-hidden">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-semibold">Select City in Myanmar</h3>
-        <button 
-          class="btn btn-ghost btn-sm"
+  <div *ngIf="showMyanmarMapModal" class="modal-overlay enhanced">
+    <div class="modal-container enhanced large">
+      <div class="modal-header enhanced">
+        <div class="modal-title-section">
+          <div class="modal-icon city">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 10C21 17 12 23 12 23S3 17 3 10C3 5.02944 7.02944 1 12 1C16.9706 1 21 5.02944 21 10Z" stroke="currentColor" stroke-width="2"/>
+              <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="modal-title-text">
+            <h3>Select City in Myanmar</h3>
+            <p>Choose a city for your shipping condition</p>
+          </div>
+        </div>
+        <button
+          class="modal-close-btn enhanced"
           (click)="showMyanmarMapModal = false">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
       </div>
-      <div class="space-y-4">
-        <div class="relative">
-          <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-          <input 
-            class="input input-bordered w-full pl-10"
+      
+      <div class="modal-body enhanced">
+        <div class="search-wrapper enhanced">
+          <div class="search-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+              <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </div>
+          <input
+            class="search-input enhanced"
             placeholder="Search cities in Myanmar..."
             [(ngModel)]="citySearchText"
             (input)="onCitySearch()">
         </div>
-        <div class="text-center py-8">
-          <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-          </svg>
-          <h4 class="font-medium mb-2">Myanmar Map</h4>
-          <p class="text-sm text-gray-600">Search and select a city from the list below</p>
+        
+        <div class="map-placeholder enhanced">
+          <div class="map-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 10C21 17 12 23 12 23S3 17 3 10C3 5.02944 7.02944 1 12 1C16.9706 1 21 5.02944 21 10Z" stroke="currentColor" stroke-width="2"/>
+              <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </div>
+          <h4>Myanmar Map</h4>
+          <p>Search and select a city from the list below</p>
         </div>
-        <div class="max-h-60 overflow-y-auto">
-          <div class="grid grid-cols-2 gap-2">
-            <div *ngFor="let city of filteredCities"
-                 [class]="'p-3 border rounded cursor-pointer hover:bg-gray-50 ' + (selectedCity === city.name ? 'border-blue-500 bg-blue-50' : '')"
-                 (click)="selectedCity = city.name">
-              <div class="font-medium">{{city.name}}</div>
-              <div class="text-sm text-gray-600">{{city.region}}</div>
+        
+        <div class="city-grid enhanced">
+          <div *ngFor="let city of filteredCities"
+               class="city-card enhanced"
+               [class.selected]="selectedCity === city.name"
+               (click)="selectedCity = city.name">
+            <div class="city-info">
+              <span class="city-name">{{ city.name }}</span>
+              <span class="city-region">{{ city.region }}</span>
+            </div>
+            <div class="city-check" *ngIf="selectedCity === city.name">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <polyline points="20,6 9,17 4,12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             </div>
           </div>
         </div>
-        <div class="flex gap-2 pt-4 border-t">
-          <button 
-            class="btn btn-primary flex-1"
-            [disabled]="!selectedCity"
-            (click)="selectCityFromModal()">
-            Select {{selectedCity}}
-          </button>
-          <button 
-            class="btn btn-outline"
-            (click)="showMyanmarMapModal = false">
-            Cancel
-          </button>
-        </div>
+      </div>
+      
+      <div class="modal-footer enhanced">
+        <button class="modal-btn secondary" (click)="showMyanmarMapModal = false">Cancel</button>
+        <button
+          class="modal-btn primary"
+          [disabled]="!selectedCity"
+          (click)="selectCityFromModal()">
+          Select {{ selectedCity }}
+        </button>
       </div>
     </div>
-    <div class="modal-backdrop" (click)="showMyanmarMapModal = false"></div>
   </div>
 </div>
 
-
-<app-product-selection 
+<app-product-selection
   *ngIf="showProductSelection"
   context="condition_builder"
   [selectionMode]="productSelectionConfig.selectionMode"
   (onBack)="showProductSelection = false"
   (onProductsSelected)="handleProductsSelected($event)">
 </app-product-selection>
-</main>
-</div>

@@ -19,9 +19,21 @@
                     <input formControlName="email" id="email" class="form-control" placeholder="Enter your email" />
                 </div>
                 
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" formControlName="password" id="password" class="form-control" placeholder="Enter your password" />
+              <div class="form-group position-relative">
+                <label for="password">Password</label>
+                <input 
+                    [type]="showPassword ? 'text' : 'password'" 
+                    formControlName="password" 
+                    id="password" 
+                    class="form-control pe-5" 
+                    placeholder="Enter your password" 
+                />
+                <!-- Eye icon properly centered vertically -->
+                <i class="fas" 
+                    [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'" 
+                    (click)="togglePasswordVisibility()" 
+                    style="position: absolute; top: 70%; right: 15px; transform: translateY(-50%); cursor: pointer; color: #6c757d;">
+                </i>
                 </div>
                 
                 <div class="form-group">

@@ -1,6 +1,6 @@
 .user-management-container {
   min-height: 100vh;
-  background: linear-gradient(120deg, #f8fafc 60%, #e0e7ff 100%);
+ 
   padding: 32px;
   font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
@@ -34,7 +34,7 @@
 .header-left .back-button:hover {
   background: #e0e7ff;
   border-color: #93c5fd;
-  color: #2563eb;
+  color: #37814b;
 }
 .page-title {
   font-size: 26px;
@@ -70,7 +70,7 @@
   color: #1e293b;
 }
 .btn.btn-primary {
-  background: linear-gradient(90deg, #3b82f6 60%, #6366f1 100%);
+  background: linear-gradient(90deg, #37814b, #0a330d 100%);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -81,7 +81,7 @@
   transition: background 0.2s;
 }
 .btn.btn-primary:hover {
-  background: linear-gradient(90deg, #2563eb 60%, #6366f1 100%);
+  background: linear-gradient(90deg,  #37814b, #0a330d 100%);
 }
 
 .search-section label {
@@ -97,7 +97,7 @@
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: #6366f1;
+  color: #37814b;
   font-size: 18px;
 }
 .search-input {
@@ -111,7 +111,7 @@
 }
 .search-input:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: #37814b;
   background: #fff;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
 }
@@ -153,7 +153,7 @@
 }
 .group-item.selected {
   background: #eff6ff;
-  border-left: 3px solid #3b82f6;
+  border-left: 3px solid  #37814b;
 }
 .group-item:hover {
   background: #f1f5f9;
@@ -190,11 +190,11 @@
 }
 .action-btn:hover {
   background: #e0e7ff;
-  border-color: #6366f1;
+  border-color: #37814b;
 }
 .edit-btn { color: #f59e42; }
 .delete-btn { color: #ef4444; }
-.condition-btn { color: #6366f1; }
+.condition-btn { color:  #37814b; }
 
 .clear-filters-btn {
   width: 100%;
@@ -210,7 +210,7 @@
 }
 .clear-filters-btn:hover {
   background: #e0e7ff;
-  border-color: #6366f1;
+  border-color:  #37814b;
 }
 
 .users-section {
@@ -280,12 +280,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #6366f1;
+  border: 2px solid  #37814b;
   box-shadow: 0 2px 8px rgba(99, 102, 241, 0.07);
 }
 .avatar-icon {
   font-size: 22px;
-  color: #6366f1;
+  color: #37814b;
 }
 .user-details .user-name {
   font-weight: 600;
@@ -312,7 +312,7 @@
 }
 .phone-info .icon {
   font-size: 15px;
-  color: #6366f1;
+  color: #37814b;
 }
 .groups-info .groups-chips {
   display: flex;
@@ -321,7 +321,7 @@
 }
 .group-chip {
   background: #e0e7ff;
-  color: #6366f1;
+  color:  #37814b;
   padding: 5px 12px;
   border-radius: 6px;
   font-size: 13px;
@@ -374,7 +374,7 @@
 }
 .form-input:focus {
   outline: none;
-  border-color: #6366f1;
+  border-color:  #37814b;
   background: #fff;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
 }
@@ -399,7 +399,7 @@
 }
 .btn.btn-outline:hover {
   background: #e0e7ff;
-  border-color: #6366f1;
+  border-color:  #37814b;
 }
 @media (max-width: 1200px) {
   .user-management-container .content-wrapper {
@@ -494,8 +494,8 @@
 }
 
 .tab-btn.active {
-  color: #3b82f6;
-  border-bottom-color: #3b82f6;
+  color: #37814b;
+  border-bottom-color:  #37814b;
   background-color: white;
 }
 
@@ -579,7 +579,7 @@
 }
 
 .condition-logic {
-  background-color: #3b82f6;
+  background-color:  #37814b;
   color: white;
   padding: 2px 8px;
   border-radius: 12px;
