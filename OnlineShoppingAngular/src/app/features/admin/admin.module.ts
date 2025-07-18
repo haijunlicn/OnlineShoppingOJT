@@ -190,8 +190,6 @@ import { DiscountListComponent } from './discount_management/discount-list/disco
     NgxChartsModule,
     NgxMaskModule.forRoot(),
     
-  
-   
 ]
 })
 export class AdminModule { }

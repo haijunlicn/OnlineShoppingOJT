@@ -98,7 +98,7 @@ export class DiscountRulesComponent implements OnInit {
   constructor(
     private discountService: DiscountService,
     private renderer: Renderer2,
-  ) {}
+  ) { }
 
   categories: Category[] = []
   brands: Brand[] = []
@@ -140,10 +140,10 @@ export class DiscountRulesComponent implements OnInit {
     return this.groupMode
       ? [{ value: "status", label: "Status" }]
       : [
-          { value: "product", label: "Product" },
-          { value: "order", label: "Order" },
-          { value: "customer_group", label: "Customer Group" },
-        ]
+        { value: "product", label: "Product" },
+        { value: "order", label: "Order" },
+        { value: "customer_group", label: "Customer Group" },
+      ]
   }
 
   get fieldOptions(): { [key: string]: { value: string; label: string }[] } {
@@ -419,7 +419,7 @@ export class DiscountRulesComponent implements OnInit {
     }
     return rule.values.filter((v) => v.trim()).join('", "')
   }
-  
+
   handleSaveConditions() {
     if (!this.canSaveConditions()) {
       alert("Please complete all rules and fix validation errors before saving.")
@@ -430,6 +430,9 @@ export class DiscountRulesComponent implements OnInit {
       logicType: this.logicType,
       rules: this.rules,
     }
+
+    console.log("conditioon data : ", conditionData);
+
 
     this.onSaveConditions.emit(conditionData)
 
@@ -514,18 +517,6 @@ export class DiscountRulesComponent implements OnInit {
     }
   }
 
-  confirmCategorySelection() {
-    if (this.currentEditingRule) {
-      const ruleId = this.currentEditingRule.ruleId
-      const valueIndex = this.currentEditingRule.valueIndex
-      const selected = this.selectedCategoriesMap[ruleId] || []
-      const categoryNames = selected.map((c) => c.name)
-      this.updateValue(ruleId, valueIndex, categoryNames.join(", "))
-    }
-    this.showCategoryModal = false
-    this.currentEditingRule = null
-  }
-
   onBrandClick(brand: Brand) {
     const ruleId = this.currentEditingRule?.ruleId
     if (!ruleId) return
@@ -546,17 +537,42 @@ export class DiscountRulesComponent implements OnInit {
     }
   }
 
+
+  confirmCategorySelection() {
+    if (this.currentEditingRule) {
+      const ruleId = this.currentEditingRule.ruleId
+      const valueIndex = this.currentEditingRule.valueIndex
+      const selected = this.selectedCategoriesMap[ruleId] || []
+      const categoryNames = selected.map((c) => c.id)
+      this.updateValue(ruleId, valueIndex, categoryNames.join(", "))
+    }
+    this.showCategoryModal = false
+    this.currentEditingRule = null
+  }
+
   confirmBrandSelection() {
     if (this.currentEditingRule) {
       const ruleId = this.currentEditingRule.ruleId
       const valueIndex = this.currentEditingRule.valueIndex
       const selected = this.selectedBrandsMap[ruleId] || []
-      const brandNames = selected.map((b) => b.name)
+      const brandNames = selected.map((b) => b.id)
       this.updateValue(ruleId, valueIndex, brandNames.join(", "))
     }
     this.showBrandModal = false
     this.currentEditingRule = null
   }
+
+  // confirmBrandSelection() {
+  //   if (this.currentEditingRule) {
+  //     const ruleId = this.currentEditingRule.ruleId;
+  //     const valueIndex = this.currentEditingRule.valueIndex;
+  //     const selected = this.selectedBrandsMap[ruleId] || [];
+  //     const brandNames = selected.map(b => b.name);
+  //     this.updateValue(ruleId, valueIndex, brandNames.join(', '));
+  //   }
+  //   this.showBrandModal = false;
+  //   this.currentEditingRule = null;
+  // }
 
   selectCityFromModal() {
     if (this.currentEditingRule && this.selectedCity) {
