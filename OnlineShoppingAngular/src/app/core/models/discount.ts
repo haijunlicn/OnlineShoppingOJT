@@ -34,7 +34,7 @@ export interface DiscountEA_A {
   createdDate?: string;
   updatedDate?: string;
   discountMechanisms?: DiscountMechanismEA_B[];
- 
+
 }
 
 export interface DiscountMechanismEA_B {
@@ -43,7 +43,7 @@ export interface DiscountMechanismEA_B {
   quantity?: number;
   mechanismIndex?: number
   discountType?: DiscountType | string;
-   serviceDiscount?:string;
+  serviceDiscount?: string;
   value: string;
   maxDiscountAmount?: string;
   delFg?: boolean;
@@ -51,12 +51,12 @@ export interface DiscountMechanismEA_B {
   updatedDate?: string;
   couponcode?:string;
   discountId?: number;
-  disocunt?:DiscountEA_A;
+  disocunt?: DiscountEA_A;
   discountProducts?: DiscountProductEA_E[];
 
   discountConditionGroup?: DiscountConditionGroupEA_C[];
   freeGifts?: FreeGiftEA_F[];
- 
+
 }
 
 
@@ -74,14 +74,14 @@ export enum Operator {
   LESS_THAN_OR_EQUAL = 'LESS_THAN_OR_EQUAL',
   IS_ONE_OF = 'IS_ONE_OF'
 }
- 
+
 
 export interface DiscountProductEA_E {
   id?: number;
   productId?: number;
   discountMechanismId?: number;
-  product?:ProductDTO;
-  discountMechanism?:DiscountMechanismEA_B;
+  product?: ProductDTO;
+  discountMechanism?: DiscountMechanismEA_B;
 
 }
 export interface DiscountConditionGroupEA_C {
@@ -89,10 +89,11 @@ export interface DiscountConditionGroupEA_C {
   logicOperator: string;
   discountMechanismId?: number;
   groupId?: number;
- 
   discountMechanism?: DiscountMechanismEA_B;
-  group?: GroupEA_G; 
+  group?: GroupEA_G;
   discountCondition: DiscountConditionEA_D[];
+  conditions?: DiscountConditionEA_D[]; // for discountChecker
+  eligible?: boolean | null; 
 }
 
 export interface DiscountConditionEA_D {
@@ -105,14 +106,16 @@ export interface DiscountConditionEA_D {
   operator: Operator; // or '=' | 'IN' | ...
   value: string[];
   discountConditionGroupId?: number;
-  discountConditionGroup?:DiscountConditionGroupEA_C;
+  discountConditionGroup?: DiscountConditionGroupEA_C;
+  eligible?: boolean | null; 
 }
+
 export interface FreeGiftEA_F {
   id: number;
   mechanismId: number;
   productId: number;
-  discount:DiscountEA_A;
-  discountMechanism:DiscountMechanismEA_B;
+  discount: DiscountEA_A;
+  discountMechanism: DiscountMechanismEA_B;
 }
 export interface GroupEA_G {
   id: number;
@@ -127,8 +130,8 @@ export interface CustomerGroupEA_H {
   id: string;
   groupId: number;
   userId: number;
-  group:GroupEA_G;
-  user:User;
+  group: GroupEA_G;
+  user: User;
 }
 export interface Product {
   id: number
@@ -170,4 +173,19 @@ export interface ValidationError {
   ruleId: string
   valueIndex?: number
   message: string
+}
+
+export interface DiscountDisplayDTO {
+  id: number;
+  name: string;
+  type: 'AUTO' | 'COUPON';
+  code: string | null;
+  value: string | null;        // e.g. "10" for 10% or $10, depending on type
+  discountType?: 'PERCENTAGE' | 'FIXED'; // optional, for price calculation
+  mechanismType?: 'freeGift' | 'Discount' | 'coupon' | 'wholeSale';
+  maxDiscountAmount?: string | null;     // cap for percentage discounts
+  shortLabel?: string;
+  conditionSummary?: string;
+  conditionGroups?: DiscountConditionGroupEA_C[];
+  requireFrontendChecking?: boolean;
 }

@@ -12,7 +12,7 @@ public class DiscountConditionGroupES_C {
     private Boolean logicOperator;
 
     private Integer discountMechanismId;
-    private Integer groupId;
+    private long groupId;
     private DiscountMechanismES_B discountMechanism;
     private GroupES_G group;
     private List<DiscountConditionES_D> discountCondition;

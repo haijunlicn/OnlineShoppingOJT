@@ -84,4 +84,33 @@ public class AdminAccountService {
         }).collect(Collectors.toList());
     }
 
+    public List<userDTO> getAllCustomers() {
+        return userRepo.findAll().stream()
+                .filter(user -> user.getRole() != null && "Customer".equalsIgnoreCase(user.getRole().getName()))
+                .map(user -> {
+                    userDTO dto = new userDTO();
+                    dto.setId(user.getId());
+                    dto.setEmail(user.getEmail());
+                    dto.setName(user.getName());
+                    dto.setPhone(user.getPhone());
+                    dto.setRoleName(user.getRole().getName());
+                    dto.setIsVerified(user.getIsVerified());
+                    dto.setDelFg(user.getDelFg());
+                    dto.setCreatedDate(user.getCreatedDate());
+                    dto.setUpdatedDate(user.getUpdatedDate());
+                    dto.setRoleId(user.getRole().getId());
+
+                    // ✅ set groupIds from user.getCustomerGroups()
+                    List<Long> groupIds = user.getCustomerGroup() != null
+                            ? user.getCustomerGroup().stream()
+                            .map(cg -> cg.getGroup().getId())
+                            .collect(Collectors.toList())
+                            : new ArrayList<>();
+                    dto.setGroupIds(groupIds);
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
 }

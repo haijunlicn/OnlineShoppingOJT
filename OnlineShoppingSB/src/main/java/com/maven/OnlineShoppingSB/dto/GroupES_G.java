@@ -8,7 +8,7 @@ import java.util.List;
 @Getter
 @Setter
 public class GroupES_G {
-    private Integer id;
+    private Long id;
     private String name;
     private String createDate;
     private String updateDate;

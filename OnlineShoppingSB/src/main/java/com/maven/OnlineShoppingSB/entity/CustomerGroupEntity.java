@@ -11,8 +11,10 @@ import java.util.List;
 @Entity
 @Table(name = "customerGroup")
 public class CustomerGroupEntity {
+
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "Group_id")
@@ -21,6 +23,5 @@ public class CustomerGroupEntity {
     @ManyToOne
     @JoinColumn(name = "users_id")
     private UserEntity user;
-
 
 }

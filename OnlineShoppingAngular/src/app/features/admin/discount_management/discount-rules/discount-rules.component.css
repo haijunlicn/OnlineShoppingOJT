@@ -1259,3 +1259,54 @@
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #94a3b8, #64748b);
 }
+
+.text-success {
+  color: var(--color-success);
+}
+.text-warning {
+  color: #d97706;
+}
+.text-danger {
+  color: var(--color-danger);
+}
+.text-muted {
+  color: #6b7280;
+}
+.font-medium {
+  font-weight: 500;
+}
+.font-semibold {
+  font-weight: 600;
+}
+.text-sm {
+  font-size: 0.875rem;
+}
+.text-xs {
+  font-size: 0.75rem;
+}
+
+.w-5 {
+  width: 1rem; /* Reduced from 1.25rem */
+}
+
+.h-5 {
+  height: 1rem; /* Reduced from 1.25rem */
+}
+
+.back-button svg,
+.remove-rule-button svg,
+.product-tag-remove svg,
+.modal-close svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.action-button svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.card-title svg {
+  width: 1rem;
+  height: 1rem;
+}

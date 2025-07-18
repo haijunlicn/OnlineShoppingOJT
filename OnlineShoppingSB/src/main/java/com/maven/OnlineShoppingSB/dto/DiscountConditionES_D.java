@@ -4,12 +4,14 @@ import com.maven.OnlineShoppingSB.entity.conditionType;
 import com.maven.OnlineShoppingSB.entity.Operator;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
 @Setter
+@ToString
 public class DiscountConditionES_D {
     private Integer id;
     private conditionType conditionType;

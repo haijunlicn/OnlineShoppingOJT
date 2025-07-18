@@ -98,7 +98,7 @@ export class DiscountRulesComponent implements OnInit {
   constructor(
     private discountService: DiscountService,
     private renderer: Renderer2,
-  ) {}
+  ) { }
 
   categories: Category[] = []
   brands: Brand[] = []
@@ -140,10 +140,10 @@ export class DiscountRulesComponent implements OnInit {
     return this.groupMode
       ? [{ value: "status", label: "Status" }]
       : [
-          { value: "product", label: "Product" },
-          { value: "order", label: "Order" },
-          { value: "customer_group", label: "Customer Group" },
-        ]
+        { value: "product", label: "Product" },
+        { value: "order", label: "Order" },
+        { value: "customer_group", label: "Customer Group" },
+      ]
   }
 
   get fieldOptions(): { [key: string]: { value: string; label: string }[] } {
@@ -167,11 +167,11 @@ export class DiscountRulesComponent implements OnInit {
       status: [
         { value: "days_since_signup", label: "Days Since Signup" },
         { value: "last_login_date", label: "Last Login Date" },
-        { value: "total_spent", label: "Total Spent" },
         { value: "days_since_last_purchase", label: "Days Since Last Purchase" },
-        { value: "account_age_days", label: "Account Age Days" },
+        { value: "total_spent", label: "Total Spent" },
+        { value: "order_count", label: "Order Count" },
       ],
-    }
+    };
   }
 
   operatorOptions = [
@@ -431,6 +431,9 @@ export class DiscountRulesComponent implements OnInit {
       rules: this.rules,
     }
 
+    console.log("conditioon data : ", conditionData);
+
+
     this.onSaveConditions.emit(conditionData)
 
     // Reset state
@@ -470,8 +473,8 @@ export class DiscountRulesComponent implements OnInit {
     const searchTerm = this.citySearchText.toLowerCase()
     this.filteredCities = searchTerm
       ? this.myanmarCities.filter(
-          (city) => city.name.toLowerCase().includes(searchTerm) || city.region.toLowerCase().includes(searchTerm),
-        )
+        (city) => city.name.toLowerCase().includes(searchTerm) || city.region.toLowerCase().includes(searchTerm),
+      )
       : this.myanmarCities
   }
 
@@ -514,18 +517,6 @@ export class DiscountRulesComponent implements OnInit {
     }
   }
 
-  confirmCategorySelection() {
-    if (this.currentEditingRule) {
-      const ruleId = this.currentEditingRule.ruleId
-      const valueIndex = this.currentEditingRule.valueIndex
-      const selected = this.selectedCategoriesMap[ruleId] || []
-      const categoryNames = selected.map((c) => c.name)
-      this.updateValue(ruleId, valueIndex, categoryNames.join(", "))
-    }
-    this.showCategoryModal = false
-    this.currentEditingRule = null
-  }
-
   onBrandClick(brand: Brand) {
     const ruleId = this.currentEditingRule?.ruleId
     if (!ruleId) return
@@ -546,17 +537,42 @@ export class DiscountRulesComponent implements OnInit {
     }
   }
 
+
+  confirmCategorySelection() {
+    if (this.currentEditingRule) {
+      const ruleId = this.currentEditingRule.ruleId
+      const valueIndex = this.currentEditingRule.valueIndex
+      const selected = this.selectedCategoriesMap[ruleId] || []
+      const categoryNames = selected.map((c) => c.id)
+      this.updateValue(ruleId, valueIndex, categoryNames.join(", "))
+    }
+    this.showCategoryModal = false
+    this.currentEditingRule = null
+  }
+
   confirmBrandSelection() {
     if (this.currentEditingRule) {
       const ruleId = this.currentEditingRule.ruleId
       const valueIndex = this.currentEditingRule.valueIndex
       const selected = this.selectedBrandsMap[ruleId] || []
-      const brandNames = selected.map((b) => b.name)
+      const brandNames = selected.map((b) => b.id)
       this.updateValue(ruleId, valueIndex, brandNames.join(", "))
     }
     this.showBrandModal = false
     this.currentEditingRule = null
   }
+
+  // confirmBrandSelection() {
+  //   if (this.currentEditingRule) {
+  //     const ruleId = this.currentEditingRule.ruleId;
+  //     const valueIndex = this.currentEditingRule.valueIndex;
+  //     const selected = this.selectedBrandsMap[ruleId] || [];
+  //     const brandNames = selected.map(b => b.name);
+  //     this.updateValue(ruleId, valueIndex, brandNames.join(', '));
+  //   }
+  //   this.showBrandModal = false;
+  //   this.currentEditingRule = null;
+  // }
 
   selectCityFromModal() {
     if (this.currentEditingRule && this.selectedCity) {
@@ -593,4 +609,5 @@ export class DiscountRulesComponent implements OnInit {
   onRuleOperatorChange(rule: Rule, value: string) {
     this.updateRule(rule.id, { operator: value, values: [""] })
   }
+
 }

@@ -51,6 +51,8 @@ import { NotificationListComponent } from './notification/notification-list/noti
 import { LocationSettingComponent } from './common/location-setting/location-setting.component';
 import { ProfileInfoSettingComponent } from './common/profile-info-setting/profile-info-setting.component';
 import { NotiSettingComponent } from './common/noti-setting/noti-setting.component';
+import { DiscountDisplayComponent } from './product_display/discount-display/discount-display.component';
+import { StickyDiscountProgressComponent } from './product_display/sticky-discount-progress/sticky-discount-progress.component';
 
 @NgModule({
   declarations: [
@@ -94,7 +96,9 @@ import { NotiSettingComponent } from './common/noti-setting/noti-setting.compone
     NotificationListComponent,
     LocationSettingComponent,
     ProfileInfoSettingComponent,
-    NotiSettingComponent
+    NotiSettingComponent,
+    DiscountDisplayComponent,
+    StickyDiscountProgressComponent
   ],
   imports: [
     CommonModule,

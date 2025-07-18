@@ -32,9 +32,6 @@ public class OrderEntity {
     @Column(name = "tracking_number", length = 100)
     private String trackingNumber;
 
-//    @Column(name = "payment_status", length = 20)
-//    private String paymentStatus;
-
     @Column(name = "payment_status")
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
