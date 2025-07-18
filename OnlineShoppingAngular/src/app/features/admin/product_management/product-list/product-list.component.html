@@ -31,22 +31,25 @@
                             {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
                         </button>
                         <div class="dropdown d-inline-block ms-2">
-  <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-    <i class="bi bi-download me-1"></i> Export
-  </button>
-  <ul class="dropdown-menu shadow">
-    <li>
-      <a class="dropdown-item d-flex align-items-center" href="javascript:void(0)" (click)="exportTableToPdf()">
-        <i class="bi bi-file-earmark-pdf text-danger me-2"></i> Export PDF
-      </a>
-    </li>
-    <li>
-      <a class="dropdown-item d-flex align-items-center" href="javascript:void(0)" (click)="exportTableToExcel()">
-        <i class="bi bi-file-earmark-excel text-success me-2"></i> Export Excel
-      </a>
-    </li>
-  </ul>
-</div>
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-download me-1"></i> Export
+                            </button>
+                            <ul class="dropdown-menu shadow">
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center" href="javascript:void(0)"
+                                        (click)="exportTableToPdf()">
+                                        <i class="bi bi-file-earmark-pdf text-danger me-2"></i> Export PDF
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center" href="javascript:void(0)"
+                                        (click)="exportTableToExcel()">
+                                        <i class="bi bi-file-earmark-excel text-success me-2"></i> Export Excel
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                         <button *ngIf="canCreateProduct" class="btn btn-success" routerLink="/admin/productCreate">
                             <i class="bi bi-plus-circle"></i>
                             Add Product
