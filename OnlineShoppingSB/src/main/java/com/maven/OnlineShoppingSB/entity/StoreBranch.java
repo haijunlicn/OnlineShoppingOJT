@@ -49,4 +49,7 @@ public class StoreBranch {
     @Column(name = "zipcode")
     @JsonProperty("zipCode")
     private String zipcode;
+
+    @Column(name = "email")
+    private String email;
 }

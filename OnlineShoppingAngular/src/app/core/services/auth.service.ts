@@ -14,7 +14,6 @@ import { AccessControlService } from './AccessControl.service';
 import { AuthGuard } from '../guards/auth.guard';
 import { NotificationService } from './notification.service';
 
-
 @Injectable({
   providedIn: 'root'
 })
@@ -49,36 +48,6 @@ export class AuthService {
   public isCustomer$: Observable<boolean> = this.user$.pipe(
     map(user => !!user && user.roleName === 'CUSTOMER')
   );
-
-  // initializeUserFromToken(): void {
-  //   const token = this.storageService.getItem('token');
-
-  //   if (token && !this.isTokenExpired(token)) {
-  //     const decoded: any = jwtDecode(token);
-  //     const email = decoded.sub;
-  //     const roleType = decoded.roleType;
-
-  //     // this.getCurrentUserByEmailAndRoleType(email, roleType).subscribe({
-  //     this.fetchCurrentUser().subscribe({
-  //       next: (user) => {
-  //         this.userLoadedSubject.next(true); // ✅ Done
-  //         // 👇 NEW: connect WebSocket
-  //         if (user?.roleName === 'CUSTOMER' || user?.roleName === 'ADMIN') {
-  //           this.notificationService.connectWebSocket();
-  //           this.notificationService.loadInAppNotificationsForUser(user.id);
-  //         }
-  //       },
-  //       error: () => {
-  //         this.userSubject.next(null);
-  //         this.storageService.removeItem('token');
-  //         this.userLoadedSubject.next(true); // ✅ Still done
-  //       }
-  //     });
-  //   } else {
-  //     this.userSubject.next(null);
-  //     this.userLoadedSubject.next(true); // ✅ Still done
-  //   }
-  // }
 
   initializeUserFromToken(): Promise<void> {
     return new Promise((resolve) => {
@@ -282,4 +251,5 @@ export class AuthService {
       catchError((error) => throwError(() => error))
     );
   }
+
 }

@@ -45,7 +45,6 @@ public class UserEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<OtpEntity> otp;
 
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserAddressEntity> addresses;
 
@@ -54,5 +53,8 @@ public class UserEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CustomerGroupEntity> customerGroup;
+
+    @Column(name = "last_login_date")
+    private LocalDateTime lastLoginDate;
 
 }

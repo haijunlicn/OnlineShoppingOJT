@@ -1,5 +1,6 @@
 package com.maven.OnlineShoppingSB.dto;
 
+import com.maven.OnlineShoppingSB.entity.CategoryEntity;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import lombok.Getter;
@@ -25,4 +26,15 @@ public class CategoryDTO {
     private String updatedDate;
 
     private List<OptionDTO> optionTypes;
+
+    public static CategoryDTO fromEntity(CategoryEntity entity) {
+        if (entity == null) return null;
+
+        CategoryDTO dto = new CategoryDTO();
+        dto.setId(entity.getId());
+        dto.setName(entity.getName());
+        dto.setImgPath(entity.getImgPath());
+        return dto;
+    }
+
 }

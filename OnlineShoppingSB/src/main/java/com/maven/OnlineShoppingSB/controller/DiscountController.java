@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/discounts")
@@ -29,7 +31,7 @@ private  DiscountService discountService;
     }
 
     @GetMapping("/groups/{id}")
-    public GroupES_G getGroupById(@PathVariable Integer id) {
+    public GroupES_G getGroupById(@PathVariable Long id) {
         return discountService.getGroupById(id);
     }
 
@@ -39,13 +41,13 @@ private  DiscountService discountService;
     }
 
     @PutMapping("/groups/{id}")
-    public GroupES_G updateGroup(@PathVariable Integer id, @RequestBody GroupES_G groupDto) {
+    public GroupES_G updateGroup(@PathVariable Long id, @RequestBody GroupES_G groupDto) {
         groupDto.setId(id);
         return discountService.updateGroup(groupDto);
     }
 
     @DeleteMapping("/groups/{id}")
-    public void deleteGroup(@PathVariable Integer id) {
+    public void deleteGroup(@PathVariable Long id) {
         discountService.deleteGroup(id);
     }
     
@@ -54,12 +56,7 @@ private  DiscountService discountService;
         return discountService.getAllProductsForSelection();
     }
 
-    // //for main
-    // @PostMapping("/createDiscount")
-    // public DiscountES_A createDiscount(@RequestBody DiscountES_A dto) {
-    //     return discountService.createDiscount(dto);
-    // }
-
+   
 @PostMapping("/createDiscount")
 public ResponseEntity<String> createDiscount(@RequestBody DiscountES_A dto) {
     try {
@@ -81,20 +78,29 @@ public ResponseEntity<String> createDiscount(@RequestBody DiscountES_A dto) {
         return discountService.getDiscountById(id);
     }
 
-    @PutMapping("/updateDiscount/{id}")
-    public DiscountES_A updateDiscount(@PathVariable Integer id, @RequestBody DiscountES_A dto) {
-        return discountService.updateDiscount(id, dto);
-    }
+    // @PutMapping("/updateDiscount/{id}")
+    // public DiscountES_A updateDiscount(@PathVariable Integer id, @RequestBody DiscountES_A dto) {
+    //     return discountService.updateDiscount(id, dto);
+    // }
 
     @DeleteMapping("/deleteDisount/{id}")
     public void deleteDiscount(@PathVariable Integer id) {
         discountService.deleteDiscount(id);
     }
 
+   @PatchMapping("/updateDiscountStatus/{id}")
+public ResponseEntity<?> updateDiscountStatus(@PathVariable Integer id, @RequestBody Map<String, Boolean> body) {
+    Boolean isActive = body.get("isActive");
+    discountService.updateDiscountStatus(id, isActive);
+    // return ResponseEntity.ok("success"); // ဒီလိုမပေးပါနဲ့
+    Map<String, Object> resp = new HashMap<>();
+    resp.put("success", true);
+    return ResponseEntity.ok(resp); // JSON object format
+}
 
   @PostMapping("/groups/{groupId}/conditions")
     public ResponseEntity<?> saveGroupConditions(
-            @PathVariable Integer groupId,
+            @PathVariable Long groupId,
             @RequestBody GroupES_G groupDto) {
         discountService.saveGroupConditions(groupId, groupDto.getDiscountConditionGroups());
         return ResponseEntity.ok("success");
@@ -102,7 +108,7 @@ public ResponseEntity<String> createDiscount(@RequestBody DiscountES_A dto) {
     
     // Get all condition groups for a group
 @GetMapping("/groups/{groupId}/conditions")
-public List<DiscountConditionGroupES_C> getGroupConditions(@PathVariable Integer groupId) {
+public List<DiscountConditionGroupES_C> getGroupConditions(@PathVariable Long groupId) {
     return discountService.getGroupConditions(groupId);
 }
 

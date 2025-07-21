@@ -1,0 +1,51 @@
+<div class="edit-delivery-method-container">
+    <div class="page-header mb-4">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h2 class="mb-1">Edit Delivery Method</h2>
+          <p class="text-muted mb-0">Update delivery method details</p>
+        </div>
+        <a class="btn btn-outline-secondary" [routerLink]="['/admin/delivery-method-list']">
+          <i class="bi bi-arrow-left me-2"></i>Back to List
+        </a>
+      </div>
+    </div>
+  
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+  
+    <div class="card shadow-sm" *ngIf="method">
+      <div class="card-body">
+        <form (ngSubmit)="save()">
+          <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input type="text" class="form-control" [(ngModel)]="method.name" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Min Distance</label>
+            <input type="number" class="form-control" [(ngModel)]="method.minDistance" name="minDistance" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Max Distance</label>
+            <input type="number" class="form-control" [(ngModel)]="method.maxDistance" name="maxDistance" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Base Fee</label>
+            <input type="number" class="form-control" [(ngModel)]="method.baseFee" name="baseFee" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Fee Per Km</label>
+            <input type="number" class="form-control" [(ngModel)]="method.feePerKm" name="feePerKm" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Icon</label>
+            <input type="file" class="form-control" (change)="onIconSelected($event)">
+            <img *ngIf="iconPreview" [src]="iconPreview" alt="icon preview" style="width:60px;height:60px;object-fit:contain;margin-top:8px;">
+          </div>
+          <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+            <span *ngIf="isLoading" class="spinner-border spinner-border-sm"></span>
+            Save
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>

@@ -31,9 +31,9 @@ import { AdminOrdersControlComponent } from './adminOrderManagement/admin-orders
 import { AdminOrdersDetailComponent } from './adminOrderManagement/admin-orders-detail/admin-orders-detail.component';
 import { ProductDetailComponent } from './product_management/product-detail/product-detail.component';
 import { ProductEditComponent } from './product_management/product-edit/product-edit.component';
-import { CreateDiscountComponent } from './discount_management/create-discount/create-discount.component';
-import { CreateDiscountGroupComponent } from './discount_management/create-discount-group/create-discount-group.component';
-import { ProductSelectionComponent } from './discount_management/product-selection/product-selection.component';
+// import { CreateDiscountComponent } from './discount_management/create-discount/create-discount.component';
+// import { CreateDiscountGroupComponent } from './discount_management/create-discount-group/create-discount-group.component';
+// import { ProductSelectionComponent } from './discount_management/product-selection/product-selection.component';
 import { SaleAnalysisComponent } from './policy-management/sale-analysis/sale-analysis.component';
 import { PermissionGuard } from '@app/core/guards/permission.guard';
 import { AdminAccountCreateComponent } from './roleAndPermission/admin-account-create/admin-account-create.component';
@@ -55,6 +55,13 @@ import { VlogFilesListComponent } from './vlog-management/vlogfileslist/vlogfile
 import { VlogFilesCreateComponent } from './vlog-management/vlogfilescreate/vlogfilescreate.component';
 import { VlogListComponent } from './vlog-management/vloglist/vloglist.component';
 import { VlogCreateComponent } from './vlog-management/vlogcreate/vlogcreate.component';
+import { DeliveryMethodListComponent } from './deliveryMethodManagement/delivery-method-list/delivery-method-list.component';
+import { CreateDeliveryMethodComponent } from './deliveryMethodManagement/create-delivery-method/create-delivery-method.component';
+import { EditDeliveryMethodComponent } from './deliveryMethodManagement/edit-delivery-method/edit-delivery-method.component';
+
+import { CreateDiscountGroupComponent } from './discount_management/create-discount-group/create-discount-group.component';
+import { CreateDiscountComponent } from './discount_management/create-discount/create-discount.component';
+import { DiscountListComponent } from './discount_management/discount-list/discount-list.component';
 
 const routes: Routes = [
   {
@@ -88,6 +95,18 @@ const routes: Routes = [
       { path: 'payment-create', component: PaymentCreateComponent },
       { path: 'payment-list', component: PaymentListComponent },
       { path: 'payment-update/:id', component: PaymentUpdateComponent },
+      {
+  path: 'delivery-method-list',
+  component: DeliveryMethodListComponent
+},
+{
+  path: 'delivery-method-create',
+  component: CreateDeliveryMethodComponent
+},
+{
+  path: 'delivery-method-edit/:id',
+  component: EditDeliveryMethodComponent
+},
       { path: 'sale-analysis', component: SaleAnalysisComponent },
       { path: 'refund-reason/list', component: RefundReasonListComponent },
       { path: 'refund-reason/create', component: RefundReasonFormComponent },
@@ -122,9 +141,9 @@ const routes: Routes = [
       { path: 'sentNotifications', component: AdminSentNotisComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
       { path: 'createGroup', component: CreateDiscountGroupComponent },
       { path: 'createDiscount', component: CreateDiscountComponent },
+      { path: 'discountList', component: DiscountListComponent },
       {
-        path: 'sale-analysis', component
-        :SaleAnalysisComponent, canActivate: [AdminAuthGuard]
+        path: 'sale-analysis', component: SaleAnalysisComponent, canActivate: [AdminAuthGuard]
       },
       { path: 'vlogfileslist', component: VlogFilesListComponent },
       { path: 'vlogfilescreate/:vlogId', component: VlogFilesCreateComponent },

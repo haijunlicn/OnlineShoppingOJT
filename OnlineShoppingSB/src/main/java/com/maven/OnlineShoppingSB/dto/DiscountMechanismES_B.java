@@ -23,7 +23,7 @@ public class DiscountMechanismES_B {
     private String serviceDiscount;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
-
+    private String couponcode;
     private Integer discountId;
     private DiscountES_A discount;
     private List<DiscountConditionGroupES_C> discountConditionGroup;

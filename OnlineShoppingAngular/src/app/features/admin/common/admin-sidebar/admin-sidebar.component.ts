@@ -36,7 +36,7 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
     {
       heading: "Dashboard",
       items: [
-        { label: "Overview", route: "/admin/dashboard", icon: "fas fa-chart-line" },
+        { label: "User Analytics", route: "/admin/createGroup", icon: "fas fa-chart-line" },
         { label: "Analytics", route: "/admin/sale-analysis", icon: "fas fa-chart-bar" },
       ],
     },

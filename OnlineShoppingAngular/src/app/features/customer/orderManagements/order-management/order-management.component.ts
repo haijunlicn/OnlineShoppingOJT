@@ -55,11 +55,12 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
   // Delivery method integration
   deliveryMethods: DeliveryMethod[] = [];
   selectedDeliveryMethod: DeliveryMethod | null = null;
+  allDeliveryMethods: DeliveryMethod[] = [];
 
-  // Dynamic shipping rate calculation based on distance
-  private readonly BASE_SHIPPING_RATE = 500; // Base rate in MMK
-  private readonly RATE_PER_KM = 50; // Additional rate per kilometer
-  private readonly MAX_SHIPPING_RATE = 6000; // Maximum shipping rate
+  // // Dynamic shipping rate calculation based on distance
+  // private readonly BASE_SHIPPING_RATE = 500; // Base rate in MMK
+  // private readonly RATE_PER_KM = 50; // Additional rate per kilometer
+  // private readonly MAX_SHIPPING_RATE = 6000; // Maximum shipping rate
 
   private subscriptions: Subscription[] = [];
 
@@ -104,17 +105,13 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     this.currentUserId = user ? user.id : 0;
 
     // Fetch store location dynamically
-    this.storeLocationService.getAll().subscribe({
-      next: (stores: StoreLocationDto[]) => {
-        if (stores && stores.length > 0) {
-          this.storeLocation = stores[0]; // Use the first store as default
-        }
-        // Continue with the rest of ngOnInit logic
+    this.storeLocationService.getActive().subscribe({
+      next: (store: StoreLocationDto) => {
+        this.storeLocation = store;
         this.initOrderManagement();
       },
       error: (err) => {
-        console.error('Failed to load store location:', err);
-        // Fallback: continue with rest of ngOnInit logic
+        console.error('Failed to load active store location:', err);
         this.initOrderManagement();
       }
     });
@@ -543,26 +540,37 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
   }
 
   fetchDeliveryMethodsAndCalculateFee(): void {
-    console.log("selected address : ", this.selectedAddress);
-
-    console.log("Store Location : ", this.storeLocation);
-    
-
     if (this.selectedAddress && this.storeLocation) {
-
-      console.log("condition one");
-
       const distance = this.getDistanceFromStore(this.selectedAddress);
-      this.deliveryMethodService.getAvailableMethods(distance).subscribe(methods => {
-        this.deliveryMethods = methods;
-        this.selectedDeliveryMethod = methods.length > 0 ? methods[0] : null;
+
+      // Fetch all methods (not just available by distance)
+      this.deliveryMethodService.getAll().subscribe(methods => {
+        this.allDeliveryMethods = methods;
+
+        // Filter by distance
+        let filtered = methods.filter(method => {
+          // Default method (type === 1) is always included
+          if (method.type === 1) return true;
+          // If min/max are null, skip (unless default)
+          if (method.minDistance == null || method.maxDistance == null) return false;
+          return distance >= method.minDistance && distance <= method.maxDistance;
+        });
+
+        // Ensure default is present (in case not already)
+        const defaultMethod = methods.find(m => m.type === 1);
+        if (defaultMethod && !filtered.some(m => m.id === defaultMethod.id)) {
+          filtered.push(defaultMethod);
+        }
+
+        // Optional: sort so default is first
+        filtered = filtered.sort((a, b) => (b.type === 1 ? 1 : 0) - (a.type === 1 ? 1 : 0));
+
+        this.deliveryMethods = filtered;
+        this.selectedDeliveryMethod = filtered.length > 0 ? filtered[0] : null;
         this.calculateShippingFee();
         this.cdr.detectChanges();
       });
     } else {
-
-      console.log("condition two");
-
       this.deliveryMethods = [];
       this.selectedDeliveryMethod = null;
       this.calculateShippingFee();

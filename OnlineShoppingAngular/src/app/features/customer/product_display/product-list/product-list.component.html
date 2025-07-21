@@ -13,7 +13,7 @@
 
 <!-- Filter Sidebar -->
 <app-filter-sidebar [categories]="categories" [brands]="brands" [isVisible]="showFilters"
-  (filtersChanged)="onFiltersChanged($event)" >
+  (filtersChanged)="onFiltersChanged($event)">
 </app-filter-sidebar>
 
 <!-- Mobile Backdrop -->
@@ -92,7 +92,7 @@
             <!-- Price Filter -->
             <span *ngIf="currentFilters.priceRange.min !== null || currentFilters.priceRange.max !== null"
               class="badge bg-success filter-badge">
-              ${{ currentFilters.priceRange.min || 0 }} - ${{ currentFilters.priceRange.max || '∞' }}
+              MMK {{ currentFilters.priceRange.min || 0 }} - MMK {{ currentFilters.priceRange.max || '∞' }}
               <button class="btn-close btn-close-white" (click)="removePriceFilter()"></button>
             </span>
 
@@ -121,60 +121,90 @@
       <div class="products-grid-wrapper">
         <div class="product-card-container" *ngFor="let product of paginatedProducts">
           <div class="card h-100 product-card">
+
             <!-- Product Image Container -->
             <div class="position-relative product-img-wrapper">
-              <!-- Badges -->
-              <div class="position-absolute top-0 start-0 p-1 z-1">
-                <span class="badge bg-danger small py-1" *ngIf="isOnSale(product)">SALE</span>
-                <span class="badge bg-primary small py-1 ms-1" *ngIf="isNew(product)">NEW</span>
-              </div>
 
-              <!-- Wishlist Button -->
-              <button
-                class="btn btn-sm position-absolute top-0 end-0 p-1 m-1 bg-white rounded-circle shadow-sm wishlist-btn z-1"
-                title="Add to wishlist" (click)="toggleWish(product.product.id!)">
-                <i class="pi" [ngClass]="isWished(product.product.id!) ? 'pi-heart-fill text-danger' : 'pi-heart'"
-                  style="cursor: pointer; font-size: 1.2rem;"></i>
-              </button>
+              <!-- Top Left Badge Container - Organized -->
+              <div class="position-absolute top-0 start-0 p-2 z-1 badge-container">
+                <!-- Primary Status Badges -->
+                <div class="status-badges mb-1">
+                  <span class="badge badge-sale me-1" *ngIf="isOnSale(product)">SALE</span>
+                </div>
 
-              <!-- Product Image -->
-              <img [src]="getMainProductImage(product.product)" class="card-img-top" (click)="goToDetail(product)"
-                alt="{{ product.product.name }}" style="height: 180px; object-fit: contain; background: #f8f9fa;">
-            </div>
-
-            <!-- Product Info -->
-            <div class="card-body p-2" (click)="goToDetail(product)">
-              <!-- Brand & Category -->
-              <div class="d-flex justify-content-between">
-                <small class="text-muted brand-text">{{ product.brand.name }}</small>
-                <small class="text-muted category-text">{{ product.category.name }}</small>
-              </div>
-
-              <!-- Product Name -->
-              <h6 class="product-name mt-1 mb-1" title="{{ product.product.name }}">
-                {{ product.product.name }}
-              </h6>
-
-              <!-- Price & Stock -->
-              <div class="d-flex justify-content-between align-items-center mt-2">
-                <div class="price-container">
-                  <span class="fw-bold current-price">${{ getLowestPrice(product) }}</span>
-                  <span class="text-decoration-line-through text-muted ms-1 original-price" *ngIf="isOnSale(product)">
-                    ${{ product.product.basePrice }}
+                <!-- Available Discount Badges - NEW FEATURE -->
+                <div class="available-discount-badges" *ngIf="!isOnSale(product) && hasUnappliedDiscounts(product)">
+                  <span class="badge badge-available-discount">
+                    <i class="pi pi-tag me-1"></i>
+                    {{ getCombinedDiscountLabel(product) }}
                   </span>
                 </div>
 
-                <span class="stock-badge"
-                  [ngClass]="{'in-stock': hasStock(product), 'out-of-stock': !hasStock(product)}">
-                  {{ hasStock(product) ? 'In Stock' : 'Out of Stock' }}
-                </span>
+                <!-- <div class="available-discount-badges" *ngIf="hasUnappliedDiscounts(product)">
+                  <div class="available-discount-badges" *ngIf="hasUnappliedDiscounts(product)">
+                    <span class="badge badge-available-discount">
+                      <i class="pi pi-tag me-1"></i>
+                      {{ getCombinedDiscountLabel(product) }}
+                    </span>
+                  </div>
+                </div> -->
+
               </div>
 
-              <!-- Action Button -->
-              <button class="btn btn-primary btn-sm w-100 mt-2" [disabled]="!hasStock(product)"
-                (click)="viewProduct(product)">
-                View Details
+              <!-- Wishlist Button -->
+              <button class="btn btn-sm position-absolute top-0 end-0 p-1 m-2 wishlist-btn z-1" title="Add to wishlist"
+                (click)="toggleWish(product.product.id!); $event.stopPropagation()">
+                <i class="pi" [ngClass]="isWished(product.product.id!) ? 'pi-heart-fill text-danger' : 'pi-heart'"
+                  style="cursor: pointer; font-size: 1rem;"></i>
               </button>
+
+              <!-- Product Image -->
+              <img [src]="getMainProductImage(product.product)" class="card-img-top product-image"
+                (click)="goToDetail(product)" alt="{{ product.product.name }}">
+            </div>
+
+            <!-- Product Info -->
+            <div class="card-body product-info" (click)="goToDetail(product)">
+
+              <!-- Brand & Category Row -->
+              <div class="d-flex justify-content-between align-items-center mb-2 brand-category-row">
+                <small class="brand-text">{{ product.brand.name }}</small>
+                <small class="category-text">{{ product.category.name }}</small>
+              </div>
+
+              <!-- Product Name -->
+              <h6 class="product-name mb-3" [title]="product.product.name">
+                {{ product.product.name }}
+              </h6>
+
+              <!-- Enhanced Price Section -->
+              <div class="price-section mb-3">
+                <app-discount-display [discountHints]="getAppliedDiscountHints(product)" [displayMode]="'grid'"
+                  [originalPrice]="product.originalPrice" [discountedPrice]="product.discountedPrice">
+                </app-discount-display>
+
+                <!-- Fallback price display when no discounts applied -->
+                <!-- <div *ngIf="!hasAppliedDiscounts(product)" class="price-display">
+                  <span class="current-price fw-bold">
+                    MMK {{ product.originalPrice | number:'1.0-0' }}
+                  </span>
+                </div> -->
+              </div>
+
+              <!-- Bottom Action Row -->
+              <div class="d-flex justify-content-between align-items-center mt-auto">
+                <!-- Stock Status -->
+                <span class="stock-badge" [ngClass]="{'stock-in': hasStock(product), 'stock-out': !hasStock(product)}">
+                  {{ hasStock(product) ? 'In Stock' : 'Out of Stock' }}
+                </span>
+
+                <!-- Action Button -->
+                <button class="btn btn-action btn-sm" [disabled]="!hasStock(product)"
+                  (click)="viewProduct(product); $event.stopPropagation()">
+                  <i class="pi pi-eye me-1"></i>
+                  View
+                </button>
+              </div>
             </div>
           </div>
         </div>

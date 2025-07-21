@@ -1,90 +1,106 @@
-
-
-<!-- Main UI & Popup only visible when isRuleBuilderOpen is false -->
+<!-- Main UI (hidden when rule builder is open) -->
 <div *ngIf="!isRuleBuilderOpen">
-  <div class="user-management-container" *ngIf="!isConditionBuilderOpen">
+  <div class="user-management-container" *ngIf="!isConditionBuilderOpen" style="margin-top: -80px;">
     <div class="content-wrapper" style="margin-top:25px ;">
       <!-- Filters Sidebar -->
       <div class="filters-sidebar">
         <div class="filters-header">
           <button class="btn btn-primary" (click)="openCreateGroupDialog()">
-            <span class="icon">+</span>
+            <i class="fas fa-plus"></i>
             Create Group
           </button>
-          <h2>Filters</h2>
         </div>
-        <!-- Group Search -->
-        <div class="search-section" style="margin-bottom: 20px;">
-          <div class="search-input-wrapper">
-            <span class="search-icon">
-              <i class="fas fa-search"></i>
-            </span>
-            <input 
-              type="text"
-              placeholder="Search groups..." 
-              [(ngModel)]="groupSearchTerm"
-              (input)="onGroupSearchChange()"
-              class="search-input">
+      </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+
+      <!-- Sidebar -->
+      <div class="sidebar-card">
+        <div class="sidebar-header">
+          <h3 class="sidebar-title">Groups & Filters</h3>
+        </div>
+
+        <div class="sidebar-content">
+          <!-- Group Search -->
+          <div class="search-section">
+            <label class="search-label">Search Groups</label>
+            <div class="search-input-wrapper">
+              <i class="fas fa-search search-icon"></i>
+              <input type="text" class="search-input" placeholder="Search groups..." [(ngModel)]="groupSearchTerm"
+                (input)="onGroupSearchChange()">
+            </div>
+          </div>
+
+          <!-- Groups List -->
+          <div class="groups-section">
+            <h3>Customer Groups</h3>
+            <div class="groups-list">
+              <!-- All Customers Option -->
+              <div class="group-item" [class.selected]="selectedGroup === 'all'"
+                (click)="selectedGroup = 'all'; onGroupFilterChange()">
+                <i class="fas fa-users group-icon"></i>
+                <span class="group-name">All Customers</span>
+              </div>
+
+              <!-- Individual Groups -->
+              <div *ngFor="let group of filteredGroups" class="group-item"
+                [class.selected]="selectedGroup === group.id.toString()"
+                (click)="selectedGroup = group.id.toString(); onGroupFilterChange()">
+                <i class="fas fa-users group-icon"></i>
+                <span class="group-name">{{ group.name }}</span>
+                <div class="group-actions">
+                  <button class="action-btn edit-btn" (click)="openEditGroupDialog(group); $event.stopPropagation()"
+                    title="Edit Group">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="action-btn condition-btn" (click)="openConditionPopup(group); $event.stopPropagation()"
+                    title="Manage Conditions">
+                    <i class="fas fa-cog"></i>
+                  </button>
+                  <button class="action-btn delete-btn" (click)="confirmDeleteGroup(group.id); $event.stopPropagation()"
+                    title="Delete Group">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <button class="clear-filters-btn" (click)="clearAllFilters()">
+              <i class="fas fa-refresh"></i>
+              Clear All Filters
+            </button>
           </div>
         </div>
-        <!-- Groups List -->
-        <div class="groups-list">
-          <div class="group-item" 
-               [class.selected]="selectedGroup === 'all'"
-               (click)="selectedGroup = 'all'; onGroupFilterChange()">
-            <span class="group-name">All Customers from groups</span>
-          </div>
-          <div *ngFor="let group of filteredGroups" 
-               class="group-item"
-               [class.selected]="selectedGroup === group.id.toString()"
-               (click)="selectedGroup = group.id.toString(); onGroupFilterChange()">
-            <span class="group-icon"><i class="fas fa-users"></i></span>
-            <span class="group-name">{{ group.name }}</span>
-            <div class="group-actions">
-              <button class="action-btn edit-btn" 
-                      (click)="openEditGroupDialog(group); $event.stopPropagation()" 
-                      title="Edit">
-                <i class="fas fa-pen"></i>
-              </button>
-              <button class="action-btn delete-btn" 
-                      (click)="confirmDeleteGroup(group.id); $event.stopPropagation()" 
-                      title="Delete">
-                <i class="fas fa-trash"></i>
-              </button>
-              <button class="action-btn condition-btn" 
-                      (click)="openConditionPopup(group); $event.stopPropagation()" 
-                      title="Condition">
-                <i class="fas fa-cog"></i>
-              </button>
+      </div>
+
+      <!-- Main Content -->
+      <div class="content-card">
+        <!-- Search Header -->
+        <div class="content-header">
+          <div class="content-search">
+            <div class="search-input-wrapper">
+              <i class="fas fa-search search-icon"></i>
+              <input type="text" class="search-input" placeholder="Search users by name or email..."
+                [(ngModel)]="searchTerm" (input)="onSearchChange()">
             </div>
           </div>
         </div>
-        <button class="btn btn-outline clear-filters-btn" (click)="clearAllFilters()">
-          Clear All Filters
-        </button>
-      </div>
-      <!-- Users Table -->
-      <div class="users-section">
-        <div class="search-bar">
-          <div class="search-input-wrapper">
-            <span class="search-icon"><i class="fas fa-search"></i></span>
-            <input 
-              type="text"
-              placeholder="Search users..." 
-              [(ngModel)]="searchTerm"
-              (input)="onSearchChange()"
-              class="search-input">
-          </div>
-        </div>
+
+        <!-- Users Count -->
         <div class="users-count">
-          <span>{{ (filteredUsers$ | async)?.length || 0 }} users found</span>
+          <i class="fas fa-users"></i>
+          {{ (filteredUsers$ | async)?.length || 0 }} users found
         </div>
+
+        <!-- Users Table -->
         <div class="table-container">
           <table class="users-table">
             <thead>
               <tr>
-                <th>User</th>
-                <th>Phone</th>
+                <th>User Information</th>
+                <th>Contact</th>
                 <th>Groups</th>
               </tr>
             </thead>
@@ -92,13 +108,13 @@
               <tr *ngFor="let user of filteredUsers$ | async">
                 <td>
                   <div class="user-info">
-                    <span class="avatar-icon">
-                      <i class="fas fa-user-circle"></i>
-                    </span>
+                    <div class="user-avatar">
+                      <i class="fas fa-user avatar-icon"></i>
+                    </div>
                     <div class="user-details">
                       <div class="user-name">{{ user.name }}</div>
                       <div class="user-email">
-                        <span class="icon">📧</span>
+                        <i class="fas fa-envelope icon"></i>
                         {{ user.email }}
                       </div>
                     </div>
@@ -106,18 +122,21 @@
                 </td>
                 <td>
                   <div class="phone-info">
-                    <span class="icon">📞</span>
-                    {{ user.phone }}
+                    <i class="fas fa-phone icon"></i>
+                    {{ user.phone || 'N/A' }}
                   </div>
                 </td>
                 <td>
                   <div class="groups-info">
                     <ng-container *ngIf="getUserGroups(user, groups) as userGroups">
-                      <div class="groups-chips">
+                      <div class="groups-chips" *ngIf="userGroups.length > 0; else noGroups">
                         <span *ngFor="let group of userGroups" class="group-chip">
                           {{ group.name }}
                         </span>
                       </div>
+                      <ng-template #noGroups>
+                        <span class="text-muted">No groups assigned</span>
+                      </ng-template>
                     </ng-container>
                   </div>
                 </td>
@@ -127,147 +146,171 @@
         </div>
       </div>
     </div>
-    <!-- Create Group Dialog -->
-    <div class="dialog-overlay" *ngIf="isCreateGroupDialogOpen" (click)="closeCreateGroupDialog()">
-      <div class="dialog-content" (click)="$event.stopPropagation()">
-        <h2>Create New Group</h2>
-        <div class="form-group">
-          <label>Group Name</label>
-          <input 
-            type="text"
-            [(ngModel)]="newGroupName" 
-            placeholder="Enter group name"
-            class="form-input">
+
+    <!-- Create Group Modal -->
+    <div class="modal-overlay" *ngIf="isCreateGroupDialogOpen" (click)="closeCreateGroupDialog()">
+      <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3 class="modal-title">Create New Group</h3>
+          <button class="modal-close" (click)="closeCreateGroupDialog()">×</button>
         </div>
-        <div class="dialog-actions">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Group Name</label>
+            <input type="text" class="form-input" [(ngModel)]="newGroupName" placeholder="Enter group name"
+              maxlength="50">
+          </div>
+        </div>
+        <div class="modal-footer">
           <button class="btn btn-outline" (click)="closeCreateGroupDialog()">Cancel</button>
-          <button class="btn btn-primary" (click)="createGroup()">Create</button>
+          <button class="btn btn-primary" (click)="createGroup()" [disabled]="!newGroupName.trim()">
+            <i class="fas fa-plus"></i>
+            Create Group
+          </button>
         </div>
       </div>
     </div>
-    <!-- Edit Group Dialog -->
-    <div class="dialog-overlay" *ngIf="isEditGroupDialogOpen" (click)="closeEditGroupDialog()">
-      <div class="dialog-content" (click)="$event.stopPropagation()">
-        <h2>Edit Group</h2>
-        <div class="form-group">
-          <label>Group Name</label>
-          <input 
-            type="text"
-            [(ngModel)]="newGroupName" 
-            placeholder="Enter group name"
-            class="form-input">
+
+    <!-- Edit Group Modal -->
+    <div class="modal-overlay" *ngIf="isEditGroupDialogOpen" (click)="closeEditGroupDialog()">
+      <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3 class="modal-title">Edit Group</h3>
+          <button class="modal-close" (click)="closeEditGroupDialog()">×</button>
         </div>
-        <div class="dialog-actions">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Group Name</label>
+            <input type="text" class="form-input" [(ngModel)]="newGroupName" placeholder="Enter group name"
+              maxlength="50">
+          </div>
+        </div>
+        <div class="modal-footer">
           <button class="btn btn-outline" (click)="closeEditGroupDialog()">Cancel</button>
-          <button class="btn btn-primary" (click)="updateGroupName()">Save Changes</button>
+          <button class="btn btn-primary" (click)="updateGroupName()" [disabled]="!newGroupName.trim()">
+            <i class="fas fa-save"></i>
+            Save Changes
+          </button>
         </div>
       </div>
     </div>
-    <!-- Condition Popup Modal -->
-    <div class="dialog-overlay" *ngIf="isConditionPopupOpen" (click)="closeConditionPopup()">
-      <div class="dialog-content condition-popup" (click)="$event.stopPropagation()">
-        <div class="dialog-header">
-          <h2>Manage Conditions for {{ conditionGroup?.name }}</h2>
-          <button class="close-btn" (click)="closeConditionPopup()">×</button>
+
+    <!-- Condition Management Modal -->
+    <div class="modal-overlay" *ngIf="isConditionPopupOpen" (click)="closeConditionPopup()">
+      <div class="modal-container condition-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3 class="modal-title">
+            <i class="fas fa-cog"></i>
+            Conditions for {{ conditionGroup?.name }}
+          </h3>
+          <button class="modal-close" (click)="closeConditionPopup()">×</button>
         </div>
-        <div class="dialog-tabs">
-          <button 
-            class="tab-btn" 
-            [class.active]="conditionPopupTab === 'add'"  (click)="onTabChange('add')"
-            >
-            Add Condition
+
+        <!-- Tabs -->
+        <div class="modal-tabs">
+          <button class="tab-btn" [class.active]="conditionPopupTab === 'add'" (click)="onTabChange('add')">
+            <i class="fas fa-plus"></i>
+            Add Conditions
           </button>
-          <button 
-            class="tab-btn" 
-            [class.active]="conditionPopupTab === 'view'" (click)="onTabChange('view')"
-           >
-            View Condition
+          <button class="tab-btn" [class.active]="conditionPopupTab === 'view'" (click)="onTabChange('view')">
+            <i class="fas fa-eye"></i>
+            View Conditions
           </button>
         </div>
-        <div class="dialog-body">
+
+        <div class="modal-body">
+          <!-- Add Conditions Tab -->
           <ng-container *ngIf="conditionPopupTab === 'add'">
             <div class="add-condition-section">
               <button class="btn btn-primary add-condition-btn" (click)="openAddCondition()">
-                <span class="icon">+</span> Add Condition
+                <i class="fas fa-plus"></i>
+                Add New Condition
               </button>
+
               <div class="conditions-list" *ngIf="tempConditionGroups.length > 0">
-                <h4>Added Conditions:</h4>
+                <h4>Pending Conditions</h4>
                 <ul class="condition-items">
                   <li *ngFor="let condition of tempConditionGroups; let i = index" class="condition-item">
-                    <span class="condition-text">Condition {{ i + 1 }} is ready to add</span>
-                    <button class="btn btn-sm btn-outline cancel-condition-btn" (click)="removeCondition(i)">
-                      <i class="fas fa-times"></i> Cancel
+                    <div class="condition-text">
+                      <i class="fas fa-check-circle"></i>
+                      Condition {{ i + 1 }} ready to save
+                    </div>
+                    <button class="btn btn-sm cancel-condition-btn" (click)="removeCondition(i)">
+                      <i class="fas fa-times"></i>
+                      Remove
                     </button>
                   </li>
                 </ul>
               </div>
             </div>
           </ng-container>
+
+          <!-- View Conditions Tab -->
           <ng-container *ngIf="conditionPopupTab === 'view'">
             <div class="view-condition-section">
               <ng-container *ngIf="viewConditionGroups.length > 0; else noConditions">
-                <div *ngFor="let group of viewConditionGroups">
-                  <!-- Logic Row -->
-                  <div class="logic-row" style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                    <span style="font-weight: bold;">Apply When</span>
-                    <span style="display: flex; align-items: center;">
-                      <span style="margin-right: 4px;">
-                        <svg width="12" height="12" style="vertical-align: middle;"><polyline points="2,4 6,8 10,4" style="fill:none;stroke:black;stroke-width:2"/></svg>
-                      </span>
-                      <span>
-                        {{ getLogicLabel(group.logicOperator) }}
-                      </span>
+                <div *ngFor="let group of viewConditionGroups; let groupIndex = index">
+                  <!-- Logic Display -->
+                  <div class="logic-row">
+                    <span>Apply When:</span>
+                    <span>
+                      <i class="fas fa-arrow-right"></i>
+                      {{ getLogicLabel(group.logicOperator) }}
                     </span>
                   </div>
-                  <!-- Condition Rows -->
-                  <ul style="list-style: none; padding-left: 0;">
-                    <li *ngFor="let cond of group.discountCondition" style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                      <span style="font-size: 18px; color: #007bff;">•</span>
-                      <span>
+
+                  <!-- Conditions List -->
+                  <ul class="condition-list">
+                    <li *ngFor="let cond of group.discountCondition">
+                      <span class="condition-bullet">•</span>
+                      <span class="condition-description">
                         {{ getConditionDisplay(cond) }}
                       </span>
-                      <button 
-                        *ngIf="group.id != null"
-                        class="btn btn-danger btn-sm" 
-                        style="margin-left: auto;"
-                        (click)="deleteConditionGroup(group.id)">Delete</button>
+                      <button *ngIf="group.id != null" class="delete-condition-btn"
+                        (click)="deleteConditionGroup(group.id)" title="Delete this condition group">
+                        <i class="fas fa-trash"></i>
+                      </button>
                     </li>
                   </ul>
                 </div>
               </ng-container>
+
               <ng-template #noConditions>
-                <div>No conditions found.</div>
+                <div class="no-conditions">
+                  <i class="fas fa-info-circle" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                  <p>No conditions have been set for this group yet.</p>
+                  <p class="text-muted">Switch to "Add Conditions" tab to create your first condition.</p>
+                </div>
               </ng-template>
             </div>
           </ng-container>
         </div>
-        <div class="dialog-footer">
-          <button 
-            class="btn btn-success save-conditions-btn" 
-            *ngIf="conditionPopupTab === 'add'" 
+
+        <div class="modal-footer">
+          <button class="btn btn-outline" (click)="closeConditionPopup()">Close</button>
+          <button *ngIf="conditionPopupTab === 'add' && tempConditionGroups.length > 0" class="btn btn-success"
             (click)="saveAllConditions()">
-            <i class="fas fa-save"></i> Save Conditions
+            <i class="fas fa-save"></i>
+            Save All Conditions
           </button>
-          <button class="btn btn-outline" (click)="closeConditionPopup()">Cancel</button>
         </div>
       </div>
     </div>
+
   </div>
+
+  <!-- Legacy Condition Builder (keeping for compatibility) -->
   <ng-container *ngIf="isConditionBuilderOpen">
-    <app-discount-rules
-      [group]="conditionGroup"
-      [rules]="conditionRules"
-      (onBack)="closeConditionBuilder()"
+    <app-discount-rules [group]="conditionGroup" [rules]="conditionRules" (onBack)="closeConditionBuilder()"
       (onSaveConditions)="onConditionsSaved($event)">
     </app-discount-rules>
   </ng-container>
 </div>
-<!-- discount-rules component only visible when isRuleBuilderOpen is true -->
+
+<!-- Rule Builder Component (shown when isRuleBuilderOpen is true) -->
 <div *ngIf="isRuleBuilderOpen">
-  <app-discount-rules
-    [groupMode]="true"
+  <app-discount-rules [groupMode]="true"
     [rules]="editingConditionIndex !== null ? getConditionRules(editingConditionIndex) : []"
-    (onSaveConditions)="onRuleBuilderSave($event)"
-    (onBack)="closeRuleBuilder()">
+    (onSaveConditions)="onRuleBuilderSave($event)" (onBack)="closeRuleBuilder()">
   </app-discount-rules>
 </div>

@@ -1344,3 +1344,102 @@ input[type="checkbox"]:disabled {
   width: 90px;
   max-width: 110px;
 }
+
+/* --- Export Dropdown Modern Styles --- */
+.export-dropdown .btn {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  font-weight: 500;
+  border-radius: 6px;
+  padding: 0.5rem 1.25rem;
+  box-shadow: 0 2px 8px rgba(42, 50, 46, 0.08);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+.export-dropdown .btn:hover, .export-dropdown .btn:focus {
+  background: var(--color-brown);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(42, 50, 46, 0.12);
+}
+.export-dropdown .dropdown-menu {
+  min-width: 180px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 16px var(--color-shadow);
+  padding: 0.5rem 0;
+  margin-top: 0.5rem;
+}
+.export-dropdown .dropdown-item {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.export-dropdown .dropdown-item:hover, .export-dropdown .dropdown-item:focus {
+  background: var(--color-accent);
+  color: var(--color-primary);
+}
+.export-dropdown .bi-file-earmark-pdf {
+  font-size: 1.2rem;
+  color: #dc3545 !important;
+}
+.export-dropdown .bi-file-earmark-excel {
+  font-size: 1.2rem;
+  color: #28a745 !important;
+}
+@media (max-width: 768px) {
+  .export-dropdown .btn {
+    width: 100%;
+    padding: 0.5rem 1rem;
+  }
+  .export-dropdown .dropdown-menu {
+    min-width: 140px;
+  }
+}
+
+/* --- Stat Card Styles (Fixed) --- */
+.stat-card {
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(42, 50, 46, 0.08);
+  border: 1px solid var(--color-border);
+  margin-bottom: 1rem;
+}
+.stat-card .stat-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  background: #e9f7ef;
+}
+.stat-card .stat-label {
+  font-size: 0.95rem;
+  color: var(--color-brown);
+  margin-bottom: 0.25rem;
+}
+.stat-card .stat-value {
+  font-size: 1.25rem;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* Remove any large SVG backgrounds or misplaced graphics */
+.bg-gradient, .stat-card-emerald, .stat-content, .stat-trend, .icon-large {
+  background: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  color: inherit !important;
+  font-size: inherit !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  display: initial !important;
+}

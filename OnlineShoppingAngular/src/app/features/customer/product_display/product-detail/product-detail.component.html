@@ -1,223 +1,573 @@
 <app-header></app-header>
 
-<main class="main-content py-3">
-  <div class="container-fluid py-2">
-    <div class="row" *ngIf="product">
-      <!-- Breadcrumb -->
-      <div class="col-12 mb-2">
-        <nav aria-label="breadcrumb">
-          <ol class="breadcrumb small mb-0">
-            <li class="breadcrumb-item"><a href="/customer/home">Home</a></li>
-            <li class="breadcrumb-item"><a href="/customer/productList">Products</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ product.product.name }}</li>
-          </ol>
-        </nav>
-      </div>
+<main class="main-content">
+  <div class="container-fluid" *ngIf="product">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="breadcrumb-section">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/customer/home">Home</a></li>
+        <li class="breadcrumb-item"><a href="/customer/productList">Products</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ product.product.name }}</li>
+      </ol>
+    </nav>
 
-      <!-- Product Images Section -->
-      <div class="col-md-6">
-        <div class="card border-0 shadow-sm">
-          <div class="row g-0">
-            <!-- Thumbnail Images (Vertical) -->
-            <div class="col-2">
-              <div class="vertical-thumbnails">
-                <div *ngFor="let image of allImages; let i = index; trackBy: trackByImageUrl" class="thumbnail-wrapper"
-                  [class.active]="currentImageIndex === i" (click)="setActiveImage(i)">
-                  <img [src]="image.url" alt="Product thumbnail" />
-                </div>
+    <!-- Updated Layout: Images (35%) + Details (40%) + Offers (25%) when discounts exist -->
+    <div class="product-detail-layout" [class.has-discounts]="getVisibleDiscounts().length > 0">
+
+      <!-- Column 1: Product Images (35% when discounts exist, 50% when no discounts) -->
+      <div class="product-images-section">
+        <div class="images-container">
+          <!-- Main Image -->
+          <div class="main-image-container">
+            <div class="image-slider">
+              <div *ngFor="let image of allImages; let i = index" [class.active]="currentImageIndex === i"
+                class="slider-image">
+                <img [src]="image.url" class="main-product-image" alt="{{ product.product.name }}" />
               </div>
+
+              <!-- Navigation buttons -->
+              <button class="slider-nav prev" (click)="prevImage()" *ngIf="allImages.length > 1">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+              <button class="slider-nav next" (click)="nextImage()" *ngIf="allImages.length > 1">
+                <i class="bi bi-chevron-right"></i>
+              </button>
             </div>
 
-            <!-- Main Image -->
-            <div class="col-10">
-              <div class="main-image-container">
-                <!-- Simple Angular Image Slider -->
-                <div class="image-slider">
-                  <div *ngFor="let image of allImages; let i = index" [class.active]="currentImageIndex === i"
-                    class="slider-image">
-                    <img [src]="image.url" class="img-fluid main-product-image" alt="{{ product.product.name }}" />
-                  </div>
+            <div class="badge bg-primary position-absolute top-0 end-0 m-2" *ngIf="product.status">
+              {{ product.status }}
+            </div>
+          </div>
 
-                  <!-- Navigation buttons -->
-                  <button class="slider-nav prev" (click)="prevImage()" *ngIf="allImages.length > 1">
-                    <i class="bi bi-chevron-left"></i>
-                  </button>
-                  <button class="slider-nav next" (click)="nextImage()" *ngIf="allImages.length > 1">
-                    <i class="bi bi-chevron-right"></i>
-                  </button>
-                </div>
-
-                <div class="badge bg-primary position-absolute top-0 end-0 m-2" *ngIf="product.status">{{ product.status
-                  }}</div>
+          <!-- Thumbnail Images (Bottom) -->
+          <div class="thumbnails-row">
+            <div class="horizontal-thumbnails">
+              <div *ngFor="let image of allImages; let i = index; trackBy: trackByImageUrl" class="thumbnail-wrapper"
+                [class.active]="currentImageIndex === i" (click)="setActiveImage(i)">
+                <img [src]="image.url" alt="Product thumbnail" />
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Product Details Section -->
-      <div class="col-md-6">
-        <div class="card border-0 shadow-sm p-3">
-          <h2 class="product-title mb-1">{{ product.product.name }}</h2>
+      <!-- Column 2: Product Details (40% when discounts exist, 50% when no discounts) -->
+      <div class="product-info-section">
+        <div class="product-info-container">
+          <!-- Product Header -->
+          <div class="product-header">
+            <h1 class="product-title">{{ product.product.name }}</h1>
 
-          <div class="d-flex align-items-center mb-1">
-            <span class="badge bg-secondary me-2">{{ product.brand.name }}</span>
-            <span class="badge bg-info">{{ product.category.name }}</span>
+            <div class="product-badges">
+              <span class="badge bg-secondary me-2">{{ product.brand.name }}</span>
+              <span class="badge bg-info">{{ product.category.name }}</span>
+            </div>
           </div>
 
-          <div class="price-container mb-2">
-            <h3 class="current-price mb-0" *ngIf="selectedVariant">
-              ${{ selectedVariant.price.toFixed(2) }}
-            </h3>
-            <h3 class="current-price mb-0" *ngIf="!selectedVariant">
-              ${{ product.product.basePrice.toFixed(2) }}
-            </h3>
+          <!-- Enhanced Price Section -->
+          <div class="price-section">
+            <div class="price-display">
+              <!-- Show discounted price if available -->
+              <div *ngIf="hasActiveDiscounts(product.product!.id!); else regularPrice" class="discounted-pricing">
+                <div class="current-price">
+                  MMK {{ getDiscountedPrice(product.product!.id!) | number:'1.0-0' }}
+                </div>
+                <div class="original-price-line">
+                  <s class="original-price">
+                    MMK {{ getCurrentDisplayPrice() | number:'1.0-0' }}
+                  </s>
+                  <span class="savings-badge">
+                    Save MMK {{ getSavingsAmount(product.product!.id!) | number:'1.0-0' }}
+                  </span>
+                </div>
+              </div>
+
+              <ng-template #regularPrice>
+                <div class="current-price">
+                  MMK {{ getCurrentDisplayPrice() | number:'1.0-0' }}
+                </div>
+              </ng-template>
+            </div>
           </div>
 
-          <div class="stock-status mb-2">
+          <!-- Stock Status -->
+          <div class="stock-status">
             <span [class]="getStockClass()">
-              <i class="bi" [ngClass]="{'bi-check-circle-fill': selectedVariant && selectedVariant.stock > 5, 
-                                     'bi-exclamation-circle-fill': selectedVariant && selectedVariant.stock <= 5 && selectedVariant.stock > 0,
-                                     'bi-x-circle-fill': selectedVariant && selectedVariant.stock === 0}"></i>
+              <i class="bi" [ngClass]="getStockIcon()"></i>
               {{ getStockStatus() }}
             </span>
           </div>
 
           <!-- Product Options -->
-          <form [formGroup]="form" class="mb-2">
-            <div *ngFor="let option of product.options; trackBy: trackByOptionId" class="mb-2">
-              <label class="form-label fw-bold mb-1">{{ option.name }}</label>
-              <div class="d-flex flex-wrap">
-                <div
-                  *ngFor="let value of getValidOptionValues(option.id, option.optionValues); trackBy: trackByOptionValue"
-                  class="me-2 mb-1">
-                  <button type="button" class="btn option-btn" [class.btn-primary]="isSelected(option.id, value.id!)"
-                    [class.btn-outline-secondary]="!isSelected(option.id, value.id!)"
-                    (click)="onOptionChange(option.id, value.id!)">
-                    {{ value.value }}
-                  </button>
+          <div class="options-section" *ngIf="product.options.length > 0">
+            <form [formGroup]="form">
+              <div *ngFor="let option of product.options; trackBy: trackByOptionId" class="option-group">
+                <label class="option-label">{{ option.name }}</label>
+                <div class="option-values">
+                  <div
+                    *ngFor="let item of getOptionValuesWithAvailability(option.id, option.optionValues); trackBy: trackByOptionValue"
+                    class="option-value-wrapper">
+                    <button type="button" class="btn option-btn"
+                      [class.btn-primary]="isSelected(option.id, item.value.id)"
+                      [class.btn-outline-secondary]="!isSelected(option.id, item.value.id)" [disabled]="!item.enabled"
+                      (click)="item.enabled && onOptionChange(option.id, item.value.id)">
+                      {{ item.value.value }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- SKU -->
+          <div class="sku-section" *ngIf="selectedVariant">
+            <small class="text-muted">
+              SKU: <span class="fw-bold">{{ selectedVariant.sku }}</span>
+            </small>
+          </div>
+
+          <!-- Add to Cart Section -->
+          <div class="add-to-cart-section">
+            <div class="quantity-selector">
+              <label class="quantity-label">Quantity:</label>
+              <div class="input-group quantity-input">
+                <button class="btn btn-outline-secondary" type="button" (click)="decrementQuantity()">-</button>
+                <input type="number" class="form-control text-center" [(ngModel)]="quantity" min="1"
+                  [max]="getCurrentVariantRemainingStock()">
+                <button class="btn btn-outline-secondary" type="button" (click)="incrementQuantity()">+</button>
+              </div>
+            </div>
+
+            <div class="action-buttons">
+              <button class="btn btn-primary add-to-cart-btn" (click)="addToCart(this.product)"
+                [disabled]="!selectedVariant || selectedVariant.stock === 0 || getCurrentVariantRemainingStock() === 0">
+                <i class="bi bi-cart-plus"></i>
+                Add to Cart
+              </button>
+
+              <button class="btn btn-outline-secondary wishlist-btn" (click)="toggleWish(product.product.id!)">
+                <i class="pi" [ngClass]="isWished(product.product.id!) ? 'pi-heart-fill text-danger' : 'pi-heart'"></i>
+              </button>
+            </div>
+
+            <!-- Cart Info -->
+            <div class="cart-info" *ngIf="selectedVariant">
+              <small class="text-muted">
+                In Cart: {{ getCurrentVariantCartQuantity() }} |
+                Remaining: {{ getCurrentVariantRemainingStock() }}
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Column 3: Horizontally Swipeable Offers Section (25%) -->
+      <div class="offers-section" *ngIf="getVisibleDiscounts().length > 0">
+        <div class="offers-container">
+          <!-- Header -->
+          <div class="offers-header">
+            <div class="offers-title">
+              <i class="pi pi-tag"></i>
+              Special Offers
+            </div>
+            <div class="offers-count">{{ getVisibleDiscounts().length }} Available</div>
+          </div>
+
+          <!-- Swipeable Discount Cards -->
+          <div class="discount-carousel-container">
+            <div class="discount-carousel" #discountCarousel
+              [style.transform]="'translateX(' + (-currentDiscountIndex * 100) + '%)'">
+              <div *ngFor="let discount of getVisibleDiscounts(); let i = index" class="discount-card-slide">
+                <div class="discount-card-compact">
+
+                  <!-- Featured Banner for high-value discounts -->
+                  <div class="featured-ribbon" *ngIf="isHighValueDiscount(discount)">
+                    <span>FEATURED</span>
+                  </div>
+
+                  <!-- Main Discount Display -->
+                  <div class="discount-main-compact">
+                    <!-- Large Discount Value -->
+                    <div class="discount-value-compact">
+                      {{ getDiscountPercentage(discount) }}
+                    </div>
+
+                    <!-- Discount Type Label -->
+                    <div class="discount-type-compact">
+                      {{ getDiscountTypeLabel(discount) }}
+                    </div>
+
+                    <!-- Mechanism-based Description -->
+                    <div class="discount-description-compact">
+                      {{ getMechanismBasedMessage(discount) }}
+                    </div>
+
+                    <!-- Coupon Code Display (for Coupon mechanism) -->
+                    <div class="coupon-code-compact" *ngIf="discount.mechanismType === 'Coupon' && discount.couponcode">
+                      <div class="code-box-compact" [class.copyable]="isConditionsMet(discount)">
+                        <span class="code-text-compact">{{ discount.couponcode }}</span>
+                        <button class="copy-code-btn-compact" *ngIf="isConditionsMet(discount)"
+                          (click)="copyToClipboard(discount.couponcode)" title="Copy code">
+                          <i class="pi pi-copy"></i>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- View Detail Button -->
+                    <button class="view-detail-btn" (click)="showDiscountDetail(discount)">
+                      View Detail
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </form>
 
-          <!-- SKU -->
-          <div class="sku-container small text-muted mb-2" *ngIf="selectedVariant">
-            SKU: <span class="fw-bold">{{ selectedVariant.sku }}</span>
-          </div>
-
-          <!-- Add to Cart -->
-          <!-- Update the cart quantity display section -->
-          <div class="d-flex align-items-center">
-            <div class="input-group me-3" style="width: 120px;">
-              <button class="btn btn-outline-secondary" type="button" (click)="decrementQuantity()">-</button>
-              <input type="number" class="form-control text-center" [(ngModel)]="quantity" min="1"
-                [max]="getCurrentVariantRemainingStock()">
-              <button class="btn btn-outline-secondary" type="button" (click)="incrementQuantity()">+</button>
+            <!-- Navigation Dots -->
+            <div class="carousel-dots" *ngIf="getVisibleDiscounts().length > 1">
+              <button *ngFor="let discount of getVisibleDiscounts(); let i = index" class="dot"
+                [class.active]="currentDiscountIndex === i" (click)="goToDiscountSlide(i)">
+              </button>
             </div>
 
-            <button class="btn btn-primary" (click)="addToCart(this.product)"
-              [disabled]="!selectedVariant || selectedVariant.stock === 0 || getCurrentVariantRemainingStock() === 0">
-              <i class="bi bi-cart-plus me-1"></i> Add to Cart
+            <!-- Navigation Arrows (optional) -->
+            <button class="carousel-nav prev" *ngIf="getVisibleDiscounts().length > 1 && currentDiscountIndex > 0"
+              (click)="prevDiscountSlide()">
+              <i class="pi pi-chevron-left"></i>
             </button>
-
-            <button class="btn btn-outline-secondary ms-2" (click)="toggleWish(product.product.id!)">
-              <i class="pi" [ngClass]="isWished(product.product.id!) ? 'pi-heart-fill text-danger' : 'pi-heart'"></i>
+            <button class="carousel-nav next"
+              *ngIf="getVisibleDiscounts().length > 1 && currentDiscountIndex < getVisibleDiscounts().length - 1"
+              (click)="nextDiscountSlide()">
+              <i class="pi pi-chevron-right"></i>
             </button>
           </div>
-
-          <!-- Show In Cart / Remaining for current variant -->
-          <div class="small mt-2 text-muted" *ngIf="selectedVariant">
-            In Cart: {{ getCurrentVariantCartQuantity() }} |
-            Remaining: {{ getCurrentVariantRemainingStock() }}
-          </div>
-
-
         </div>
+      </div>
+    </div>
+
+    <!-- Mobile Discount Section (Below main content) -->
+    <div class="mobile-discount-section d-lg-none" *ngIf="getVisibleDiscounts().length > 0" #mobileDiscounts>
+      <div class="mobile-discount-container">
+        <div class="mobile-discount-header">
+          <h5 class="mb-3">
+            <i class="pi pi-tag me-2"></i>
+            Special Offers ({{ getVisibleDiscounts().length }})
+          </h5>
+        </div>
+        <app-discount-condition-display [discountHints]="getVisibleDiscounts()" [showTitle]="false"
+          [maxDisplayItems]="3">
+        </app-discount-condition-display>
       </div>
     </div>
 
     <!-- Product Details Tabs -->
-    <div class="row mt-3">
-      <div class="col-12">
-        <div class="card border-0 shadow-sm">
-          <div class="card-header bg-white">
-            <ul class="nav nav-tabs card-header-tabs" id="productTabs" role="tablist">
-              <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="details-tab" data-bs-toggle="tab" data-bs-target="#details"
-                  type="button" role="tab" aria-controls="details" aria-selected="true">Details</button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="specifications-tab" data-bs-toggle="tab" data-bs-target="#specifications"
-                  type="button" role="tab" aria-controls="specifications" aria-selected="false">Specifications</button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button"
-                  role="tab" aria-controls="reviews" aria-selected="false">Reviews</button>
-              </li>
-            </ul>
-          </div>
-          <div class="card-body">
-            <div class="tab-content" id="productTabsContent">
-              <div class="tab-pane fade show active" id="details" role="tabpanel" aria-labelledby="details-tab">
-                <div class="p-2">
-                  <h5 class="mb-2">Product Description</h5>
-                  <p>{{ product.product.description }}</p>
+    <div class="product-tabs-section">
+      <div class="card">
+        <div class="card-header">
+          <ul class="nav nav-tabs card-header-tabs" id="productTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="details-tab" data-bs-toggle="tab" data-bs-target="#details"
+                type="button" role="tab" aria-controls="details" aria-selected="true">
+                Details
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="specifications-tab" data-bs-toggle="tab" data-bs-target="#specifications"
+                type="button" role="tab" aria-controls="specifications" aria-selected="false">
+                Specifications
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button"
+                role="tab" aria-controls="reviews" aria-selected="false">Reviews</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="qanda-tab" data-bs-toggle="tab" data-bs-target="#qanda" type="button"
+                role="tab" aria-controls="qanda" aria-selected="false">Q & A</button>
+            </li>
+            <!-- <li class="nav-item" role="presentation">
+              <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button"
+                role="tab" aria-controls="reviews" aria-selected="false">
+                Reviews
+              </button>
+            </li> -->
+          </ul>
+        </div>
+        <div class="card-body">
+          <div class="tab-content" id="productTabsContent">
+            <div class="tab-pane fade show active" id="details" role="tabpanel" aria-labelledby="details-tab">
+              <h5>Product Description</h5>
+              <p>{{ product.product.description }}</p>
+            </div>
+            <div class="tab-pane fade" id="specifications" role="tabpanel" aria-labelledby="specifications-tab">
+              <table class="table table-striped">
+                <tbody>
+                  <tr>
+                    <th scope="row">Brand</th>
+                    <td>{{ product.brand.name }}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Category</th>
+                    <td>{{ product.category.name }}</td>
+                  </tr>
+                  <tr *ngFor="let option of product?.options">
+                    <th scope="row">{{ option.name }}</th>
+                    <td>
+                      <span *ngFor="let value of option.optionValues; let last = last">
+                        {{ value.value }}{{ !last ? ', ' : '' }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+              <!-- Review Summary -->
+              <div *ngIf="reviewTotal > 0" class="review-summary">
+                <div class="d-flex align-items-center">
+                  <span class="average-rating">{{ reviewAverage | number:'1.1-1' }}</span>
+                  <span class="star-icons">
+                    <ng-container *ngFor="let s of [1,2,3,4,5]">
+                      <i class="bi"
+                        [ngClass]="s <= getRounded(reviewAverage) ? 'bi-star-fill text-warning' : 'bi-star text-secondary'"></i>
+                    </ng-container>
+                  </span>
+                  <span class="total-ratings">{{ reviewTotal }} Ratings</span>
+                </div>
+                <div class="mt-2">
+                  <div *ngFor="let s of [5,4,3,2,1]" class="review-breakdown-row">
+                    <span class="star-label">{{s}} <i class="bi bi-star-fill text-warning"></i></span>
+                    <div class="bar-bg">
+                      <div class="bar-fill" [style.width.%]="(reviewBreakdown[s] || 0) / reviewTotal * 100"></div>
+                    </div>
+                    <span class="count-label">{{reviewBreakdown[s] || 0}}</span>
+                  </div>
                 </div>
               </div>
-              <div class="tab-pane fade" id="specifications" role="tabpanel" aria-labelledby="specifications-tab">
-                <table class="table table-striped">
-                  <tbody>
-                    <tr>
-                      <th scope="row">Brand</th>
-                      <td>{{ product.brand.name }}</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Category</th>
-                      <td>{{ product.category.name }}</td>
-                    </tr>
-                    <tr *ngFor="let option of product?.options">
-                      <th scope="row">{{ option.name }}</th>
-                      <td>
-                        <span *ngFor="let value of option.optionValues; let last = last">
-                          {{ value.value }}{{ !last ? ', ' : '' }}
-                        </span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+
+              <!-- Review Sort/Filter -->
+              <div class="d-flex align-items-center mb-2">
+                <div>
+                  <label>Sort:</label>
+                  <select [(ngModel)]="reviewSort" (change)="onReviewSortChange(reviewSort)">
+                    <option value="date_desc">Newest First</option>
+                    <option value="date_asc">Oldest First</option>
+                    <option value="rating_desc">Rating: High to Low</option>
+                    <option value="rating_asc">Rating: Low to High</option>
+                  </select>
+                </div>
+                <div class="ms-3">
+                  <label>Filter:</label>
+                  <select [(ngModel)]="reviewFilterRating" (change)="onReviewFilterChange(reviewFilterRating)">
+                    <option [ngValue]="undefined">All stars</option>
+                    <option *ngFor="let s of [5,4,3,2,1]" [ngValue]="s">{{s}} star</option>
+                  </select>
+                </div>
               </div>
-              <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+
+              <!-- Review List -->
+              <div *ngIf="isLoadingReviews" class="text-center py-3">
+                <span class="spinner-border"></span>
+              </div>
+              <div *ngIf="!isLoadingReviews && reviews.length > 0" class="review-list">
+                <div *ngFor="let review of reviews" class="review-item">
+                  <div class="review-header">
+                    <span class="review-username">{{review.userName || 'User'}}</span>
+                    <span class="review-stars">
+                      <ng-container *ngFor="let s of [1,2,3,4,5]">
+                        <i class="bi"
+                          [ngClass]="s <= review.rating ? 'bi-star-fill text-warning' : 'bi-star text-secondary'"></i>
+                      </ng-container>
+                    </span>
+                    <span *ngIf="review.verifiedPurchase" class="review-verified">Verified Purchase</span>
+                    <span class="review-date">
+                      {{review.createdDate | date:'mediumDate'}}
+                      <ng-container *ngIf="review.userId === userId">
+                        <i class="bi bi-pencil-square edit-icon" (click)="openEditReview(review)" title="Edit"></i>
+                        <i class="bi bi-trash delete-icon ms-2" (click)="deleteReview(review)" title="Delete"></i>
+                      </ng-container>
+                    </span>
+                  </div>
+                  <div class="review-comment">{{review.comment}}</div>
+                  <div class="review-images" *ngIf="review.images?.length">
+                    <img *ngFor="let img of review.images" [src]="img.imageUrl">
+                  </div>
+                </div>
+                <!-- Pagination -->
+                <nav class="mt-2">
+                  <ul class="pagination justify-content-center">
+                    <li class="page-item" [class.disabled]="reviewPage === 1">
+                      <button class="page-link" (click)="onReviewPageChange(reviewPage-1)"
+                        [disabled]="reviewPage === 1">&laquo;</button>
+                    </li>
+                    <li class="page-item" *ngFor="let p of getPages()" [class.active]="reviewPage === p">
+                      <button class="page-link" (click)="onReviewPageChange(p)">{{p}}</button>
+                    </li>
+                    <li class="page-item" [class.disabled]="reviewPage === getPages().length">
+                      <button class="page-link" (click)="onReviewPageChange(reviewPage+1)"
+                        [disabled]="reviewPage === getPages().length">&raquo;</button>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+              <div *ngIf="!isLoadingReviews && reviews.length === 0">
                 <p class="text-center py-3">No reviews yet. Be the first to review this product!</p>
               </div>
+
+              <!-- Add Review Form (only if logged in, has purchased, and hasn't reviewed) -->
+              <div class="review-form mt-3" *ngIf="isLoggedIn && hasPurchasedProduct && !hasReviewedProduct">
+                <h5>Add Your Review</h5>
+                <form (ngSubmit)="submitReview()" class="mb-3">
+                  <div class="mb-2">
+                    <label>Rating:</label>
+                    <select [(ngModel)]="newReview.rating" name="rating" required>
+                      <option *ngFor="let r of [5,4,3,2,1]" [value]="r">{{r}} Star{{r>1?'s':''}}</option>
+                    </select>
+                  </div>
+                  <div class="mb-2">
+                    <textarea [(ngModel)]="newReview.comment" name="comment" class="form-control" rows="2"
+                      placeholder="Write your review..." required></textarea>
+                  </div>
+                  <div class="mb-2">
+                    <label>Upload Images:</label>
+                    <input type="file" (change)="onReviewImageSelected($event)" multiple accept="image/*" />
+                    <div class="mt-2">
+                      <span *ngFor="let img of uploadedReviewImages; let i = index" class="uploaded-image-preview">
+                        <img [src]="img.imageUrl">
+                        <button type="button" class="btn-close btn-sm" (click)="removeReviewImage(i)"></button>
+                      </span>
+                    </div>
+                  </div>
+                  <button class="btn btn-primary" type="submit" [disabled]="isSubmittingReview">Submit Review</button>
+                </form>
+              </div>
+
+              <!-- Message for users who have already reviewed -->
+              <div class="mt-3" *ngIf="isLoggedIn && hasPurchasedProduct && hasReviewedProduct">
+                <div class="alert alert-success">
+                  <i class="bi bi-check-circle me-2"></i>
+                  You have already reviewed this product. Thank you for your feedback!
+                </div>
+              </div>
+
+              <!-- Message for users who haven't purchased or not logged in -->
+              <div class="mt-3" *ngIf="!isLoggedIn || (isLoggedIn && !hasPurchasedProduct)">
+                <div class="alert alert-info">
+                  <i class="bi bi-info-circle me-2"></i>
+                  You need to purchase and receive this product to write a review.
+                </div>
+              </div>
+            </div>
+            <div class="tab-pane fade" id="qanda" role="tabpanel" aria-labelledby="qanda-tab">
+              <app-productqanda [productId]="product.product.id || 0"></app-productqanda>
             </div>
           </div>
         </div>
       </div>
     </div>
-<!-- Related Products -->
-<div class="related-products-wrapper mt-3" *ngIf="relatedProducts.length > 0">
-  <h4 class="mb-2">Related Products</h4>
 
-  <!-- Scroll Left Button -->
-  <button class="scroll-btn left" (click)="scrollLeft()">‹</button>
+    <!-- Related Products -->
+    <div class="related-products-section" *ngIf="relatedProducts.length > 0">
+      <h4>Related Products</h4>
 
-  <!-- Scrollable Container -->
-  <div class="related-products-scroll" #scrollContainer>
-    <div class="related-product-card" *ngFor="let product of relatedProducts">
-      <div class="card h-100">
-        <img [src]="getMainProductImage(product)" alt="Product Image" />
-        <div class="card-body">
-          <h5 class="card-title">{{ product.name }}</h5>
-          <p class="card-text">${{ product.basePrice }}</p>
+      <button class="scroll-btn left" (click)="scrollLeft()">‹</button>
+
+      <div class="related-products-scroll" #scrollContainer>
+        <div class="related-product-card" *ngFor="let relatedProduct of relatedProducts">
+          <div class="card">
+            <img [src]="getMainProductImage(relatedProduct)" alt="Product Image" />
+            <div class="card-body">
+              <h6 class="card-title">{{ relatedProduct.name }}</h6>
+              <p class="card-text">From MMK {{ relatedProduct.basePrice | number:'1.0-0' }}</p>
+            </div>
+          </div>
         </div>
       </div>
+
+      <button class="scroll-btn right" (click)="scrollRight()">›</button>
     </div>
   </div>
+</main>
 
-  <!-- Scroll Right Button -->
-  <button class="scroll-btn right" (click)="scrollRight()">›</button>
+<!-- Enhanced Sticky Discount Progress Bar with Real Data -->
+<app-sticky-discount-progress [conditionalDiscounts]="getConditionalDiscounts()" [currentAmount]="getCurrentCartTotal()"
+  [cartItems]="cartItems" [currency]="'MMK'" (dismissed)="onStickyProgressDismissed()"
+  (addMoreClicked)="onAddMoreItemsClicked()">
+</app-sticky-discount-progress>
+
+
+<!-- Edit Review Modal -->
+<div class="edit-review-modal" *ngIf="editingReview">
+  <div class="edit-review-content">
+    <h5>Edit Your Review</h5>
+    <div class="star-rating mb-2">
+      <ng-container *ngFor="let s of [1,2,3,4,5]">
+        <i class="bi" [ngClass]="s <= editReviewData.rating ? 'bi-star-fill text-warning' : 'bi-star text-secondary'"
+          (click)="editReviewData.rating = s" style="cursor:pointer; font-size: 2rem;"></i>
+      </ng-container>
+    </div>
+    <textarea [(ngModel)]="editReviewData.comment" rows="3" class="form-control mb-2"></textarea>
+    <!-- Image Edit UI -->
+    <div class="mb-2" *ngIf="editReviewData.images && editReviewData.images.length">
+      <label>Edit Images:</label>
+      <div class="edit-review-images">
+        <span *ngFor="let img of editReviewData.images; let i = index" class="uploaded-image-preview">
+          <img [src]="img.imageUrl"
+            style="width:60px; height:60px; object-fit:cover; border-radius:8px; margin-right:8px;">
+          <input type="file" accept="image/*" (change)="onEditReviewImageSelected($event, i)" style="display:none"
+            #editImgInput>
+          <button type="button" class="btn btn-sm btn-outline-primary me-1"
+            (click)="editImgInput.click()">Replace</button>
+          <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeEditReviewImage(i)">Remove</button>
+        </span>
+      </div>
+    </div>
+    <div class="mb-2">
+      <input type="file" #addEditImgInput style="display:none" (change)="onAddEditReviewImageSelected($event)">
+      <button type="button" class="btn btn-sm btn-success mt-2" (click)="addEditReviewImage(addEditImgInput)"
+        [disabled]="editReviewData.images.length >= 5">
+        Add Image
+      </button>
+    </div>
+    <div class="d-flex justify-content-end mt-3">
+      <button class="btn btn-secondary me-2" (click)="closeEditReview()">Cancel</button>
+      <button class="btn btn-primary" (click)="submitEditReview()">Save</button>
+    </div>
+  </div>
 </div>
 
-  </div>
-</main>
+
+
+<!-- Add styles for modal and icon -->
+<style>
+  .edit-review-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .edit-review-content {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.15);
+    padding: 2rem;
+    min-width: 320px;
+    max-width: 90vw;
+  }
+
+  .edit-icon {
+    cursor: pointer;
+    margin-left: 8px;
+    color: #007bff;
+  }
+
+  .edit-icon:hover {
+    color: #0056b3;
+  }
+</style>

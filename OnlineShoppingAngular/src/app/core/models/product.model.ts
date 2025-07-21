@@ -1,4 +1,5 @@
 import type { CategoryDTO } from "./category-dto";
+import { DiscountDisplayDTO } from "./discount";
 import type { OptionTypeDTO, OptionValueDTO } from "./option.model";
 import type { VariantOptionDTO } from "./variant.model";
 
@@ -14,7 +15,7 @@ export interface ProductVariantDTO {
   displayLabel?: string
   isDefault?: boolean
   isRemovable?: boolean
-  isExisting?: boolean 
+  isExisting?: boolean
 }
 
 // Product Option
@@ -45,7 +46,7 @@ export interface ProductDTO {
 // Brand DTO
 export interface BrandDTO {
   id: string;
- 
+
   name: string;
   logo?: string;
 }
@@ -56,7 +57,7 @@ export interface CreateProductRequestDTO {
   options: OptionTypeDTO[];
   variants: ProductVariantDTO[];
   productImages?: ProductImageDTO[];
-  
+
 }
 
 // Main product list item DTO used in list view
@@ -91,6 +92,10 @@ export interface ProductImageDTO {
 // Card item view of product (extends list item with a status badge)
 export interface ProductCardItem extends ProductListItemDTO {
   status: string;
+  discountHints?: DiscountDisplayDTO[];
+  originalPrice?: number;
+  discountedPrice?: number;
+  discountBreakdown?: { label: string; amount: number }[];
 }
 
 // Image Pool Item (for image upload panel)

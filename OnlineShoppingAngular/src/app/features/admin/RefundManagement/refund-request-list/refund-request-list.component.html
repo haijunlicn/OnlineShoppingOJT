@@ -24,12 +24,24 @@
                         <button class="btn btn-outline-secondary btn-sm" (click)="refreshData()" [disabled]="isLoading">
                             <i class="bi bi-arrow-clockwise me-1"></i>Refresh
                         </button>
-                        <button class="btn btn-outline-danger btn-sm" (click)="exportRefundsToPdf()">
-                            <i class="bi bi-file-earmark-pdf me-1"></i>Export PDF
-                        </button>
-                        <button class="btn btn-outline-success btn-sm" (click)="exportRefundsToExcel()">
-                            <i class="bi bi-file-earmark-excel me-1"></i>Export Excel
-                        </button>
+                        <div class="dropdown" style="display:inline-block;">
+  <button class="btn btn-outline dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="btn-icon">📥</span>
+    Export
+  </button>
+  <ul class="dropdown-menu">
+    <li>
+      <a class="dropdown-item" href="javascript:void(0)" (click)="exportTableToPdf()">
+        <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Export PDF
+      </a>
+    </li>
+    <li>
+      <a class="dropdown-item" href="javascript:void(0)" (click)="exportTableToExcel()">
+        <i class="bi bi-file-earmark-excel me-2 text-success"></i>Export Excel
+      </a>
+    </li>
+  </ul>
+</div>
                     </div>
     </div>
 </div>

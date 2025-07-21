@@ -1,24 +1,68 @@
 <!-- Clean Navigation Bar -->
-<div class="navigation-bar mb-3">
-  <div class="nav-left">
-    <div class="nav-info">
-      <nav aria-label="breadcrumb" class="mb-1">
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item">
-            <i class="fas fa-home me-1"></i>
-            <a href="/admin/dashboard" class="text-decoration-none">Dashboard</a>
-          </li>
-          <li class="breadcrumb-item">
-            <i class="fas fa-box me-1"></i>
-            Product Management
-          </li>
-          <li class="breadcrumb-item active" aria-current="page">Product List</li>
-        </ol>
-      </nav>
-      <h2 class="page-title">Products Management</h2>
-      <p class="page-subtitle">Manage your product inventory and details</p>
+<div class="container-fluid">
+
+    <div class="navigation-bar mb-3">
+        <div class="nav-left">
+            <div class="nav-info">
+                <nav aria-label="breadcrumb" class="mb-1">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <i class="fas fa-home me-1"></i>
+                            <a href="/admin/dashboard" class="text-decoration-none">Dashboard</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <i class="fas fa-box me-1"></i>
+                            Product Management
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Product List</li>
+                    </ol>
+                </nav>
+
+                <div class="header-content">
+                    <div class="header-info">
+                        <h2 class="page-title">Products Management</h2>
+                        <p class="page-subtitle">Manage your product inventory and details</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-outline-primary btn-filter" (click)="toggleFilters()">
+                            <i class="bi bi-funnel"></i>
+                            {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
+                        </button>
+                        <div class="dropdown d-inline-block ms-2">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-download me-1"></i> Export
+                            </button>
+                            <ul class="dropdown-menu shadow">
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center" href="javascript:void(0)"
+                                        (click)="exportTableToPdf()">
+                                        <i class="bi bi-file-earmark-pdf text-danger me-2"></i> Export PDF
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center" href="javascript:void(0)"
+                                        (click)="exportTableToExcel()">
+                                        <i class="bi bi-file-earmark-excel text-success me-2"></i> Export Excel
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <button *ngIf="canCreateProduct" class="btn btn-success" routerLink="/admin/productCreate">
+                            <i class="bi bi-plus-circle"></i>
+                            Add Product
+                        </button>
+
+                        <button *ngIf="canBulkUploadProducts" class="btn btn-sm nav-btn custom-upload-btn"
+                            (click)="bulkUpload()">
+                            <i class="fas fa-upload me-1"></i>Bulk Upload
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
+
   <div class="nav-right">
     <div class="d-flex flex-wrap align-items-center gap-2">
       <button class="btn btn-outline-secondary btn-sm" (click)="refreshData()" [disabled]="isLoading">

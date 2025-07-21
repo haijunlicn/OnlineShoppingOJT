@@ -640,4 +640,12 @@ exportSingleProductToExcel(product: any): void {
       this.isExportingExcel = false;
     }
   }
+
+  exportTableToPdf() {
+    this.exportProfessionalPdf();
+  }
+
+  async exportTableToExcel() {
+    await this.exportToExcel();
+  }
 }

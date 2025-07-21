@@ -6,7 +6,7 @@ import {
   PLATFORM_ID
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormControl, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { StoreLocationDto } from '@app/core/models/storeLocationDto';
 import { StoreLocationService } from '@app/core/services/store-location.service';
@@ -21,6 +21,10 @@ import { HttpClient } from '@angular/common/http';
 export class StoreAddressComponent implements OnInit, OnDestroy {
   stores: StoreLocationDto[] = [];
   selectedStore: StoreLocationDto | null = null;
+  activeStoreId: number | null = null;
+  activeStore: StoreLocationDto | null = null;
+  activeMap: any;
+  showModal = false;
   storeForm: FormGroup;
   searchControl: FormControl;
   map: any;
@@ -30,6 +34,8 @@ export class StoreAddressComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
   private isBrowser: boolean = false;
   private L: any;
+  modalMap: any;
+  modalMarker: any;
 
   constructor(
     private storeService: StoreLocationService,
@@ -44,10 +50,11 @@ export class StoreAddressComponent implements OnInit, OnDestroy {
       fullAddress: ['', Validators.required],
       lat: [null, Validators.required],
       lng: [null, Validators.required],
-      phoneNumber: ['', Validators.required],
+      phoneNumber: ['', [Validators.required, myanmarPhoneValidator]],
       city: ['', Validators.required],
       country: ['', Validators.required],
-      zipCode: ['', Validators.required]
+      zipCode: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email, gmailValidator]]
     });
 
     this.searchControl = new FormControl('');
@@ -69,7 +76,13 @@ export class StoreAddressComponent implements OnInit, OnDestroy {
   }
 
   loadStores() {
-    this.storeService.getAll().subscribe(data => this.stores = data);
+    this.storeService.getAll().subscribe(data => {
+      this.stores = data;
+      const active = data.find(store => store.delFg === true);
+      this.activeStoreId = active ? active.id! : null;
+      this.activeStore = active || null;
+      setTimeout(() => this.initActiveStoreMap(), 0);
+    });
   }
 
   selectStore(store: StoreLocationDto) {
@@ -80,6 +93,13 @@ export class StoreAddressComponent implements OnInit, OnDestroy {
       this.map.setView(latlng, 15);
       this.addMarker(latlng);
     }
+  }
+
+  setAsActive(store: StoreLocationDto) {
+    if (!store.id) return;
+    this.storeService.setInUse(store.id).subscribe(() => {
+      this.loadStores();
+    });
   }
 
   setupCustomMarkerIcon(): void {
@@ -98,7 +118,7 @@ export class StoreAddressComponent implements OnInit, OnDestroy {
     this.map = this.L.map('map', {
       zoomControl: false,
       attributionControl: false
-    }).setView([39.8283, -98.5795], 4);
+    }).setView([19.7633, 96.0785], 6); // Centered on Myanmar
 
     this.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
@@ -120,8 +140,17 @@ export class StoreAddressComponent implements OnInit, OnDestroy {
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
           const latlng = this.L.latLng(lat, lng);
-          this.map.setView(latlng, 15);
-          this.addMarker(latlng);
+
+          // If modal is open, update modalMap and modalMarker
+          if (this.showModal && this.modalMap && this.modalMarker) {
+            this.modalMap.setView(latlng, 15);
+            this.modalMarker.setLatLng(latlng);
+          } else if (this.map && this.marker) {
+            this.map.setView(latlng, 15);
+            this.marker.setLatLng(latlng);
+          }
+          this.currentLatLng = latlng;
+          this.storeForm.patchValue({ lat, lng });
           this.reverseGeocodeLocation(lat, lng);
           this.isLoading = false;
         },
@@ -221,6 +250,37 @@ export class StoreAddressComponent implements OnInit, OnDestroy {
     });
   }
 
+  setActiveCard(store: StoreLocationDto) {
+    if (store.id !== this.activeStoreId) {
+      this.setAsActive(store);
+    }
+  }
+
+  openAddStore() {
+    this.selectedStore = null;
+    this.storeForm.reset();
+    this.currentLatLng = null;
+    this.showModal = true;
+    setTimeout(() => this.initModalMap(), 0);
+  }
+
+  editStore(store: StoreLocationDto) {
+    this.selectStore(store);
+    this.showModal = true;
+    setTimeout(() => this.initModalMap(), 0);
+  }
+
+  closeModal() {
+    this.showModal = false;
+    this.selectedStore = null;
+    this.storeForm.reset();
+    this.currentLatLng = null;
+    if (this.modalMap) {
+      this.modalMap.remove();
+      this.modalMap = null;
+    }
+  }
+
   saveStore() {
     if (!this.currentLatLng) {
       alert('Please select a location first!');
@@ -230,8 +290,10 @@ export class StoreAddressComponent implements OnInit, OnDestroy {
       alert('Please fill in all required fields!');
       return;
     }
+    // Prevent delFg from being sent
+    const { delFg, ...formValue } = this.storeForm.value;
     const store: StoreLocationDto = {
-      ...this.storeForm.value,
+      ...formValue,
       lat: this.currentLatLng.lat,
       lng: this.currentLatLng.lng,
       id: this.selectedStore?.id
@@ -239,16 +301,13 @@ export class StoreAddressComponent implements OnInit, OnDestroy {
     if (this.selectedStore && this.selectedStore.id) {
       this.storeService.update(this.selectedStore.id, store).subscribe(() => {
         this.loadStores();
-        this.selectedStore = null;
-        this.storeForm.reset();
-        this.currentLatLng = null;
+        this.closeModal();
         if (this.marker) this.map.removeLayer(this.marker);
       });
     } else {
       this.storeService.create(store).subscribe(() => {
         this.loadStores();
-        this.storeForm.reset();
-        this.currentLatLng = null;
+        this.closeModal();
         if (this.marker) this.map.removeLayer(this.marker);
       });
     }
@@ -264,4 +323,61 @@ export class StoreAddressComponent implements OnInit, OnDestroy {
     this.currentLatLng = null;
     if (this.marker) this.map.removeLayer(this.marker);
   }
+
+  initActiveStoreMap() {
+    if (!this.activeStore || !this.isBrowser) return;
+    if (this.activeMap) {
+      this.activeMap.remove();
+    }
+    this.L = this.L || window['L'];
+    this.activeMap = this.L.map('activeStoreMap').setView([this.activeStore.lat, this.activeStore.lng], 15);
+    this.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(this.activeMap);
+    this.L.marker([this.activeStore.lat, this.activeStore.lng]).addTo(this.activeMap);
+  }
+
+  initModalMap() {
+    if (!this.isBrowser) return;
+    if (this.modalMap) {
+      this.modalMap.remove();
+    }
+    this.L = this.L || window['L'];
+    const lat = this.storeForm.get('lat')?.value || 19.7633;
+    const lng = this.storeForm.get('lng')?.value || 96.0785;
+    this.modalMap = this.L.map('modalMap').setView([lat, lng], 15);
+    this.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(this.modalMap);
+    this.modalMarker = this.L.marker([lat, lng], { draggable: true }).addTo(this.modalMap);
+    this.modalMarker.on('dragend', (e: any) => {
+      const pos = e.target.getLatLng();
+      this.currentLatLng = pos;
+      this.storeForm.patchValue({ lat: pos.lat, lng: pos.lng });
+    });
+    this.modalMap.on('click', (e: any) => {
+      this.modalMarker.setLatLng(e.latlng);
+      this.currentLatLng = e.latlng;
+      this.storeForm.patchValue({ lat: e.latlng.lat, lng: e.latlng.lng });
+    });
+  }
+}
+
+// Custom Validator for Myanmar phone numbers
+export function myanmarPhoneValidator(control: AbstractControl): ValidationErrors | null {
+  const value = control.value;
+  if (!value) return null;
+  // Myanmar mobile: +959..., 959..., 09... (7-9 digits after)
+  const mmMobile = /^(\+?959|09)\d{7,9}$/;
+  // Myanmar landline: 01..., 02..., ..., 09... (6-8 digits total)
+  const mmLandline = /^0[1-9]\d{5,7}$/;
+  return (mmMobile.test(value) || mmLandline.test(value)) ? null : { myanmarPhone: true };
+}
+
+// Custom Validator for Gmail addresses only
+export function gmailValidator(control: AbstractControl): ValidationErrors | null {
+  const value = control.value;
+  if (!value) return null;
+  // Only allow emails ending with @gmail.com
+  return /@gmail\.com$/i.test(value) ? null : { gmailOnly: true };
 }

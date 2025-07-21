@@ -10,9 +10,23 @@ export class CartService {
   private cartCountSubject = new BehaviorSubject<number>(0);
   cartCount$ = this.cartCountSubject.asObservable();
 
-  constructor(private authService: AuthService) {
+  private cartItemsSubject = new BehaviorSubject<CartItem[]>(this.getCart());
+  cartItems$ = this.cartItemsSubject.asObservable();
+
+  constructor(
+    private authService: AuthService
+  ) {
     // Refresh cart count whenever the user logs in or logs out
-    this.authService.user$.subscribe(() => {
+    // this.authService.user$.subscribe(() => {
+    //   this.emitCount();
+    // });
+
+    this.authService.user$.subscribe((user) => {
+      console.log("🛒 Auth changed in CartService. User is now: ", user);
+
+      // Refresh cart when login/logout happens
+      const freshCart = this.getCart();
+      this.cartItemsSubject.next(freshCart);
       this.emitCount();
     });
 
@@ -41,6 +55,8 @@ export class CartService {
     stock: number;
     price: number;
     image?: string;
+    brandId: number;
+    categoryId: number;
   }): void {
     const cart = this.getCart();
     const index = cart.findIndex(
@@ -63,13 +79,16 @@ export class CartService {
         stock: product.stock,
         price: product.price,
         imgPath: product.image || undefined,
-        quantity: 1
+        quantity: 1,
+        brandId: Number(product.brandId),
+        categoryId: Number(product.categoryId),
       };
       cart.push(cartItem);
     }
 
-    localStorage.setItem(this.storageKey, JSON.stringify(cart));
-    this.emitCount();
+    // localStorage.setItem(this.storageKey, JSON.stringify(cart));
+    // this.emitCount();
+    this.updateCart(cart);
   }
 
   /** Update quantity for a specific variant */
@@ -89,8 +108,9 @@ export class CartService {
       }
     }
 
-    localStorage.setItem(this.storageKey, JSON.stringify(cart));
-    this.emitCount();
+    // localStorage.setItem(this.storageKey, JSON.stringify(cart));
+    // this.emitCount();
+    this.updateCart(cart);
   }
 
   /** Remove an item from the cart */
@@ -100,11 +120,13 @@ export class CartService {
     );
     localStorage.setItem(this.storageKey, JSON.stringify(updatedCart));
     this.emitCount();
+    this.updateCart(updatedCart);
   }
 
   /** Clear the cart completely */
   clearCart(): void {
     localStorage.removeItem(this.storageKey);
+    this.cartItemsSubject.next([]);
     this.emitCount();
   }
 
@@ -126,4 +148,11 @@ export class CartService {
   private emitCount(): void {
     this.cartCountSubject.next(this.calcCount());
   }
+
+  private updateCart(cart: CartItem[]) {
+    localStorage.setItem(this.storageKey, JSON.stringify(cart));
+    this.cartItemsSubject.next(cart);
+    this.emitCount();
+  }
+
 }

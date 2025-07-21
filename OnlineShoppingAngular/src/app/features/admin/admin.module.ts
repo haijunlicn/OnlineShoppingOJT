@@ -96,7 +96,11 @@ import { VlogFilesCreateComponent } from './vlog-management/vlogfilescreate/vlog
 import { VlogFilesListComponent } from './vlog-management/vlogfileslist/vlogfileslist.component';
 import { VlogCreateComponent } from './vlog-management/vlogcreate/vlogcreate.component';
 import { VlogListComponent } from './vlog-management/vloglist/vloglist.component';
-
+import { CreateDeliveryMethodComponent } from './deliveryMethodManagement/create-delivery-method/create-delivery-method.component';
+import { DeliveryMethodListComponent } from './deliveryMethodManagement/delivery-method-list/delivery-method-list.component';
+import { EditDeliveryMethodComponent } from './deliveryMethodManagement/edit-delivery-method/edit-delivery-method.component';
+import { DiscountListComponent } from './discount_management/discount-list/discount-list.component';
+import { QuestionComponent } from './QuesionManagement/question/question.component';
 
 
 @NgModule({
@@ -173,6 +177,11 @@ import { VlogListComponent } from './vlog-management/vloglist/vloglist.component
     VlogFilesListComponent,
     VlogFilesCreateComponent,
 
+    CreateDeliveryMethodComponent,
+    DeliveryMethodListComponent,
+    EditDeliveryMethodComponent,
+   DiscountListComponent,
+   QuestionComponent
   ],
   imports: [
     CommonModule,
@@ -197,7 +206,7 @@ import { VlogListComponent } from './vlog-management/vloglist/vloglist.component
     FormsModule,
     NgxChartsModule,
     NgxMaskModule.forRoot(),
-
-  ]
+    
+]
 })
 export class AdminModule { }
