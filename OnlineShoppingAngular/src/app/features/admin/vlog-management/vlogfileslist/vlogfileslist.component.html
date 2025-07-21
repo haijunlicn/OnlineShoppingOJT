@@ -1,0 +1,58 @@
+<div class="container">
+  <h2>Vlog Files List</h2>
+
+  <div *ngIf="loading" class="loading-spinner">Loading...</div>
+  <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
+
+  <div class="controls-section">
+    <div class="form-group">
+      <label for="currentVlogId">Filter by Vlog ID:</label>
+      <input
+        type="number"
+        id="currentVlogId"
+        [(ngModel)]="currentVlogId"
+        (change)="loadVlogFiles()"
+        placeholder="Enter Vlog ID to filter (leave blank to see all)"
+        min="0"
+      />
+    </div>
+  </div>
+
+  <div class="card-grid" *ngIf="vlogFiles.length > 0; else noFilesTemplate">
+    <div class="vlog-card" *ngFor="let file of vlogFiles">
+      <div class="preview-section">
+        <img
+          *ngIf="isImage(file.fileType) && file.filePath"
+          [src]="file.filePath"
+          alt="Image Preview"
+          class="image-preview"
+        />
+        <video
+          *ngIf="isVideo(file.fileType) && file.filePath"
+          class="video-preview"
+          controls
+        >
+          <source [src]="file.filePath" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      </div>
+      <div class="details-section">
+        <div class="file-info">
+          <span class="file-id">#{{ file.id }}</span>
+          <span class="file-type">{{ file.fileType }}</span>
+        </div>
+        <div class="file-desc">{{ file.description }}</div>
+        <a [href]="file.filePath" target="_blank" class="file-link">Open File</a>
+      </div>
+      <div class="actions-section">
+        <button class="button button-danger" (click)="deleteVlogFile(file.id)">
+          <span class="material-icons"> Delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noFilesTemplate>
+    <p *ngIf="!loading">No vlog files found for this ID.</p>
+  </ng-template>
+</div>

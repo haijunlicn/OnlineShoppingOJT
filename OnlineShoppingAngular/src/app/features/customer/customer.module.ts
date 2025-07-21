@@ -51,6 +51,10 @@ import { NotificationListComponent } from './notification/notification-list/noti
 import { LocationSettingComponent } from './common/location-setting/location-setting.component';
 import { ProfileInfoSettingComponent } from './common/profile-info-setting/profile-info-setting.component';
 import { NotiSettingComponent } from './common/noti-setting/noti-setting.component';
+import { VlogComponent } from './policy/vlog/vlog.component';
+import { VlogListComponent } from './policy/vlog-list/vlog-list.component';
+import { VlogDetailComponent } from './policy/vlog-detail/vlog-detail.component';
+
 
 @NgModule({
   declarations: [
@@ -94,7 +98,10 @@ import { NotiSettingComponent } from './common/noti-setting/noti-setting.compone
     NotificationListComponent,
     LocationSettingComponent,
     ProfileInfoSettingComponent,
-    NotiSettingComponent
+    NotiSettingComponent,
+    VlogComponent,
+    VlogListComponent,
+    VlogDetailComponent,
   ],
   imports: [
     CommonModule,

@@ -91,6 +91,13 @@ import { AdminNotificationListComponent } from './notificationManagement/admin-n
 import { AdminNotificationDetailComponent } from './notificationManagement/admin-notification-detail/admin-notification-detail.component';
 import { AdminNotiTypesComponent } from './notificationManagement/admin-noti-types/admin-noti-types.component';
 import { AdminSentNotisComponent } from './notificationManagement/admin-sent-notis/admin-sent-notis.component';
+import { AuditLogComponent } from './policy-management/audit-log/audit-log.component';
+import { VlogFilesCreateComponent } from './vlog-management/vlogfilescreate/vlogfilescreate.component';
+import { VlogFilesListComponent } from './vlog-management/vlogfileslist/vlogfileslist.component';
+import { VlogCreateComponent } from './vlog-management/vlogcreate/vlogcreate.component';
+import { VlogListComponent } from './vlog-management/vloglist/vloglist.component';
+
+
 
 @NgModule({
   declarations: [
@@ -160,6 +167,12 @@ import { AdminSentNotisComponent } from './notificationManagement/admin-sent-not
     AdminNotificationListComponent,
     AdminNotiTypesComponent,
     AdminSentNotisComponent,
+    AuditLogComponent,
+    VlogListComponent,
+    VlogCreateComponent,
+    VlogFilesListComponent,
+    VlogFilesCreateComponent,
+
   ],
   imports: [
     CommonModule,

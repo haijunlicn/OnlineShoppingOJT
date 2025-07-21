@@ -181,4 +181,7 @@ export class NotificationService {
     return this.http.post(`${this.baseUrl}/custom`, payload);
   }
 
+   getCustomNotifications(): Observable<Notification[]> {
+    return this.http.get<Notification[]>(`${this.baseUrl}/list/custom`);
+  }
 }

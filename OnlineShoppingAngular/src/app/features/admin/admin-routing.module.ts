@@ -50,7 +50,11 @@ import { NotificationCreateComponent } from './notificationManagement/notificati
 import { AdminNotificationListComponent } from './notificationManagement/admin-notification-list/admin-notification-list.component';
 import { AdminNotiTypesComponent } from './notificationManagement/admin-noti-types/admin-noti-types.component';
 import { AdminSentNotisComponent } from './notificationManagement/admin-sent-notis/admin-sent-notis.component';
-
+import { AuditLogComponent } from './policy-management/audit-log/audit-log.component';
+import { VlogFilesListComponent } from './vlog-management/vlogfileslist/vlogfileslist.component';
+import { VlogFilesCreateComponent } from './vlog-management/vlogfilescreate/vlogfilescreate.component';
+import { VlogListComponent } from './vlog-management/vloglist/vloglist.component';
+import { VlogCreateComponent } from './vlog-management/vlogcreate/vlogcreate.component';
 
 const routes: Routes = [
   {
@@ -89,6 +93,7 @@ const routes: Routes = [
       { path: 'refund-reason/create', component: RefundReasonFormComponent },
       { path: 'rejection-reason/list', component: RejectionReasonListComponent },
       { path: 'rejection-reason/create', component: RejectionReasonFormComponent },
+      { path: 'audit-log', component: AuditLogComponent},
       { path: 'bulkUploadProduct', component: ProductBulkUploadComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['PRODUCT_CREATE'], ['SUPERADMIN_PERMISSION']] } },
       { path: 'product/:id', component: ProductDetailComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['PRODUCT_READ'], ['SUPERADMIN_PERMISSION']] } },
       { path: 'product/edit/:id', component: ProductEditComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['PRODUCT_UPDATE'], ['SUPERADMIN_PERMISSION']] } },
@@ -121,6 +126,11 @@ const routes: Routes = [
         path: 'sale-analysis', component
         :SaleAnalysisComponent, canActivate: [AdminAuthGuard]
       },
+      { path: 'vlogfileslist', component: VlogFilesListComponent },
+      { path: 'vlogfilescreate/:vlogId', component: VlogFilesCreateComponent },
+      { path: 'vloglist', component: VlogListComponent },
+      { path: 'vlogcreate', component: VlogCreateComponent },
+
     ]
   }
 ];

@@ -31,6 +31,7 @@ export class AccountSettingsComponent implements OnInit {
     private profileService: ProfileService,
     private authService: AuthService,
     private router: Router,
+    private route: ActivatedRoute,
   ) {
     this.profileForm = this.fb.group({
       name: ["", [Validators.required, Validators.minLength(2)]],
@@ -68,10 +69,11 @@ export class AccountSettingsComponent implements OnInit {
       this.isLoading = false
     }
   }
-
-  setActiveSection(section: string): void {
-    if (["profile", "location", "notifications"].includes(section)) {
-      this.activeSection = section
+  
+ setActiveSection(section: string): void {
+    if (["profile", "location"].includes(section)) {
+      this.activeSection = section;
+      this.router.navigate([section], { relativeTo: this.route }); // ✅ Route Navigate
     }
   }
 

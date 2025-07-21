@@ -51,3 +51,23 @@ export interface CreateNotificationPayload {
   metadata?: string | null;
   scheduledAt?: string | null;
 }
+export interface NotificationType {
+  id?: number;
+  name: string;
+  titleTemplate: string;
+  adminOnly: boolean;
+}
+export interface Notification {
+  id: number;
+  title?: string;
+  message?: string;
+  imageUrl?: string;
+  metadata?: string;
+  scheduledAt?: string;
+  createdDate?: string;
+}
+
+
+
+
+

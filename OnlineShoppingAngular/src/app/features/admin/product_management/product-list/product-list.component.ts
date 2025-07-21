@@ -471,6 +471,16 @@ export class ProductListComponent implements OnInit {
       this.clearAllFilters()
     }
   }
+  exportSingleProductToPdf(product: any): void {
+  // PDF export logic goes here
+  console.log("Exporting to PDF:", product);
+}
+
+exportSingleProductToExcel(product: any): void {
+  // Excel export logic goes here
+  console.log("Exporting to Excel:", product);
+}
+
 
   clearAllFilters() {
     this.dt.clear()

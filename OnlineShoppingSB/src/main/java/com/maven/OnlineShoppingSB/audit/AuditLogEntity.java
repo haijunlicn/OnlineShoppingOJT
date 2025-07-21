@@ -10,21 +10,22 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class AuditLogEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String action;           // CREATE, UPDATE, DELETE
+    private String action;
     private String entityType;
     private Long entityId;
 
     @Column(columnDefinition = "TEXT")
-    private String changedData;      // JSON map of changes
+    private String changedData; // JSON
 
     private Long performedBy;
-    private String performedByType;  // ADMIN, CUSTOMER
+    private String performedByType;
 
     private String ipAddress;
     private String userAgent;
