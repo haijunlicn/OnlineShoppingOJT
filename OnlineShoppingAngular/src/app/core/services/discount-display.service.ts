@@ -46,7 +46,6 @@ export class DiscountDisplayService {
     });
   }
 
-
   calculateDiscountedPrice(
     originalPrice: number,
     eligibleDiscounts: DiscountDisplayDTO[]
@@ -58,6 +57,11 @@ export class DiscountDisplayService {
     const breakdown: { label: string; amount: number }[] = [];
 
     for (const discount of eligibleDiscounts) {
+      // Skip coupon mechanism discounts
+      if (discount.mechanismType === 'Coupon') {
+        continue;
+      }
+
       const label = discount.shortLabel || discount.name || 'Discount';
       const valueNum = discount.value ? Number(discount.value) : 0;
       let amount = 0;
@@ -83,5 +87,43 @@ export class DiscountDisplayService {
       breakdown,
     };
   }
+
+
+  // calculateDiscountedPrice(
+  //   originalPrice: number,
+  //   eligibleDiscounts: DiscountDisplayDTO[]
+  // ): {
+  //   discountedPrice: number;
+  //   breakdown: { label: string; amount: number }[];
+  // } {
+  //   let discountedPrice = originalPrice;
+  //   const breakdown: { label: string; amount: number }[] = [];
+
+  //   for (const discount of eligibleDiscounts) {
+  //     const label = discount.shortLabel || discount.name || 'Discount';
+  //     const valueNum = discount.value ? Number(discount.value) : 0;
+  //     let amount = 0;
+
+  //     if (discount.discountType === 'PERCENTAGE') {
+  //       // Use originalPrice for percentage calculation
+  //       amount = originalPrice * (valueNum / 100);
+  //       if (discount.maxDiscountAmount) {
+  //         const maxCap = Number(discount.maxDiscountAmount);
+  //         amount = Math.min(amount, maxCap);
+  //       }
+  //     } else if (discount.discountType === 'FIXED') {
+  //       amount = valueNum;
+  //     }
+
+  //     amount = Math.min(amount, discountedPrice); // prevent over-discount
+  //     discountedPrice -= amount;
+  //     breakdown.push({ label, amount });
+  //   }
+
+  //   return {
+  //     discountedPrice: Math.max(discountedPrice, 0),
+  //     breakdown,
+  //   };
+  // }
 
 }

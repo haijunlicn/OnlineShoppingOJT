@@ -68,31 +68,6 @@ export function evaluateCartConditions(
             return results.some(Boolean);
         }
 
-
-
-        // const results = conditions.map((condition, i) => {
-        //     // console.log(`\n  ➡️ Condition ${i + 1} Evaluation Start`);
-        //     // console.log("  Condition object:", condition);
-
-        //     // ⛔ Skip evaluation if eligible is already set
-        //     if (condition.eligible !== null && condition.eligible !== undefined) {
-        //         //  console.log(`  🔁 Skipping evaluation, using cached eligible = ${condition.eligible}`);
-        //         return condition.eligible === true;
-        //     }
-
-        //     const result = evaluateSingleCondition(condition, cart, shipping);
-        //     //  console.log(`  Condition Result: [${condition.conditionType}:${condition.conditionDetail}] → ${result}`);
-        //     return result;
-        // });
-
-        // const groupResult = group.logicOperator
-        //     ? results.every(Boolean)   // AND logic
-        //     : results.some(Boolean);   // OR logic
-
-        // // console.log(`\n🧮 Group ${groupIndex + 1} Final Result: ${groupResult}`);
-        // // console.log("🧩 Group Evaluation End\n");
-
-        // return groupResult;
     });
 }
 
@@ -108,14 +83,14 @@ function evaluateSingleCondition(
             ? condition.value
             : JSON.parse(condition.value);
     } catch (e) {
-        //console.warn(`⚠️ Failed to parse condition value for condition [${condition.conditionType}:${condition.conditionDetail}]:`, condition.value, e);
+        console.warn(`⚠️ Failed to parse condition value for condition [${condition.conditionType}:${condition.conditionDetail}]:`, condition.value, e);
         return false;
     }
 
     const operator = condition.operator;
     const detail = condition.conditionDetail;
 
-    //  console.log(`🔎 Evaluating condition type='${condition.conditionType}' detail='${detail}' operator='${operator}' with values=`, values);
+    console.log(`🔎 Evaluating condition type='${condition.conditionType}' detail='${detail}' operator='${operator}' with values=`, values);
 
     switch (condition.conditionType) {
         case "PRODUCT":
@@ -124,8 +99,12 @@ function evaluateSingleCondition(
         case "ORDER":
             return checkOrderCondition(detail, values, operator, cartItems, shipping);
 
+        case "CUSTOMER_GROUP":
+            console.log(`👥 Using backend-calculated eligibility: ${condition.eligible}`);
+            return condition.eligible === true;
+
         default:
-            // console.warn(`❓ Unknown condition type '${condition.conditionType}' — returning FALSE`);
+            console.warn(`❓ Unknown condition type '${condition.conditionType}' — returning FALSE`);
             return false;
     }
 }
@@ -232,3 +211,44 @@ function parseValue(val: any): string[] {
         return [];
     }
 }
+
+export function parseStringArray(raw: string | string[]): string[] {
+    if (Array.isArray(raw)) {
+        return raw.map(v => String(v));
+    }
+
+    try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed.map(v => String(v)) : [String(parsed)];
+    } catch {
+        return [String(raw)];
+    }
+}
+
+export function buildPlaceholderList(type: string, count: number): string {
+    if (count === 1) return `{{${type}}}`;
+
+    // For multiple, generate numbered placeholders
+    const placeholders = [];
+    for (let i = 1; i <= count; i++) {
+        placeholders.push(`{{${type}${i}}}`);
+    }
+
+    if (count === 2) {
+        // Join with ' or '
+        return placeholders.join(" or ");
+    }
+
+    // For 3 or more: join with commas and 'or' before last
+    return placeholders.slice(0, -1).join(", ") + ", or " + placeholders.slice(-1);
+}
+
+
+// export function parseStringArray(raw: string): string[] {
+//     try {
+//         const parsed = JSON.parse(raw);
+//         return Array.isArray(parsed) ? parsed : [parsed];
+//     } catch {
+//         return [raw];
+//     }
+// }

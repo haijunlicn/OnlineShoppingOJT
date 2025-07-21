@@ -199,12 +199,6 @@ public class DiscountService {
         return mapToDto(saved, true);
     }
 
-    // READ ALL
-    // public List<DiscountES_A> getAllDiscounts() {
-    //     return discountRepository.findAll().stream()
-    //         .map(e -> mapToDto(e, false))
-    //         .collect(Collectors.toList());
-    // }
     public List<DiscountES_A> getAllDiscounts() {
         return discountRepository.findAll().stream()
                 .map(e -> mapToDto(e, true)) // <-- withChildren = true

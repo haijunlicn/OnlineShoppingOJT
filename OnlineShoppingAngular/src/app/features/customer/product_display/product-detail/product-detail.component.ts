@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ProductListComponent } from '../product-list/product-list.component';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -9,10 +9,22 @@ import { WishlistDialogComponent } from '../../general/wishlist-dialog/wishlist-
 import { CartService } from '../../../../core/services/cart.service';
 import { WishlistService } from '../../../../core/services/wishlist.service';
 import { MatDialog } from '@angular/material/dialog';
-import { DiscountConditionGroupEA_C, DiscountDisplayDTO } from '@app/core/models/discount';
+import { DiscountConditionGroupEA_C, DiscountDisplayDTO, MechanismType } from '@app/core/models/discount';
 import { evaluateCartConditions } from '@app/core/services/discountChecker';
 import { DiscountDisplayService } from '@app/core/services/discount-display.service';
 import { CartItem } from '@app/core/models/cart.model';
+import { DiscountTextService } from '@app/core/services/discount-text.service';
+import { AuthService } from '@app/core/services/auth.service';
+import { CloudinaryService } from '@app/core/services/cloudinary.service';
+import { ReviewService } from '@app/core/services/review.service';
+import { ProductReview } from '@app/core/models/review';
+
+// Change editReviewData type and default value
+declare interface EditReviewData {
+  rating: number;
+  comment: string;
+  images: { imageUrl: string }[];
+}
 
 @Component({
   selector: "app-product-detail",
@@ -20,8 +32,10 @@ import { CartItem } from '@app/core/models/cart.model';
   templateUrl: "./product-detail.component.html",
   styleUrl: "./product-detail.component.css",
 })
+export class ProductDetailComponent implements OnInit, OnDestroy {
 
-export class ProductDetailComponent implements OnInit {
+  private carouselInterval: any;
+
   // Product data
   product!: ProductCardItem
   relatedProducts: ProductDTO[] = []
@@ -41,9 +55,13 @@ export class ProductDetailComponent implements OnInit {
   eligibleDiscounts: DiscountDisplayDTO[] = []
   conditionalDiscounts: DiscountDisplayDTO[] = []
   progressConditionalDiscounts: DiscountDisplayDTO[] = []
+  visibleDiscounts: DiscountDisplayDTO[] = [];
   isEligibleForDiscount = false
   discountsExpanded = false
   stickyProgressDismissed = false
+
+  // Discount carousel state
+  currentDiscountIndex = 0
 
   // Cart and wishlist
   cartItems: CartItem[] = []
@@ -55,6 +73,29 @@ export class ProductDetailComponent implements OnInit {
   @Input() categoryId!: number
   @Input() productId!: number
   @ViewChild("scrollContainer", { static: false }) scrollContainer!: ElementRef
+  @ViewChild("mobileDiscounts", { static: false }) mobileDiscounts!: ElementRef
+  @ViewChild("discountCarousel", { static: false }) discountCarousel!: ElementRef
+
+  // Review system state
+  reviews: any[] = [];
+  reviewTotal: number = 0;
+  reviewAverage: number = 0;
+  reviewBreakdown: { [key: number]: number } = {};
+  reviewPage: number = 1;
+  reviewPageSize: number = 4;
+  reviewSort: string = 'date_desc';
+  reviewFilterRating?: number;
+  isLoadingReviews: boolean = false;
+  newReview: { rating: number; comment: string } = { rating: 5, comment: '' };
+  isSubmittingReview: boolean = false;
+  uploadedReviewImages: { imageUrl: string }[] = [];
+  userId?: number;
+  userName?: string;
+  isLoggedIn: boolean = false;
+  hasPurchasedProduct: boolean = false;
+  hasReviewedProduct: boolean = false;
+  editingReview: any = null;
+  editReviewData: EditReviewData = { rating: 5, comment: '', images: [] };
 
   constructor(
     private route: ActivatedRoute,
@@ -65,17 +106,29 @@ export class ProductDetailComponent implements OnInit {
     private wishlistService: WishlistService,
     private dialog: MatDialog,
     private discountDisplayService: DiscountDisplayService,
+    private discountTextService: DiscountTextService,
+    private reviewService: ReviewService,
+    private cloudinaryService: CloudinaryService,
+    private authService: AuthService
   ) { }
 
   ngOnInit(): void {
-    this.initializeComponent()
+    this.route.paramMap.subscribe((params) => {
+      const id = params.get("id")
+      if (id) {
+        this.fetchProductDetail(+id)
+      }
+    })
     this.subscribeToCartChanges()
     this.loadStickyProgressState()
+    this.updateVisibleDiscounts();
+    this.startDiscountCarouselAutoplay();
   }
 
-  private initializeComponent(): void {
-    this.fetchProductDetail()
-    this.loadWishlist()
+  ngOnDestroy(): void {
+    if (this.carouselInterval) {
+      clearInterval(this.carouselInterval);
+    }
   }
 
   private subscribeToCartChanges(): void {
@@ -99,19 +152,15 @@ export class ProductDetailComponent implements OnInit {
     this.cartItems = this.cartService.getCart()
   }
 
-  fetchProductDetail(): void {
-    const id = this.route.snapshot.paramMap.get("id")
-    if (!id) {
-      this.router.navigate(["/customer/productList"])
-      return
-    }
 
-    this.productService.getPublicProductById(+id).subscribe({
+  fetchProductDetail(id: number): void {
+    this.productService.getPublicProductById(id).subscribe({
       next: (data) => {
         this.product = data
-        this.initializeProductData()
+        this.initializeComponent()
         this.loadRelatedProducts()
         this.loadDiscountHints()
+        this.checkPurchaseStatus();
       },
       error: (err) => {
         console.error("Error fetching product:", err)
@@ -120,7 +169,7 @@ export class ProductDetailComponent implements OnInit {
     })
   }
 
-  private initializeProductData(): void {
+  initializeComponent(): void {
     this.initForm()
     this.setDefaultSelections()
     this.buildImagesList()
@@ -148,31 +197,30 @@ export class ProductDetailComponent implements OnInit {
 
   private categorizeDiscounts(): void {
     // Separate conditional discounts (requiring frontend checking)
-    this.conditionalDiscounts = this.discountHints.filter(hint => hint.requireFrontendChecking === true);
+    this.conditionalDiscounts = this.discountHints.filter((hint) => hint.requireFrontendChecking === true)
 
     // Filter discounts where NO condition in any conditionGroup has eligible === false
     // Optionally require at least one condition eligible === true
-    this.progressConditionalDiscounts = this.discountHints.filter(hint => {
-      if (!hint.requireFrontendChecking) return false;
-      if (!hint.conditionGroups || hint.conditionGroups.length === 0) return false;
+    this.progressConditionalDiscounts = this.discountHints.filter((hint) => {
+      if (!hint.requireFrontendChecking) return false
+      if (!hint.conditionGroups || hint.conditionGroups.length === 0) return false
 
       // Flatten all conditions of all groups
-      const allConditions = hint.conditionGroups.flatMap(group => group.conditions ?? []);
+      const allConditions = hint.conditionGroups.flatMap((group) => group.conditions ?? [])
 
       // No condition should have eligible === false
-      const hasFalse = allConditions.some(cond => cond.eligible === false);
-      if (hasFalse) return false;
+      const hasFalse = allConditions.some((cond) => cond.eligible === false)
+      if (hasFalse) return false
 
-      // Optionally, require at least one eligible === true condition
-      // const hasTrue = allConditions.some(cond => cond.eligible === true);
-      // if (!hasTrue) return false;
+      return true
+    })
 
-      return true;
-    });
-
-    console.log("🎯 Conditional discounts:", this.conditionalDiscounts);
-    console.log("✅ Progress conditional discounts (no condition false & some true):", this.progressConditionalDiscounts);
-    console.log("🔍 All discount hints:", this.discountHints);
+    console.log("🎯 Conditional discounts:", this.conditionalDiscounts)
+    console.log(
+      "✅ Progress conditional discounts (no condition false & some true):",
+      this.progressConditionalDiscounts,
+    )
+    console.log("🔍 All discount hints:", this.discountHints)
   }
 
   private evaluateDiscountEligibility(): void {
@@ -189,6 +237,194 @@ export class ProductDetailComponent implements OnInit {
 
     console.log("✅ Eligible discounts:", this.eligibleDiscounts)
   }
+
+  // Get visible discounts (exclude B2B)
+  getVisibleDiscounts(): DiscountDisplayDTO[] {
+    return this.discountHints.filter((discount) => discount.mechanismType !== MechanismType.B2B)
+  }
+
+  updateVisibleDiscounts(): void {
+    this.visibleDiscounts = this.discountHints.filter(
+      discount => discount.mechanismType !== MechanismType.B2B
+    );
+  }
+
+  // Discount carousel methods
+  private startDiscountCarouselAutoplay(): void {
+    this.carouselInterval = setInterval(() => {
+      if (this.visibleDiscounts.length > 1) {
+        this.nextDiscountSlide();
+      }
+    }, 5000);
+  }
+
+  nextDiscountSlide(): void {
+    const maxIndex = this.getVisibleDiscounts().length - 1
+    if (this.currentDiscountIndex < maxIndex) {
+      this.currentDiscountIndex++
+    } else {
+      this.currentDiscountIndex = 0
+    }
+  }
+
+  prevDiscountSlide(): void {
+    const maxIndex = this.getVisibleDiscounts().length - 1
+    if (this.currentDiscountIndex > 0) {
+      this.currentDiscountIndex--
+    } else {
+      this.currentDiscountIndex = maxIndex
+    }
+  }
+
+  goToDiscountSlide(index: number): void {
+    this.currentDiscountIndex = index
+  }
+
+  showDiscountDetail(discount: DiscountDisplayDTO): void {
+    // Get the linked text output
+    const linkedTextOutput = this.discountTextService.generateHumanReadableConditionsWithLinks(discount)
+
+    // Generate the detailed HTML with clickable links
+    const discountDetails = this.generateClickableDiscountDetails(discount, linkedTextOutput)
+
+    Swal.fire({
+      title: discount.name || "Discount Details",
+      html: discountDetails,
+      icon: "info",
+      confirmButtonText: "Got it!",
+      customClass: {
+        popup: "luxury-alert",
+        confirmButton: "luxury-btn luxury-btn-primary",
+      },
+      width: "500px",
+      didOpen: () => {
+        // Add click event listeners for the linked entities
+        this.attachClickListenersToSwalLinks(linkedTextOutput.linkedEntities)
+      },
+    })
+  }
+
+  // Add this new method to generate clickable discount details:
+  private generateClickableDiscountDetails(discount: DiscountDisplayDTO, linkedTextOutput: any): string {
+    let details = `<div style="text-align: left; line-height: 1.6;">`
+
+    // Discount value
+    details += `<p><strong>Discount:</strong> ${this.discountTextService.getDiscountPercentage(discount)}</p>`
+
+    // Mechanism type
+    details += `<p><strong>Type:</strong> ${this.discountTextService.getDiscountTypeLabel(discount)}</p>`
+
+    // Human-readable conditions with clickable links
+    if (linkedTextOutput.text) {
+      const clickableText = this.renderTextWithClickableLinks(linkedTextOutput)
+      details += `<p><strong>How to qualify:</strong> ${clickableText}</p>`
+    }
+
+    // Coupon code
+    if (discount.mechanismType === "Coupon" && discount.couponcode) {
+      details += `<p><strong>Coupon Code:</strong> <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">${discount.couponcode}</code></p>`
+    }
+
+    // Valid dates
+    if (discount.startDate && discount.endDate) {
+      const startDate = new Date(discount.startDate).toLocaleDateString()
+      const endDate = new Date(discount.endDate).toLocaleDateString()
+      details += `<p><strong>Valid:</strong> ${startDate} - ${endDate}</p>`
+    }
+
+    // Usage limit
+    if (discount.usageLimit) {
+      details += `<p><strong>Usage Limit:</strong> ${discount.usageLimit} times</p>`
+    }
+
+    details += `</div>`
+    return details
+  }
+
+  // Add this method to render text with clickable links:
+  private renderTextWithClickableLinks(textOutput: { text: string; linkedEntities: any[] }): string {
+    let renderedText = textOutput.text;
+
+    textOutput.linkedEntities.forEach((entity, index) => {
+      const placeholder = `{{${entity.type.toUpperCase()}${index + 1}}}`;
+      const clickableElement = `<span class="clickable-entity-link" data-entity-index="${index}" style="color: #3498db; font-weight: 600; cursor: pointer; text-decoration: underline;">${entity.name}</span>`;
+      renderedText = renderedText.replace(placeholder, clickableElement);
+    });
+
+    return renderedText;
+  }
+
+  // Add this method to attach click listeners in SweetAlert:
+  private attachClickListenersToSwalLinks(linkedEntities: any[]): void {
+    const clickableElements = document.querySelectorAll(".clickable-entity-link")
+
+    clickableElements.forEach((element) => {
+      element.addEventListener("click", (event) => {
+        const target = event.target as HTMLElement
+        const entityIndex = target.getAttribute("data-entity-index")
+
+        if (entityIndex !== null) {
+          const entity = linkedEntities[Number.parseInt(entityIndex)]
+          if (entity) {
+            // Close the SweetAlert first
+            Swal.close()
+
+            // Navigate to the entity
+            this.discountTextService.navigateToEntity(entity)
+          }
+        }
+      })
+    })
+  }
+
+  /**
+   * Get linked condition text for template usage
+   */
+  getLinkedConditionText(discount: DiscountDisplayDTO): { text: string; linkedEntities: any[] } {
+    return this.discountTextService.generateHumanReadableConditionsWithLinks(discount)
+  }
+
+  /**
+   * Render text with clickable links for template usage
+   */
+  renderTextWithLinks(textOutput: { text: string; linkedEntities: any[] }): string {
+    let renderedText = textOutput.text
+
+    textOutput.linkedEntities.forEach((entity, index) => {
+      const placeholder =
+        index === 0 ? `{{${entity.type.toUpperCase()}}}` : `{{${entity.type.toUpperCase()}${index + 1}}}`
+      const clickableElement = `<span class="clickable-entity" data-entity-index="${index}">${entity.name}</span>`
+      renderedText = renderedText.replace(placeholder, clickableElement)
+    })
+
+    return renderedText
+  }
+
+  /**
+   * Handle entity clicks in template
+   */
+  onEntityClick(event: Event, linkedEntities: any[]): void {
+    const target = event.target as HTMLElement
+    const entityIndex = target.getAttribute("data-entity-index")
+
+    if (entityIndex !== null) {
+      const entity = linkedEntities[Number.parseInt(entityIndex)]
+      if (entity) {
+        this.discountTextService.navigateToEntity(entity)
+      }
+    }
+  }
+
+  // Mobile scroll to discounts
+  scrollToDiscounts(): void {
+    if (this.mobileDiscounts) {
+      this.mobileDiscounts.nativeElement.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      })
+    }
+  }
+
 
   initForm(): void {
     const group: { [key: string]: any } = {}
@@ -373,25 +609,46 @@ export class ProductDetailComponent implements OnInit {
     return this.product.product.basePrice
   }
 
-  hasActiveDiscounts(): boolean {
-    return this.eligibleDiscounts.length > 0
+  // hasActiveDiscounts(): boolean {
+  //   return this.eligibleDiscounts.some(
+  //     (d) => d.mechanismType && d.mechanismType.toLowerCase() !== 'coupon'
+  //   );
+  // }
+
+  hasActiveDiscounts(productId: number): boolean {
+    return this.eligibleDiscounts.some(
+      (d) =>
+        d.mechanismType?.toLowerCase() !== 'coupon' &&
+        d.offeredProductIds?.includes(productId)
+    )
   }
 
-  getDiscountedPrice(): number {
-    if (!this.hasActiveDiscounts()) {
+  getDiscountedPrice(productId: number): number {
+    if (!this.hasActiveDiscounts(productId)) {
       return this.getCurrentDisplayPrice()
     }
 
     const currentPrice = this.getCurrentDisplayPrice()
-    const result = this.discountDisplayService.calculateDiscountedPrice(currentPrice, this.eligibleDiscounts)
+
+    const applicableDiscounts = this.eligibleDiscounts.filter(
+      (d) =>
+        d.mechanismType?.toLowerCase() !== 'coupon' &&
+        d.offeredProductIds?.includes(productId)
+    )
+
+    const result = this.discountDisplayService.calculateDiscountedPrice(
+      currentPrice,
+      applicableDiscounts
+    )
+
     return result.discountedPrice
   }
 
-  getSavingsAmount(): number {
-    return this.getCurrentDisplayPrice() - this.getDiscountedPrice()
+  getSavingsAmount(productId: number): number {
+    return this.getCurrentDisplayPrice() - this.getDiscountedPrice(productId)
   }
 
-  // Discount methods
+  // Discount methods - now delegating to discount text service
   toggleDiscountsExpanded(): void {
     this.discountsExpanded = !this.discountsExpanded
   }
@@ -417,12 +674,44 @@ export class ProductDetailComponent implements OnInit {
   }
 
   formatDiscountBadge(discount: DiscountDisplayDTO): string {
-    if (discount.discountType === "PERCENTAGE" && discount.value) {
-      return `${discount.value}% Off`
-    } else if (discount.discountType === "FIXED" && discount.value) {
-      return `MMK ${discount.value} Off`
-    }
-    return discount.shortLabel || discount.name || "Discount"
+    return this.discountTextService.formatDiscountValue(discount)
+  }
+
+  // ===== DELEGATE DISCOUNT DISPLAY METHODS TO DISCOUNT TEXT SERVICE =====
+
+  getDiscountPercentage(discount: DiscountDisplayDTO): string {
+    return this.discountTextService.getDiscountPercentage(discount)
+  }
+
+  getDiscountTypeLabel(discount: DiscountDisplayDTO): string {
+    return this.discountTextService.getDiscountTypeLabel(discount)
+  }
+
+  getMechanismBasedMessage(discount: DiscountDisplayDTO): string {
+    return this.discountTextService.getMechanismBasedMessage(discount)
+  }
+
+  isConditionsMet(discount: DiscountDisplayDTO): boolean {
+    return this.discountTextService.isConditionsMet(discount)
+  }
+
+  isHighValueDiscount(discount: DiscountDisplayDTO): boolean {
+    return this.discountTextService.isHighValueDiscount(discount)
+  }
+
+  getSimpleDescription(discount: DiscountDisplayDTO): string {
+    return this.discountTextService.getSimpleDescription(discount)
+  }
+
+  copyToClipboard(text: string): void {
+    this.discountTextService
+      .copyToClipboard(text)
+      .then(() => {
+        this.showAlert(`Coupon code "${text}" copied to clipboard`, "success")
+      })
+      .catch((err) => {
+        console.error("Failed to copy:", err)
+      })
   }
 
   // Sticky progress methods
@@ -525,7 +814,7 @@ export class ProductDetailComponent implements OnInit {
     })
   }
 
-  // Coupon methods
+  // Coupon methods - simplified since copyToClipboard is now handled by service
   onCouponCopied(code: string): void {
     this.showAlert(`Coupon code "${code}" copied to clipboard`, "success")
   }
@@ -564,7 +853,7 @@ export class ProductDetailComponent implements OnInit {
   }
 
   isWished(productId: number | string): boolean {
-    const id = typeof productId === "string" ? +productId : productId
+    const id = typeof productId === "string" ? +productId : this.productId
     return this.wishList.has(id)
   }
 
@@ -642,4 +931,273 @@ export class ProductDetailComponent implements OnInit {
   trackByImageUrl(index: number, image: any): string {
     return image.url
   }
+
+
+  openEditReview(review: any) {
+    this.editingReview = review;
+    this.editReviewData = {
+      rating: review.rating,
+      comment: review.comment,
+      images: review.images ? review.images.map((img: any) => ({ imageUrl: img.imageUrl })) : []
+    };
+  }
+
+  closeEditReview() {
+    this.editingReview = null;
+  }
+
+  submitEditReview() {
+    if (!this.editingReview) return;
+    const filteredImages = this.editReviewData.images.filter(img => img.imageUrl && img.imageUrl.trim() !== '');
+    const updatedReview = {
+      ...this.editingReview,
+      rating: this.editReviewData.rating,
+      comment: this.editReviewData.comment,
+      images: filteredImages
+    };
+    this.reviewService.updateReview(updatedReview).subscribe({
+      next: () => {
+        this.closeEditReview();
+        this.loadReviews();
+      },
+      error: () => {
+        alert('Failed to update review');
+      }
+    });
+  }
+
+  deleteReview(review: any) {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'Do you want to delete this review?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.reviewService.deleteReview(review.id).subscribe({
+          next: () => {
+            Swal.fire('Deleted!', 'Your review has been deleted.', 'success');
+            this.loadReviews();
+          },
+          error: () => {
+            Swal.fire('Error', 'Failed to delete review.', 'error');
+          }
+        });
+      }
+    });
+  }
+
+  ////////////////////////////////////////////////////////////
+  loadReviews(): void {
+    if (!this.product?.product?.id) return;
+    this.isLoadingReviews = true;
+
+    this.reviewService.getProductReviews(
+      this.product.product.id,
+      this.reviewPage,
+      this.reviewPageSize,
+      this.reviewSort,
+      this.reviewFilterRating
+    ).subscribe({
+      next: (res) => {
+        this.reviews = res.reviews;
+        this.reviewTotal = res.total;
+        this.reviewAverage = res.average;
+        this.reviewBreakdown = res.breakdown;
+        this.isLoadingReviews = false;
+      },
+      error: () => {
+        this.reviews = [];
+        this.reviewTotal = 0;
+        this.reviewAverage = 0;
+        this.reviewBreakdown = {};
+        this.isLoadingReviews = false;
+      }
+    });
+  }
+
+  onReviewImageSelected(event: any): void {
+    const files: FileList = event.target.files;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+
+      // Validate file type and size
+      const validation = this.cloudinaryService.validateImageFile(file);
+      if (!validation.valid) {
+        alert(validation.error);
+        continue; // Skip this file
+      }
+
+      this.cloudinaryService.uploadImage(file).subscribe({
+        next: (url: string) => {
+          this.uploadedReviewImages.push({ imageUrl: url });
+        },
+        error: () => {
+          alert('Image upload failed');
+        }
+      });
+    }
+  }
+
+  removeReviewImage(i: number): void {
+    this.uploadedReviewImages.splice(i, 1);
+  }
+
+  submitReview(): void {
+    if (!this.product?.product?.id) return;
+    this.isSubmittingReview = true;
+
+    const reviewPayload: Partial<ProductReview> = {
+      productId: this.product.product.id,
+
+      rating: this.newReview.rating,
+      comment: this.newReview.comment,
+      images: this.uploadedReviewImages,
+
+
+    };
+    console.log('Review payload:', reviewPayload);
+    this.reviewService.addReview(reviewPayload).subscribe({
+      next: (review) => {
+        this.isSubmittingReview = false;
+        this.newReview = { rating: 5, comment: '' };
+        this.uploadedReviewImages = [];
+        this.loadReviews(); // Refresh review list
+        Swal.fire({
+          title: 'Success!',
+          text: 'Your review has been submitted successfully.',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      },
+      error: (error) => {
+        this.isSubmittingReview = false;
+        let errorMessage = 'Failed to submit review. Please try again.';
+
+        if (error.error && error.error.message) {
+          errorMessage = error.error.message;
+        } else if (error.status === 403) {
+          errorMessage = 'You are not allowed to give review again';
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        Swal.fire({
+          title: 'Error!',
+          text: errorMessage,
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+      }
+    });
+  }
+
+
+  checkPurchaseStatus(): void {
+    // Always load reviews for everyone (logged in or not)
+    this.loadReviews();
+
+    // Only check purchase status if user is logged in
+    if (!this.isLoggedIn || !this.product?.product?.id) {
+      this.hasPurchasedProduct = false;
+      console.log('❌ Not logged in or no product ID');
+      return;
+    }
+
+    console.log('🔍 Checking purchase status for product:', this.product.product.id);
+    console.log('👤 User ID:', this.userId);
+
+    // Call backend API to check if user has purchased and received this product
+    this.reviewService.checkPurchaseStatus(this.product.product.id).subscribe({
+      next: (response) => {
+        console.log('✅ Purchase check response:', response);
+        this.hasPurchasedProduct = response.canReview;
+        this.hasReviewedProduct = response.hasReviewed;
+        console.log('📝 Can review:', this.hasPurchasedProduct);
+        console.log('📝 Has reviewed:', this.hasReviewedProduct);
+      },
+      error: (error) => {
+        console.error('❌ Purchase check error:', error);
+        this.hasPurchasedProduct = false;
+        this.hasReviewedProduct = false;
+      }
+    });
+  }
+
+  // --- For template: Math functions ---
+  getRounded(value: number): number {
+    return Math.round(value);
+  }
+
+
+  getPages(): number[] {
+    return Array(Math.ceil(this.reviewTotal / this.reviewPageSize)).fill(0).map((x, i) => i + 1);
+  }
+
+  onEditReviewImageSelected(event: any, idx: number): void {
+    const file: File = event.target.files[0];
+    if (!file) return;
+    const validation = this.cloudinaryService.validateImageFile(file);
+    if (!validation.valid) {
+      alert(validation.error);
+      return;
+    }
+    this.cloudinaryService.uploadImage(file).subscribe({
+      next: (url: string) => {
+        this.editReviewData.images[idx].imageUrl = url;
+      },
+      error: () => {
+        alert('Image upload failed');
+      }
+    });
+  }
+
+  removeEditReviewImage(idx: number): void {
+    this.editReviewData.images.splice(idx, 1);
+  }
+
+  addEditReviewImage(input: HTMLInputElement) {
+    input.value = '';
+    input.click();
+  }
+  onAddEditReviewImageSelected(event: any) {
+    const file: File = event.target.files[0];
+    if (!file) return;
+    const validation = this.cloudinaryService.validateImageFile(file);
+    if (!validation.valid) {
+      alert(validation.error);
+      return;
+    }
+    this.cloudinaryService.uploadImage(file).subscribe({
+      next: (url: string) => {
+        if (url && url.startsWith('http')) {
+          this.editReviewData.images.push({ imageUrl: url });
+        } else {
+          alert('Image upload failed: Invalid URL');
+        }
+      },
+      error: () => {
+        alert('Image upload failed');
+      }
+    });
+  }
+
+  onReviewSortChange(sort: string): void {
+    this.reviewSort = sort;
+    this.loadReviews();
+  }
+
+  onReviewFilterChange(rating?: number): void {
+    this.reviewFilterRating = rating;
+    this.loadReviews();
+  }
+
+  onReviewPageChange(page: number): void {
+    this.reviewPage = page;
+    this.loadReviews();
+  }
+
+
 }

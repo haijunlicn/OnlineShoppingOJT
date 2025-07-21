@@ -53,6 +53,8 @@ import { ProfileInfoSettingComponent } from './common/profile-info-setting/profi
 import { NotiSettingComponent } from './common/noti-setting/noti-setting.component';
 import { DiscountDisplayComponent } from './product_display/discount-display/discount-display.component';
 import { StickyDiscountProgressComponent } from './product_display/sticky-discount-progress/sticky-discount-progress.component';
+import { DiscountConditionDisplayComponent } from './product_display/discount-condition-display/discount-condition-display.component';
+import { ProductqandaComponent } from './product_display/productqanda/productqanda.component';
 
 @NgModule({
   declarations: [
@@ -98,7 +100,9 @@ import { StickyDiscountProgressComponent } from './product_display/sticky-discou
     ProfileInfoSettingComponent,
     NotiSettingComponent,
     DiscountDisplayComponent,
-    StickyDiscountProgressComponent
+    StickyDiscountProgressComponent,
+    DiscountConditionDisplayComponent,
+    ProductqandaComponent
   ],
   imports: [
     CommonModule,

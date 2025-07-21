@@ -1,85 +1,172 @@
 <app-header></app-header>
-<main class="main-content">
+<main class="main-content-cart">
   <div class="cart-page">
     <div class="cart-container">
+
       <div class="cart-header">
-        <h1 class="cart-title">Your Shopping Cart</h1>
-        <button class="back-btn pill-btn" routerLink="/customer/productList" routerLinkActive="active">
-          Continue Shopping
-        </button>
+        <div class="bar-content">
+          <div class="cart-title">
+            <h3>Your Shopping Cart</h3>
+          </div>
+          <!-- Back button above main content -->
+          <div class="cart-back-row">
+            <button class="back-btn pill-btn" routerLink="/customer/productList">
+              <span class="back-arrow">&#8592;</span> Continue Shopping
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div *ngIf="cart.length > 0; else emptyCart" class="cart-layout">
+      <div *ngIf="cart.length > 0; else emptyCart" class="cart-main-flex">
+        <!-- Left: Product Table -->
+        <div class="cart-items-col">
 
-        <div class="cart-items">
-          <table>
-            <thead>
-              <tr>
-                <th class="product-col">Product</th>
-                <th class="price-col">Price</th>
-                <th class="quantity-col">Quantity</th>
-                <th class="total-col">Total</th>
-                <th class="action-col"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let item of cart" class="cart-item">
-                <td class="product-col">
-                  <div class="product-details">
-                    <img *ngIf="item.imgPath" [src]="item.imgPath" alt="{{ item.productName }}" class="product-image" />
-                    <div class="product-info">
-                      <p class="product-name">{{ item.productName }}</p>
-                      <p class="product-sku">SKU: {{ item.variantSku }}</p>
-                      <span class="mobile-price">MMK {{ item.price | number:'1.0-0' }} each</span>
-                      <button class="remove-btn-mobile pill-btn" (click)="removeItem(item.productId, item.variantId)">
-                        Remove Item
-                      </button>
+          <div class="cart-items">
+            <table>
+              <thead>
+                <tr>
+                  <th class="product-col">PRODUCT</th>
+                  <th class="price-col">PRICE</th>
+                  <th class="quantity-col">QUANTITY</th>
+                  <th class="total-col">TOTAL</th>
+                  <th class="action-col"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of cart" class="cart-item">
+                  <td class="product-col">
+                    <div class="product-details">
+                      <img *ngIf="item.imgPath" [src]="item.imgPath" alt="{{ item.productName }}"
+                        class="product-image" />
+                      <div class="product-info">
+                        <p class="product-name">{{ item.productName }}</p>
+                        <p class="product-sku">SKU: {{ item.variantSku }}</p>
+
+                        <!-- Show discount badge if applied -->
+                        <div *ngIf="getItemDiscountAmount(item.productId, item.variantId) > 0" class="discount-badge">
+                          <span class="badge">{{ appliedDiscount?.discount?.shortLabel }} Applied</span>
+                        </div>
+
+                        <span class="mobile-price">MMK {{ item.price | number:'1.0-0' }} each</span>
+                        <button class="remove-btn-mobile pill-btn" (click)="removeItem(item.productId, item.variantId)">
+                          Remove Item
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td class="price-col price">MMK {{ item.price | number:'1.0-0' }}</td>
-                <td class="quantity-col">
-                  <div class="quantity-selector">
-                    <button class="qty-btn qty-btn-minus pill-btn"
-                      (click)="changeQty(item.productId, item.variantId, -1)" [disabled]="item.quantity <= 1">-</button>
-                    <span class="qty-value">{{ item.quantity }}</span>
-                    <button class="qty-btn qty-btn-plus pill-btn" (click)="changeQty(item.productId, item.variantId, 1)"
-                      [disabled]="item.quantity >= item.stock">+</button>
-                  </div>
-                </td>
-                <td class="total-col price">MMK {{ (item.price * item.quantity) | number:'1.0-0' }}</td>
-                <td class="action-col">
-                  <button class="remove-btn pill-btn" (click)="removeItem(item.productId, item.variantId)"
-                    title="Remove item">
-                    <i class="fas fa-times"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  </td>
+                  <td class="price-col">
+                    <div class="price-container">
+                      <div class="price">MMK {{ item.price | number:'1.0-0' }}</div>
+                      <div *ngIf="getItemDiscountAmount(item.productId, item.variantId) > 0" class="discount-amount">
+                        -MMK {{ getItemDiscountAmount(item.productId, item.variantId) | number:'1.0-0' }}
+                      </div>
+                    </div>
+                  </td>
+                  <td class="quantity-col">
+                    <div class="quantity-selector">
+                      <button class="qty-btn qty-btn-minus pill-btn"
+                        (click)="changeQty(item.productId, item.variantId, -1)"
+                        [disabled]="item.quantity <= 1">-</button>
+                      <span class="qty-value">{{ item.quantity }}</span>
+                      <button class="qty-btn qty-btn-plus pill-btn"
+                        (click)="changeQty(item.productId, item.variantId, 1)"
+                        [disabled]="item.quantity >= item.stock">+</button>
+                    </div>
+                  </td>
+                  <td class="total-col">
+                    <div class="total-container">
+                      <div *ngIf="getItemDiscountAmount(item.productId, item.variantId) > 0; else noDiscount"
+                        class="discounted-total">
+                        <div class="original-total">MMK {{ (item.price * item.quantity) | number:'1.0-0' }}</div>
+                        <div class="final-total">MMK {{ getItemFinalTotal(item) | number:'1.0-0' }}</div>
+                      </div>
+                      <ng-template #noDiscount>
+                        <div class="price">MMK {{ (item.price * item.quantity) | number:'1.0-0' }}</div>
+                      </ng-template>
+                    </div>
+                  </td>
+                  <td class="action-col">
+                    <button class="remove-btn pill-btn" (click)="removeItem(item.productId, item.variantId)"
+                      title="Remove item">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <div class="cart-footer">
-          <h3 class="summary-title">Order Summary</h3>
-          <div class="summary-row">
-            <span>Subtotal ({{ getItemCount() }} items)</span>
-            <span class="price">MMK {{ getTotal() | number:'1.0-0' }}</span>
+        <!-- Right: Sidebar -->
+        <aside class="cart-sidebar">
+          <!-- Coupon Code Section -->
+          <div class="coupon-section">
+            <h3 class="coupon-label">
+              <i class="fas fa-tag"></i>
+              Coupon Code
+            </h3>
+
+            <!-- Applied Coupon Display -->
+            <div *ngIf="appliedDiscount" class="applied-coupon">
+              <div class="coupon-info">
+                <div class="coupon-name">{{ appliedDiscount.discount.name }}</div>
+                <div class="coupon-code">Code: {{ appliedDiscount.discount.couponcode }}</div>
+                <div class="coupon-savings">Saved: MMK {{ appliedDiscount.appliedAmount | number:'1.0-0' }}</div>
+              </div>
+              <button class="remove-coupon-btn" (click)="removeCoupon()" title="Remove coupon">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <!-- Coupon Input Form -->
+            <form *ngIf="!appliedDiscount" (ngSubmit)="applyCoupon()" class="coupon-form" autocomplete="off">
+              <div class="coupon-input-row">
+                <input id="couponInput" type="text" [(ngModel)]="couponCode" name="couponCode" class="coupon-input"
+                  placeholder="Coupon code" />
+                <button type="submit" class="apply-coupon-btn pill-btn">Apply</button>
+              </div>
+            </form>
+
+            <!-- Coupon Message -->
+            <div *ngIf="couponMessage" [ngClass]="{'coupon-success': couponSuccess, 'coupon-error': !couponSuccess}"
+              class="coupon-message">
+              {{ couponMessage }}
+            </div>
           </div>
-          <div class="summary-row">
-            <span>Shipping</span>
-            <span>Calculated at checkout</span>
+
+          <!-- Order Summary -->
+          <div class="cart-footer">
+            <h3 class="summary-title">
+              <i class="fas fa-receipt"></i>
+              Order Summary
+            </h3>
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span class="price">MMK {{ getSubtotal() | number:'1.0-0' }}</span>
+            </div>
+
+            <!-- Show discount line if applied -->
+            <div *ngIf="appliedDiscount" class="summary-row discount-row">
+              <span>{{ appliedDiscount.discount.shortLabel }}</span>
+              <span class="discount-amount">-MMK {{ appliedDiscount.appliedAmount | number:'1.0-0' }}</span>
+            </div>
+
+            <div class="summary-row">
+              <span>Shipping</span>
+              <span>At checkout</span>
+            </div>
+            <div class="summary-total">
+              <span>Total</span>
+              <span class="total-price">MMK {{ getTotal() | number:'1.0-0' }}</span>
+            </div>
+            <button class="checkout-btn pill-btn" (click)="proceedToCheckout()">
+              Proceed to Checkout
+            </button>
+            <button class="clear-btn pill-btn" (click)="clearCart()">
+              Clear Cart
+            </button>
           </div>
-          <div class="summary-total">
-            <span>Estimated Total</span>
-            <span class="total-price">MMK {{ getTotal() | number:'1.0-0' }}</span>
-          </div>
-          <button class="checkout-btn pill-btn" (click)="proceedToCheckout()">
-            Proceed to Checkout
-          </button>
-          <button class="clear-btn pill-btn" (click)="clearCart()">
-            Clear Cart
-          </button>
-        </div>
+        </aside>
       </div>
 
       <ng-template #emptyCart>

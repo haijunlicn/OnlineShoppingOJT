@@ -45,7 +45,6 @@ public class ProductEntity {
     @JoinColumn(name = "created_by")
     private UserEntity createdBy;
 
-
     @Column(name = "del_fg")
     private Integer delFg = 1;
 

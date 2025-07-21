@@ -17,7 +17,16 @@ export class CartService {
     private authService: AuthService
   ) {
     // Refresh cart count whenever the user logs in or logs out
-    this.authService.user$.subscribe(() => {
+    // this.authService.user$.subscribe(() => {
+    //   this.emitCount();
+    // });
+
+    this.authService.user$.subscribe((user) => {
+      console.log("🛒 Auth changed in CartService. User is now: ", user);
+
+      // Refresh cart when login/logout happens
+      const freshCart = this.getCart();
+      this.cartItemsSubject.next(freshCart);
       this.emitCount();
     });
 

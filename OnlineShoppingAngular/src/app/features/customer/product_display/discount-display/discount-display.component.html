@@ -1,109 +1,124 @@
 <!-- Grid Display Mode -->
-<div *ngIf="displayMode === 'grid'" class="discount-grid-display">
+<div *ngIf="displayMode === 'grid'">
+  <!-- Only show full discount display if applicable -->
+  <div *ngIf="shouldShowPriceComparison(); else noDiscountTemplate" class="discount-grid-display">
+    
     <!-- Discount Badges -->
-    <div *ngIf="getDiscountBadges().length > 0" class="discount-badges-container mb-2">
-        <span *ngFor="let discount of getDiscountBadges()" class="badge discount-badge me-1"
+    <div *ngIf="hasDiscountBadges()" class="discount-badges-container mb-2">
+      <span *ngFor="let discount of getDiscountBadges()" 
+            class="badge discount-badge me-1"
             [ngClass]="getDiscountBadgeClass(discount.mechanismType!)">
-            <i class="pi me-1" [ngClass]="getDiscountIcon(discount.mechanismType!)"></i>
-            {{ formatDiscountBadge(discount) }}
-        </span>
+        <i class="pi me-1" [ngClass]="getDiscountIcon(discount.mechanismType!)"></i>
+        {{ formatDiscountBadge(discount) }}
+      </span>
     </div>
 
-    <!-- Price Comparison -->
-    <div *ngIf="shouldShowPriceComparison()" class="price-comparison">
-        <div class="d-flex align-items-center gap-2">
-            <span class="current-price fw-bold text-success">
-                MMK {{ discountedPrice | number:'1.0-0' }}
-            </span>
-            <s class="original-price text-muted small">
-                MMK {{ originalPrice | number:'1.0-0' }}
-            </s>
-            <span class="savings-badge badge bg-success">
-                Save MMK {{ (originalPrice! - discountedPrice!) | number:'1.0-0' }}
-            </span>
-        </div>
+    <!-- Enhanced Price Comparison - Organized Layout -->
+    <div class="price-comparison-organized">
+      <!-- Current Price & Original Price Row -->
+      <div class="price-row">
+        <span class="current-price">
+          MMK {{ discountedPrice | number:'1.0-0' }}
+        </span>
+        <s class="original-price">
+          MMK {{ originalPrice | number:'1.0-0' }}
+        </s>
+      </div>
+      
+      <!-- Discount Info Row -->
+      <div class="discount-info-row">
+        <span class="savings-amount">
+          Save MMK {{ getSavingsAmount() | number:'1.0-0' }}
+        </span>
+      </div>
     </div>
+  </div>
+
+  <!-- Fallback: show original price only -->
+  <ng-template #noDiscountTemplate>
+    <div class="price-comparison-organized">
+      <div class="price-row">
+        <span class="current-price">
+          MMK {{ originalPrice | number:'1.0-0' }}
+        </span>
+      </div>
+    </div>
+  </ng-template>
 </div>
 
-<!-- Detail/Cart Display Mode -->
-<div *ngIf="displayMode === 'detail' || displayMode === 'cart'" class="discount-detail-display">
+<!-- Detail Display Mode -->
+<div *ngIf="displayMode === 'detail'">
+  <div class="discount-detail-display">
+    
+    <!-- Section Title -->
+    <h6 class="section-title" *ngIf="showTitle">Available Offers</h6>
+
     <!-- Coupon Cards -->
-    <div *ngIf="getCouponCards().length > 0" class="coupon-section mb-4">
-        <h6 class="section-title mb-3">
-            <i class="pi pi-tag me-2 text-primary"></i>
-            Coupon Codes
-        </h6>
-        <div class="coupon-cards-container">
-            <div *ngFor="let coupon of getCouponCards()" class="card coupon-card mb-3">
-                <div class="card-body p-3">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div class="coupon-info flex-grow-1">
-                            <h6 class="coupon-title mb-2">{{ coupon.shortLabel || coupon.name }}</h6>
-                            <div class="coupon-code-section mb-2" *ngIf="coupon.code">
-                                <span class="badge bg-primary coupon-code">{{ coupon.code }}</span>
-                            </div>
-                            <p class="coupon-condition text-muted small mb-0" *ngIf="coupon.conditionSummary">
-                                {{ coupon.conditionSummary }}
-                            </p>
-                        </div>
-                        <div class="coupon-actions" *ngIf="coupon.code">
-                            <button class="btn btn-outline-primary btn-sm me-2" (click)="copyCouponCode(coupon.code!)"
-                                [disabled]="copiedCode === coupon.code" title="Copy Code">
-                                <i class="pi" [ngClass]="copiedCode === coupon.code ? 'pi-check' : 'pi-copy'"></i>
-                                {{ copiedCode === coupon.code ? 'Copied!' : 'Copy' }}
-                            </button>
-                            <button class="btn btn-primary btn-sm" (click)="applyCoupon(coupon.code!)"
-                                title="Apply Coupon">
-                                Apply
-                            </button>
-                        </div>
-                    </div>
-                </div>
+    <div class="coupon-cards-container" *ngIf="hasCouponCards()">
+      <div class="row g-3">
+        <div class="col-12" *ngFor="let coupon of getCouponCards()">
+          <div class="card coupon-card">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h6 class="coupon-title mb-0">{{ coupon.name }}</h6>
+                <span class="badge bg-primary">{{ formatDiscountBadge(coupon) }}</span>
+              </div>
+              
+              <div class="coupon-code-section mb-2">
+                <span class="badge coupon-code">{{ coupon.couponcode }}</span>
+                <button class="btn btn-sm btn-outline-primary ms-2" 
+                        (click)="copyCouponCode(coupon.couponcode!)"
+                        [disabled]="copiedCode === coupon.couponcode">
+                  {{ copiedCode === coupon.couponcode ? 'Copied!' : 'Copy' }}
+                </button>
+              </div>
+              
+              <p class="coupon-condition mb-0" *ngIf="coupon.conditionSummary">
+                {{ coupon.conditionSummary }}
+              </p>
             </div>
+          </div>
         </div>
+      </div>
     </div>
 
     <!-- Free Gift Banners -->
-    <div *ngIf="getFreeGiftBanners().length > 0" class="free-gift-section mb-4">
-        <div *ngFor="let gift of getFreeGiftBanners()" class="alert alert-warning free-gift-banner" role="alert">
-            <div class="d-flex align-items-center">
-                <i class="pi pi-gift me-3 fs-4 text-warning"></i>
-                <div>
-                    <strong>🎁 Free Gift: </strong>
-                    <span>{{ gift.shortLabel || gift.name }}</span>
-                    <div *ngIf="gift.conditionSummary" class="small text-muted mt-1">
-                        {{ gift.conditionSummary }}
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="free-gift-section" *ngIf="hasFreeGiftBanners()">
+      <div class="alert free-gift-banner" *ngFor="let gift of getFreeGiftBanners()">
+        <i class="pi pi-gift me-2"></i>
+        <strong>Free Gift:</strong> {{ gift.name }}
+        <small class="d-block mt-1" *ngIf="gift.conditionSummary">{{ gift.conditionSummary }}</small>
+      </div>
     </div>
 
     <!-- Regular Discounts Summary -->
-    <div *ngIf="hasVisibleDiscounts()" class="discount-summary">
-        <div class="card border-success">
-            <div class="card-header bg-light">
-                <h6 class="mb-0 text-success">
-                    <i class="pi pi-percentage me-2"></i>
-                    Available Discounts ({{ getVisibleDiscounts().length }})
-                </h6>
-            </div>
-            <div class="card-body p-3">
-                <div *ngFor="let discount of getVisibleDiscounts(); let last = last" class="discount-item"
-                    [class.border-bottom]="!last" [class.pb-2]="!last" [class.mb-2]="!last">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="discount-details">
-                            <span class="discount-name fw-medium">{{ discount.shortLabel || discount.name }}</span>
-                            <div *ngIf="discount.conditionSummary" class="small text-muted mt-1">
-                                {{ discount.conditionSummary }}
-                            </div>
-                        </div>
-                        <span class="badge" [ngClass]="getDiscountBadgeClass(discount.mechanismType!)">
-                            {{ formatDiscountBadge(discount) }}
-                        </span>
-                    </div>
-                </div>
-            </div>
+    <div class="discount-summary" *ngIf="hasVisibleDiscounts()">
+      <div class="card">
+        <div class="card-header">
+          <h6 class="mb-0">Applied Discounts</h6>
         </div>
+        <div class="card-body">
+          <div class="discount-item d-flex justify-content-between align-items-center" 
+               *ngFor="let discount of getVisibleDiscounts()">
+            <div>
+              <span class="discount-name">{{ discount.name }}</span>
+              <span class="badge ms-2" [ngClass]="getDiscountBadgeClass(discount.mechanismType!)">
+                {{ discount.mechanismType }}
+              </span>
+            </div>
+            <span class="fw-bold">{{ formatDiscountBadge(discount) }}</span>
+          </div>
+        </div>
+      </div>
     </div>
+
+  </div>
+</div>
+
+<!-- Cart Display Mode -->
+<div *ngIf="displayMode === 'cart'">
+  <!-- Similar to detail but more compact -->
+  <div class="discount-cart-display">
+    <!-- Compact coupon and discount display for cart -->
+  </div>
 </div>

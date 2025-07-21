@@ -1,8 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { CartItem } from '@app/core/models/cart.model';
-import { DiscountDisplayDTO } from '@app/core/models/discount';
+import { DiscountConditionEA_D, DiscountDisplayDTO } from '@app/core/models/discount';
 import { evaluateCartConditions } from '@app/core/services/discountChecker';
-
 interface ConditionDisplay {
   type: string
   detail: string
@@ -12,6 +11,13 @@ interface ConditionDisplay {
   isFulfilled: boolean
   icon: string
   currentValue?: number | string
+  // 🔧 Store the actual calculated values from buildConditionDisplay
+  progressData: {
+    current: number
+    required: number
+    remaining: number
+    percentage: number
+  }
 }
 
 interface ConditionGroupDisplay {
@@ -59,14 +65,12 @@ export class StickyDiscountProgressComponent implements OnInit, OnDestroy, OnCha
   private previousAmount = 0
 
   ngOnInit(): void {
-    console.log("🚀 StickyDiscountProgressComponent initialized")
     this.loadDismissedState()
     this.calculateDiscountProgresses()
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes["conditionalDiscounts"] || changes["currentAmount"] || changes["cartItems"]) {
-      console.log("🔄 Input changes detected")
       this.calculateDiscountProgresses()
       this.checkForDiscountUnlocked()
     }
@@ -139,82 +143,41 @@ export class StickyDiscountProgressComponent implements OnInit, OnDestroy, OnCha
     discount: DiscountDisplayDTO,
     conditionGroups: ConditionGroupDisplay[],
   ): { required: number; current: number; remaining: number; percentage: number } {
-    console.log("🔍 Calculating progress for discount:", discount.name)
 
     if (conditionGroups && conditionGroups.length > 0) {
       for (const group of conditionGroups) {
         const isAndGroup = group.logicOperator
-        console.log("🔀 Group logic operator:", group.logicOperator, "isAndGroup:", isAndGroup)
 
         if (group.conditions && group.conditions.length > 0) {
-          // Get progress for all conditions (both trackable and binary)
-          const allConditionProgresses = group.conditions.map((condition) => ({
-            condition,
-            progress: this.getConditionProgress(condition),
-            isTrackable:
-              condition.type === "ORDER" && (condition.detail === "order_total" || condition.detail === "item_count"),
-            isBinary: condition.type === "PRODUCT" || condition.type === "CUSTOMER_GROUP",
-          }))
-
-          console.log("📊 All condition progresses:", allConditionProgresses)
-
-          // Separate trackable and binary conditions
-          const trackableConditions = allConditionProgresses.filter(
-            (item) => item.isTrackable && item.progress.required > 0,
-          )
-          const binaryConditions = allConditionProgresses.filter((item) => item.isBinary)
 
           if (isAndGroup) {
-            // AND Group Logic: All conditions must be met
+            const allFulfilled = group.conditions.every((c) => c.isFulfilled)
 
-            // If we have trackable conditions, prioritize showing progress for incomplete ones
-            if (trackableConditions.length > 0) {
-              const incompleteTrackable = trackableConditions.filter((item) => item.progress.percentage < 100)
-
-              if (incompleteTrackable.length > 0) {
-                // Show the incomplete trackable condition with highest progress
-                const nextCondition = incompleteTrackable.reduce((best, current) =>
-                  current.progress.percentage > best.progress.percentage ? current : best,
-                )
-                console.log("🎯 AND group - Next incomplete trackable condition:", nextCondition.progress)
-                return nextCondition.progress
-              }
-            }
-
-            // If all trackable conditions are complete, check binary conditions
-            if (binaryConditions.length > 0) {
-              const incompleteBinary = binaryConditions.filter((item) => item.progress.percentage < 100)
-
-              if (incompleteBinary.length > 0) {
-                // Show first incomplete binary condition
-                console.log("🎯 AND group - Next incomplete binary condition:", incompleteBinary[0].progress)
-                return incompleteBinary[0].progress
-              }
-            }
-
-            // All conditions complete
-            if (allConditionProgresses.length > 0) {
+            if (allFulfilled) {
               console.log("🎯 AND group - All conditions complete")
               return { required: 1, current: 1, remaining: 0, percentage: 100 }
             }
-          } else {
+
+            // ✅ Use the combined progress calculator for AND group
+            const combinedProgress = this.calculateCombinedAndProgress(group)
+            return combinedProgress
+          }
+          else {
             // OR Group Logic: Any condition can be met
+            const fulfilledConditions = group.conditions.filter((c) => c.isFulfilled)
 
-            // Check if any condition is already complete
-            const completedCondition = allConditionProgresses.find((item) => item.progress.percentage >= 100)
-
-            if (completedCondition) {
-              console.log("🎯 OR group - Locked onto completed condition:", completedCondition.progress)
-              return completedCondition.progress
-            }
-
-            // No condition is complete, show the one with highest progress
-            if (allConditionProgresses.length > 0) {
-              const bestProgress = allConditionProgresses.reduce((best, current) =>
-                current.progress.percentage > best.progress.percentage ? current : best,
-              )
-              console.log("🎯 OR group - Best progress (none complete yet):", bestProgress.progress)
-              return bestProgress.progress
+            if (fulfilledConditions.length > 0) {
+              // Show the best fulfilled condition
+              const bestFulfilled = fulfilledConditions.reduce((best, current) => {
+                return current.progressData.percentage > best.progressData.percentage ? current : best
+              })
+              return bestFulfilled.progressData
+            } else {
+              // No condition is complete, show the one with highest progress
+              const bestProgress = group.conditions.reduce((best, current) => {
+                return current.progressData.percentage > best.progressData.percentage ? current : best
+              })
+              return bestProgress.progressData
             }
           }
         }
@@ -222,241 +185,220 @@ export class StickyDiscountProgressComponent implements OnInit, OnDestroy, OnCha
     }
 
     // Fallback if no conditions are found
-    console.log("🔄 No trackable conditions found, returning zero progress")
     return { required: 0, current: 0, remaining: 0, percentage: 0 }
   }
 
-  private getConditionProgress(condition: ConditionDisplay): {
+  calculateCombinedAndProgress(group: any): {
     required: number
     current: number
     remaining: number
     percentage: number
   } {
-    const values: string[] = condition.value || ["0"]
+    // For AND groups with ORDER + PRODUCT conditions, calculate combined progress
+    const orderCondition = group.conditions.find((c: ConditionDisplay) => c.type === "ORDER" && c.detail === "item_count")
+    const productCondition = group.conditions.find((c: ConditionDisplay) => c.type === "PRODUCT")
 
-    // 🛒 ORDER Conditions (trackable with numerical progress)
-    if (condition.type === "ORDER") {
-      if (condition.detail === "order_total") {
-        const required = this.parseConditionValue(values)
-        const current = this.cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-        const remaining = Math.max(required - current, 0)
-        const percentage = required > 0 ? Math.min((current / required) * 100, 100) : 100
+    if (orderCondition && productCondition) {
+      // Get the required count from the ORDER condition
+      const requiredCount = orderCondition.progressData.required
 
-        return { required, current, remaining, percentage }
+      // Get the current count of matching products
+      const currentCount = productCondition.progressData.current
+
+      // Calculate combined progress
+      const combinedProgress = {
+        required: requiredCount,
+        current: Math.min(currentCount, requiredCount), // Cap at required
+        remaining: Math.max(requiredCount - currentCount, 0),
+        percentage: requiredCount > 0 ? Math.min((currentCount / requiredCount) * 100, 100) : 100,
       }
 
-      if (condition.detail === "item_count") {
-        const required = this.parseConditionValue(values)
-        const current = this.cartItems.reduce((sum, item) => sum + item.quantity, 0)
-        const remaining = Math.max(required - current, 0)
-        const percentage = required > 0 ? Math.min((current / required) * 100, 100) : 100
+      return combinedProgress;
+    }
 
-        return { required, current, remaining, percentage }
+    // Fallback to minimum progress approach
+    let minProgress = 100
+    let limitingCondition = null
+
+    for (const condition of group.conditions) {
+      if (condition.progressData.percentage < minProgress) {
+        minProgress = condition.progressData.percentage
+        limitingCondition = condition
       }
     }
 
-    // 🏷️ PRODUCT Conditions (binary - either fulfilled or not)
-    if (condition.type === "PRODUCT") {
-      // For product conditions, we use binary progress: 0% or 100%
-      const percentage = condition.isFulfilled ? 100 : 0
-      return {
-        required: 1, // Represents "1 requirement"
-        current: condition.isFulfilled ? 1 : 0,
-        remaining: condition.isFulfilled ? 0 : 1,
-        percentage,
-      }
-    }
-
-    // 👥 CUSTOMER_GROUP Conditions (binary)
-    if (condition.type === "CUSTOMER_GROUP") {
-      const percentage = condition.isFulfilled ? 100 : 0
-      return {
-        required: 1,
-        current: condition.isFulfilled ? 1 : 0,
-        remaining: condition.isFulfilled ? 0 : 1,
-        percentage,
-      }
-    }
-
-    // Default for unknown condition types
-    return { required: 0, current: 0, remaining: 0, percentage: 0 }
+    return limitingCondition ? limitingCondition.progressData : { required: 0, current: 0, remaining: 0, percentage: 0 };
   }
 
+
   private buildConditionGroupDisplays(discount: DiscountDisplayDTO): ConditionGroupDisplay[] {
-    if (!discount.conditionGroups || discount.conditionGroups.length === 0) return [];
+    if (!discount.conditionGroups || discount.conditionGroups.length === 0) {
+      return []
+    }
 
     return discount.conditionGroups.map((group) => {
-      const allConditions = group.conditions || [];
-      const isAnd = String(group.logicOperator).toLowerCase() === "true";
+      const conditions = (group.conditions || []).map((condition) =>
+        this.buildConditionDisplay(condition, group.conditions || []),
+      )
 
-      // First, isolate PRODUCT filters (brand/category/product)
-      const productFilters = allConditions.filter(c =>
-        c.conditionType === "PRODUCT"
-      );
+      // Properly handle the logicOperator - ensure it's a boolean
+      const isAnd = String(group.logicOperator).toLowerCase() === "true"
 
-      // Filter cart based on PRODUCT filters
-      const filteredCart = this.filterCartByProductConditions(this.cartItems, productFilters);
+      const isFulfilled = isAnd ? conditions.every((c) => c.isFulfilled) : conditions.some((c) => c.isFulfilled)
 
-      const conditions = allConditions.map((condition) =>
-        this.buildConditionDisplay(condition, filteredCart) // <-- Pass filtered cart
-      );
-
-      const isFulfilled = isAnd
-        ? conditions.every((c) => c.isFulfilled)
-        : conditions.some((c) => c.isFulfilled);
-
-      const displayText = this.buildGroupDisplayText(isAnd, conditions);
+      const displayText = this.buildGroupDisplayText(isAnd, conditions)
 
       return {
         logicOperator: isAnd,
         conditions,
         isFulfilled,
         displayText,
-      };
-    });
+      }
+    })
   }
 
-  private buildConditionDisplay(condition: any, scopedCartItems: CartItem[] = this.cartItems): ConditionDisplay {
-    let values: string[];
+  private buildConditionDisplay(condition: any, groupConditions: any[]): ConditionDisplay {
+    let values: string[]
     try {
-      values = Array.isArray(condition.value)
-        ? condition.value
-        : JSON.parse(condition.value || "[]");
+      values = Array.isArray(condition.value) ? condition.value : JSON.parse(condition.value || "[]")
     } catch {
-      values = [condition.value || "0"];
+      values = [condition.value || "0"]
     }
 
-    let displayText = "";
-    let isFulfilled = false;
-    let icon = "pi-circle";
-    let currentValue: number | string | undefined;
-
-    console.group(`🔎 Evaluating Condition: [${condition.conditionType}] ${condition.conditionDetail}`);
-    console.log("📦 Raw Condition Object:", condition);
-    console.log("📐 Parsed Values:", values);
+    let displayText = ""
+    let isFulfilled = false
+    let icon = "pi-circle"
+    let currentValue: number | string | undefined
+    let progressData = { current: 0, required: 1, remaining: 1, percentage: 0 }
 
     switch (condition.conditionType) {
       case "ORDER":
         if (condition.conditionDetail === "order_total") {
-          const requiredAmount = Number.parseInt(values[0] || "0");
-          const cartTotal = scopedCartItems.reduce
-            (
-              (sum, item) => sum + item.price * item.quantity,
-              0
-            );
-          currentValue = cartTotal;
-          isFulfilled = this.evaluateCondition(cartTotal, requiredAmount, condition.operator);
-          displayText = `Order total ${this.getOperatorText(condition.operator)} ${this.currency} ${requiredAmount.toLocaleString()}`;
-          icon = "pi-shopping-cart";
+          const requiredAmount = Number.parseInt(values[0] || "0")
+          const cartTotal = this.cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
-          console.log("💰 Order Total:", cartTotal);
-          console.log("🎯 Required:", requiredAmount);
-          console.log("📊 Operator:", condition.operator);
-          console.log("✅ Fulfilled:", isFulfilled);
+          currentValue = cartTotal
+          isFulfilled = this.evaluateCondition(cartTotal, requiredAmount, condition.operator)
+          displayText = `Order total ${this.getOperatorText(condition.operator)} ${this.currency} ${requiredAmount.toLocaleString()}`
+          icon = "pi-shopping-cart"
+
+          // 🔧 Calculate progress data once here
+          progressData = {
+            current: cartTotal,
+            required: requiredAmount,
+            remaining: Math.max(requiredAmount - cartTotal, 0),
+            percentage: requiredAmount > 0 ? Math.min((cartTotal / requiredAmount) * 100, 100) : 100,
+          }
+
         } else if (condition.conditionDetail === "item_count") {
-          const requiredCount = Number.parseInt(values[0] || "0");
-          const itemCount = this.cartItems.reduce((sum, item) => sum + item.quantity, 0);
-          currentValue = itemCount;
-          isFulfilled = this.evaluateCondition(itemCount, requiredCount, condition.operator);
-          displayText = `Item count ${this.getOperatorText(condition.operator)} ${requiredCount}`;
-          icon = "pi-list";
+          const requiredCount = Number.parseInt(values[0] || "0")
+          const itemCount = this.cartItems.reduce((sum, item) => sum + item.quantity, 0)
 
-          console.log("📦 Item Count:", itemCount);
-          console.log("🎯 Required:", requiredCount);
-          console.log("📊 Operator:", condition.operator);
-          console.log("✅ Fulfilled:", isFulfilled);
+          currentValue = itemCount
+          isFulfilled = this.evaluateCondition(itemCount, requiredCount, condition.operator)
+          displayText = `Item count ${this.getOperatorText(condition.operator)} ${requiredCount}`
+          icon = "pi-list"
+
+          // 🔧 Calculate progress data once here
+          progressData = {
+            current: itemCount,
+            required: requiredCount,
+            remaining: Math.max(requiredCount - itemCount, 0),
+            percentage: requiredCount > 0 ? Math.min((itemCount / requiredCount) * 100, 100) : 100,
+          }
+
         }
-        break;
+        break
 
       case "PRODUCT": {
-        const requiredCount = Number.parseInt(values[1] || "0");
-        let requiredIds: number[] = [];
-        let matchingItems: CartItem[] = [];
-        let matchCount = 0;
+        // Find associated item_count condition in the same group for better context
+        const itemCountCondition = groupConditions.find(
+          (c) => c.conditionType === "ORDER" && c.conditionDetail === "item_count",
+        )
+
+        let requiredCount = 1 // Default to at least 1 item
+        if (itemCountCondition?.value) {
+          try {
+            const raw = Array.isArray(itemCountCondition.value) ? itemCountCondition.value[0] : itemCountCondition.value
+            const parsed =
+              typeof raw === "string" && raw.startsWith("[") ? JSON.parse(raw)[0] : Number.parseInt(String(raw))
+
+            if (!isNaN(parsed) && parsed > 0) {
+              requiredCount = parsed
+            }
+          } catch (e) {
+            console.warn("⚠️ Failed to parse ORDER.item_count value:", itemCountCondition.value)
+          }
+        }
+
+        const requiredIds: number[] = values.map((v: string) => Number.parseInt(v)).filter((id) => !isNaN(id))
+        let matchingItems: CartItem[] = []
+        let matchCount = 0
 
         switch (condition.conditionDetail) {
           case "brand":
-            requiredIds = values.map((v: string) => Number.parseInt(v));
-            matchingItems = this.cartItems.filter(item => requiredIds.includes(item.brandId));
-            matchCount = matchingItems.reduce((sum, item) => sum + item.quantity, 0);
-
-            isFulfilled = this.evaluateCondition(matchCount, requiredCount, condition.operator);
-            currentValue = `${matchCount} item(s) from selected brands`;
-            displayText = condition.operator === "IS_ONE_OF"
-              ? `Products from selected brands are present`
-              : `Products from selected brands ${this.getOperatorText(condition.operator)} ${requiredCount}`;
-            icon = "pi-tag";
-
-            console.log("📦 CONDITION TYPE: PRODUCT -> BRAND");
-            console.log("🎯 Required Brand IDs:", requiredIds);
-            console.log("🛒 Matching Items (brand):", matchingItems);
-            console.log("🧮 Total Quantity of Matching Brand Items:", matchCount);
-            console.log("✅ Fulfilled:", isFulfilled);
-            break;
+            matchingItems = this.cartItems.filter((item) => requiredIds.includes(item.brandId))
+            matchCount = matchingItems.reduce((sum, item) => sum + item.quantity, 0)
+            isFulfilled = this.evaluateCondition(matchCount, requiredCount, condition.operator)
+            currentValue = `${matchCount} of ${requiredCount} required`
+            displayText = `${requiredCount} items from selected brands`
+            icon = "pi-tag"
+            break
 
           case "category":
-            requiredIds = values.map((v: string) => Number.parseInt(v));
-            matchingItems = this.cartItems.filter(item => requiredIds.includes(item.categoryId));
-            matchCount = matchingItems.reduce((sum, item) => sum + item.quantity, 0);
-
-            isFulfilled = this.evaluateCondition(matchCount, requiredCount, condition.operator);
-            currentValue = `${matchCount} item(s) from selected categories`;
-            displayText = condition.operator === "IS_ONE_OF"
-              ? `Products from selected categories are present`
-              : `Products from selected categories ${this.getOperatorText(condition.operator)} ${requiredCount}`;
-            icon = "pi-tags";
-
-            console.log("📦 CONDITION TYPE: PRODUCT -> CATEGORY");
-            console.log("🎯 Required Category IDs:", requiredIds);
-            console.log("🛒 Matching Items (category):", matchingItems);
-            console.log("🧮 Total Quantity of Matching Category Items:", matchCount);
-            console.log("✅ Fulfilled:", isFulfilled);
-            break;
+            matchingItems = this.cartItems.filter((item) => requiredIds.includes(item.categoryId))
+            matchCount = matchingItems.reduce((sum, item) => sum + item.quantity, 0)
+            isFulfilled = this.evaluateCondition(matchCount, requiredCount, condition.operator)
+            currentValue = `${matchCount} of ${requiredCount} required`
+            displayText = `${requiredCount} items from selected categories`
+            icon = "pi-tags"
+            break
 
           case "product":
-            requiredIds = values.map((v: string) => Number.parseInt(v));
-            matchingItems = this.cartItems.filter(item => requiredIds.includes(item.productId));
-            matchCount = matchingItems.reduce((sum, item) => sum + item.quantity, 0);
-
-            isFulfilled = this.evaluateCondition(matchCount, requiredCount, condition.operator);
-            currentValue = `${matchCount} specific product(s) in cart`;
-            displayText = `Specific product(s) ${this.getOperatorText(condition.operator)} ${requiredCount}`;
-            icon = "pi-box";
-
-            console.log("📦 CONDITION TYPE: PRODUCT -> PRODUCT");
-            console.log("🎯 Required Product IDs:", requiredIds);
-            console.log("🛒 Matching Items (product):", matchingItems);
-            console.log("🧮 Total Quantity of Matching Products:", matchCount);
-            console.log("✅ Fulfilled:", isFulfilled);
-            break;
+            matchingItems = this.cartItems.filter((item) => requiredIds.includes(item.productId))
+            matchCount = matchingItems.reduce((sum, item) => sum + item.quantity, 0)
+            isFulfilled = this.evaluateCondition(matchCount, requiredCount, condition.operator)
+            currentValue = `${matchCount} of ${requiredCount} required`
+            displayText = `${requiredCount} specific products`
+            icon = "pi-box"
+            break
 
           default:
-            console.warn("⚠️ Unknown PRODUCT condition detail:", condition.conditionDetail);
-            break;
+            console.warn("⚠️ Unknown PRODUCT condition detail:", condition.conditionDetail)
+            break
         }
-        break;
+
+        // 🔧 Calculate progress data once here using the correct matchCount and requiredCount
+        progressData = {
+          current: matchCount,
+          required: requiredCount,
+          remaining: Math.max(requiredCount - matchCount, 0),
+          percentage: requiredCount > 0 ? Math.min((matchCount / requiredCount) * 100, 100) : 100,
+        }
+
+        break
       }
 
       case "CUSTOMER_GROUP":
-        isFulfilled = condition.eligible === true;
-        displayText = `Customer in specific group`;
-        icon = "pi-users";
-        currentValue = isFulfilled ? "Qualified" : "Not qualified";
+        isFulfilled = condition.eligible === true
+        displayText = `Customer in specific group`
+        icon = "pi-users"
+        currentValue = isFulfilled ? "Qualified" : "Not qualified"
 
-        console.log("👤 Customer Group Eligible:", isFulfilled);
-        break;
+        // 🔧 Binary progress for customer group
+        progressData = {
+          current: isFulfilled ? 1 : 0,
+          required: 1,
+          remaining: isFulfilled ? 0 : 1,
+          percentage: isFulfilled ? 100 : 0,
+        }
+        break
 
       default:
-        displayText = `${condition.conditionType}: ${condition.conditionDetail}`;
-        icon = "pi-question-circle";
-
-        console.log("❓ Unhandled Condition Type");
+        displayText = `${condition.conditionType}: ${condition.conditionDetail}`
+        icon = "pi-question-circle"
+      // Keep default progressData
     }
-
-    console.log("🧾 Final Display Text:", displayText);
-    console.log("📍 Current Value:", currentValue);
-    console.log("✅ Is Fulfilled:", isFulfilled);
-    console.groupEnd();
 
     return {
       type: condition.conditionType,
@@ -467,7 +409,8 @@ export class StickyDiscountProgressComponent implements OnInit, OnDestroy, OnCha
       isFulfilled,
       icon,
       currentValue,
-    };
+      progressData, // 🔧 Store the calculated progress data
+    }
   }
 
   private evaluateCondition(current: number, required: number, operator: string): boolean {
@@ -537,9 +480,7 @@ export class StickyDiscountProgressComponent implements OnInit, OnDestroy, OnCha
 
             if (incompleteOrder.length > 0) {
               const nextCondition = incompleteOrder.reduce((best, current) => {
-                const bestProgress = this.getConditionProgressPercentage(best)
-                const currentProgress = this.getConditionProgressPercentage(current)
-                return currentProgress > bestProgress ? current : best
+                return current.progressData.percentage > best.progressData.percentage ? current : best
               })
               return `${nextCondition.displayText} (next required)`
             }
@@ -577,9 +518,7 @@ export class StickyDiscountProgressComponent implements OnInit, OnDestroy, OnCha
           // Show the best progress option
           if (orderConditions.length > 0) {
             const bestOrder = orderConditions.reduce((best, current) => {
-              const bestProgress = this.getConditionProgressPercentage(best)
-              const currentProgress = this.getConditionProgressPercentage(current)
-              return currentProgress > bestProgress ? current : best
+              return current.progressData.percentage > best.progressData.percentage ? current : best
             })
             return `${bestOrder.displayText} (best option)`
           }
@@ -705,10 +644,6 @@ export class StickyDiscountProgressComponent implements OnInit, OnDestroy, OnCha
     if (this.activeDiscount && this.previousAmount > 0) {
       const wasLocked = this.previousAmount < this.activeDiscount.required
       const isUnlocked = this.activeDiscount.current >= this.activeDiscount.required
-
-      if (wasLocked && isUnlocked) {
-        console.log("🎉 Discount unlocked!")
-      }
     }
 
     this.previousAmount = this.currentAmount
@@ -821,38 +756,4 @@ export class StickyDiscountProgressComponent implements OnInit, OnDestroy, OnCha
     this.isDismissed = false
     localStorage.removeItem("stickyProgressDismissed")
   }
-
-  private getConditionProgressPercentage(condition: ConditionDisplay): number {
-    if (condition.type === "ORDER" && condition.detail === "order_total") {
-      const required = Number.parseInt(condition.value[0] || "0")
-      const current = this.cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-      return required > 0 ? Math.min((current / required) * 100, 100) : 0
-    } else if (condition.type === "ORDER" && condition.detail === "item_count") {
-      const required = Number.parseInt(condition.value[0] || "0")
-      const current = this.cartItems.reduce((sum, item) => sum + item.quantity, 0)
-      return required > 0 ? Math.min((current / required) * 100, 100) : 0
-    }
-    return condition.isFulfilled ? 100 : 0
-  }
-
-  private filterCartByProductConditions(cart: CartItem[], conditions: any[]): CartItem[] {
-    if (conditions.length === 0) return cart;
-
-    return cart.filter((item) => {
-      return conditions.every((condition) => {
-        const values = JSON.parse(condition.value || "[]").map(Number);
-        switch (condition.conditionDetail) {
-          case "brand":
-            return values.includes(item.brandId);
-          case "category":
-            return values.includes(item.categoryId);
-          case "product":
-            return values.includes(item.productId);
-          default:
-            return true;
-        }
-      });
-    });
-  }
-
 }

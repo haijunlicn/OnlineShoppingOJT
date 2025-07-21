@@ -1,18 +1,20 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { DiscountDisplayDTO } from '@app/core/models/discount';
+import { DiscountTextService } from '@app/core/services/discount-text.service';
+
 
 @Component({
-  selector: 'app-discount-display',
+  selector: "app-discount-display",
   standalone: false,
-  templateUrl: './discount-display.component.html',
-  styleUrl: './discount-display.component.css'
+  templateUrl: "./discount-display.component.html",
+  styleUrl: "./discount-display.component.css",
 })
-
 export class DiscountDisplayComponent implements OnInit, OnChanges {
   @Input() discountHints: DiscountDisplayDTO[] = []
   @Input() displayMode: "grid" | "detail" | "cart" = "grid"
   @Input() originalPrice?: number
   @Input() discountedPrice?: number
+  @Input() showTitle = true // Add this missing property
 
   @Output() couponCopied = new EventEmitter<string>()
   @Output() couponApplied = new EventEmitter<string>()
@@ -24,6 +26,8 @@ export class DiscountDisplayComponent implements OnInit, OnChanges {
   couponCards: DiscountDisplayDTO[] = []
   freeGiftBanners: DiscountDisplayDTO[] = []
   regularDiscounts: DiscountDisplayDTO[] = []
+
+  constructor(private discountTextService: DiscountTextService) {}
 
   ngOnInit(): void {
     this.categorizeDiscounts()
@@ -55,7 +59,7 @@ export class DiscountDisplayComponent implements OnInit, OnChanges {
           }
           break
 
-        case "coupon":
+        case "Coupon":
           if (this.displayMode === "detail" || this.displayMode === "cart") {
             this.couponCards.push(hint)
           }
@@ -72,24 +76,19 @@ export class DiscountDisplayComponent implements OnInit, OnChanges {
           break
       }
     })
-
-    console.log("📊 Categorized discounts:", {
-      badges: this.discountBadges.length,
-      coupons: this.couponCards.length,
-      freeGifts: this.freeGiftBanners.length,
-      regular: this.regularDiscounts.length,
-    })
   }
+
+  // ===== DELEGATE TO DISCOUNT TEXT SERVICE =====
 
   getDiscountIcon(mechanismType: string): string {
     switch (mechanismType) {
-      case "coupon":
+      case "Coupon":
         return "pi-tag"
       case "freeGift":
         return "pi-gift"
       case "Discount":
         return "pi-percentage"
-      case "wholeSale":
+      case "B2B":
         return "pi-shopping-cart"
       default:
         return "pi-dollar"
@@ -112,15 +111,11 @@ export class DiscountDisplayComponent implements OnInit, OnChanges {
   }
 
   formatDiscountBadge(discount: DiscountDisplayDTO): string {
-    if (discount.discountType === "PERCENTAGE" && discount.value) {
-      return `${discount.value}% Off`
-    } else if (discount.discountType === "FIXED" && discount.value) {
-      return `MMK ${discount.value} Off`
-    }
-    return discount.shortLabel || discount.name || "Discount"
+    return this.discountTextService.formatDiscountValue(discount)
   }
 
-  // Legacy methods for backward compatibility
+  // ===== LEGACY METHODS FOR BACKWARD COMPATIBILITY =====
+
   getVisibleDiscounts(): DiscountDisplayDTO[] {
     return this.regularDiscounts
   }
@@ -137,21 +132,11 @@ export class DiscountDisplayComponent implements OnInit, OnChanges {
     return this.freeGiftBanners
   }
 
+  // ===== CLIPBOARD AND COUPON METHODS =====
+
   async copyCouponCode(code: string): Promise<void> {
     try {
-      if (navigator.clipboard) {
-        await navigator.clipboard.writeText(code)
-      } else {
-        // Fallback for older browsers
-        const textArea = document.createElement("textarea")
-        textArea.value = code
-        textArea.style.position = "fixed"
-        textArea.style.opacity = "0"
-        document.body.appendChild(textArea)
-        textArea.select()
-        document.execCommand("copy")
-        document.body.removeChild(textArea)
-      }
+      await this.discountTextService.copyToClipboard(code)
 
       this.copiedCode = code
       this.couponCopied.emit(code)
@@ -159,8 +144,6 @@ export class DiscountDisplayComponent implements OnInit, OnChanges {
       setTimeout(() => {
         this.copiedCode = null
       }, 2000)
-
-      console.log(`📋 Coupon code copied: ${code}`)
     } catch (err) {
       console.error("Failed to copy coupon code:", err)
     }
@@ -168,8 +151,9 @@ export class DiscountDisplayComponent implements OnInit, OnChanges {
 
   applyCoupon(code: string): void {
     this.couponApplied.emit(code)
-    console.log(`🎟️ Coupon applied: ${code}`)
   }
+
+  // ===== DISPLAY STATE METHODS =====
 
   hasVisibleDiscounts(): boolean {
     return this.regularDiscounts.length > 0
@@ -189,10 +173,10 @@ export class DiscountDisplayComponent implements OnInit, OnChanges {
 
   shouldShowPriceComparison(): boolean {
     return (
-      this.displayMode === "grid" &&
       this.originalPrice !== undefined &&
       this.discountedPrice !== undefined &&
-      this.discountedPrice < this.originalPrice
+      this.discountedPrice < this.originalPrice &&
+      this.getApplicableDiscountCount() > 0
     )
   }
 
@@ -226,6 +210,8 @@ export class DiscountDisplayComponent implements OnInit, OnChanges {
     }
     return 0
   }
+
+  // ===== UTILITY METHODS =====
 
   isDiscountExpired(discount: DiscountDisplayDTO): boolean {
     // Add logic to check if discount is expired
