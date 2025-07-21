@@ -9,12 +9,17 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/api/discounts")
 public class DiscountController {
   @Autowired
 private  DiscountService discountService;
+
+  private static final Logger logger = LoggerFactory.getLogger(DiscountController.class);
 
  @GetMapping("/brands")
     public List<BrandDTO> getAllActiveBrands() {
@@ -70,18 +75,28 @@ public ResponseEntity<String> createDiscount(@RequestBody DiscountES_A dto) {
 
     @GetMapping("/selectallDiscount")
     public List<DiscountES_A> getAllDiscounts() {
-        return discountService.getAllDiscounts();
+        List<DiscountES_A> discounts = discountService.getAllDiscounts();
+        for (DiscountES_A d : discounts) {
+            logger.info("[getAllDiscounts] Discount {} has {} mechanisms: {}", d.getId(), d.getDiscountMechanisms() != null ? d.getDiscountMechanisms().size() : 0, d.getDiscountMechanisms() != null ? d.getDiscountMechanisms().stream().map(m -> m.getId()).toList() : "null");
+        }
+        return discounts;
     }
 
     @GetMapping("/selectdiscountbyId/{id}")
     public DiscountES_A getDiscountById(@PathVariable Integer id) {
-        return discountService.getDiscountById(id);
+        DiscountES_A discount = discountService.getDiscountById(id);
+        logger.info("[getDiscountById] Discount {} has {} mechanisms: {}", id, discount.getDiscountMechanisms() != null ? discount.getDiscountMechanisms().size() : 0, discount.getDiscountMechanisms() != null ? discount.getDiscountMechanisms().stream().map(m -> m.getId()).toList() : "null");
+        return discount;
     }
 
-    // @PutMapping("/updateDiscount/{id}")
-    // public DiscountES_A updateDiscount(@PathVariable Integer id, @RequestBody DiscountES_A dto) {
-    //     return discountService.updateDiscount(id, dto);
-    // }
+    // UPDATE: Update a discount and all its mechanisms
+    @PutMapping("/updateDiscount/{id}")
+    public DiscountES_A updateDiscount(@PathVariable Integer id, @RequestBody DiscountES_A dto) {
+        logger.info("[updateDiscount] Incoming mechanisms: {}", dto.getDiscountMechanisms() != null ? dto.getDiscountMechanisms().stream().map(m -> m.getId()).toList() : "null");
+        DiscountES_A updated = discountService.updateDiscount(id, dto);
+        logger.info("[updateDiscount] After update, discount {} has {} mechanisms: {}", id, updated.getDiscountMechanisms() != null ? updated.getDiscountMechanisms().size() : 0, updated.getDiscountMechanisms() != null ? updated.getDiscountMechanisms().stream().map(m -> m.getId()).toList() : "null");
+        return updated;
+    }
 
     @DeleteMapping("/deleteDisount/{id}")
     public void deleteDiscount(@PathVariable Integer id) {

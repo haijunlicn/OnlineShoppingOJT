@@ -9,6 +9,17 @@ import { WishlistDialogComponent } from '../../general/wishlist-dialog/wishlist-
 import { CartService } from '../../../../core/services/cart.service';
 import { WishlistService } from '../../../../core/services/wishlist.service';
 import { MatDialog } from '@angular/material/dialog';
+import { ReviewService } from '../../../../core/services/review.service';
+import { ProductReview, ProductReviewImage } from '../../../../core/models/review';
+import { CloudinaryService } from '../../../../core/services/cloudinary.service';
+import { AuthService } from '../../../../core/services/auth.service'; // Assume you have this
+
+// Change editReviewData type and default value
+declare interface EditReviewData {
+  rating: number;
+  comment: string;
+  images: { imageUrl: string }[];
+}
 
 @Component({
   selector: 'app-product-detail',
@@ -55,6 +66,83 @@ scrollRight(): void {
     behavior: 'smooth'
   });
 }
+  // Review system state
+  reviews: any[] = [];
+  reviewTotal: number = 0;
+  reviewAverage: number = 0;
+  reviewBreakdown: { [key: number]: number } = {};
+  reviewPage: number = 1;
+  reviewPageSize: number = 4;
+  reviewSort: string = 'date_desc';
+  reviewFilterRating?: number;
+  isLoadingReviews: boolean = false;
+  newReview: { rating: number; comment: string } = { rating: 5, comment: '' };
+  isSubmittingReview: boolean = false;
+  uploadedReviewImages: {  imageUrl: string }[] = [];
+  userId?: number;
+  userName?:string;
+  isLoggedIn: boolean = false;
+  hasPurchasedProduct: boolean = false;
+  hasReviewedProduct: boolean = false;
+
+  editingReview: any = null;
+  editReviewData: EditReviewData = { rating: 5, comment: '', images: [] };
+
+  openEditReview(review: any) {
+    this.editingReview = review;
+    this.editReviewData = {
+      rating: review.rating,
+      comment: review.comment,
+      images: review.images ? review.images.map((img: any) => ({ imageUrl: img.imageUrl })) : []
+    };
+  }
+
+  closeEditReview() {
+    this.editingReview = null;
+  }
+
+  submitEditReview() {
+    if (!this.editingReview) return;
+    const filteredImages = this.editReviewData.images.filter(img => img.imageUrl && img.imageUrl.trim() !== '');
+    const updatedReview = {
+      ...this.editingReview,
+      rating: this.editReviewData.rating,
+      comment: this.editReviewData.comment,
+      images: filteredImages
+    };
+    this.reviewService.updateReview(updatedReview).subscribe({
+      next: () => {
+        this.closeEditReview();
+        this.loadReviews();
+      },
+      error: () => {
+        alert('Failed to update review');
+      }
+    });
+  }
+
+  deleteReview(review: any) {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'Do you want to delete this review?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.reviewService.deleteReview(review.id).subscribe({
+          next: () => {
+            Swal.fire('Deleted!', 'Your review has been deleted.', 'success');
+            this.loadReviews();
+          },
+          error: () => {
+            Swal.fire('Error', 'Failed to delete review.', 'error');
+          }
+        });
+      }
+    });
+  }
 
   constructor(
     private route: ActivatedRoute,
@@ -64,10 +152,55 @@ scrollRight(): void {
     private cartService: CartService,
     private wishlistService: WishlistService,
     private dialog: MatDialog,
+     // ... existing code ...
+     private reviewService: ReviewService,
+     private cloudinaryService: CloudinaryService,
+   private authService: AuthService
   ) { }
 
   ngOnInit(): void {
+    this.authService.fetchCurrentUser().subscribe({
+      next: user => {
+        this.userId = user.id;
+        this.userName = user.name;
+        this.isLoggedIn = true;
+      },
+      error: () => {
+        this.isLoggedIn = false;
+      }
+    });
     this.fetchProductDetail();
+  }
+
+  checkPurchaseStatus(): void {
+    // Always load reviews for everyone (logged in or not)
+    this.loadReviews();
+    
+    // Only check purchase status if user is logged in
+    if (!this.isLoggedIn || !this.product?.product?.id) {
+      this.hasPurchasedProduct = false;
+      console.log('❌ Not logged in or no product ID');
+      return;
+    }
+
+    console.log('🔍 Checking purchase status for product:', this.product.product.id);
+    console.log('👤 User ID:', this.userId);
+
+    // Call backend API to check if user has purchased and received this product
+    this.reviewService.checkPurchaseStatus(this.product.product.id).subscribe({
+      next: (response) => {
+        console.log('✅ Purchase check response:', response);
+        this.hasPurchasedProduct = response.canReview;
+        this.hasReviewedProduct = response.hasReviewed;
+        console.log('📝 Can review:', this.hasPurchasedProduct);
+        console.log('📝 Has reviewed:', this.hasReviewedProduct);
+      },
+      error: (error) => {
+        console.error('❌ Purchase check error:', error);
+        this.hasPurchasedProduct = false;
+        this.hasReviewedProduct = false;
+      }
+    });
   }
 
   fetchProductDetail(): void {
@@ -78,7 +211,9 @@ scrollRight(): void {
           this.product = data;
           this.initializeComponent();
           this.loadRelatedProducts();
+          this.checkPurchaseStatus(); // This will also load reviews
           console.log("product details : ", this.product);
+          
         },
         error: () => {
           this.router.navigate(["/customer/productList"]);
@@ -88,7 +223,112 @@ scrollRight(): void {
       this.router.navigate(["/customer/productList"]);
     }
   }
+    // ... review sort/filter/page change methods as before ...
+  ////////////////////////////////////////////////////////////
+  loadReviews(): void {
+    if (!this.product?.product?.id) return;
+    this.isLoadingReviews = true;
+  
+    this.reviewService.getProductReviews(
+      this.product.product.id,
+      this.reviewPage,
+      this.reviewPageSize,
+      this.reviewSort,
+      this.reviewFilterRating
+    ).subscribe({
+      next: (res) => {
+        this.reviews = res.reviews;
+        this.reviewTotal = res.total;
+        this.reviewAverage = res.average;
+        this.reviewBreakdown = res.breakdown;
+        this.isLoadingReviews = false;
+      },
+      error: () => {
+        this.reviews = [];
+        this.reviewTotal = 0;
+        this.reviewAverage = 0;
+        this.reviewBreakdown = {};
+        this.isLoadingReviews = false;
+      }
+    });
+  }
 
+  onReviewImageSelected(event: any): void {
+    const files: FileList = event.target.files;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+  
+      // Validate file type and size
+      const validation = this.cloudinaryService.validateImageFile(file);
+      if (!validation.valid) {
+        alert(validation.error);
+        continue; // Skip this file
+      }
+  
+      this.cloudinaryService.uploadImage(file).subscribe({
+        next: (url: string) => {
+          this.uploadedReviewImages.push({ imageUrl: url });
+        },
+        error: () => {
+          alert('Image upload failed');
+        }
+      });
+    }
+  }
+
+  removeReviewImage(i: number): void {
+    this.uploadedReviewImages.splice(i, 1);
+  }
+
+  submitReview(): void {
+    if (!this.product?.product?.id) return;
+    this.isSubmittingReview = true;
+  
+    const reviewPayload: Partial<ProductReview> = {
+      productId: this.product.product.id,
+     
+      rating: this.newReview.rating,
+      comment: this.newReview.comment,
+      images: this.uploadedReviewImages,
+      
+     
+    };
+    console.log('Review payload:', reviewPayload);
+    this.reviewService.addReview(reviewPayload).subscribe({
+      next: (review) => {
+        this.isSubmittingReview = false;
+        this.newReview = { rating: 5, comment: '' };
+        this.uploadedReviewImages = [];
+        this.loadReviews(); // Refresh review list
+        Swal.fire({
+          title: 'Success!',
+          text: 'Your review has been submitted successfully.',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      },
+      error: (error) => {
+        this.isSubmittingReview = false;
+        let errorMessage = 'Failed to submit review. Please try again.';
+        
+        if (error.error && error.error.message) {
+          errorMessage = error.error.message;
+        } else if (error.status === 403) {
+          errorMessage = 'You are not allowed to give review again';
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        Swal.fire({
+          title: 'Error!',
+          text: errorMessage,
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+      }
+    });
+  }
+  ///////////////////////
   initializeComponent(): void {
     this.initForm();
     this.setDefaultSelections();
@@ -472,6 +712,79 @@ const fallbackImage =
   getCartQuantity(productId: number): number {
     const entry = this.cartItems.find(i => i.productId === productId);
     return entry ? entry.quantity : 0;
+  }
+
+  // --- Review Methods ---
+  onReviewSortChange(sort: string): void {
+    this.reviewSort = sort;
+    this.loadReviews();
+  }
+
+  onReviewFilterChange(rating?: number): void {
+    this.reviewFilterRating = rating;
+    this.loadReviews();
+  }
+
+  onReviewPageChange(page: number): void {
+    this.reviewPage = page;
+    this.loadReviews();
+  }
+
+  // --- For template: Math functions ---
+  getRounded(value: number): number {
+    return Math.round(value);
+  }
+
+  getPages(): number[] {
+    return Array(Math.ceil(this.reviewTotal / this.reviewPageSize)).fill(0).map((x, i) => i + 1);
+  }
+
+  onEditReviewImageSelected(event: any, idx: number): void {
+    const file: File = event.target.files[0];
+    if (!file) return;
+    const validation = this.cloudinaryService.validateImageFile(file);
+    if (!validation.valid) {
+      alert(validation.error);
+      return;
+    }
+    this.cloudinaryService.uploadImage(file).subscribe({
+      next: (url: string) => {
+        this.editReviewData.images[idx].imageUrl = url;
+      },
+      error: () => {
+        alert('Image upload failed');
+      }
+    });
+  }
+
+  removeEditReviewImage(idx: number): void {
+    this.editReviewData.images.splice(idx, 1);
+  }
+
+  addEditReviewImage(input: HTMLInputElement) {
+    input.value = '';
+    input.click();
+  }
+  onAddEditReviewImageSelected(event: any) {
+    const file: File = event.target.files[0];
+    if (!file) return;
+    const validation = this.cloudinaryService.validateImageFile(file);
+    if (!validation.valid) {
+      alert(validation.error);
+      return;
+    }
+    this.cloudinaryService.uploadImage(file).subscribe({
+      next: (url: string) => {
+        if (url && url.startsWith('http')) {
+          this.editReviewData.images.push({ imageUrl: url });
+        } else {
+          alert('Image upload failed: Invalid URL');
+        }
+      },
+      error: () => {
+        alert('Image upload failed');
+      }
+    });
   }
 
 }

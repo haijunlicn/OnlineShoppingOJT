@@ -45,8 +45,6 @@ export class DiscountService {
     return this.http.get<ProductDTO[]>(`${this.apiUrl}/products`);
   }
 
-
-
  
   createDiscount(discount: DiscountEA_A): Observable<string> {
     return this.http.post(`${this.apiUrl}/createDiscount`, discount, { responseType: 'text' });
@@ -62,8 +60,9 @@ export class DiscountService {
     return this.http.get<DiscountEA_A>(`${this.apiUrl}/selectdiscountbyId/${id}`);
   }
 
-  // // UPDATE
+  // // UPDATE: Update a discount and all its mechanisms
   updateDiscount(id: number, discount: DiscountEA_A): Observable<DiscountEA_A> {
+    // Sends the full discount object, including mechanisms array, to the backend
     return this.http.put<DiscountEA_A>(`${this.apiUrl}/updateDiscount/${id}`, discount);
   }
 

@@ -92,6 +92,7 @@ import { AdminNotificationDetailComponent } from './notificationManagement/admin
 import { AdminNotiTypesComponent } from './notificationManagement/admin-noti-types/admin-noti-types.component';
 import { AdminSentNotisComponent } from './notificationManagement/admin-sent-notis/admin-sent-notis.component';
 import { DiscountListComponent } from './discount_management/discount-list/discount-list.component';
+import { QuestionComponent } from './QuestionManagement/question/question.component';
 
 
 
@@ -164,7 +165,8 @@ import { DiscountListComponent } from './discount_management/discount-list/disco
     AdminNotificationListComponent,
     AdminNotiTypesComponent,
     AdminSentNotisComponent,
-   DiscountListComponent
+   DiscountListComponent,
+   QuestionComponent
   ],
   imports: [
     CommonModule,

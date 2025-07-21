@@ -51,6 +51,9 @@ import { NotificationListComponent } from './notification/notification-list/noti
 import { LocationSettingComponent } from './common/location-setting/location-setting.component';
 import { ProfileInfoSettingComponent } from './common/profile-info-setting/profile-info-setting.component';
 import { NotiSettingComponent } from './common/noti-setting/noti-setting.component';
+import { ProductqandaComponent } from './product_display/productqanda/productqanda.component';
+
+
 
 @NgModule({
   declarations: [
@@ -94,7 +97,10 @@ import { NotiSettingComponent } from './common/noti-setting/noti-setting.compone
     NotificationListComponent,
     LocationSettingComponent,
     ProfileInfoSettingComponent,
-    NotiSettingComponent
+    NotiSettingComponent,
+    ProductqandaComponent,
+  
+  
   ],
   imports: [
     CommonModule,
