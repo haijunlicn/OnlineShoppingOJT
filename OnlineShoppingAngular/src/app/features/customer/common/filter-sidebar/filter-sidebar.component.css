@@ -2,7 +2,7 @@
   width: 280px;
   height: calc(100vh - 80px); /* Adjust based on header height */
   position: fixed;
-  top: 80px; /* Position below header */
+  top: 70px; /* Position below header */
   left: 0;
   background: white;
   border-right: 1px solid #e9ecef;

@@ -50,6 +50,15 @@ import { NotificationCreateComponent } from './notificationManagement/notificati
 import { AdminNotificationListComponent } from './notificationManagement/admin-notification-list/admin-notification-list.component';
 import { AdminNotiTypesComponent } from './notificationManagement/admin-noti-types/admin-noti-types.component';
 import { AdminSentNotisComponent } from './notificationManagement/admin-sent-notis/admin-sent-notis.component';
+import { AuditLogComponent } from './policy-management/audit-log/audit-log.component';
+import { VlogFilesListComponent } from './vlog-management/vlogfileslist/vlogfileslist.component';
+import { VlogFilesCreateComponent } from './vlog-management/vlogfilescreate/vlogfilescreate.component';
+import { VlogListComponent } from './vlog-management/vloglist/vloglist.component';
+import { VlogCreateComponent } from './vlog-management/vlogcreate/vlogcreate.component';
+import { DeliveryMethodListComponent } from './deliveryMethodManagement/delivery-method-list/delivery-method-list.component';
+import { CreateDeliveryMethodComponent } from './deliveryMethodManagement/create-delivery-method/create-delivery-method.component';
+import { EditDeliveryMethodComponent } from './deliveryMethodManagement/edit-delivery-method/edit-delivery-method.component';
+
 import { CreateDiscountGroupComponent } from './discount_management/create-discount-group/create-discount-group.component';
 import { CreateDiscountComponent } from './discount_management/create-discount/create-discount.component';
 import { DiscountListComponent } from './discount_management/discount-list/discount-list.component';
@@ -87,11 +96,24 @@ const routes: Routes = [
       { path: 'payment-create', component: PaymentCreateComponent },
       { path: 'payment-list', component: PaymentListComponent },
       { path: 'payment-update/:id', component: PaymentUpdateComponent },
+      {
+  path: 'delivery-method-list',
+  component: DeliveryMethodListComponent
+},
+{
+  path: 'delivery-method-create',
+  component: CreateDeliveryMethodComponent
+},
+{
+  path: 'delivery-method-edit/:id',
+  component: EditDeliveryMethodComponent
+},
       { path: 'sale-analysis', component: SaleAnalysisComponent },
       { path: 'refund-reason/list', component: RefundReasonListComponent },
       { path: 'refund-reason/create', component: RefundReasonFormComponent },
       { path: 'rejection-reason/list', component: RejectionReasonListComponent },
       { path: 'rejection-reason/create', component: RejectionReasonFormComponent },
+      { path: 'audit-log', component: AuditLogComponent},
       { path: 'bulkUploadProduct', component: ProductBulkUploadComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['PRODUCT_CREATE'], ['SUPERADMIN_PERMISSION']] } },
       { path: 'product/:id', component: ProductDetailComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['PRODUCT_READ'], ['SUPERADMIN_PERMISSION']] } },
       { path: 'product/edit/:id', component: ProductEditComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['PRODUCT_UPDATE'], ['SUPERADMIN_PERMISSION']] } },
@@ -125,6 +147,11 @@ const routes: Routes = [
       {
         path: 'sale-analysis', component: SaleAnalysisComponent, canActivate: [AdminAuthGuard]
       },
+      { path: 'vlogfileslist', component: VlogFilesListComponent },
+      { path: 'vlogfilescreate/:vlogId', component: VlogFilesCreateComponent },
+      { path: 'vloglist', component: VlogListComponent },
+      { path: 'vlogcreate', component: VlogCreateComponent },
+
     ]
   }
 ];

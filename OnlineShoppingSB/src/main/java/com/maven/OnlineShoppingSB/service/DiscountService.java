@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
@@ -20,13 +21,13 @@ public class DiscountService {
     @Autowired
     private BrandRepository brandRepository;
 
-     @Autowired
+    @Autowired
     private CategoryRepository categoryRepository;
 
     @Autowired
     private GroupRepository groupRepository;
-    
-     @Autowired
+
+    @Autowired
     private ProductRepository productRepository;
     @Autowired
     private ProductVariantRepository productVariantRepository;
@@ -47,7 +48,7 @@ public class DiscountService {
         return dto;
     }
 
- 
+
     public List<CategoryDTO> getAllActiveCategories() {
         List<CategoryEntity> categories = categoryRepository.findByDelFg(1);
         return categories.stream().map(this::toDTO).collect(Collectors.toList());
@@ -61,16 +62,17 @@ public class DiscountService {
         dto.setParentCategoryId(entity.getParentCategory() != null ? entity.getParentCategory().getId() : null);
         return dto;
     }
-      public List<GroupES_G> getAllGroups() {
+
+    public List<GroupES_G> getAllGroups() {
         return groupRepository.findAll().stream()
-            .map(this::toGroupDto)
-            .collect(Collectors.toList());
+                .map(this::toGroupDto)
+                .collect(Collectors.toList());
     }
 
-    public GroupES_G getGroupById(Integer id) {
+    public GroupES_G getGroupById(Long id) {
         return groupRepository.findById(id)
-            .map(this::toGroupDto)
-            .orElseThrow(() -> new RuntimeException("Group not found"));
+                .map(this::toGroupDto)
+                .orElseThrow(() -> new RuntimeException("Group not found"));
     }
 
     public GroupES_G createGroup(GroupES_G groupDto) {
@@ -82,14 +84,15 @@ public class DiscountService {
 
     public GroupES_G updateGroup(GroupES_G groupDto) {
         GroupEntity entity = groupRepository.findById(groupDto.getId())
-            .orElseThrow(() -> new RuntimeException("Group not found"));
+                .orElseThrow(() -> new RuntimeException("Group not found"));
         entity.setName(groupDto.getName());
         entity.setUpdateDate(groupDto.getUpdateDate());
         // update other fields as needed
         GroupEntity saved = groupRepository.save(entity);
         return toGroupDto(saved);
     }
-     public void deleteGroup(Integer id) {
+
+    public void deleteGroup(long id) {
         groupRepository.deleteById(id);
     }
 
@@ -115,7 +118,8 @@ public class DiscountService {
         // entity.setDiscountConditionGroups(...);
         return entity;
     }
-      public List<ProductDTO> getAllProductsForSelection() {
+
+    public List<ProductDTO> getAllProductsForSelection() {
         List<ProductEntity> products = productRepository.findAll();
         List<ProductDTO> productDTOs = new ArrayList<>();
         for (ProductEntity product : products) {
@@ -144,28 +148,28 @@ public class DiscountService {
 
             // Product Variants (for stock)
             List<ProductVariantDTO> variantDTOs = productVariantRepository.findByProductId(product.getId())
-                .stream()
-                .map(variant -> {
-                    ProductVariantDTO vdto = new ProductVariantDTO();
-                    vdto.setId(variant.getId());
-                    vdto.setStock(variant.getStock());
-                    vdto.setSku(variant.getSku());
-                    return vdto;
-                }).collect(Collectors.toList());
+                    .stream()
+                    .map(variant -> {
+                        ProductVariantDTO vdto = new ProductVariantDTO();
+                        vdto.setId(variant.getId());
+                        vdto.setStock(variant.getStock());
+                        vdto.setSku(variant.getSku());
+                        return vdto;
+                    }).collect(Collectors.toList());
             dto.setProductVariants(variantDTOs);
 
             // Product Images (for main image)
             List<ProductImageDTO> imageDTOs = productImageRepository.findAll()
-                .stream()
-                .filter(img -> img.getProduct().getId().equals(product.getId()) && img.isMainImageStatus())
-                .map(img -> {
-                    ProductImageDTO productImagedto = new ProductImageDTO();
-                    productImagedto.setId(img.getId());
-                    productImagedto.setProductId(product.getId());
-                    productImagedto.setImgPath(img.getImgPath());
-                    productImagedto.setMainImageStatus(img.isMainImageStatus());
-                    return productImagedto;
-                }).collect(Collectors.toList());
+                    .stream()
+                    .filter(img -> img.getProduct().getId().equals(product.getId()) && img.isMainImageStatus())
+                    .map(img -> {
+                        ProductImageDTO productImagedto = new ProductImageDTO();
+                        productImagedto.setId(img.getId());
+                        productImagedto.setProductId(product.getId());
+                        productImagedto.setImgPath(img.getImgPath());
+                        productImagedto.setMainImageStatus(img.isMainImageStatus());
+                        return productImagedto;
+                    }).collect(Collectors.toList());
             dto.setProductImages(imageDTOs);
 
             productDTOs.add(dto);
@@ -174,14 +178,19 @@ public class DiscountService {
     }
 
 
-
-    ////////for main 
-     @Autowired private DiscountRepository discountRepository;
-    @Autowired private DiscountMechanismRepository mechanismRepository;
-    @Autowired private DiscountConditionGroupRepository conditionGroupRepository;
-    @Autowired private DiscountConditionRepository conditionRepository;
-    @Autowired private DiscountProdcutRepository discountProductRepository;
-    @Autowired private FreeGiftRepository freeGiftRepository;
+    /// /////for main
+    @Autowired
+    private DiscountRepository discountRepository;
+    @Autowired
+    private DiscountMechanismRepository mechanismRepository;
+    @Autowired
+    private DiscountConditionGroupRepository conditionGroupRepository;
+    @Autowired
+    private DiscountConditionRepository conditionRepository;
+    @Autowired
+    private DiscountProductRepository discountProductRepository;
+    @Autowired
+    private FreeGiftRepository freeGiftRepository;
 
     // CREATE
     public DiscountES_A createDiscount(DiscountES_A dto) {
@@ -190,16 +199,10 @@ public class DiscountService {
         return mapToDto(saved, true);
     }
 
-    // READ ALL
-    // public List<DiscountES_A> getAllDiscounts() {
-    //     return discountRepository.findAll().stream()
-    //         .map(e -> mapToDto(e, false))
-    //         .collect(Collectors.toList());
-    // }
     public List<DiscountES_A> getAllDiscounts() {
         return discountRepository.findAll().stream()
-        .map(e -> mapToDto(e, true)) // <-- withChildren = true
-            .collect(Collectors.toList());
+                .map(e -> mapToDto(e, true)) // <-- withChildren = true
+                .collect(Collectors.toList());
     }
 
     // READ BY ID
@@ -209,6 +212,8 @@ public class DiscountService {
         DiscountES_A dto = mapToDto(entity, true);
         System.out.println("[Service:getDiscountById] Discount " + id + " has " + (dto.getDiscountMechanisms() != null ? dto.getDiscountMechanisms().size() : 0) + " mechanisms: " + (dto.getDiscountMechanisms() != null ? dto.getDiscountMechanisms().stream().map(m -> m.getId()).toList() : "null"));
         return dto;
+                .orElseThrow(() -> new RuntimeException("Not found"));
+        return mapToDto(entity, true);
     }
 
     // UPDATE: Replace all mechanisms for the given discount with the new mechanisms from the DTO
@@ -330,7 +335,7 @@ public class DiscountService {
 
     public void updateDiscountStatus(Integer id, Boolean isActive) {
         DiscountEntity entity = discountRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Not found"));
+                .orElseThrow(() -> new RuntimeException("Not found"));
         entity.setIsActive(isActive);
         discountRepository.save(entity);
     }
@@ -432,8 +437,49 @@ public class DiscountService {
                                 condEntity.setOperator(condDto.getOperator());
                                 try {
                                     ObjectMapper mapper = new ObjectMapper();
+
+                                    Object rawValue = condDto.getValue();
+                                    List<Object> normalized = new ArrayList<>();
+
+                                    if (rawValue instanceof String[]) {
+                                        // flatten strings by splitting commas, then convert to numbers or booleans if possible
+                                        for (String s : (String[]) rawValue) {
+                                            for (String part : s.split(",")) {
+                                                String trimmed = part.trim();
+                                                // try to parse numbers or booleans, else keep string
+                                                if (trimmed.matches("-?\\d+")) {
+                                                    normalized.add(Integer.parseInt(trimmed));
+                                                } else if (trimmed.equalsIgnoreCase("true") || trimmed.equalsIgnoreCase("false")) {
+                                                    normalized.add(Boolean.parseBoolean(trimmed));
+                                                } else {
+                                                    normalized.add(trimmed);
+                                                }
+                                            }
+                                        }
+                                    } else if (rawValue instanceof List) {
+                                        // You can do similar parsing for List<String>
+                                        List<?> list = (List<?>) rawValue;
+                                        for (Object val : list) {
+                                            String s = val.toString().trim();
+                                            if (s.matches("-?\\d+")) {
+                                                normalized.add(Integer.parseInt(s));
+                                            } else if (s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false")) {
+                                                normalized.add(Boolean.parseBoolean(s));
+                                            } else {
+                                                normalized.add(s);
+                                            }
+                                        }
+                                    } else {
+                                        // fallback: just put rawValue as string
+                                        normalized.add(rawValue);
+                                    }
+
+// Now serialize normalized list as JSON array with numbers or booleans unquoted
+                                    condEntity.setValue(mapper.writeValueAsString(normalized));
+
+
                                     // Always serialize String[] to JSON string
-                                    condEntity.setValue(mapper.writeValueAsString(condDto.getValue()));
+                                    // condEntity.setValue(mapper.writeValueAsString(condDto.getValue()));
                                 } catch (Exception e) {
                                     condEntity.setValue("[]"); // fallback to empty array
                                 }
@@ -457,7 +503,7 @@ public class DiscountService {
         if (entity == null) return null;
 
         DiscountES_A dto = new DiscountES_A();
-         dto.setId(entity.getId());
+        dto.setId(entity.getId());
         dto.setName(entity.getName());
         dto.setType(entity.getType());
         dto.setDescription(entity.getDescription());
@@ -604,7 +650,8 @@ public class DiscountService {
                                     if (valueStr == null || valueStr.isEmpty()) {
                                         condDto.setValue(new String[0]);
                                     } else {
-                                        List<String> valueList = mapper.readValue(valueStr, new TypeReference<List<String>>() {});
+                                        List<String> valueList = mapper.readValue(valueStr, new TypeReference<List<String>>() {
+                                        });
                                         condDto.setValue(valueList.toArray(new String[0]));
                                     }
                                 } catch (Exception e) {
@@ -633,7 +680,8 @@ public class DiscountService {
         try {
             ObjectMapper mapper = new ObjectMapper();
             // Specify type reference for List<String>
-            return mapper.readValue(valueJson, new TypeReference<List<String>>() {});
+            return mapper.readValue(valueJson, new TypeReference<List<String>>() {
+            });
         } catch (Exception e) {
             return new ArrayList<>();
         }
@@ -648,91 +696,133 @@ public class DiscountService {
     }
 
 
- public void saveGroupConditions(Integer groupId, List<DiscountConditionGroupES_C> groupDtos) {
-    GroupEntity group = groupRepository.findById(groupId)
-        .orElseThrow(() -> new RuntimeException("Group not found"));
+    public void saveGroupConditions(Long groupId, List<DiscountConditionGroupES_C> groupDtos) {
+        GroupEntity group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new RuntimeException("Group not found"));
 
-    for (DiscountConditionGroupES_C dto : groupDtos) {
-        DiscountConditionGroupEntity groupEntity = new DiscountConditionGroupEntity();
-        groupEntity.setLogicOperator(dto.getLogicOperator());
-        groupEntity.setGroup(group);
+        for (DiscountConditionGroupES_C dto : groupDtos) {
+            DiscountConditionGroupEntity groupEntity = new DiscountConditionGroupEntity();
+            groupEntity.setLogicOperator(dto.getLogicOperator());
+            groupEntity.setGroup(group);
 
-        List<DiscountConditionEntity> condEntities = new ArrayList<>();
-        if (dto.getDiscountCondition() != null) {
-            for (DiscountConditionES_D condDto : dto.getDiscountCondition()) {
-                DiscountConditionEntity condEntity = new DiscountConditionEntity();
-                condEntity.setConditionType(condDto.getConditionType());
-                condEntity.setConditionDetail(condDto.getConditionDetail());
-                condEntity.setDelFg(condDto.getDelFg() != null ? condDto.getDelFg() : false);
-                condEntity.setCreatedDate(condDto.getCreatedDate() != null ? condDto.getCreatedDate() : LocalDateTime.now());
-                condEntity.setUpdatedDate(condDto.getUpdatedDate() != null ? condDto.getUpdatedDate() : LocalDateTime.now());
-                condEntity.setOperator(condDto.getOperator());
-                try {
-                    ObjectMapper mapper = new ObjectMapper();
-                    // Always serialize String[] to JSON string
-                    condEntity.setValue(mapper.writeValueAsString(condDto.getValue()));
-                } catch (Exception e) {
-                    condEntity.setValue("[]"); // fallback to empty array
-                }
-                condEntity.setDiscountConditionGroup(groupEntity);
-                condEntities.add(condEntity);
-            }
-        }
-        groupEntity.setDiscountCondition(condEntities);
+            List<DiscountConditionEntity> condEntities = new ArrayList<>();
+            if (dto.getDiscountCondition() != null) {
+                for (DiscountConditionES_D condDto : dto.getDiscountCondition()) {
+                    DiscountConditionEntity condEntity = new DiscountConditionEntity();
+                    condEntity.setConditionType(condDto.getConditionType());
+                    condEntity.setConditionDetail(condDto.getConditionDetail());
+                    condEntity.setDelFg(condDto.getDelFg() != null ? condDto.getDelFg() : false);
+                    condEntity.setCreatedDate(condDto.getCreatedDate() != null ? condDto.getCreatedDate() : LocalDateTime.now());
+                    condEntity.setUpdatedDate(condDto.getUpdatedDate() != null ? condDto.getUpdatedDate() : LocalDateTime.now());
+                    condEntity.setOperator(condDto.getOperator());
+                    try {
+                        ObjectMapper mapper = new ObjectMapper();
 
-        conditionGroupRepository.save(groupEntity);
-    }
-}
+                        Object rawValue = condDto.getValue();
+                        List<Object> normalized = new ArrayList<>();
 
-// Get all condition groups for a group
-public List<DiscountConditionGroupES_C> getGroupConditions(Integer groupId) {
-    GroupEntity group = groupRepository.findById(groupId)
-        .orElseThrow(() -> new RuntimeException("Group not found"));
-    List<DiscountConditionGroupEntity> groupEntities = group.getDiscountConditionGroups();
-    List<DiscountConditionGroupES_C> dtos = new ArrayList<>();
-    for (DiscountConditionGroupEntity entity : groupEntities) {
-        DiscountConditionGroupES_C dto = new DiscountConditionGroupES_C();
-        dto.setId(entity.getId());
-        dto.setLogicOperator(entity.getLogicOperator());
-        dto.setGroupId(groupId);
-        // Map conditions
-        List<DiscountConditionES_D> condDtos = new ArrayList<>();
-        if (entity.getDiscountCondition() != null) {
-            for (DiscountConditionEntity cond : entity.getDiscountCondition()) {
-                DiscountConditionES_D condDto = new DiscountConditionES_D();
-                condDto.setId(cond.getId());
-                condDto.setConditionType(cond.getConditionType());
-                condDto.setConditionDetail(cond.getConditionDetail());
-                condDto.setDelFg(cond.getDelFg());
-                condDto.setCreatedDate(cond.getCreatedDate());
-                condDto.setUpdatedDate(cond.getUpdatedDate());
-                condDto.setOperator(cond.getOperator());
-                // Always deserialize JSON string to String[]
-                try {
-                    ObjectMapper mapper = new ObjectMapper();
-                    String valueStr = cond.getValue();
-                    if (valueStr == null || valueStr.isEmpty()) {
-                        condDto.setValue(new String[0]);
-                    } else {
-                        List<String> valueList = mapper.readValue(valueStr, new TypeReference<List<String>>() {});
-                        condDto.setValue(valueList.toArray(new String[0]));
+                        if (rawValue instanceof String[]) {
+                            // flatten strings by splitting commas, then convert to numbers or booleans if possible
+                            for (String s : (String[]) rawValue) {
+                                for (String part : s.split(",")) {
+                                    String trimmed = part.trim();
+                                    // try to parse numbers or booleans, else keep string
+                                    if (trimmed.matches("-?\\d+")) {
+                                        normalized.add(Integer.parseInt(trimmed));
+                                    } else if (trimmed.equalsIgnoreCase("true") || trimmed.equalsIgnoreCase("false")) {
+                                        normalized.add(Boolean.parseBoolean(trimmed));
+                                    } else {
+                                        normalized.add(trimmed);
+                                    }
+                                }
+                            }
+                        } else if (rawValue instanceof List) {
+                            // You can do similar parsing for List<String>
+                            List<?> list = (List<?>) rawValue;
+                            for (Object val : list) {
+                                String s = val.toString().trim();
+                                if (s.matches("-?\\d+")) {
+                                    normalized.add(Integer.parseInt(s));
+                                } else if (s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false")) {
+                                    normalized.add(Boolean.parseBoolean(s));
+                                } else {
+                                    normalized.add(s);
+                                }
+                            }
+                        } else {
+                            // fallback: just put rawValue as string
+                            normalized.add(rawValue);
+                        }
+
+// Now serialize normalized list as JSON array with numbers or booleans unquoted
+                        condEntity.setValue(mapper.writeValueAsString(normalized));
+
+
+                        // Always serialize String[] to JSON string
+                        // condEntity.setValue(mapper.writeValueAsString(condDto.getValue()));
+                    } catch (Exception e) {
+                        condEntity.setValue("[]"); // fallback to empty array
                     }
-                } catch (Exception e) {
-                    condDto.setValue(new String[0]); // fallback to empty array
+                    condEntity.setDiscountConditionGroup(groupEntity);
+                    condEntities.add(condEntity);
                 }
-                condDto.setDiscountConditionGroupId(entity.getId());
-                condDtos.add(condDto);
             }
-        }
-        dto.setDiscountCondition(condDtos);
-        dtos.add(dto);
-    }
-    return dtos;
-}
+            groupEntity.setDiscountCondition(condEntities);
 
-// Delete a condition group and its conditions
-public void deleteConditionGroup(Integer conditionGroupId) {
-    conditionGroupRepository.deleteById(conditionGroupId);
-}
+            conditionGroupRepository.save(groupEntity);
+        }
+    }
+
+    // Get all condition groups for a group
+    public List<DiscountConditionGroupES_C> getGroupConditions(Long groupId) {
+        GroupEntity group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new RuntimeException("Group not found"));
+        List<DiscountConditionGroupEntity> groupEntities = group.getDiscountConditionGroups();
+        List<DiscountConditionGroupES_C> dtos = new ArrayList<>();
+        for (DiscountConditionGroupEntity entity : groupEntities) {
+            DiscountConditionGroupES_C dto = new DiscountConditionGroupES_C();
+            dto.setId(entity.getId());
+            dto.setLogicOperator(entity.getLogicOperator());
+            dto.setGroupId(groupId);
+            // Map conditions
+            List<DiscountConditionES_D> condDtos = new ArrayList<>();
+            if (entity.getDiscountCondition() != null) {
+                for (DiscountConditionEntity cond : entity.getDiscountCondition()) {
+                    DiscountConditionES_D condDto = new DiscountConditionES_D();
+                    condDto.setId(cond.getId());
+                    condDto.setConditionType(cond.getConditionType());
+                    condDto.setConditionDetail(cond.getConditionDetail());
+                    condDto.setDelFg(cond.getDelFg());
+                    condDto.setCreatedDate(cond.getCreatedDate());
+                    condDto.setUpdatedDate(cond.getUpdatedDate());
+                    condDto.setOperator(cond.getOperator());
+                    // Always deserialize JSON string to String[]
+                    try {
+                        ObjectMapper mapper = new ObjectMapper();
+                        String valueStr = cond.getValue();
+                        if (valueStr == null || valueStr.isEmpty()) {
+                            condDto.setValue(new String[0]);
+                        } else {
+                            List<String> valueList = mapper.readValue(valueStr, new TypeReference<List<String>>() {
+                            });
+                            condDto.setValue(valueList.toArray(new String[0]));
+                        }
+                    } catch (Exception e) {
+                        condDto.setValue(new String[0]); // fallback to empty array
+                    }
+                    condDto.setDiscountConditionGroupId(entity.getId());
+                    condDtos.add(condDto);
+                }
+            }
+            dto.setDiscountCondition(condDtos);
+            dtos.add(dto);
+        }
+        return dtos;
+    }
+
+    // Delete a condition group and its conditions
+    public void deleteConditionGroup(Integer conditionGroupId) {
+        conditionGroupRepository.deleteById(conditionGroupId);
+    }
 
 }

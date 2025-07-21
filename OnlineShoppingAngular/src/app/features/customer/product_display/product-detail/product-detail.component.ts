@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ProductListComponent } from '../product-list/product-list.component';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -9,10 +9,15 @@ import { WishlistDialogComponent } from '../../general/wishlist-dialog/wishlist-
 import { CartService } from '../../../../core/services/cart.service';
 import { WishlistService } from '../../../../core/services/wishlist.service';
 import { MatDialog } from '@angular/material/dialog';
-import { ReviewService } from '../../../../core/services/review.service';
-import { ProductReview, ProductReviewImage } from '../../../../core/models/review';
-import { CloudinaryService } from '../../../../core/services/cloudinary.service';
-import { AuthService } from '../../../../core/services/auth.service'; // Assume you have this
+import { DiscountConditionGroupEA_C, DiscountDisplayDTO, MechanismType } from '@app/core/models/discount';
+import { evaluateCartConditions } from '@app/core/services/discountChecker';
+import { DiscountDisplayService } from '@app/core/services/discount-display.service';
+import { CartItem } from '@app/core/models/cart.model';
+import { DiscountTextService } from '@app/core/services/discount-text.service';
+import { AuthService } from '@app/core/services/auth.service';
+import { CloudinaryService } from '@app/core/services/cloudinary.service';
+import { ReviewService } from '@app/core/services/review.service';
+import { ProductReview } from '@app/core/models/review';
 
 // Change editReviewData type and default value
 declare interface EditReviewData {
@@ -22,50 +27,56 @@ declare interface EditReviewData {
 }
 
 @Component({
-  selector: 'app-product-detail',
+  selector: "app-product-detail",
   standalone: false,
-  templateUrl: './product-detail.component.html',
-  styleUrl: './product-detail.component.css'
+  templateUrl: "./product-detail.component.html",
+  styleUrl: "./product-detail.component.css",
 })
-export class ProductDetailComponent {
-  product!: ProductCardItem;
-  mainImageUrl = "";
-  selectedOptions: { [optionId: number]: number } = {};
-  selectedVariant?: ProductVariantDTO;
-  form!: FormGroup;
-  allImages: Array<{ url: string; variantId?: string }> = [];
-  quantity = 1;
-  currentImageIndex = 0;
-  wishList = new Set<number>();
-  cartItems: { productId: number; variantId: number; quantity: number }[] = [];
 
-  @Input() categoryId!: number;
-  @Input() productId!: number;
+export class ProductDetailComponent implements OnInit, OnDestroy {
 
-  relatedProducts: ProductDTO[] = [];  // <-- related products list
+  private carouselInterval: any;
 
-   @ViewChild('scrollContainer', { static: false }) scrollContainer!: ElementRef;
+  // Product data
+  product!: ProductCardItem
+  relatedProducts: ProductDTO[] = []
+  mainImageUrl = ""
+  allImages: Array<{ url: string; variantId?: string }> = []
+  currentImageIndex = 0
 
-// Add these methods to your component
-scrollLeft(): void {
-  const container = this.scrollContainer.nativeElement;
-  const cardWidth = container.querySelector('.related-product-card')?.offsetWidth || 250;
-  const scrollAmount = (cardWidth + 16) * 4; // 4 cards + gap
-  container.scrollBy({
-    left: -scrollAmount,
-    behavior: 'smooth'
-  });
-}
+  // Form and selections
+  form!: FormGroup
+  selectedOptions: { [optionId: number]: number } = {}
+  selectedVariant?: ProductVariantDTO
+  quantity = 1
 
-scrollRight(): void {
-  const container = this.scrollContainer.nativeElement;
-  const cardWidth = container.querySelector('.related-product-card')?.offsetWidth || 250;
-  const scrollAmount = (cardWidth + 16) * 4; // 4 cards + gap
-  container.scrollBy({
-    left: scrollAmount,
-    behavior: 'smooth'
-  });
-}
+  // Discount system
+  discountHints: DiscountDisplayDTO[] = []
+  discountGroups: DiscountConditionGroupEA_C[] = []
+  eligibleDiscounts: DiscountDisplayDTO[] = []
+  conditionalDiscounts: DiscountDisplayDTO[] = []
+  progressConditionalDiscounts: DiscountDisplayDTO[] = []
+  visibleDiscounts: DiscountDisplayDTO[] = [];
+  isEligibleForDiscount = false
+  discountsExpanded = false
+  stickyProgressDismissed = false
+
+  // Discount carousel state
+  currentDiscountIndex = 0
+
+  // Cart and wishlist
+  cartItems: CartItem[] = []
+  wishList = new Set<number>()
+
+  // Shipping
+  shipping = { city: "", cost: 0 }
+
+  @Input() categoryId!: number
+  @Input() productId!: number
+  @ViewChild("scrollContainer", { static: false }) scrollContainer!: ElementRef
+  @ViewChild("mobileDiscounts", { static: false }) mobileDiscounts!: ElementRef
+  @ViewChild("discountCarousel", { static: false }) discountCarousel!: ElementRef
+
   // Review system state
   reviews: any[] = [];
   reviewTotal: number = 0;
@@ -78,15 +89,856 @@ scrollRight(): void {
   isLoadingReviews: boolean = false;
   newReview: { rating: number; comment: string } = { rating: 5, comment: '' };
   isSubmittingReview: boolean = false;
-  uploadedReviewImages: {  imageUrl: string }[] = [];
+  uploadedReviewImages: { imageUrl: string }[] = [];
   userId?: number;
-  userName?:string;
+  userName?: string;
   isLoggedIn: boolean = false;
   hasPurchasedProduct: boolean = false;
   hasReviewedProduct: boolean = false;
-
   editingReview: any = null;
   editReviewData: EditReviewData = { rating: 5, comment: '', images: [] };
+  loggedIn = false;
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private fb: FormBuilder,
+    private productService: ProductService,
+    private cartService: CartService,
+    private wishlistService: WishlistService,
+    private dialog: MatDialog,
+    private discountDisplayService: DiscountDisplayService,
+    private discountTextService: DiscountTextService,
+    private reviewService: ReviewService,
+    private cloudinaryService: CloudinaryService,
+    private authService: AuthService
+  ) { }
+
+  ngOnInit(): void {
+
+    this.authService.isLoggedIn$.subscribe((isLoggedIn) => {
+      this.loggedIn = isLoggedIn;
+    });
+
+    this.route.paramMap.subscribe((params) => {
+      const id = params.get("id")
+      if (id) {
+        this.fetchProductDetail(+id)
+      }
+    })
+    this.subscribeToCartChanges()
+    this.loadStickyProgressState()
+    this.updateVisibleDiscounts();
+    this.startDiscountCarouselAutoplay();
+  }
+
+  ngOnDestroy(): void {
+    if (this.carouselInterval) {
+      clearInterval(this.carouselInterval);
+    }
+  }
+
+  private subscribeToCartChanges(): void {
+    this.cartService.cartItems$.subscribe((cart) => {
+      this.cartItems = cart
+      this.refreshCartData()
+
+      // Re-evaluate discounts when cart changes
+      if (this.discountHints.length > 0) {
+        this.evaluateDiscountEligibility()
+      }
+    })
+  }
+
+  private loadStickyProgressState(): void {
+    this.stickyProgressDismissed = localStorage.getItem("stickyProgressDismissed") === "true"
+  }
+
+  private refreshCartData(): void {
+    // Update cart items for discount calculations
+    this.cartItems = this.cartService.getCart()
+  }
+
+
+  fetchProductDetail(id: number): void {
+    this.productService.getPublicProductById(id).subscribe({
+      next: (data) => {
+        this.product = data
+        this.initializeComponent()
+        this.loadRelatedProducts()
+        this.loadDiscountHints()
+        this.checkPurchaseStatus();
+      },
+      error: (err) => {
+        console.error("Error fetching product:", err)
+        this.router.navigate(["/customer/productList"])
+      },
+    })
+  }
+
+  initializeComponent(): void {
+    this.initForm()
+    this.setDefaultSelections()
+    this.buildImagesList()
+    this.setDefaultMainImage()
+  }
+
+  private loadDiscountHints(): void {
+    if (!this.product?.id) return
+
+    this.discountDisplayService.getProductDiscountHints().subscribe({
+      next: (hintMap) => {
+        const productId = this.product.id
+        const hints: DiscountDisplayDTO[] = hintMap?.[productId] || []
+
+        this.discountHints = hints
+        this.discountGroups = hints.flatMap((h) => h.conditionGroups || [])
+        this.categorizeDiscounts()
+        this.evaluateDiscountEligibility()
+      },
+      error: (err) => {
+        console.error("Error loading discount hints:", err)
+      },
+    })
+  }
+
+  private categorizeDiscounts(): void {
+    // Separate conditional discounts (requiring frontend checking)
+    this.conditionalDiscounts = this.discountHints.filter((hint) => hint.requireFrontendChecking === true)
+
+    // Filter discounts where NO condition in any conditionGroup has eligible === false
+    // Optionally require at least one condition eligible === true
+    this.progressConditionalDiscounts = this.discountHints.filter((hint) => {
+      if (!hint.requireFrontendChecking) return false
+      if (!hint.conditionGroups || hint.conditionGroups.length === 0) return false
+
+      // Flatten all conditions of all groups
+      const allConditions = hint.conditionGroups.flatMap((group) => group.conditions ?? [])
+
+      // No condition should have eligible === false
+      const hasFalse = allConditions.some((cond) => cond.eligible === false)
+      if (hasFalse) return false
+
+      return true
+    })
+
+    console.log("🎯 Conditional discounts:", this.conditionalDiscounts)
+    console.log(
+      "✅ Progress conditional discounts (no condition false & some true):",
+      this.progressConditionalDiscounts,
+    )
+    console.log("🔍 All discount hints:", this.discountHints)
+  }
+
+  private evaluateDiscountEligibility(): void {
+    if (!this.discountHints || this.discountHints.length === 0) {
+      this.eligibleDiscounts = []
+      this.isEligibleForDiscount = false
+      return
+    }
+
+    // Use the discount service to evaluate eligibility
+    this.eligibleDiscounts = this.discountDisplayService.evaluateEligibleDiscounts(this.discountHints, this.cartItems)
+
+    this.isEligibleForDiscount = this.eligibleDiscounts.length > 0
+
+    console.log("✅ Eligible discounts:", this.eligibleDiscounts)
+  }
+
+  // Get visible discounts (exclude B2B)
+  getVisibleDiscounts(): DiscountDisplayDTO[] {
+    return this.discountHints.filter((discount) => discount.mechanismType !== MechanismType.B2B)
+  }
+
+  updateVisibleDiscounts(): void {
+    this.visibleDiscounts = this.discountHints.filter(
+      discount => discount.mechanismType !== MechanismType.B2B
+    );
+  }
+
+  // Discount carousel methods
+  private startDiscountCarouselAutoplay(): void {
+    this.carouselInterval = setInterval(() => {
+      if (this.visibleDiscounts.length > 1) {
+        this.nextDiscountSlide();
+      }
+    }, 5000);
+  }
+
+  nextDiscountSlide(): void {
+    const maxIndex = this.getVisibleDiscounts().length - 1
+    if (this.currentDiscountIndex < maxIndex) {
+      this.currentDiscountIndex++
+    } else {
+      this.currentDiscountIndex = 0
+    }
+  }
+
+  prevDiscountSlide(): void {
+    const maxIndex = this.getVisibleDiscounts().length - 1
+    if (this.currentDiscountIndex > 0) {
+      this.currentDiscountIndex--
+    } else {
+      this.currentDiscountIndex = maxIndex
+    }
+  }
+
+  goToDiscountSlide(index: number): void {
+    this.currentDiscountIndex = index
+  }
+
+  showDiscountDetail(discount: DiscountDisplayDTO): void {
+    // Get the linked text output
+    const linkedTextOutput = this.discountTextService.generateHumanReadableConditionsWithLinks(discount)
+
+    // Generate the detailed HTML with clickable links
+    const discountDetails = this.generateClickableDiscountDetails(discount, linkedTextOutput)
+
+    Swal.fire({
+      title: discount.name || "Discount Details",
+      html: discountDetails,
+      icon: "info",
+      confirmButtonText: "Got it!",
+      customClass: {
+        popup: "luxury-alert",
+        confirmButton: "luxury-btn luxury-btn-primary",
+      },
+      width: "500px",
+      didOpen: () => {
+        // Add click event listeners for the linked entities
+        this.attachClickListenersToSwalLinks(linkedTextOutput.linkedEntities)
+      },
+    })
+  }
+
+  // Add this new method to generate clickable discount details:
+  private generateClickableDiscountDetails(discount: DiscountDisplayDTO, linkedTextOutput: any): string {
+    let details = `<div style="text-align: left; line-height: 1.6;">`
+
+    // Discount value
+    details += `<p><strong>Discount:</strong> ${this.discountTextService.getDiscountPercentage(discount)}</p>`
+
+    // Mechanism type
+    details += `<p><strong>Type:</strong> ${this.discountTextService.getDiscountTypeLabel(discount)}</p>`
+
+    // Human-readable conditions with clickable links
+    if (linkedTextOutput.text) {
+      const clickableText = this.renderTextWithClickableLinks(linkedTextOutput)
+      details += `<p><strong>How to qualify:</strong> ${clickableText}</p>`
+    }
+
+    // Coupon code
+    if (discount.mechanismType === "Coupon" && discount.couponcode) {
+      details += `<p><strong>Coupon Code:</strong> <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">${discount.couponcode}</code></p>`
+    }
+
+    // Valid dates
+    if (discount.startDate && discount.endDate) {
+      const startDate = new Date(discount.startDate).toLocaleDateString()
+      const endDate = new Date(discount.endDate).toLocaleDateString()
+      details += `<p><strong>Valid:</strong> ${startDate} - ${endDate}</p>`
+    }
+
+    // Usage limit
+    if (discount.usageLimit) {
+      details += `<p><strong>Usage Limit:</strong> ${discount.usageLimit} times</p>`
+    }
+
+    details += `</div>`
+    return details
+  }
+
+  // Add this method to render text with clickable links:
+  private renderTextWithClickableLinks(textOutput: { text: string; linkedEntities: any[] }): string {
+    let renderedText = textOutput.text;
+
+    textOutput.linkedEntities.forEach((entity, index) => {
+      const placeholder = `{{${entity.type.toUpperCase()}${index + 1}}}`;
+      const clickableElement = `<span class="clickable-entity-link" data-entity-index="${index}" style="color: #3498db; font-weight: 600; cursor: pointer; text-decoration: underline;">${entity.name}</span>`;
+      renderedText = renderedText.replace(placeholder, clickableElement);
+    });
+
+    return renderedText;
+  }
+
+  // Add this method to attach click listeners in SweetAlert:
+  private attachClickListenersToSwalLinks(linkedEntities: any[]): void {
+    const clickableElements = document.querySelectorAll(".clickable-entity-link")
+
+    clickableElements.forEach((element) => {
+      element.addEventListener("click", (event) => {
+        const target = event.target as HTMLElement
+        const entityIndex = target.getAttribute("data-entity-index")
+
+        if (entityIndex !== null) {
+          const entity = linkedEntities[Number.parseInt(entityIndex)]
+          if (entity) {
+            // Close the SweetAlert first
+            Swal.close()
+
+            // Navigate to the entity
+            this.discountTextService.navigateToEntity(entity)
+          }
+        }
+      })
+    })
+  }
+
+  /**
+   * Get linked condition text for template usage
+   */
+  getLinkedConditionText(discount: DiscountDisplayDTO): { text: string; linkedEntities: any[] } {
+    return this.discountTextService.generateHumanReadableConditionsWithLinks(discount)
+  }
+
+  /**
+   * Render text with clickable links for template usage
+   */
+  renderTextWithLinks(textOutput: { text: string; linkedEntities: any[] }): string {
+    let renderedText = textOutput.text
+
+    textOutput.linkedEntities.forEach((entity, index) => {
+      const placeholder =
+        index === 0 ? `{{${entity.type.toUpperCase()}}}` : `{{${entity.type.toUpperCase()}${index + 1}}}`
+      const clickableElement = `<span class="clickable-entity" data-entity-index="${index}">${entity.name}</span>`
+      renderedText = renderedText.replace(placeholder, clickableElement)
+    })
+
+    return renderedText
+  }
+
+  /**
+   * Handle entity clicks in template
+   */
+  onEntityClick(event: Event, linkedEntities: any[]): void {
+    const target = event.target as HTMLElement
+    const entityIndex = target.getAttribute("data-entity-index")
+
+    if (entityIndex !== null) {
+      const entity = linkedEntities[Number.parseInt(entityIndex)]
+      if (entity) {
+        this.discountTextService.navigateToEntity(entity)
+      }
+    }
+  }
+
+  // Mobile scroll to discounts
+  scrollToDiscounts(): void {
+    if (this.mobileDiscounts) {
+      this.mobileDiscounts.nativeElement.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      })
+    }
+  }
+
+
+  initForm(): void {
+    const group: { [key: string]: any } = {}
+
+    this.product.options.forEach((option) => {
+      if (option.optionValues.length > 0) {
+        const firstValueId = option.optionValues[0].id!
+        group[option.id] = [firstValueId]
+        this.selectedOptions[option.id] = firstValueId
+      }
+    })
+
+    this.form = this.fb.group(group)
+  }
+
+  setDefaultSelections(): void {
+    this.updateSelectedVariant()
+  }
+
+  updateSelectedVariant(): void {
+    this.selectedVariant = this.product.variants.find((variant) => {
+      const variantOptions = variant.options ?? []
+
+      if (variantOptions.length === 0 && Object.keys(this.selectedOptions).length === 0) {
+        return true
+      }
+
+      return variantOptions.every(
+        (variantOption) => this.selectedOptions[variantOption.optionId] === variantOption.optionValueId,
+      )
+    })
+  }
+
+  buildImagesList(): void {
+    this.allImages = []
+
+    if (this.product.product.productImages) {
+      const sortedProductImages = this.product.product.productImages.sort((a, b) => a.displayOrder - b.displayOrder)
+
+      sortedProductImages.forEach((img) => {
+        if (img.imgPath) {
+          this.allImages.push({
+            url: img.imgPath,
+          })
+        }
+      })
+    }
+
+    this.product.variants.forEach((variant) => {
+      if (variant.imgPath && !this.allImages.some((img) => img.url === variant.imgPath)) {
+        this.allImages.push({
+          url: variant.imgPath,
+          variantId: variant.sku,
+        })
+      }
+    })
+  }
+
+  setDefaultMainImage(): void {
+    if (this.product.product.productImages && this.product.product.productImages.length > 0) {
+      const sortedImages = this.product.product.productImages.sort((a, b) => a.displayOrder - b.displayOrder)
+      const mainImage = sortedImages.find((img) => img.mainImageStatus) || sortedImages[0]
+      this.mainImageUrl = mainImage.imgPath || ""
+
+      const mainImageIndex = this.allImages.findIndex((img) => img.url === this.mainImageUrl)
+      if (mainImageIndex !== -1) {
+        this.currentImageIndex = mainImageIndex
+      }
+    }
+
+    if (!this.mainImageUrl && this.selectedVariant?.imgPath) {
+      this.mainImageUrl = this.selectedVariant.imgPath
+      const variantImageIndex = this.allImages.findIndex((img) => img.url === this.mainImageUrl)
+      if (variantImageIndex !== -1) {
+        this.currentImageIndex = variantImageIndex
+      }
+    }
+  }
+
+  // Image navigation methods
+  nextImage(): void {
+    if (this.currentImageIndex < this.allImages.length - 1) {
+      this.currentImageIndex++
+    } else {
+      this.currentImageIndex = 0
+    }
+    this.mainImageUrl = this.allImages[this.currentImageIndex].url
+  }
+
+  prevImage(): void {
+    if (this.currentImageIndex > 0) {
+      this.currentImageIndex--
+    } else {
+      this.currentImageIndex = this.allImages.length - 1
+    }
+    this.mainImageUrl = this.allImages[this.currentImageIndex].url
+  }
+
+  setActiveImage(index: number): void {
+    this.currentImageIndex = index
+    this.mainImageUrl = this.allImages[index].url
+  }
+
+  // Option selection methods
+  onOptionChange(optionId: number, valueId: number): void {
+    this.form.get(optionId.toString())?.setValue(valueId)
+    this.selectedOptions[optionId] = valueId
+    this.updateSelectedVariant()
+    this.autoSelectVariantImage()
+    this.quantity = 1
+  }
+
+  autoSelectVariantImage(): void {
+    if (this.selectedVariant?.imgPath) {
+      this.mainImageUrl = this.selectedVariant.imgPath
+      const imageIndex = this.allImages.findIndex((img) => img.url === this.selectedVariant?.imgPath)
+      if (imageIndex !== -1) {
+        this.currentImageIndex = imageIndex
+      }
+    }
+  }
+
+  getOptionValuesWithAvailability(optionId: number, allValues: any[]): { value: any; enabled: boolean }[] {
+    const selected = { ...this.selectedOptions }
+    delete selected[optionId]
+
+    const validValueIds = new Set<number>()
+
+    for (const variant of this.product.variants) {
+      const matches = variant.options.every((vo) => {
+        return selected[vo.optionId] == null || selected[vo.optionId] === vo.optionValueId
+      })
+
+      if (matches) {
+        const match = variant.options.find((vo) => vo.optionId === optionId)
+        if (match) validValueIds.add(match.optionValueId)
+      }
+    }
+
+    return allValues.map((val) => ({
+      value: val,
+      enabled: validValueIds.has(val.id),
+    }))
+  }
+
+  isSelected(optionId: number, valueId: number): boolean {
+    return this.selectedOptions[optionId] === valueId
+  }
+
+  // Stock methods
+  getStockStatus(): string {
+    if (!this.selectedVariant) return ""
+    if (this.selectedVariant.stock === 0) return "Out of Stock"
+    if (this.selectedVariant.stock <= 5) return `Low Stock (Only ${this.selectedVariant.stock} left)`
+    return "In Stock"
+  }
+
+  getStockClass(): string {
+    if (!this.selectedVariant) return ""
+    if (this.selectedVariant.stock === 0) return "text-danger"
+    if (this.selectedVariant.stock <= 5) return "text-warning"
+    return "text-success"
+  }
+
+  getStockIcon(): string {
+    if (!this.selectedVariant) return ""
+    if (this.selectedVariant.stock === 0) return "bi-x-circle-fill"
+    if (this.selectedVariant.stock <= 5) return "bi-exclamation-circle-fill"
+    return "bi-check-circle-fill"
+  }
+
+  // Pricing methods
+  getCurrentDisplayPrice(): number {
+    return this.selectedVariant?.price || this.getLowestPrice()
+  }
+
+  getLowestPrice(): number {
+    if (this.product.variants && this.product.variants.length > 0) {
+      const prices = this.product.variants.map((v) => v.price)
+      return Math.min(...prices)
+    }
+    return this.product.product.basePrice
+  }
+
+  // hasActiveDiscounts(): boolean {
+  //   return this.eligibleDiscounts.some(
+  //     (d) => d.mechanismType && d.mechanismType.toLowerCase() !== 'coupon'
+  //   );
+  // }
+
+  hasActiveDiscounts(productId: number): boolean {
+    return this.eligibleDiscounts.some(
+      (d) =>
+        d.mechanismType?.toLowerCase() !== 'coupon' &&
+        d.offeredProductIds?.includes(productId)
+    )
+  }
+
+  getDiscountedPrice(productId: number): number {
+    if (!this.hasActiveDiscounts(productId)) {
+      return this.getCurrentDisplayPrice()
+    }
+
+    const currentPrice = this.getCurrentDisplayPrice()
+
+    const applicableDiscounts = this.eligibleDiscounts.filter(
+      (d) =>
+        d.mechanismType?.toLowerCase() !== 'coupon' &&
+        d.offeredProductIds?.includes(productId)
+    )
+
+    const result = this.discountDisplayService.calculateDiscountedPrice(
+      currentPrice,
+      applicableDiscounts
+    )
+
+    return result.discountedPrice
+  }
+
+  getSavingsAmount(productId: number): number {
+    return this.getCurrentDisplayPrice() - this.getDiscountedPrice(productId)
+  }
+
+  // Discount methods - now delegating to discount text service
+  toggleDiscountsExpanded(): void {
+    this.discountsExpanded = !this.discountsExpanded
+  }
+
+  getConditionalDiscounts(): DiscountDisplayDTO[] {
+    return this.conditionalDiscounts
+  }
+
+  getProgressConditionalDiscounts(): DiscountDisplayDTO[] {
+    return this.progressConditionalDiscounts
+  }
+
+  getCurrentCartTotal(): number {
+    return this.cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
+  }
+
+  getRequiredAmount(discount: DiscountDisplayDTO): number {
+    if (!discount.conditionSummary) return 0
+
+    // Extract required amount from condition summary
+    const match = discount.conditionSummary.match(/(\d+)/)
+    return match ? Number.parseInt(match[1]) : 0
+  }
+
+  formatDiscountBadge(discount: DiscountDisplayDTO): string {
+    return this.discountTextService.formatDiscountValue(discount)
+  }
+
+  // ===== DELEGATE DISCOUNT DISPLAY METHODS TO DISCOUNT TEXT SERVICE =====
+
+  getDiscountPercentage(discount: DiscountDisplayDTO): string {
+    return this.discountTextService.getDiscountPercentage(discount)
+  }
+
+  getDiscountTypeLabel(discount: DiscountDisplayDTO): string {
+    return this.discountTextService.getDiscountTypeLabel(discount)
+  }
+
+  getMechanismBasedMessage(discount: DiscountDisplayDTO): string {
+    return this.discountTextService.getMechanismBasedMessage(discount)
+  }
+
+  isConditionsMet(discount: DiscountDisplayDTO): boolean {
+    return this.discountTextService.isConditionsMet(discount)
+  }
+
+  isHighValueDiscount(discount: DiscountDisplayDTO): boolean {
+    return this.discountTextService.isHighValueDiscount(discount)
+  }
+
+  getSimpleDescription(discount: DiscountDisplayDTO): string {
+    return this.discountTextService.getSimpleDescription(discount)
+  }
+
+  copyToClipboard(text: string): void {
+    this.discountTextService
+      .copyToClipboard(text)
+      .then(() => {
+        this.showAlert(`Coupon code "${text}" copied to clipboard`, "success")
+      })
+      .catch((err) => {
+        console.error("Failed to copy:", err)
+      })
+  }
+
+  // Sticky progress methods
+  onStickyProgressDismissed(): void {
+    this.stickyProgressDismissed = true
+    localStorage.setItem("stickyProgressDismissed", "true")
+  }
+
+  onAddMoreItemsClicked(): void {
+    this.router.navigate(["/customer/productList"])
+  }
+
+  // Cart methods
+  getCurrentVariantCartQuantity(): number {
+    if (!this.selectedVariant) return 0
+    return this.cartService.getVariantQuantity(this.product.product.id!, this.selectedVariant.id!)
+  }
+
+  getCurrentVariantRemainingStock(): number {
+    if (!this.selectedVariant) return 0
+    const inCart = this.getCurrentVariantCartQuantity()
+    return this.selectedVariant.stock - inCart
+  }
+
+  incrementQuantity(): void {
+    const maxAllowed = this.getCurrentVariantRemainingStock()
+    if (this.quantity < maxAllowed) {
+      this.quantity++
+    }
+  }
+
+  decrementQuantity(): void {
+    if (this.quantity > 1) {
+      this.quantity--
+    }
+  }
+
+  addToCart(item: ProductListItemDTO): void {
+    if (!this.selectedVariant) {
+      this.showAlert("Please select all options.", "warning")
+      return
+    }
+
+    const stock = this.selectedVariant.stock
+    const inCart = this.getCurrentVariantCartQuantity()
+
+    if (stock === 0 || inCart >= stock) {
+      this.showAlert(
+        `${item.product.name} (${this.selectedVariant.sku}) is ${stock === 0 ? "currently out of stock." : "out of stock."}`,
+        stock === 0 ? "error" : "warning",
+      )
+      return
+    }
+
+    const fallbackImage =
+      this.selectedVariant.imgPath?.trim() ||
+      item.product.productImages?.find((img) => img.mainImageStatus)?.imgPath?.trim() ||
+      "assets/images/default.jpg"
+
+    for (let i = 0; i < this.quantity; i++) {
+      this.cartService.addToCart({
+        id: item.product.id!,
+        name: item.product.name,
+        variantId: this.selectedVariant.id!,
+        variantSku: this.selectedVariant.sku,
+        stock: this.selectedVariant.stock,
+        price: this.selectedVariant.price,
+        image: fallbackImage,
+        brandId: Number(item.product.brandId),
+        categoryId: Number(item.product.categoryId),
+      })
+    }
+
+    this.showAlert(
+      `${this.quantity} x ${item.product.name} (${this.selectedVariant.sku}) added successfully.`,
+      "success",
+    )
+
+    this.quantity = 1
+  }
+
+  private showAlert(message: string, type: "success" | "error" | "warning"): void {
+    const config = {
+      success: { icon: "🛒", background: "#f0fff0" },
+      error: { icon: "❌", background: "#ffe6e6" },
+      warning: { icon: "⚠️", background: "#e8d7c3" },
+    }
+
+    Swal.fire({
+      title: `${config[type].icon} ${type === "success" ? "Added to Cart!" : type === "error" ? "Out of Stock!" : "Stock Limit Reached"}`,
+      text: message,
+      icon: type,
+      toast: true,
+      position: "top",
+      showConfirmButton: false,
+      timer: 2500,
+      background: config[type].background,
+      color: "#333",
+      customClass: { popup: "custom-toast-popup" },
+    })
+  }
+
+  // Coupon methods - simplified since copyToClipboard is now handled by service
+  onCouponCopied(code: string): void {
+    this.showAlert(`Coupon code "${code}" copied to clipboard`, "success")
+  }
+
+  onCouponApplied(code: string): void {
+    this.showAlert(`Coupon code "${code}" has been applied`, "success")
+  }
+
+  // Wishlist methods
+  toggleWish(productId: number): void {
+    const userId = 4 // Replace with actual user ID
+
+    if (this.isWished(productId)) {
+      this.wishlistService.removeProductFromWishlist(userId, productId).subscribe({
+        next: () => {
+          this.wishList.delete(productId)
+          this.loadWishlist()
+        },
+        error: (err) => {
+          console.error("Failed to remove from wishlist:", err)
+        },
+      })
+    } else {
+      const dialogRef = this.dialog.open(WishlistDialogComponent, {
+        width: "400px",
+        data: { productId },
+      })
+
+      dialogRef.afterClosed().subscribe((result) => {
+        if (result && result.added) {
+          this.wishList.add(productId)
+          this.loadWishlist()
+        }
+      })
+    }
+  }
+
+  isWished(productId: number | string): boolean {
+    const id = typeof productId === "string" ? +productId : this.productId
+    return this.wishList.has(id)
+  }
+
+  loadWishlist(): void {
+    const userId = 4 // Replace with actual user ID
+    this.wishlistService.getWishedProductIds(userId).subscribe({
+      next: (wishedIds) => {
+        this.wishList = new Set<number>(wishedIds)
+      },
+      error: (err) => console.error("Failed to load wishlist:", err),
+    })
+  }
+
+  // Related products methods
+  loadRelatedProducts(): void {
+    if (!this.product || !this.product.product || !this.product.id || !this.product.product.categoryId) {
+      console.warn("Missing product or category data")
+      return
+    }
+
+    const categoryId = +this.product.product.categoryId
+    const currentProductId = +this.product.id
+
+    this.productService.getRelatedProducts(categoryId, currentProductId).subscribe({
+      next: (products) => {
+        this.relatedProducts = products
+      },
+      error: (err) => {
+        console.error("Failed to load related products:", err)
+      },
+    })
+  }
+
+  getMainProductImage(product: ProductDTO): string {
+    if (product.productImages && product.productImages.length > 0) {
+      const mainImage = product.productImages.find((img: any) => img.mainImageStatus)
+      if (mainImage) {
+        return mainImage.imgPath!
+      } else if (product.productImages[0]) {
+        return product.productImages[0].imgPath!
+      }
+    }
+    return "assets/images/placeholder.jpg"
+  }
+
+  scrollLeft(): void {
+    const container = this.scrollContainer.nativeElement
+    const cardWidth = container.querySelector(".related-product-card")?.offsetWidth || 250
+    const scrollAmount = (cardWidth + 16) * 4
+    container.scrollBy({
+      left: -scrollAmount,
+      behavior: "smooth",
+    })
+  }
+
+  scrollRight(): void {
+    const container = this.scrollContainer.nativeElement
+    const cardWidth = container.querySelector(".related-product-card")?.offsetWidth || 250
+    const scrollAmount = (cardWidth + 16) * 4
+    container.scrollBy({
+      left: scrollAmount,
+      behavior: "smooth",
+    })
+  }
+
+  // Utility methods
+  trackByOptionId(index: number, option: any): number {
+    return option.id
+  }
+
+  trackByOptionValue(index: number, value: any): number {
+    return value.id
+  }
+
+  trackByImageUrl(index: number, image: any): string {
+    return image.url
+  }
+
 
   openEditReview(review: any) {
     this.editingReview = review;
@@ -144,91 +996,11 @@ scrollRight(): void {
     });
   }
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private fb: FormBuilder,
-    private productService: ProductService,
-    private cartService: CartService,
-    private wishlistService: WishlistService,
-    private dialog: MatDialog,
-     // ... existing code ...
-     private reviewService: ReviewService,
-     private cloudinaryService: CloudinaryService,
-   private authService: AuthService
-  ) { }
-
-  ngOnInit(): void {
-    this.authService.fetchCurrentUser().subscribe({
-      next: user => {
-        this.userId = user.id;
-        this.userName = user.name;
-        this.isLoggedIn = true;
-      },
-      error: () => {
-        this.isLoggedIn = false;
-      }
-    });
-    this.fetchProductDetail();
-  }
-
-  checkPurchaseStatus(): void {
-    // Always load reviews for everyone (logged in or not)
-    this.loadReviews();
-    
-    // Only check purchase status if user is logged in
-    if (!this.isLoggedIn || !this.product?.product?.id) {
-      this.hasPurchasedProduct = false;
-      console.log('❌ Not logged in or no product ID');
-      return;
-    }
-
-    console.log('🔍 Checking purchase status for product:', this.product.product.id);
-    console.log('👤 User ID:', this.userId);
-
-    // Call backend API to check if user has purchased and received this product
-    this.reviewService.checkPurchaseStatus(this.product.product.id).subscribe({
-      next: (response) => {
-        console.log('✅ Purchase check response:', response);
-        this.hasPurchasedProduct = response.canReview;
-        this.hasReviewedProduct = response.hasReviewed;
-        console.log('📝 Can review:', this.hasPurchasedProduct);
-        console.log('📝 Has reviewed:', this.hasReviewedProduct);
-      },
-      error: (error) => {
-        console.error('❌ Purchase check error:', error);
-        this.hasPurchasedProduct = false;
-        this.hasReviewedProduct = false;
-      }
-    });
-  }
-
-  fetchProductDetail(): void {
-    const id = this.route.snapshot.paramMap.get("id");
-    if (id) {
-      this.productService.getPublicProductById(+id).subscribe({
-        next: (data) => {
-          this.product = data;
-          this.initializeComponent();
-          this.loadRelatedProducts();
-          this.checkPurchaseStatus(); // This will also load reviews
-          console.log("product details : ", this.product);
-          
-        },
-        error: () => {
-          this.router.navigate(["/customer/productList"]);
-        },
-      });
-    } else {
-      this.router.navigate(["/customer/productList"]);
-    }
-  }
-    // ... review sort/filter/page change methods as before ...
   ////////////////////////////////////////////////////////////
   loadReviews(): void {
     if (!this.product?.product?.id) return;
     this.isLoadingReviews = true;
-  
+
     this.reviewService.getProductReviews(
       this.product.product.id,
       this.reviewPage,
@@ -257,14 +1029,14 @@ scrollRight(): void {
     const files: FileList = event.target.files;
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-  
+
       // Validate file type and size
       const validation = this.cloudinaryService.validateImageFile(file);
       if (!validation.valid) {
         alert(validation.error);
         continue; // Skip this file
       }
-  
+
       this.cloudinaryService.uploadImage(file).subscribe({
         next: (url: string) => {
           this.uploadedReviewImages.push({ imageUrl: url });
@@ -283,15 +1055,15 @@ scrollRight(): void {
   submitReview(): void {
     if (!this.product?.product?.id) return;
     this.isSubmittingReview = true;
-  
+
     const reviewPayload: Partial<ProductReview> = {
       productId: this.product.product.id,
-     
+
       rating: this.newReview.rating,
       comment: this.newReview.comment,
       images: this.uploadedReviewImages,
-      
-     
+
+
     };
     console.log('Review payload:', reviewPayload);
     this.reviewService.addReview(reviewPayload).subscribe({
@@ -311,7 +1083,7 @@ scrollRight(): void {
       error: (error) => {
         this.isSubmittingReview = false;
         let errorMessage = 'Failed to submit review. Please try again.';
-        
+
         if (error.error && error.error.message) {
           errorMessage = error.error.message;
         } else if (error.status === 403) {
@@ -328,412 +1100,44 @@ scrollRight(): void {
       }
     });
   }
-  ///////////////////////
-  initializeComponent(): void {
-    this.initForm();
-    this.setDefaultSelections();
-    this.buildImagesList();
-    this.setDefaultMainImage();
-  }
 
-  initForm(): void {
-    const group: { [key: string]: any } = {}
 
-    this.product.options.forEach((option) => {
-      if (option.optionValues.length > 0) {
-        const firstValueId = option.optionValues[0].id!
-        group[option.id] = [firstValueId]
-        this.selectedOptions[option.id] = firstValueId
-      }
-    })
+  checkPurchaseStatus(): void {
+    // Always load reviews for everyone (logged in or not)
+    this.loadReviews();
 
-    this.form = this.fb.group(group)
-  }
-loadRelatedProducts(): void {
-  if (!this.product || !this.product.product || !this.product.id || !this.product.product.categoryId) {
-    console.warn('Missing product or category data');
-    return;
-  }
-
-  const categoryId = +this.product.product.categoryId;
-  const currentProductId = +this.product.id;
-
-  this.productService.getRelatedProducts(categoryId, currentProductId).subscribe({
-    next: (products) => {
-      this.relatedProducts = products;
-    },
-    error: (err) => {
-      console.error('Failed to load related products:', err);
-    }
-  });
-}
-
-getMainProductImage(product: ProductDTO): string {
-    if (product.productImages && product.productImages.length > 0) {
-      const mainImage = product.productImages.find((img: any) => img.mainImageStatus);
-
-      if (mainImage) {
-        return mainImage.imgPath!
-      } else if (product.productImages[0]) {
-        return product.productImages[0].imgPath!
-      }
-    }
-    return 'assets/images/placeholder.jpg'; // Fallback image
-  }
-
-  setDefaultSelections(): void {
-    // Update selected variant based on default selections
-    this.updateSelectedVariant()
-    console.log("default selections : ", this.selectedVariant);
-
-  }
-
-  buildImagesList(): void {
-    this.allImages = []
-
-    // Add product images first
-    if (this.product.product.productImages) {
-      const sortedProductImages = this.product.product.productImages.sort((a, b) => a.displayOrder - b.displayOrder)
-
-      sortedProductImages.forEach((img) => {
-        if (img.imgPath) {
-          this.allImages.push({
-            url: img.imgPath,
-          })
-        }
-      })
+    // Only check purchase status if user is logged in
+    if (!this.isLoggedIn || !this.product?.product?.id) {
+      this.hasPurchasedProduct = false;
+      console.log('❌ Not logged in or no product ID');
+      return;
     }
 
-    // Add variant images if they exist and aren't already in the list
-    this.product.variants.forEach((variant) => {
-      if (variant.imgPath && !this.allImages.some((img) => img.url === variant.imgPath)) {
-        this.allImages.push({
-          url: variant.imgPath,
-          variantId: variant.sku,
-        })
-      }
-    })
-  }
+    console.log('🔍 Checking purchase status for product:', this.product.product.id);
+    console.log('👤 User ID:', this.userId);
 
-  setDefaultMainImage(): void {
-    // First try to get main image from product images
-    if (this.product.product.productImages && this.product.product.productImages.length > 0) {
-      const sortedImages = this.product.product.productImages.sort((a, b) => a.displayOrder - b.displayOrder)
-      const mainImage = sortedImages.find((img) => img.mainImageStatus) || sortedImages[0]
-      this.mainImageUrl = mainImage.imgPath || ""
-
-      // Set the current image index
-      const mainImageIndex = this.allImages.findIndex((img) => img.url === this.mainImageUrl)
-      if (mainImageIndex !== -1) {
-        this.currentImageIndex = mainImageIndex
-      }
-    }
-
-    // If no product images and selected variant has image, use variant image
-    if (!this.mainImageUrl && this.selectedVariant?.imgPath) {
-      this.mainImageUrl = this.selectedVariant.imgPath
-
-      // Set the current image index
-      const variantImageIndex = this.allImages.findIndex((img) => img.url === this.mainImageUrl)
-      if (variantImageIndex !== -1) {
-        this.currentImageIndex = variantImageIndex
-      }
-    }
-  }
-
-  // Image slider navigation
-  nextImage(): void {
-    if (this.currentImageIndex < this.allImages.length - 1) {
-      this.currentImageIndex++
-    } else {
-      this.currentImageIndex = 0
-    }
-    this.mainImageUrl = this.allImages[this.currentImageIndex].url
-  }
-
-  prevImage(): void {
-    if (this.currentImageIndex > 0) {
-      this.currentImageIndex--
-    } else {
-      this.currentImageIndex = this.allImages.length - 1
-    }
-    this.mainImageUrl = this.allImages[this.currentImageIndex].url
-  }
-
-  setActiveImage(index: number): void {
-    this.currentImageIndex = index
-    this.mainImageUrl = this.allImages[index].url
-  }
-
-  trackByOptionId(index: number, option: any): number {
-    return option.id
-  }
-
-  trackByOptionValue(index: number, value: any): number {
-    return value.id
-  }
-
-  trackByImageUrl(index: number, image: any): string {
-    return image.url
-  }
-
-  getValidOptionValues(optionId: number, allValues: any[]): any[] {
-    const selected = { ...this.selectedOptions }
-    delete selected[optionId]
-
-    const validValueIds = new Set<number>()
-
-    for (const variant of this.product.variants) {
-      const matches = variant.options.every(vo => {
-        return selected[vo.optionId] == null || selected[vo.optionId] === vo.optionValueId
-      })
-
-      if (matches) {
-        const match = variant.options.find(vo => vo.optionId === optionId)
-        if (match) validValueIds.add(match.optionValueId)
-      }
-    }
-
-    return allValues.filter(val => validValueIds.has(val.id))
-  }
-
-
-  onOptionChange(optionId: number, valueId: number): void {
-    this.form.get(optionId.toString())?.setValue(valueId)
-    this.selectedOptions[optionId] = valueId
-    this.updateSelectedVariant()
-    this.autoSelectVariantImage()
-    this.quantity = 1
-    this.refreshCart()
-  }
-
-  updateSelectedVariant(): void {
-    this.selectedVariant = this.product.variants.find((variant) => {
-      const variantOptions = variant.options ?? []
-
-      // CASE 1: No options — treat as default variant
-      if (variantOptions.length === 0 && Object.keys(this.selectedOptions).length === 0) {
-        return true
-      }
-
-      // CASE 2: Match all selected options
-      return variantOptions.every(
-        (variantOption) =>
-          this.selectedOptions[variantOption.optionId] === variantOption.optionValueId
-      )
-    })
-  }
-
-
-  autoSelectVariantImage(): void {
-    // If selected variant has an image, auto-select it
-    if (this.selectedVariant?.imgPath) {
-      this.mainImageUrl = this.selectedVariant.imgPath
-
-      // Find the index of the variant image and update currentImageIndex
-      const imageIndex = this.allImages.findIndex((img) => img.url === this.selectedVariant?.imgPath)
-      if (imageIndex !== -1) {
-        this.currentImageIndex = imageIndex
-      }
-    }
-  }
-
-  isSelected(optionId: number, valueId: number): boolean {
-    return this.selectedOptions[optionId] === valueId
-  }
-
-  setMainImage(imagePath: string): void {
-    this.mainImageUrl = imagePath
-  }
-
-  isImageSelected(imageUrl: string): boolean {
-    return this.mainImageUrl === imageUrl
-  }
-
-  getStockStatus(): string {
-    if (!this.selectedVariant) return "";
-    if (this.selectedVariant.stock === 0) return "Out of Stock";
-    if (this.selectedVariant.stock <= 5) return `Low Stock (Only ${this.selectedVariant.stock} left)`;
-    return "In Stock";
-  }
-
-  getStockClass(): string {
-    if (!this.selectedVariant) return ""
-    if (this.selectedVariant.stock === 0) return "text-danger"
-    if (this.selectedVariant.stock <= 5) return "text-warning"
-    return "text-success"
-  }
-
-  loadWishlist() {
-    const userId = 4; // replace with dynamic user ID
-    this.wishlistService.getWishedProductIds(userId).subscribe({
-      next: (wishedIds) => {
-        this.wishList = new Set<number>(wishedIds);
-        // this.productService.getProductList().subscribe({
-        //   next: (products) => this.products = products,
-        //   error: (err) => console.error('Error loading products:', err)
-        // });
+    // Call backend API to check if user has purchased and received this product
+    this.reviewService.checkPurchaseStatus(this.product.product.id).subscribe({
+      next: (response) => {
+        console.log('✅ Purchase check response:', response);
+        this.hasPurchasedProduct = response.canReview;
+        this.hasReviewedProduct = response.hasReviewed;
+        console.log('📝 Can review:', this.hasPurchasedProduct);
+        console.log('📝 Has reviewed:', this.hasReviewedProduct);
       },
-      error: (err) => console.error('Failed to load wishlist:', err)
+      error: (error) => {
+        console.error('❌ Purchase check error:', error);
+        this.hasPurchasedProduct = false;
+        this.hasReviewedProduct = false;
+      }
     });
-  }
-
-  toggleWish(productId: number): void {
-    const userId = 4;
-
-    if (this.isWished(productId)) {
-      this.wishlistService.removeProductFromWishlist(userId, productId).subscribe({
-        next: () => {
-          this.wishList.delete(productId);
-          this.loadWishlist();
-        },
-        error: (err) => {
-          console.error('Failed to remove from wishlist:', err);
-        }
-      });
-    } else {
-      const dialogRef = this.dialog.open(WishlistDialogComponent, {
-        width: '400px',
-        data: { productId }
-      });
-
-      dialogRef.afterClosed().subscribe(result => {
-        if (result && result.added) {
-          this.wishList.add(productId);
-          this.loadWishlist();
-        }
-      });
-    }
-  }
-
-  isWished(productId: number | string): boolean {
-    const id = typeof productId === 'string' ? +productId : productId;
-    return this.wishList.has(id);
-  }
-
-  private refreshCart(): void {
-    this.cartItems = this.cartService.getCart().map((i) => ({
-      productId: i.productId,
-      variantId: i.variantId,
-      variantSku: i.variantSku,
-      quantity: i.quantity,
-    }));
-  }
-
-  /** Get cart quantity for the currently selected variant */
-  getCurrentVariantCartQuantity(): number {
-    if (!this.selectedVariant) return 0;
-    return this.cartService.getVariantQuantity(this.product.product.id!, this.selectedVariant.id!);
-  }
-
-  /** Get remaining stock for the currently selected variant */
-  getCurrentVariantRemainingStock(): number {
-    if (!this.selectedVariant) return 0;
-    const inCart = this.getCurrentVariantCartQuantity();
-    return this.selectedVariant.stock - inCart;
-  }
-
-  addToCart(item: ProductListItemDTO): void {
-    if (!this.selectedVariant) {
-      alert("Please select all options.");
-      return;
-    }
-
-    const stock = this.selectedVariant.stock;
-    const inCart = this.getCurrentVariantCartQuantity();
-
-    if (stock === 0 || inCart >= stock) {
-      Swal.fire({
-        title: stock === 0 ? "❌ Out of Stock!" : "⚠️ Stock Limit Reached",
-        text: `${item.product.name} (${this.selectedVariant.sku}) is ${stock === 0 ? "currently out of stock." : "out of stock."
-          }`,
-        icon: stock === 0 ? "error" : "warning",
-        toast: true,
-        position: "top",
-        showConfirmButton: false,
-        timer: 2500,
-        background: stock === 0 ? "#ffe6e6" : "#e8d7c3",
-        color: "#333",
-        customClass: { popup: "custom-toast-popup" },
-      });
-      return;
-    }
-
-    // Add the selected quantity (not just 1)
-const fallbackImage =
-  this.selectedVariant.imgPath?.trim() ||
-  item.product.productImages?.find(img => img.mainImageStatus)?.imgPath?.trim() ||
-  "assets/images/default.jpg";
-
-    for (let i = 0; i < this.quantity; i++) {
-      this.cartService.addToCart({
-        id: item.product.id!,
-        name: item.product.name,
-        variantId: this.selectedVariant.id!,
-        variantSku: this.selectedVariant.sku,  
-        stock: this.selectedVariant.stock,
-        price: this.selectedVariant.price,
-        image: fallbackImage,
-      });
-    }
-
-
-    this.refreshCart();
-
-    Swal.fire({
-      title: "🛒 Added to Cart!",
-      text: `${this.quantity} x ${item.product.name} (${this.selectedVariant.sku}) added successfully.`,
-      icon: "success",
-      toast: true,
-      position: "top",
-      showConfirmButton: false,
-      timer: 1500,
-      background: "#f0fff0",
-      color: "#333",
-      customClass: { popup: "custom-toast-popup" },
-    });
-
-    this.quantity = 1;
-  }
-      
-  incrementQuantity(): void {
-    const maxAllowed = this.getCurrentVariantRemainingStock();
-    if (this.quantity < maxAllowed) {
-      this.quantity++;
-    }
-  }
-
-  decrementQuantity(): void {
-    if (this.quantity > 1) {
-      this.quantity--;
-    }
-  }
-
-  getCartQuantity(productId: number): number {
-    const entry = this.cartItems.find(i => i.productId === productId);
-    return entry ? entry.quantity : 0;
-  }
-
-  // --- Review Methods ---
-  onReviewSortChange(sort: string): void {
-    this.reviewSort = sort;
-    this.loadReviews();
-  }
-
-  onReviewFilterChange(rating?: number): void {
-    this.reviewFilterRating = rating;
-    this.loadReviews();
-  }
-
-  onReviewPageChange(page: number): void {
-    this.reviewPage = page;
-    this.loadReviews();
   }
 
   // --- For template: Math functions ---
   getRounded(value: number): number {
     return Math.round(value);
   }
+
 
   getPages(): number[] {
     return Array(Math.ceil(this.reviewTotal / this.reviewPageSize)).fill(0).map((x, i) => i + 1);
@@ -786,5 +1190,21 @@ const fallbackImage =
       }
     });
   }
+
+  onReviewSortChange(sort: string): void {
+    this.reviewSort = sort;
+    this.loadReviews();
+  }
+
+  onReviewFilterChange(rating?: number): void {
+    this.reviewFilterRating = rating;
+    this.loadReviews();
+  }
+
+  onReviewPageChange(page: number): void {
+    this.reviewPage = page;
+    this.loadReviews();
+  }
+
 
 }

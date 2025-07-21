@@ -2,9 +2,10 @@ import { Component, type OnInit } from "@angular/core"
 import type { GroupEA_G, Rule, DiscountConditionGroupEA_C } from "@app/core/models/discount"
 import { User } from "@app/core/models/User"
 import { DiscountService } from "@app/core/services/discount.service"
-import { BehaviorSubject, type Observable, combineLatest, map } from "rxjs"
+import { BehaviorSubject, type Observable, combineLatest, map, of } from "rxjs"
 import { Operator } from "@app/core/models/discount";
 import { Console } from "node:console"
+import { AdminAccountService } from "@app/core/services/admin-account.service"
 
 @Component({
   standalone: false,
@@ -13,67 +14,17 @@ import { Console } from "node:console"
   styleUrl: "./create-discount-group.component.css",
 })
 export class CreateDiscountGroupComponent implements OnInit {
-  // Users mock data (for UI only)
-  private usersSubject = new BehaviorSubject<User[]>([
-    // ... your user mock data ...
-    {
-            id: 1,
-            name: "John Doe",
-            email: "john.doe@example.com",
-            phone: "+1234567890",
-            role: "Admin",
-            isVerified: true,
-           
-            createdDate: "2024-01-15",
-            groupIds: [1, 2],
-          },
-          {
-            id: 2,
-            name: "Jane Smith",
-            email: "jane.smith@example.com",
-            phone: "+1234567891",
-            role: "Customer",
-            isVerified: true,
-         
-            createdDate: "2024-01-20",
-            groupIds: [1],
-          },
-          {
-            id: 3,
-            name: "Bob Johnson",
-            email: "bob.johnson@example.com",
-            phone: "+1234567892",
-            role: "Customer",
-            isVerified: false,
-           
-            createdDate: "2024-01-25",
-            groupIds: [2, 3],
-          },
-          {
-            id: 4,
-            name: "Alice Brown",
-            email: "alice.brown@example.com",
-            phone: "+1234567893",
-            role: "Moderator",
-            isVerified: true,
-         
-            createdDate: "2024-02-01",
-            groupIds: [1, 3, 4],
-          },
-          {
-            id: 5,
-            name: "Charlie Wilson",
-            email: "charlie.wilson@example.com",
-            phone: "+1234567894",
-            role: "Customer",
-            isVerified: true,
-           
-            createdDate: "2024-02-05",
-            groupIds: [2, 4, 5],
-          },
-  ]);
-  users$: Observable<User[]>;
-  filteredUsers$: Observable<User[]>;
+
+  // users$: Observable<User[]>;
+  // filteredUsers$: Observable<User[]>;
+
+  // users$: Observable<User[]>;
+  // filteredUsers$: Observable<User[]>;
+
+  users$!: Observable<User[]>;
+  filteredUsers$!: Observable<User[]>;
+
+  private allUsers: User[] = []; // Local storage
 
   // Component state
   searchTerm = ""
@@ -94,19 +45,35 @@ export class CreateDiscountGroupComponent implements OnInit {
   isRuleBuilderOpen = false;
   editingConditionIndex: number | null = null;
 
-  constructor(private discountService: DiscountService) {
-    this.users$ = this.usersSubject.asObservable();
-    this.filteredUsers$ = this.users$;
+  constructor(
+    private discountService: DiscountService,
+    private accountService: AdminAccountService
+  ) {
+    // this.users$ = this.usersSubject.asObservable();
+    // this.filteredUsers$ = this.users$;
   }
 
   ngOnInit(): void {
     this.setupFilteredData();
     this.loadGroups();
+    this.loadUsers();
   }
 
   loadGroups() {
     this.discountService.getAllGroups().subscribe(groups => {
       this.groups = groups;
+    });
+  }
+
+  loadUsers(): void {
+    this.accountService.getAllCustomers().subscribe({
+      next: (users) => {
+        this.allUsers = users;
+        this.setupFilteredData();
+      },
+      error: (err) => {
+        console.error("Failed to load users:", err);
+      }
     });
   }
 
@@ -158,17 +125,32 @@ export class CreateDiscountGroupComponent implements OnInit {
 
   // --- Filtering Logic ---
   private setupFilteredData(): void {
-    this.filteredUsers$ = this.users$.pipe(
-      map(users => users.filter(user => {
-        const matchesSearch =
-          user.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-          user.email.toLowerCase().includes(this.searchTerm.toLowerCase());
-        const matchesGroup =
-          this.selectedGroup === "all" || user.groupIds!.includes(Number.parseInt(this.selectedGroup));
-        return matchesSearch && matchesGroup;
-      }))
+    this.filteredUsers$ = of(this.allUsers as User[]).pipe(
+      map((users: User[]) =>
+        users.filter(user => {
+          const matchesSearch =
+            user.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+            user.email.toLowerCase().includes(this.searchTerm.toLowerCase());
+          const matchesGroup =
+            this.selectedGroup === "all" || user.groupIds!.includes(Number.parseInt(this.selectedGroup));
+          return matchesSearch && matchesGroup;
+        })
+      )
     );
   }
+
+  // private setupFilteredData(): void {
+  //   this.filteredUsers$ = this.allUsers.pipe(
+  //     map((users) => users.filter(user => {
+  //       const matchesSearch =
+  //         user.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+  //         user.email.toLowerCase().includes(this.searchTerm.toLowerCase());
+  //       const matchesGroup =
+  //         this.selectedGroup === "all" || user.groupIds!.includes(Number.parseInt(this.selectedGroup));
+  //       return matchesSearch && matchesGroup;
+  //     }))
+  //   );
+  // }
 
   get filteredGroups(): GroupEA_G[] {
     if (!this.groupSearchTerm.trim()) return this.groups;
@@ -188,7 +170,8 @@ export class CreateDiscountGroupComponent implements OnInit {
   }
 
   getUserGroups(user: User, groups: GroupEA_G[]): GroupEA_G[] {
-    return groups.filter((group) => user.groupIds!.includes(group.id));
+    const ids = user.groupIds || [];
+    return groups.filter((group) => ids.includes(group.id));
   }
 
   // --- Group management methods ---
@@ -212,13 +195,13 @@ export class CreateDiscountGroupComponent implements OnInit {
 
   // --- Condition popup methods ---
   openConditionPopup(group: GroupEA_G): void {
-   
+
     this.conditionGroup = group;
     this.isConditionPopupOpen = true;
     this.conditionPopupTab = 'add';
     // Initialize tempConditionGroups from group.discountConditionGroups or empty array
     this.tempConditionGroups = group.discountConditionGroups ? [...group.discountConditionGroups] : [];
-   
+
   }
 
   closeConditionPopup(): void {
@@ -239,22 +222,22 @@ export class CreateDiscountGroupComponent implements OnInit {
   }
 
   editCondition(index: number): void {
-   
+
     this.isRuleBuilderOpen = true;
     this.isConditionPopupOpen = false;
     this.editingConditionIndex = index;
   }
 
   closeRuleBuilder(): void {
-   
+
     this.isRuleBuilderOpen = false;
     this.isConditionPopupOpen = true;
     this.editingConditionIndex = null;
   }
 
   onRuleBuilderSave(data: { logicType: string; rules: Rule[] }): void {
-  
-    
+
+
     // Map rules to DiscountConditionEA_D[]
     const discountConditionGroup: DiscountConditionGroupEA_C = {
       logicOperator: data.logicType,
@@ -269,14 +252,14 @@ export class CreateDiscountGroupComponent implements OnInit {
     if (this.editingConditionIndex !== null) {
       // Edit existing condition
       this.tempConditionGroups[this.editingConditionIndex] = discountConditionGroup;
-     
-      
+
+
     } else {
       // Add new condition
       this.tempConditionGroups.push(discountConditionGroup);
-     
+
     }
-    
+
     this.closeRuleBuilder();
   }
 
@@ -304,56 +287,56 @@ export class CreateDiscountGroupComponent implements OnInit {
   }
 
 
-  
+
   removeCondition(index: number): void {
     this.tempConditionGroups.splice(index, 1);
   }
 
 
 
-// Add to component state
-viewConditionGroups: DiscountConditionGroupEA_C[] = [];
+  // Add to component state
+  viewConditionGroups: DiscountConditionGroupEA_C[] = [];
 
-// When opening View Condition tab
-loadViewConditions() {
-  if (this.conditionGroup?.id) {
-    this.discountService.getGroupConditions(this.conditionGroup.id).subscribe(data => {
-      this.viewConditionGroups = data;
-    });
+  // When opening View Condition tab
+  loadViewConditions() {
+    if (this.conditionGroup?.id) {
+      this.discountService.getGroupConditions(this.conditionGroup.id).subscribe(data => {
+        this.viewConditionGroups = data;
+      });
+    }
   }
-}
 
-// Delete handler
-deleteConditionGroup(conditionGroupId: number) {
-  if (confirm('Are you sure you want to delete this condition group?')) {
-    this.discountService.deleteConditionGroup(conditionGroupId).subscribe(() => {
+  // Delete handler
+  deleteConditionGroup(conditionGroupId: number) {
+    if (confirm('Are you sure you want to delete this condition group?')) {
+      this.discountService.deleteConditionGroup(conditionGroupId).subscribe(() => {
+        this.loadViewConditions();
+      });
+    }
+  }
+  // When switching to View Condition tab
+  onTabChange(tab: 'add' | 'view') {
+    this.conditionPopupTab = tab;
+    if (tab === 'view') {
       this.loadViewConditions();
-    });
+    }
   }
-}
-// When switching to View Condition tab
-onTabChange(tab: 'add' | 'view') {
-  this.conditionPopupTab = tab;
-  if (tab === 'view') {
-    this.loadViewConditions();
-  }
-}
 
 
 
   // --- Condition builder methods (legacy - keeping for compatibility) ---
   openConditionBuilder(group: GroupEA_G): void {
-   
+
     this.conditionGroup = group;
     this.isConditionBuilderOpen = true;
-   
+
   }
 
   closeConditionBuilder(): void {
     this.isConditionBuilderOpen = false;
     this.conditionGroup = null;
   }
-  
+
   private mapOperator(operator: string): Operator {
     switch (operator) {
       case 'equals': return Operator.EQUAL;
@@ -365,7 +348,7 @@ onTabChange(tab: 'add' | 'view') {
       default: return Operator.EQUAL;
     }
   }
-  
+
   onConditionsSaved(data: { logicType: string; rules: Rule[] }): void {
     if (this.conditionGroup) {
       // Map rules to DiscountConditionEA_D[]
@@ -399,7 +382,7 @@ onTabChange(tab: 'add' | 'view') {
   get conditionRules(): Rule[] {
     const group = this.conditionGroup;
     const conds = group?.discountConditionGroups?.[0]?.discountCondition || [];
-   
+
     return conds.map((c: any) => ({
       id: c.id?.toString() || '',
       type: c.conditionType || '',
@@ -412,7 +395,7 @@ onTabChange(tab: 'add' | 'view') {
   getConditionRules(index: number): Rule[] {
     const condition = this.tempConditionGroups[index];
     if (!condition || !condition.discountCondition) return [];
-    
+
     return condition.discountCondition.map((c: any) => ({
       id: c.id?.toString() || '',
       type: c.conditionType || '',

@@ -1,0 +1,126 @@
+<!-- Removed .vlog-detail-container and outer loading/error messages as parent handles them -->
+<div class="vlog-detail">
+  <div class="video-section">
+    <div class="video-container">
+      <video *ngIf="videoUrl" [src]="videoUrl" controls class="video-player" loading="lazy"></video>
+      <div *ngIf="!videoUrl" class="no-video-placeholder">
+        <p>{{ errorMessage || 'No video available for this vlog.' }}</p>
+        <img src="/placeholder.svg?height=360&width=640" alt="No video available" class="no-video-image" />
+      </div>
+    </div>
+
+    <h2 class="video-title">{{ vlogFile?.title }}</h2>
+    <div class="video-stats">
+      <span class="published-date">Published: {{ vlogFile?.publishedDate }}</span>
+      <span *ngIf="vlogFile?.duration" class="duration">Duration: {{ vlogFile?.duration }}</span>
+    </div>
+
+    <div class="video-actions">
+      <button class="action-btn" (click)="likeVlog()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
+          <path d="M7 10v12"></path>
+          <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8.44a2 2 0 0 1-1.92 1.44H9.64a2 2 0 0 1-1.92-1.44L4.36 12.56A2 2 0 0 1 6.28 10h2.7"></path>
+        </svg>
+        Like
+      </button>
+      <button class="action-btn" (click)="shareVlog()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
+          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+          <polyline points="16 6 12 2 8 6"></polyline>
+          <line x1="12" x2="12" y1="2" y2="15"></line>
+        </svg>
+        Share
+      </button>
+      <button class="action-btn" (click)="commentVlog()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        Comment
+      </button>
+      <button class="action-btn subscribe-btn" (click)="subscribeChannel()">
+        Subscribe
+      </button>
+    </div>
+
+    <!-- Product Integration: "Buy this product" card -->
+    <div class="products-section" *ngIf="products.length > 0">
+      <div class="product-cta-content">
+        <img [src]="products[0].imageUrl" [alt]="products[0].name" class="product-image" />
+        <div class="product-cta-info">
+          <h4 class="product-name">{{ products[0].name }}</h4>
+          <p class="product-price">${{ products[0].price | number:'1.2-2' }}</p>
+        </div>
+      </div>
+      <a [href]="products[0].link" target="_blank" class="buy-btn">Buy Now</a>
+    </div>
+
+    <div class="description-section">
+      <h3>Description</h3>
+      <p>{{ vlogFile?.title || 'No description provided for this vlog.' }}</p>
+    </div>
+
+    <!-- User Engagement & Community: Comments Section -->
+    <div class="comments-section">
+      <h3>Comments</h3>
+      <div class="comment-form">
+        <textarea placeholder="Add a public comment..." class="comment-input"></textarea>
+        <button class="post-comment-btn">Post Comment</button>
+      </div>
+      <div class="comments-list">
+        <div class="comment-item">
+          <div class="comment-avatar">U</div>
+          <div class="comment-content">
+            <div class="comment-header"><span class="comment-author">User123</span><span class="comment-date">July 20, 2025</span></div>
+            <p class="comment-text">Great vlog! Very informative.</p>
+          </div>
+        </div>
+        <div class="comment-item">
+          <div class="comment-avatar">V</div>
+          <div class="comment-content">
+            <div class="comment-header"><span class="comment-author">VlogFan</span><span class="comment-date">July 20, 2025</span></div>
+            <p class="comment-text">Loved the tips, definitely trying this out!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Generated Content (UGC) Highlight -->
+    <div class="ugc-section" *ngIf="customerReviews.length > 0">
+      <h3>Customer Highlights</h3>
+      <div class="ugc-grid">
+        <div *ngFor="let review of customerReviews" class="ugc-card">
+          <div class="ugc-header">
+            <div class="ugc-avatar"></div>
+            <span class="ugc-author">{{ review.author }}</span>
+          </div>
+          <p class="ugc-comment">{{ review.comment }}</p>
+          <div *ngIf="review.videoUrl" class="ugc-video-preview">
+            <img [src]="review.videoUrl" alt="Customer review video" class="ugc-video-thumbnail" />
+            <div class="play-overlay-small">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="play-icon-small">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Related Content Section (Sidebar) -->
+  <div class="sidebar-section">
+    <h2>You might also like</h2>
+    <div class="related-vlogs-list">
+      <a *ngFor="let relatedVlog of relatedVlogs" class="related-vlog-card" href="#">
+        <div class="related-thumbnail-container">
+          <img [src]="relatedVlog.filePath" [alt]="relatedVlog.title || 'Related Vlog Thumbnail'" class="related-thumbnail-image" loading="lazy" />
+          <span *ngIf="relatedVlog.duration" class="related-duration-tag">{{ relatedVlog.duration }}</span>
+        </div>
+        <div class="related-vlog-info">
+          <h4 class="related-vlog-title">{{ relatedVlog.title }}</h4>
+          <p class="related-vlog-description">{{ relatedVlog.title }}</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>

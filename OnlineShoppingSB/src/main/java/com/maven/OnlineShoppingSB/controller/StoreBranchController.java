@@ -37,4 +37,14 @@ public class StoreBranchController {
     public void delete(@PathVariable Integer id) {
         service.deleteById(id);
     }
+
+    @PutMapping("/set-in-use/{id}")
+    public void setStoreInUse(@PathVariable Integer id) {
+        service.setStoreInUse(id);
+    }
+
+    @GetMapping("/active")
+    public StoreBranchDto getActiveStore() {
+        return service.getActiveStore();
+    }
 }

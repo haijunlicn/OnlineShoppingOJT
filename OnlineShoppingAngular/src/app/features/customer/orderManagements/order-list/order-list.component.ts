@@ -4,6 +4,8 @@ import { Subscription } from 'rxjs';
 import { OrderService } from '../../../../core/services/order.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { OrderDetail, OrderItemDetail } from '@app/core/models/order.dto';
+import { PdfExportService } from '@app/core/services/pdf-export.service';
+import { ExcelExportService } from '@app/core/services/excel-export.service';
 @Component({
   selector: "app-order-list",
   standalone: false,
@@ -62,6 +64,8 @@ export class OrderListComponent implements OnInit, OnDestroy {
     private router: Router,
     private orderService: OrderService,
     private authService: AuthService,
+    private pdfExportService: PdfExportService,
+    private excelExportService: ExcelExportService
   ) {}
 
   @HostListener("document:click", ["$event"])
@@ -499,5 +503,39 @@ export class OrderListComponent implements OnInit, OnDestroy {
       return "payment-credit"
     }
     return "payment-default"
+  }
+
+  exportTableToPdf() {
+    const columns = [
+      { header: 'Order #', field: 'trackingNumber', width: 30 },
+      { header: 'Date', field: 'createdDate', width: 30 },
+      { header: 'Status', field: 'currentOrderStatus', width: 25 },
+      { header: 'Total (MMK)', field: 'totalAmount', width: 25 }
+      // Add more columns as needed
+    ];
+    const filename = `MyOrders_${new Date().toISOString().slice(0,10)}.pdf`;
+    this.pdfExportService.exportTableToPdf(
+      this.filteredOrders,
+      columns,
+      filename,
+      'My Orders'
+    );
+  }
+
+  async exportTableToExcel() {
+    const columns = [
+      { header: 'Order #', field: 'trackingNumber', width: 30 },
+      { header: 'Date', field: 'createdDate', width: 30 },
+      { header: 'Status', field: 'currentOrderStatus', width: 25 },
+      { header: 'Total (MMK)', field: 'totalAmount', width: 25 }
+      // Add more columns as needed
+    ];
+    const filename = `MyOrders_${new Date().toISOString().slice(0,10)}.xlsx`;
+    await this.excelExportService.exportToExcel(
+      this.filteredOrders,
+      columns,
+      filename,
+      'My Orders'
+    );
   }
 }

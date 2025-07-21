@@ -1,0 +1,193 @@
+<div *ngIf="shouldShow()" class="sticky-discount-progress">
+    <!-- Desktop Sticky Bar -->
+    <div class="discount-progress-sticky-bar d-none d-lg-block">
+        <div class="bar-content">
+            <div class="progress-info">
+                <i class="pi pi-bolt text-warning me-2"></i>
+                <div class="progress-details">
+                    <div class="discount-label">{{ formatDiscountLabel(activeDiscount!.discount) }}</div>
+                    <div class="condition-summary">{{ activeDiscount!.shortConditionText }}</div>
+                </div>
+            </div>
+
+            <div class="bar-actions">
+                <button class="btn btn-sm btn-outline-info me-2" (click)="toggleDetailedConditions()"
+                    title="View detailed conditions">
+                    <i class="pi pi-info-circle me-1"></i>
+                    Details
+                </button>
+                <button *ngIf="!isCompleted" class="btn btn-sm btn-outline-primary me-2" (click)="onAddMoreItems()">
+                    <i class="pi pi-shopping-cart me-1"></i>
+                    Add More
+                </button>
+            </div>
+        </div>
+
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" [style.width.%]="progressPercentage" [class.completed]="isCompleted">
+            </div>
+        </div>
+
+        <!-- Multiple Discounts Indicator -->
+        <div class="multiple-discounts-indicator" *ngIf="discountProgresses.length > 1">
+            <div class="discount-tabs">
+                <button *ngFor="let progress of discountProgresses; let i = index" class="discount-tab"
+                    [class.active]="progress.isClosest" [class.completed]="progress.isUnlocked"
+                    (click)="selectDiscount(i)" [title]="formatDiscountLabel(progress.discount)">
+                    <span class="tab-label">{{ formatDiscountLabel(progress.discount) }}</span>
+                    <div class="tab-progress" [style.width.%]="progress.percentage"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tablet Sticky Bar -->
+    <div class="discount-progress-sticky-bar d-none d-md-block d-lg-none">
+        <div class="bar-content">
+            <div class="progress-info">
+                <i class="pi pi-bolt text-warning me-2"></i>
+                <div class="progress-text">{{ progressText }}</div>
+            </div>
+            <div class="bar-actions">
+                <button class="btn btn-sm btn-outline-info me-2" (click)="toggleDetailedConditions()">
+                    <i class="pi pi-info-circle"></i>
+                </button>
+            </div>
+        </div>
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" [style.width.%]="progressPercentage" [class.completed]="isCompleted"></div>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Sticky Bar -->
+    <div class="discount-progress-bottom-bar d-md-none" *ngIf="showOnMobile">
+        <div class="mobile-progress-content">
+            <div class="mobile-progress-text">
+                <i class="pi pi-bolt text-warning me-1"></i>
+                <span>{{ shortProgressText }}</span>
+            </div>
+            <button class="btn btn-sm btn-outline-info mobile-details-btn" (click)="toggleDetailedConditions()">
+                <i class="pi pi-info-circle"></i>
+            </button>
+        </div>
+        <div class="mobile-progress-bar">
+            <div class="mobile-progress-fill" [style.width.%]="progressPercentage" [class.completed]="isCompleted">
+            </div>
+        </div>
+
+        <!-- Mobile Discount Tabs -->
+        <div class="mobile-discount-tabs" *ngIf="discountProgresses.length > 1">
+            <div class="mobile-tabs-scroll">
+                <button *ngFor="let progress of discountProgresses; let i = index" class="mobile-discount-tab"
+                    [class.active]="progress.isClosest" [class.completed]="progress.isUnlocked"
+                    (click)="selectDiscount(i)">
+                    <div class="mobile-tab-label">{{ formatDiscountLabel(progress.discount) }}</div>
+                    <div class="mobile-tab-progress" [style.width.%]="progress.percentage"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Conditions Modal/Drawer -->
+    <div class="conditions-overlay" *ngIf="showDetailedConditions" (click)="toggleDetailedConditions()">
+        <div class="conditions-modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="pi pi-list-check me-2"></i>
+                    Discount Conditions
+                </h5>
+                <button class="btn btn-sm btn-light" (click)="toggleDetailedConditions()">
+                    <i class="pi pi-times"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Discount Selector -->
+                <div class="discount-selector" *ngIf="discountProgresses.length > 1">
+                    <label class="form-label">Select Discount:</label>
+                    <select class="form-select" [(ngModel)]="selectedDiscountIndex">
+                        <option *ngFor="let progress of discountProgresses; let i = index" [value]="i">
+                            {{ formatDiscountLabel(progress.discount) }}
+                            <span *ngIf="progress.isUnlocked">(Unlocked)</span>
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Selected Discount Details -->
+                <div class="discount-details" *ngIf="discountProgresses[selectedDiscountIndex]">
+                    <div class="discount-header">
+                        <h6 class="discount-name">
+                            {{ formatDiscountLabel(discountProgresses[selectedDiscountIndex].discount) }}
+                            <span class="badge ms-2"
+                                [class.bg-success]="discountProgresses[selectedDiscountIndex].isUnlocked"
+                                [class.bg-warning]="!discountProgresses[selectedDiscountIndex].isUnlocked">
+                                {{ discountProgresses[selectedDiscountIndex].isUnlocked ? 'Unlocked' : 'Locked' }}
+                            </span>
+                        </h6>
+                        <div class="progress-summary">
+                            <div class="progress mb-2">
+                                <div class="progress-bar"
+                                    [style.width.%]="discountProgresses[selectedDiscountIndex].percentage"
+                                    [class.bg-success]="discountProgresses[selectedDiscountIndex].isUnlocked">
+                                </div>
+                            </div>
+                            <small class="text-muted">
+                                {{ discountProgresses[selectedDiscountIndex].current }} /
+                                {{ discountProgresses[selectedDiscountIndex].required }}
+                                ({{ discountProgresses[selectedDiscountIndex].percentage.toFixed(1) }}%)
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Condition Groups -->
+                    <div class="condition-groups">
+                        <div *ngFor="let group of discountProgresses[selectedDiscountIndex].conditionGroups; let groupIndex = index"
+                            class="condition-group">
+                            <div class="group-header">
+                                <span class="group-logic" [class.logic-and]="group.logicOperator"
+                                    [class.logic-or]="!group.logicOperator">
+                                    <i class="pi" [ngClass]="group.logicOperator ? 'pi-check-circle' : 'pi-circle'"></i>
+                                    {{ group.logicOperator ? 'ALL' : 'ANY' }} of the following:
+                                </span>
+                                <span class="group-status" [class.text-success]="group.isFulfilled"
+                                    [class.text-danger]="!group.isFulfilled">
+                                    {{ group.isFulfilled ? '✅ Fulfilled' : '❌ Not fulfilled' }}
+                                </span>
+                            </div>
+
+                            <div class="conditions-list">
+                                <div *ngFor="let condition of group.conditions" class="condition-item"
+                                    [class.fulfilled]="condition.isFulfilled"
+                                    [class.not-fulfilled]="!condition.isFulfilled">
+                                    <div class="condition-icon">
+                                        <i class="pi" [ngClass]="condition.icon"></i>
+                                    </div>
+                                    <div class="condition-content">
+                                        <div class="condition-text">{{ condition.displayText }}</div>
+                                        <div class="condition-status" *ngIf="condition.currentValue !== undefined">
+                                            <small class="text-muted">
+                                                Current: {{ condition.currentValue }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="condition-status-icon">
+                                        <i class="pi"
+                                            [ngClass]="condition.isFulfilled ? 'pi-check-circle text-success' : 'pi-times-circle text-danger'">
+                                        </i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-primary" (click)="onAddMoreItems(); toggleDetailedConditions()">
+                    <i class="pi pi-shopping-cart me-1"></i>
+                    Continue Shopping
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

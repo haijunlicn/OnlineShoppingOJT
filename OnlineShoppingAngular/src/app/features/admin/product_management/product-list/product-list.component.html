@@ -1,8 +1,5 @@
 <!-- Clean Navigation Bar -->
-
-
 <div class="container-fluid">
-
 
     <div class="navigation-bar mb-3">
         <div class="nav-left">
@@ -31,30 +28,26 @@
                             <i class="bi bi-funnel"></i>
                             {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
                         </button>
-                        <div class="dropdown">
-                            <button pButton type="button" class="p-button p-button-info dropdown-toggle"
-                                data-bs-toggle="dropdown" aria-expanded="false" icon="pi pi-download" label="Export">
+                        <div class="dropdown d-inline-block ms-2">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-download me-1"></i> Export
                             </button>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu shadow">
                                 <li>
-                                    <a class="dropdown-item" href="javascript:void(0)"
-                                        (click)="exportProfessionalPdf()">
-                                        <i class="pi pi-file-pdf me-2"></i>Professional PDF
-                                        <span *ngIf="isExportingLayoutPdf" class="ms-2">
-                                            <i class="pi pi-spin pi-spinner"></i>
-                                        </span>
+                                    <a class="dropdown-item d-flex align-items-center" href="javascript:void(0)"
+                                        (click)="exportTableToPdf()">
+                                        <i class="bi bi-file-earmark-pdf text-danger me-2"></i> Export PDF
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="javascript:void(0)" (click)="exportToExcel()">
-                                        <i class="pi pi-file-excel me-2"></i>Excel
-                                        <span *ngIf="isExportingExcel" class="ms-2">
-                                            <i class="pi pi-spin pi-spinner"></i>
-                                        </span>
+                                    <a class="dropdown-item d-flex align-items-center" href="javascript:void(0)"
+                                        (click)="exportTableToExcel()">
+                                        <i class="bi bi-file-earmark-excel text-success me-2"></i> Export Excel
                                     </a>
                                 </li>
                             </ul>
-                        </div>F
+                        </div>
                         <button *ngIf="canCreateProduct" class="btn btn-success" routerLink="/admin/productCreate">
                             <i class="bi bi-plus-circle"></i>
                             Add Product
@@ -66,414 +59,450 @@
                         </button>
                     </div>
                 </div>
-                <!-- <h1 class="nav-title">Product Management</h1>
-                <p class="nav-subtitle">Manage your product inventory and details</p> -->
             </div>
         </div>
     </div>
 
-    <!-- Page Header -->
-    <div class="page-header">
-        <!-- <div class="nav-left">
-            <div class="nav-info">
-                <nav aria-label="breadcrumb" class="mb-1">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item">
-                            <i class="fas fa-home me-1"></i>
-                            <a href="/admin/dashboard" class="text-decoration-none">Dashboard</a>
-                        </li>
-                        <li class="breadcrumb-item">
-                            <i class="fas fa-box me-1"></i>
-                            Product Management
-                        </li>
-                        <li class="breadcrumb-item active" aria-current="page">Product List</li>
-                    </ol>
-                </nav>
-                <h1 class="nav-title">Product Management</h1>
-                <p class="nav-subtitle">Manage your product inventory and details</p>
-            </div>
+  <div class="nav-right">
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <button class="btn btn-outline-secondary btn-sm" (click)="refreshData()" [disabled]="isLoading">
+        <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+      </button>
+      <button class="btn btn-outline-danger btn-sm" (click)="exportProfessionalPdf()" [disabled]="isExportingLayoutPdf">
+        <i class="bi bi-file-earmark-pdf me-1"></i>Export PDF
+        <span *ngIf="isExportingLayoutPdf" class="ms-2">
+          <i class="pi pi-spin pi-spinner"></i>
+        </span>
+      </button>
+      <button class="btn btn-outline-success btn-sm" (click)="exportToExcel()" [disabled]="isExportingExcel">
+        <i class="bi bi-file-earmark-excel me-1"></i>Export Excel
+        <span *ngIf="isExportingExcel" class="ms-2">
+          <i class="pi pi-spin pi-spinner"></i>
+        </span>
+      </button>
+      <button *ngIf="canCreateProduct" class="btn btn-primary" routerLink="/admin/productCreate">
+        <i class="bi bi-plus-circle"></i>
+        Add Product
+      </button>
+      <button *ngIf="canBulkUploadProducts" class="btn btn-primary" (click)="bulkUpload()">
+        <i class="fas fa-upload me-1"></i>Bulk Upload
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="container-fluid">
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="fas fa-exclamation-triangle me-2"></i>{{ errorMessage }}
+    <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+  </div>
+
+  <!-- Filter Controls Card -->
+  <div class="filter-section mb-3" *ngIf="showFilters">
+    <div class="card">
+      <div class="card-header">
+        <div class="d-flex align-items-center justify-content-between">
+          <h6 class="card-title mb-0">
+            <i class="fas fa-filter me-2"></i>Filters & Search
+          </h6>
+          <button
+            type="button"
+            class="btn btn-link btn-sm text-muted p-0"
+            (click)="onReset()"
+            *ngIf="
+              filterParams.brand ||
+              filterParams.category ||
+              filterParams.status ||
+              filterParams.priceMin ||
+              filterParams.priceMax ||
+              filterParams.search.trim()
+            "
+          >
+            <i class="fas fa-times me-1"></i>Clear All
+          </button>
         </div>
-        <div class="header-content">
-            <div class="header-info">
-                <h2 class="page-title">Products Management</h2>
-                <p class="page-subtitle">Manage your product inventory and details</p>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <!-- Search -->
+          <div class="col-12 col-lg-3">
+            <label for="searchInput" class="form-label">Search</label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="fas fa-search text-muted"></i>
+              </span>
+              <input
+                id="searchInput"
+                type="text"
+                class="form-control"
+                [(ngModel)]="filterParams.search"
+                (input)="onSearchChange()"
+                placeholder="Search by name, brand, category..."
+              />
             </div>
-            <div class="header-actions">
-                <button class="btn btn-outline-primary btn-filter" (click)="toggleFilters()">
-                    <i class="bi bi-funnel"></i>
-                    {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
-                </button>
-                <div class="dropdown">
-                    <button pButton type="button" class="p-button p-button-info dropdown-toggle"
-                        data-bs-toggle="dropdown" aria-expanded="false" icon="pi pi-download" label="Export">
+          </div>
+          <!-- Brand Filter -->
+          <div class="col-6 col-lg-2">
+            <label for="brandFilter" class="form-label">Brand</label>
+            <select id="brandFilter" class="form-select" [(ngModel)]="filterParams.brand" (change)="onBrandChange()">
+              <option value="all">All Brands</option>
+              <option *ngFor="let brand of brands" [value]="brand.id">{{ brand.name }}</option>
+            </select>
+          </div>
+          <!-- Category Filter -->
+          <div class="col-6 col-lg-2">
+            <label for="categoryFilter" class="form-label">Category</label>
+            <select
+              id="categoryFilter"
+              class="form-select"
+              [(ngModel)]="filterParams.category"
+              (change)="onCategoryChange()"
+            >
+              <option value="all">All Categories</option>
+              <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+            </select>
+          </div>
+          <!-- Status Filter -->
+          <div class="col-6 col-lg-2">
+            <label for="statusFilter" class="form-label">Status</label>
+            <select
+              id="statusFilter"
+              class="form-select"
+              [(ngModel)]="filterParams.status"
+              (change)="onStatusChange()"
+            >
+              <option value="all">All Status</option>
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+              <option value="OUT_OF_STOCK">Out of Stock</option>
+              <option value="LOW_STOCK">Low Stock</option>
+            </select>
+          </div>
+          <!-- Price Range -->
+          <div class="col-6 col-lg-1">
+            <label for="priceMin" class="form-label">Min Price</label>
+            <input
+              id="priceMin"
+              type="number"
+              class="form-control"
+              [(ngModel)]="filterParams.priceMin"
+              (change)="onPriceChange()"
+              placeholder="0"
+            />
+          </div>
+          <div class="col-6 col-lg-1">
+            <label for="priceMax" class="form-label">Max Price</label>
+            <input
+              id="priceMax"
+              type="number"
+              class="form-control"
+              [(ngModel)]="filterParams.priceMax"
+              (change)="onPriceChange()"
+              placeholder="Max"
+            />
+          </div>
+          <!-- Items per page -->
+          <div class="col-6 col-lg-1">
+            <label for="itemsPerPage" class="form-label">Show</label>
+            <select
+              id="itemsPerPage"
+              class="form-select"
+              [(ngModel)]="itemsPerPage"
+              (change)="onItemsPerPageChange()"
+            >
+              <option *ngFor="let option of getItemsPerPageOptions()" [value]="option">{{ option }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Table Card -->
+  <div class="data-section">
+    <div class="card">
+      <div class="card-header">
+        <div class="row align-items-center">
+          <div class="col">
+            <h6 class="card-title mb-1">
+              <i class="fas fa-box me-2"></i>Product List
+            </h6>
+            <small class="text-muted">
+              Showing {{ Math.min((currentPage - 1) * itemsPerPage + 1, totalItems) }} to
+              {{ Math.min(currentPage * itemsPerPage, totalItems) }} of {{ totalItems }} entries
+              <span *ngIf="filteredProducts.length !== products.length">
+                (filtered from {{ products.length }} total)
+              </span>
+            </small>
+          </div>
+          <div class="col-auto" *ngIf="!isLoading && totalPages > 1">
+            <small class="text-muted"> Page {{ currentPage }} of {{ totalPages }} </small>
+          </div>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="loading-state">
+          <div class="d-flex flex-column align-items-center justify-content-center py-5">
+            <div class="spinner-border text-primary mb-3" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="text-muted mb-0">Loading products...</p>
+          </div>
+        </div>
+
+        <!-- Data Table -->
+        <div *ngIf="!isLoading && paginatedProducts.length > 0" class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="sortable" (click)="sort('image')">
+                  <div class="d-flex align-items-center justify-content-center">
+                    <span>Image</span>
+                  </div>
+                </th>
+                <th class="sortable" (click)="sort('name')">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <span>Product Name</span>
+                    <i class="fas ms-1" [class]="getSortIcon('name')"></i>
+                  </div>
+                </th>
+                <th class="sortable d-none d-md-table-cell" (click)="sort('brand')">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <span>Brand / Category</span>
+                    <i class="fas ms-1" [class]="getSortIcon('brand')"></i>
+                  </div>
+                </th>
+                <th class="sortable" (click)="sort('price')">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <span>Price</span>
+                    <i class="fas ms-1" [class]="getSortIcon('price')"></i>
+                  </div>
+                </th>
+                <th class="sortable" (click)="sort('status')">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <span>Stock Status</span>
+                    <i class="fas ms-1" [class]="getSortIcon('status')"></i>
+                  </div>
+                </th>
+                <th class="sortable d-none d-lg-table-cell" (click)="sort('createdAt')">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <span>Created Date</span>
+                    <i class="fas ms-1" [class]="getSortIcon('createdAt')"></i>
+                  </div>
+                </th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let product of paginatedProducts; trackBy: trackByProductId" class="table-row-hover">
+                <td class="text-center">
+                  <div class="product-image">
+                    <img
+                      [src]="getProductImage(product)"
+                      [alt]="product.product.name"
+                      class="product-img"
+                      loading="lazy"
+                    />
+                  </div>
+                </td>
+                <td>
+                  <div class="product-info">
+                    <div class="product-name">{{ product.product.name }}</div>
+                    <small class="text-muted d-block d-md-none">
+                      {{ product.brand.name || 'N/A' }} • {{ product.category.name || 'N/A' }}
+                    </small>
+                  </div>
+                </td>
+                <td class="d-none d-md-table-cell">
+                  <div class="brand-category-info">
+                    <div class="brand-name">
+                      <i class="fas fa-tag brand-icon me-1"></i>
+                      {{ product.brand.name || 'N/A' }}
+                    </div>
+                    <div class="category-name">
+                      <i class="fas fa-folder category-icon me-1"></i>
+                      {{ product.category.name || 'N/A' }}
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="price-info">
+                    <span class="price-amount">{{ product.product.basePrice | currency:'MMK ':'symbol':'1.0-0' }}</span>
+                    <small class="text-muted d-block" *ngIf="product.product.discountPrice">
+                      <del>{{ product.product.originalPrice | currency:'MMK ':'symbol' }}</del>
+                    </small>
+                  </div>
+                </td>
+                <td>
+                  <span [class]="getStatusBadgeClass(product.status || '')">
+                    <i class="fas me-1" [class]="getStatusIcon(product.status || '')"></i>
+                    {{ getStatusDisplayText(product.status || '') }}
+                  </span>
+                </td>
+                <td class="d-none d-lg-table-cell">
+                  <div class="date-info">
+                    <div class="text-dark">{{ product.product.createdDate | date:'MMM d, y' }}</div>
+                    <small class="text-muted">{{ product.product.createdDate | date:'h:mm a' }}</small>
+                  </div>
+                </td>
+                <td>
+                  <div class="btn-group" role="group">
+                    <button
+                      class="btn btn-outline-primary btn-sm"
+                      (click)="viewProduct(product.id.toString() || '')"
+                      title="View Details"
+                    >
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    <button
+                      class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                      title="More Actions"
+                    >
+                      <span class="visually-hidden">Toggle Dropdown</span>
                     </button>
                     <ul class="dropdown-menu">
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0)" (click)="exportProfessionalPdf()">
-                                <i class="pi pi-file-pdf me-2"></i>Professional PDF
-                                <span *ngIf="isExportingLayoutPdf" class="ms-2">
-                                    <i class="pi pi-spin pi-spinner"></i>
-                                </span>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="javascript:void(0)" (click)="exportToExcel()">
-                                <i class="pi pi-file-excel me-2"></i>Excel
-                                <span *ngIf="isExportingExcel" class="ms-2">
-                                    <i class="pi pi-spin pi-spinner"></i>
-                                </span>
-                            </a>
-                        </li>
+                      <li>
+                        <a class="dropdown-item" (click)="viewProduct(product.id.toString() || '')">
+                          <i class="bi bi-eye me-2"></i>View Details
+                        </a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item" (click)="editProduct(product.id.toString() || '')">
+                          <i class="bi bi-pencil me-2"></i>Edit Product
+                        </a>
+                      </li>
+                      <li>
+                        <hr class="dropdown-divider" />
+                      </li>
+                      <li>
+                        <a class="dropdown-item" (click)="duplicateProduct(product.id.toString() || '')">
+                          <i class="bi bi-copy me-2"></i>Duplicate
+                        </a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item text-danger" (click)="deleteProduct(product.id.toString() || '')">
+                          <i class="bi bi-trash me-2"></i>Delete
+                        </a>
+                      </li>
+                      <li>
+                        <hr class="dropdown-divider" />
+                      </li>
+                      <li>
+                        <a class="dropdown-item" (click)="exportSingleProductToPdf(product)">
+                          <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Export as PDF
+                        </a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item" (click)="exportSingleProductToExcel(product)">
+                          <i class="bi bi-file-earmark-excel me-2 text-success"></i>Export as Excel
+                        </a>
+                      </li>
                     </ul>
-                </div>F
-                <button *ngIf="canCreateProduct" class="btn btn-success" routerLink="/admin/productCreate">
-                    <i class="bi bi-plus-circle"></i>
-                    Add Product
-                </button>
-
-                <button *ngIf="canBulkUploadProducts" class="btn btn-sm nav-btn custom-upload-btn"
-                    (click)="bulkUpload()">
-                    <i class="fas fa-upload me-1"></i>Bulk Upload
-                </button>
-            </div>
-        </div> -->
-
-        <!-- Main Content -->
-        <div>
-            <!-- Error Message -->
-            <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-triangle me-2"></i>{{ errorMessage }}
-                <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
-            </div>
-
-            <!-- Filter Controls Card -->
-            <div class="filter-section mb-3">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <h6 class="card-title mb-0">
-                                <i class="fas fa-filter me-2"></i>Filters & Search
-                            </h6>
-                            <button type="button" class="btn btn-link btn-sm text-muted p-0" (click)="onReset()"
-                                *ngIf="filterParams.brand || filterParams.category || filterParams.status || filterParams.priceMin || filterParams.priceMax || filterParams.search.trim()">
-                                <i class="fas fa-times me-1"></i>Clear All
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <!-- Search -->
-                            <div class="col-12 col-lg-3">
-                                <label for="searchInput" class="form-label">Search</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-search text-muted"></i>
-                                    </span>
-                                    <input id="searchInput" type="text" class="form-control"
-                                        [(ngModel)]="filterParams.search" (input)="onSearchChange()"
-                                        placeholder="Search by name, brand, category...">
-                                </div>
-                            </div>
-                            <!-- Brand Filter -->
-                            <div class="col-6 col-lg-2">
-                                <label for="brandFilter" class="form-label">Brand</label>
-                                <select id="brandFilter" class="form-select" [(ngModel)]="filterParams.brand"
-                                    (change)="onBrandChange()">
-                                    <option value="">All Brands</option>
-                                    <option *ngFor="let brand of brands" [value]="brand.id">{{ brand.name }}</option>
-                                </select>
-                            </div>
-                            <!-- Category Filter -->
-                            <div class="col-6 col-lg-2">
-                                <label for="categoryFilter" class="form-label">Category</label>
-                                <select id="categoryFilter" class="form-select" [(ngModel)]="filterParams.category"
-                                    (change)="onCategoryChange()">
-                                    <option value="">All Categories</option>
-                                    <option *ngFor="let category of categories" [value]="category.id">{{ category.name
-                                        }}</option>
-                                </select>
-                            </div>
-                            <!-- Status Filter -->
-                            <div class="col-6 col-lg-2">
-                                <label for="statusFilter" class="form-label">Status</label>
-                                <select id="statusFilter" class="form-select" [(ngModel)]="filterParams.status"
-                                    (change)="onStatusChange()">
-                                    <option value="">All Status</option>
-                                    <option value="ACTIVE">Active</option>
-                                    <option value="INACTIVE">Inactive</option>
-                                    <option value="OUT_OF_STOCK">Out of Stock</option>
-                                    <option value="LOW_STOCK">Low Stock</option>
-                                </select>
-                            </div>
-                            <!-- Price Range -->
-                            <div class="col-6 col-lg-1">
-                                <label for="priceMin" class="form-label">Min Price</label>
-                                <input id="priceMin" type="number" class="form-control"
-                                    [(ngModel)]="filterParams.priceMin" (change)="onPriceChange()" placeholder="0">
-                            </div>
-                            <div class="col-6 col-lg-1">
-                                <label for="priceMax" class="form-label">Max Price</label>
-                                <input id="priceMax" type="number" class="form-control"
-                                    [(ngModel)]="filterParams.priceMax" (change)="onPriceChange()" placeholder="Max">
-                            </div>
-                            <!-- Items per page -->
-                            <div class="col-6 col-lg-1">
-                                <label for="itemsPerPage" class="form-label">Show</label>
-                                <select id="itemsPerPage" class="form-select" [(ngModel)]="itemsPerPage"
-                                    (change)="onItemsPerPageChange()">
-                                    <option *ngFor="let option of getItemsPerPageOptions()" [value]="option">{{ option
-                                        }}
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Data Table Card -->
-            <div class="data-section">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="row align-items-center">
-                            <div class="col">
-                                <h6 class="card-title mb-1">
-                                    <i class="fas fa-box me-2"></i>Product List
-                                </h6>
-                                <small class="text-muted">
-                                    Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
-                                    {{ Math.min(currentPage * itemsPerPage, totalItems) }} of {{ totalItems }} entries
-                                    <span *ngIf="filteredProducts.length !== products.length">
-                                        (filtered from {{ products.length }} total)
-                                    </span>
-                                </small>
-                            </div>
-                            <div class="col-auto" *ngIf="!isLoading && totalPages > 1">
-                                <small class="text-muted">
-                                    Page {{ currentPage }} of {{ totalPages }}
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body p-0">
-                        <!-- Loading State -->
-                        <div *ngIf="isLoading" class="loading-state">
-                            <div class="d-flex flex-column align-items-center justify-content-center py-5">
-                                <div class="spinner-border text-primary mb-3" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                                <p class="text-muted mb-0">Loading products...</p>
-                            </div>
-                        </div>
-                        <!-- Data Table -->
-                        <div *ngIf="!isLoading" class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th class="sortable" (click)="sort('image')">
-                                            <div class="d-flex align-items-center justify-content-center">
-                                                <span>Image</span>
-                                            </div>
-                                        </th>
-                                        <th class="sortable" (click)="sort('name')">
-                                            <div class="d-flex align-items-center justify-content-between">
-                                                <span>Product Name</span>
-                                                <i class="fas ms-1" [class]="getSortIcon('name')"></i>
-                                            </div>
-                                        </th>
-                                        <th class="sortable d-none d-md-table-cell" (click)="sort('brand')">
-                                            <div class="d-flex align-items-center justify-content-between">
-                                                <span>Brand / Category</span>
-                                                <i class="fas ms-1" [class]="getSortIcon('brand')"></i>
-                                            </div>
-                                        </th>
-                                        <th class="sortable" (click)="sort('price')">
-                                            <div class="d-flex align-items-center justify-content-between">
-                                                <span>Price</span>
-                                                <i class="fas ms-1" [class]="getSortIcon('price')"></i>
-                                            </div>
-                                        </th>
-                                        <th class="sortable" (click)="sort('status')">
-                                            <div class="d-flex align-items-center justify-content-between">
-                                                <span>Stock Status</span>
-                                                <i class="fas ms-1" [class]="getSortIcon('status')"></i>
-                                            </div>
-                                        </th>
-                                        <th class="sortable d-none d-lg-table-cell" (click)="sort('createdAt')">
-                                            <div class="d-flex align-items-center justify-content-between">
-                                                <span>Created Date</span>
-                                                <i class="fas ms-1" [class]="getSortIcon('createdAt')"></i>
-                                            </div>
-                                        </th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr *ngFor="let product of paginatedProducts; trackBy: trackByProductId"
-                                        class="table-row-hover">
-                                        <td class="text-center">
-                                            <div class="product-image">
-                                                <img [src]="getProductImage(product)" [alt]="product.product.name"
-                                                    class="product-img" loading="lazy">
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="product-info">
-                                                <div class="product-name">{{ product.product.name }}</div>
-                                                <small class="text-muted d-block d-md-none">
-                                                    {{ product.brand.name || 'N/A' }} • {{ product.category.name ||
-                                                    'N/A' }}
-                                                </small>
-                                            </div>
-                                        </td>
-                                        <td class="d-none d-md-table-cell">
-                                            <div class="brand-category-info">
-                                                <div class="brand-name">
-                                                    <i class="fas fa-tag brand-icon me-1"></i>
-                                                    {{ product.brand.name || 'N/A' }}
-                                                </div>
-                                                <div class="category-name">
-                                                    <i class="fas fa-folder category-icon me-1"></i>
-                                                    {{ product.category.name || 'N/A' }}
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="price-info">
-                                                <span class="price-amount">{{ product.product.basePrice | currency:'MMK
-                                                    ':'symbol':'1.0-0' }}</span>
-                                                <small class="text-muted d-block" *ngIf="product.product.discountPrice">
-                                                    <del>{{ product.product.originalPrice | currency:'MMK ':'symbol'
-                                                        }}</del>
-                                                </small>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span [class]="getStatusBadgeClass(product.status || '')">
-                                                <i class="fas me-1" [class]="getStatusIcon(product.status || '')"></i>
-                                                {{ getStatusDisplayText(product.status || '') }}
-                                            </span>
-                                        </td>
-                                        <td class="d-none d-lg-table-cell">
-                                            <div class="date-info">
-                                                <div class="text-dark">{{ product.product.createdDate | date:'MMM d, y'
-                                                    }}</div>
-                                                <small class="text-muted">{{ product.product.createdDate | date:'h:mm a'
-                                                    }}</small>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <button class="btn btn-outline-primary btn-sm me-1"
-                                                    (click)="viewProduct(product.id.toString() || '')"
-                                                    title="View Details">
-                                                    <i class="fas fa-eye"></i>
-                                                    <span class="d-none d-sm-inline ms-1">View</span>
-                                                </button>
-                                                <div class="btn-group">
-                                                    <button
-                                                        class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split"
-                                                        data-bs-toggle="dropdown" aria-expanded="false"
-                                                        title="More Actions">
-                                                        <span class="visually-hidden">More Actions</span>
-                                                    </button>
-                                                    <ul class="dropdown-menu dropdown-menu-end">
-                                                        <li>
-                                                            <a class="dropdown-item"
-                                                                (click)="viewProduct(product.id.toString() || '')">
-                                                                <i class="fas fa-eye me-2"></i>View Details
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a class="dropdown-item"
-                                                                (click)="editProduct(product.id.toString() || '')">
-                                                                <i class="fas fa-edit me-2"></i>Edit Product
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <hr class="dropdown-divider">
-                                                        </li>
-                                                        <li>
-                                                            <a class="dropdown-item"
-                                                                (click)="duplicateProduct(product.id.toString() || '')">
-                                                                <i class="fas fa-copy me-2"></i>Duplicate
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a class="dropdown-item text-danger"
-                                                                (click)="deleteProduct(product.id.toString() || '')">
-                                                                <i class="fas fa-trash me-2"></i>Delete
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <!-- Empty State -->
-                        <div *ngIf="!isLoading && paginatedProducts.length === 0" class="empty-state">
-                            <div class="text-center py-5">
-                                <div class="empty-icon mb-3">
-                                    <i class="fas fa-box display-1 text-muted"></i>
-                                </div>
-                                <h5 class="text-muted mb-2">No products found</h5>
-                                <p class="text-muted mb-3">
-                                    <span
-                                        *ngIf="filterParams.brand || filterParams.category || filterParams.status || filterParams.priceMin || filterParams.priceMax || filterParams.search.trim()">
-                                        No products match your current filters. Try adjusting your search criteria.
-                                    </span>
-                                    <span
-                                        *ngIf="!filterParams.brand && !filterParams.category && !filterParams.status && !filterParams.priceMin && !filterParams.priceMax && !filterParams.search.trim()">
-                                        No products have been added yet.
-                                    </span>
-                                </p>
-                                <div class="d-flex gap-2 justify-content-center">
-                                    <button class="btn btn-outline-primary" (click)="onReset()"
-                                        *ngIf="filterParams.brand || filterParams.category || filterParams.status || filterParams.priceMin || filterParams.priceMax || filterParams.search.trim()">
-                                        <i class="fas fa-times me-1"></i>Clear All Filters
-                                    </button>
-                                    <button class="btn btn-success" (click)="addProduct()"
-                                        *ngIf="!filterParams.brand && !filterParams.category && !filterParams.status && !filterParams.priceMin && !filterParams.priceMax && !filterParams.search.trim()">
-                                        <i class="fas fa-plus me-1"></i>Add First Product
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Pagination Footer -->
-                    <div class="card-footer" *ngIf="!isLoading && totalPages > 1">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="pagination-info">
-                                <small class="text-muted">
-                                    Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
-                                    {{ Math.min(currentPage * itemsPerPage, totalItems) }} of {{ totalItems }} entries
-                                </small>
-                            </div>
-                            <nav aria-label="Product list pagination">
-                                <ul class="pagination pagination-sm mb-0">
-                                    <li class="page-item" [class.disabled]="currentPage === 1">
-                                        <button class="page-link" (click)="goToPreviousPage()"
-                                            [disabled]="currentPage === 1">
-                                            <i class="fas fa-chevron-left"></i>
-                                        </button>
-                                    </li>
-                                    <li *ngFor="let page of getPageNumbers()" class="page-item"
-                                        [class.active]="page === currentPage">
-                                        <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
-                                    </li>
-                                    <li class="page-item" [class.disabled]="currentPage === totalPages">
-                                        <button class="page-link" (click)="goToNextPage()"
-                                            [disabled]="currentPage === totalPages">
-                                            <i class="fas fa-chevron-right"></i>
-                                        </button>
-                                    </li>
-                                </ul>
-                            </nav>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!isLoading && paginatedProducts.length === 0" class="empty-state">
+          <div class="text-center py-5">
+            <div class="empty-icon mb-3">
+              <i class="fas fa-box display-1 text-muted"></i>
+            </div>
+            <h5 class="text-muted mb-2">No products found</h5>
+            <p class="text-muted mb-3">
+              <span
+                *ngIf="
+                  filterParams.brand ||
+                  filterParams.category ||
+                  filterParams.status ||
+                  filterParams.priceMin ||
+                  filterParams.priceMax ||
+                  filterParams.search.trim()
+                "
+              >
+                No products match your current filters. Try adjusting your search criteria.
+              </span>
+              <span
+                *ngIf="
+                  !filterParams.brand &&
+                  !filterParams.category &&
+                  !filterParams.status &&
+                  !filterParams.priceMin &&
+                  !filterParams.priceMax &&
+                  !filterParams.search.trim()
+                "
+              >
+                No products have been added yet.
+              </span>
+            </p>
+            <button
+              class="btn btn-outline-primary"
+              (click)="onReset()"
+              *ngIf="
+                filterParams.brand ||
+                filterParams.category ||
+                filterParams.status ||
+                filterParams.priceMin ||
+                filterParams.priceMax ||
+                filterParams.search.trim()
+              "
+            >
+              <i class="fas fa-times me-1"></i>Clear All Filters
+            </button>
+            <button
+              class="btn btn-success"
+              (click)="addProduct()"
+              *ngIf="
+                !filterParams.brand &&
+                !filterParams.category &&
+                !filterParams.status &&
+                !filterParams.priceMin &&
+                !filterParams.priceMax &&
+                !filterParams.search.trim()
+              "
+            >
+              <i class="fas fa-plus me-1"></i>Add First Product
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination Footer -->
+      <div class="card-footer" *ngIf="!isLoading && totalPages > 0">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="pagination-info">
+            <small class="text-muted">
+              Showing {{ Math.min((currentPage - 1) * itemsPerPage + 1, totalItems) }} to
+              {{ Math.min(currentPage * itemsPerPage, totalItems) }} of {{ totalItems }} entries
+            </small>
+          </div>
+          <nav aria-label="Product list pagination">
+            <ul class="pagination pagination-sm mb-0 custom-pagination">
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <button class="page-link" (click)="goToPreviousPage()" [disabled]="currentPage === 1">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+              </li>
+              <li *ngFor="let page of getPageNumbers()" class="page-item" [class.active]="page === currentPage">
+                <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+              </li>
+              <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <button class="page-link" (click)="goToNextPage()" [disabled]="currentPage === totalPages">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

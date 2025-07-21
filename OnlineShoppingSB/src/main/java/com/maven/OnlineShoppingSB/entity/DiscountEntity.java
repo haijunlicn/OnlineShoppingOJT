@@ -59,6 +59,4 @@ public class DiscountEntity {
     @OneToMany(mappedBy = "discount",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<DiscountMechanismEntity> discountMechanisms;
 
-
-    // getters and setters
 }

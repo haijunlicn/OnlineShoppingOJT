@@ -1,5 +1,6 @@
 package com.maven.OnlineShoppingSB.dto;
 
+import com.maven.OnlineShoppingSB.entity.BrandEntity;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import lombok.Getter;
@@ -19,11 +20,20 @@ public class BrandDTO {
     private String createdDate;
     private String updatedDate;
 
-    public BrandDTO() {}
+    public BrandDTO() {
+    }
 
     public BrandDTO(Long id, String name) {
         this.id = id;
         this.name = name;
+    }
+
+    public static BrandDTO fromEntity(BrandEntity entity) {
+        if (entity == null) return null;
+        BrandDTO dto = new BrandDTO();
+        dto.setId(entity.getId());
+        dto.setName(entity.getName());
+        return dto;
     }
 
 }

@@ -1,9 +1,10 @@
 package com.maven.OnlineShoppingSB.repository;
 
-import com.maven.OnlineShoppingSB.entity.DiscountProductEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.maven.OnlineShoppingSB.entity.VlogEntity;
+
 @Repository
-public interface DiscountProdcutRepository extends JpaRepository<DiscountProductEntity, Integer> {
+public interface VlogRepository extends JpaRepository<VlogEntity, Long> {
 }

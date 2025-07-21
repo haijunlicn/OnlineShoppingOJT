@@ -10,9 +10,23 @@ export class CartService {
   private cartCountSubject = new BehaviorSubject<number>(0);
   cartCount$ = this.cartCountSubject.asObservable();
 
-  constructor(private authService: AuthService) {
+  private cartItemsSubject = new BehaviorSubject<CartItem[]>(this.getCart());
+  cartItems$ = this.cartItemsSubject.asObservable();
+
+  constructor(
+    private authService: AuthService
+  ) {
     // Refresh cart count whenever the user logs in or logs out
-    this.authService.user$.subscribe(() => {
+    // this.authService.user$.subscribe(() => {
+    //   this.emitCount();
+    // });
+
+    this.authService.user$.subscribe((user) => {
+      console.log("🛒 Auth changed in CartService. User is now: ", user);
+
+      // Refresh cart when login/logout happens
+      const freshCart = this.getCart();
+      this.cartItemsSubject.next(freshCart);
       this.emitCount();
     });
 
@@ -21,16 +35,28 @@ export class CartService {
   }
 
   // Dynamic localStorage key based on current user
-  private get storageKey(): string {
+  private get storageKey(): string | null {
     const userId = this.authService?.getCurrentUser?.()?.id;
-    return userId ? `cart_user_${userId}` : 'cart_guest';
+    return userId ? `cart_user_${userId}` : null; // null for guests
   }
+
+
+  // private get storageKey(): string {
+  //   const userId = this.authService?.getCurrentUser?.()?.id;
+  //   return userId ? `cart_user_${userId}` : 'cart_guest';
+  // }
 
   /** Read full cart */
   getCart(): CartItem[] {
+    if (!this.storageKey) return [];
     const cart = localStorage.getItem(this.storageKey);
     return cart ? JSON.parse(cart) : [];
   }
+
+  // getCart(): CartItem[] {
+  //   const cart = localStorage.getItem(this.storageKey);
+  //   return cart ? JSON.parse(cart) : [];
+  // }
 
   /** Add product variant to cart */
   addToCart(product: {
@@ -41,7 +67,12 @@ export class CartService {
     stock: number;
     price: number;
     image?: string;
+    brandId: number;
+    categoryId: number;
   }): void {
+
+    if (!this.storageKey) return; // Do nothing for guest
+
     const cart = this.getCart();
     const index = cart.findIndex(
       (item) => item.productId === product.id && item.variantId === product.variantId
@@ -63,13 +94,16 @@ export class CartService {
         stock: product.stock,
         price: product.price,
         imgPath: product.image || undefined,
-        quantity: 1
+        quantity: 1,
+        brandId: Number(product.brandId),
+        categoryId: Number(product.categoryId),
       };
       cart.push(cartItem);
     }
 
-    localStorage.setItem(this.storageKey, JSON.stringify(cart));
-    this.emitCount();
+    // localStorage.setItem(this.storageKey, JSON.stringify(cart));
+    // this.emitCount();
+    this.updateCart(cart);
   }
 
   /** Update quantity for a specific variant */
@@ -89,22 +123,27 @@ export class CartService {
       }
     }
 
-    localStorage.setItem(this.storageKey, JSON.stringify(cart));
-    this.emitCount();
+    // localStorage.setItem(this.storageKey, JSON.stringify(cart));
+    // this.emitCount();
+    this.updateCart(cart);
   }
 
   /** Remove an item from the cart */
   removeFromCart(productId: number, variantId: number): void {
+    if (!this.storageKey) return;
     const updatedCart = this.getCart().filter(
       (item) => !(item.productId === productId && item.variantId === variantId)
     );
     localStorage.setItem(this.storageKey, JSON.stringify(updatedCart));
     this.emitCount();
+    this.updateCart(updatedCart);
   }
 
   /** Clear the cart completely */
   clearCart(): void {
+    if (!this.storageKey) return;
     localStorage.removeItem(this.storageKey);
+    this.cartItemsSubject.next([]);
     this.emitCount();
   }
 
@@ -126,4 +165,12 @@ export class CartService {
   private emitCount(): void {
     this.cartCountSubject.next(this.calcCount());
   }
+
+  private updateCart(cart: CartItem[]) {
+    if (!this.storageKey) return;
+    localStorage.setItem(this.storageKey, JSON.stringify(cart));
+    this.cartItemsSubject.next(cart);
+    this.emitCount();
+  }
+
 }

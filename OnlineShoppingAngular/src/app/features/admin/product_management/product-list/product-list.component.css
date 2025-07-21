@@ -1,4 +1,9 @@
-/* Clean Navigation Bar - Based on Detail Page */
+/* Define custom primary color variable if not already defined globally */
+:root {
+  --color-primary: #3b82f6; /* Example blue, adjust as needed */
+}
+
+/* Clean Navigation Bar - Based on Refund Requests */
 .navigation-bar {
   background: white;
   border-bottom: 1px solid #e5e7eb;
@@ -6,33 +11,31 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap; /* Allow items to wrap to the next line */
   margin-bottom: 0;
 }
-
 .nav-left {
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex-grow: 1; /* Allow nav-left to grow */
 }
-
 .nav-right {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-shrink: 0; /* Prevent nav-right from shrinking too much */
 }
-
 .nav-info {
   flex: 1;
 }
-
-.nav-title {
+.page-title {
   font-size: 1.25rem;
   font-weight: 600;
   color: #111827;
   margin: 0;
 }
-
-.nav-subtitle {
+.page-subtitle {
   font-size: 0.8125rem;
   color: #6b7280;
   margin: 0;
@@ -46,29 +49,24 @@
   margin: 0;
   font-size: 0.8125rem;
 }
-
 .breadcrumb-item {
   color: #6b7280;
 }
-
 .breadcrumb-item.active {
   color: #111827;
 }
-
 .breadcrumb-item a {
   color: #111827;
   text-decoration: none;
   transition: color 0.2s ease;
 }
-
 .breadcrumb-item a:hover {
-  color: var(--color-accent);
+  color: var(--color-primary);
 }
 
 /* Main Content */
-.main-content {
-  background: #f9fafb;
-  min-height: calc(100vh - 80px);
+.container-fluid {
+  padding: 1.5rem;
 }
 
 /* Clean Card Styling */
@@ -79,13 +77,11 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
-
 .card-header {
   background: #f9fafb;
   border-bottom: 1px solid #e5e7eb;
   padding: 1rem 1.25rem;
 }
-
 .card-title {
   color: #111827;
   font-weight: 600;
@@ -94,11 +90,9 @@
   display: flex;
   align-items: center;
 }
-
 .card-body {
   padding: 1.25rem;
 }
-
 .card-footer {
   background: #f9fafb;
   border-top: 1px solid #e5e7eb;
@@ -112,7 +106,6 @@
   font-size: 0.875rem;
   margin-bottom: 0.5rem;
 }
-
 .form-control,
 .form-select {
   border: 1px solid #d1d5db;
@@ -122,21 +115,18 @@
   font-size: 0.875rem;
   background: white;
 }
-
 .form-control:focus,
 .form-select:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   outline: none;
 }
-
 .input-group-text {
   border: 1px solid #d1d5db;
   background: #f9fafb;
   color: #6b7280;
   border-right: none;
 }
-
 .input-group .form-control {
   border-left: none;
 }
@@ -146,7 +136,6 @@
   margin: 0;
   font-size: 0.875rem;
 }
-
 .table th {
   font-weight: 600;
   background-color: #f9fafb;
@@ -155,7 +144,6 @@
   border-bottom: 1px solid #e5e7eb;
   white-space: nowrap;
 }
-
 .table td {
   padding: 0.75rem;
   vertical-align: middle;
@@ -168,18 +156,15 @@
   user-select: none;
   transition: background-color 0.15s ease;
 }
-
 .sortable:hover {
   background-color: #f3f4f6;
 }
-
 .sortable i {
   opacity: 0.5;
   transition: opacity 0.15s ease;
   font-size: 0.75rem;
   color: #6b7280;
 }
-
 .sortable:hover i {
   opacity: 1;
 }
@@ -202,7 +187,6 @@
   justify-content: center;
   margin: 0 auto;
 }
-
 .product-img {
   width: 100%;
   height: 100%;
@@ -211,9 +195,8 @@
 
 /* Product Info */
 .product-info {
-  min-width: 200px;
+  min-width: 180px; /* Adjusted for better fit */
 }
-
 .product-name {
   font-weight: 600;
   color: #111827;
@@ -229,7 +212,6 @@
   gap: 0.25rem;
   min-width: 180px;
 }
-
 .brand-name {
   display: flex;
   align-items: center;
@@ -237,19 +219,16 @@
   color: #374151;
   font-size: 0.8125rem;
 }
-
 .brand-icon {
-  color: #10b981;
+  color: #10b981; /* Green */
   font-size: 0.75rem;
 }
-
 .category-name {
   display: flex;
   align-items: center;
   font-size: 0.75rem;
   color: #6b7280;
 }
-
 .category-icon {
   color: var(--color-primary);
   font-size: 0.75rem;
@@ -259,14 +238,13 @@
 .price-info {
   min-width: 100px;
 }
-
 .price-amount {
   font-weight: 700;
   color: #111827;
   font-size: 0.875rem;
 }
 
-/* Status Badge Styling */
+/* Status Badge Styling - Consistent with Refund Requests */
 .badge {
   font-size: 0.75rem;
   padding: 0.25rem 0.5rem;
@@ -275,37 +253,27 @@
   display: inline-flex;
   align-items: center;
 }
-.custom-add-btn {
-  background-color:var(--color-primary) !important; /* turquoise green */
-  color: white;
-  border: none;
-}
-
-.custom-upload-btn {
-  background-color: var(--color-primary) !important; /* bright blue */
-  color: white;
-  border: none;
-}
-
-.bg-success {
-  background-color: #d1fae5 !important;
-  color: #065f46 !important;
+.badge.bg-success {
+  background-color: #d4edda !important; /* light green */
+  color: #155724 !important; /* dark green */
   border: 1px solid #a7f3d0 !important;
 }
-
-.bg-warning {
-  background-color: #fef3c7 !important;
-  color: #92400e !important;
+.badge.bg-warning {
+  background-color: #fff3cd !important; /* light yellow */
+  color: #856404 !important; /* dark yellow */
   border: 1px solid #fde68a !important;
 }
-
-.bg-danger {
-  background-color: #fee2e2 !important;
-  color: #991b1b !important;
+.badge.bg-danger {
+  background-color: #f8d7da !important; /* light red */
+  color: #721c24 !important; /* dark red */
   border: 1px solid #fecaca !important;
 }
-
-.bg-secondary {
+.badge.bg-secondary {
+  background-color: #e2e3e5 !important; /* light gray */
+  color: #495057 !important; /* dark gray */
+  border: 1px solid #d1d5db !important;
+}
+.badge.bg-light {
   background-color: #f3f4f6 !important;
   color: #374151 !important;
   border: 1px solid #d1d5db !important;
@@ -319,74 +287,63 @@
   font-size: 0.875rem;
   border: 1px solid transparent;
 }
-
 .btn-sm {
   padding: 0.375rem 0.75rem;
   font-size: 0.8125rem;
 }
-
 .btn-outline-primary {
   color: var(--color-primary);
   border-color: var(--color-primary);
   background: transparent;
 }
-
 .btn-outline-primary:hover {
   background-color: var(--color-primary);
   border-color: var(--color-primary);
   color: white;
 }
-
 .btn-outline-secondary {
   color: #6b7280;
   border-color: #6b7280;
   background: transparent;
 }
-
 .btn-outline-secondary:hover {
   background-color: #6b7280;
   border-color: #6b7280;
   color: white;
 }
-
-.btn-outline {
+.btn-outline-danger {
+  color: #dc3545;
+  border-color: #dc3545;
   background: transparent;
-  border: 1px solid #d1d5db;
-  color: #6b7280;
 }
-
-.btn-outline:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
-}
-
-.btn-success {
-  background-color: #10b981;
-  border-color: #10b981;
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
   color: white;
 }
-
-.btn-success:hover {
-  background-color: #059669;
-  border-color: #059669;
+.btn-outline-success {
+  color: #28a745;
+  border-color: #28a745;
+  background: transparent;
 }
-
+.btn-outline-success:hover {
+  background-color: #28a745;
+  border-color: #28a745;
+  color: white;
+}
 .btn-primary {
   background-color: var(--color-primary);
   border-color: var(--color-primary);
   color: white;
 }
-
 .btn-primary:hover {
   background-color: #2563eb;
   border-color: #2563eb;
 }
-
 .btn-link {
   color: #6b7280;
   text-decoration: none;
 }
-
 .btn-link:hover {
   color: #374151;
 }
@@ -405,7 +362,6 @@
   align-items: center;
   justify-content: center;
 }
-
 .spinner-border {
   color: var(--color-primary);
 }
@@ -417,7 +373,6 @@
   align-items: center;
   justify-content: center;
 }
-
 .empty-icon i {
   color: #d1d5db;
   font-size: 4rem;
@@ -428,11 +383,9 @@
   color: #6b7280;
   font-size: 0.875rem;
 }
-
 .pagination {
   margin: 0;
 }
-
 .page-link {
   border-radius: 0.375rem;
   margin: 0 2px;
@@ -443,24 +396,38 @@
   transition: all 0.15s ease;
   background: white;
 }
-
 .page-link:hover {
   background-color: #f9fafb;
   border-color: #9ca3af;
   color: #374151;
 }
-
 .page-item.active .page-link {
   background-color: var(--color-primary);
   border-color: var(--color-primary);
   color: white;
 }
-
 .page-item.disabled .page-link {
   color: #9ca3af;
   background-color: white;
   border-color: #d1d5db;
   cursor: not-allowed;
+}
+
+/* Custom Pagination from Refund Requests */
+.custom-pagination .page-link {
+  background-color: #f8f9fa; /* Light grey background */
+  color: var(--color-primary); /* Bootstrap primary blue */
+  border: 1px solid var(--color-primary);
+  transition: all 0.3s ease;
+}
+.custom-pagination .page-link:hover {
+  background-color: var(--color-primary);
+  color: white;
+}
+.custom-pagination .page-item.active .page-link {
+  background-color: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
 }
 
 /* Alert Styling */
@@ -472,13 +439,11 @@
   display: flex;
   align-items: center;
 }
-
 .alert-danger {
   background-color: #fef2f2;
   color: #991b1b;
   border-left: 4px solid #ef4444;
 }
-
 .alert-dismissible .btn-close {
   margin-left: auto;
   background: none;
@@ -487,7 +452,6 @@
   cursor: pointer;
   opacity: 0.5;
 }
-
 .alert-dismissible .btn-close:hover {
   opacity: 0.75;
 }
@@ -500,38 +464,41 @@
   padding: 0.5rem 0;
   margin-top: 0.25rem;
 }
-
 .dropdown-item {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   transition: background-color 0.15s ease;
   color: #374151;
+  display: flex; /* Added for icon alignment */
+  align-items: center; /* Added for icon alignment */
 }
-
 .dropdown-item:hover {
   background-color: #f9fafb;
   color: #111827;
 }
-
 .dropdown-item i {
   width: 16px;
   text-align: center;
   color: #6b7280;
+  margin-right: 0.5rem; /* Added for spacing */
 }
-
 .dropdown-item:hover i {
   color: #374151;
 }
-
 .dropdown-item.text-danger {
   color: #dc2626;
 }
-
 .dropdown-item.text-danger:hover {
   background-color: #fef2f2;
   color: #dc2626;
 }
-
+.dropdown-item.text-success {
+  color: #28a745;
+}
+.dropdown-item.text-success:hover {
+  background-color: #e6ffe6;
+  color: #28a745;
+}
 .dropdown-divider {
   border-top: 1px solid #e5e7eb;
   margin: 0.5rem 0;
@@ -545,79 +512,67 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .navigation-bar {
-    padding: 1rem;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
+    /* Removed flex-direction: column; to keep it horizontal if space allows */
+    align-items: flex-start; /* Align items to the start when they wrap */
+    gap: 1rem; /* Keep gap for spacing between wrapped items */
   }
-
   .nav-left,
   .nav-right {
-    width: 100%;
-    justify-content: space-between;
+    width: 100%; /* Make them take full width when wrapped */
+    /* Removed justify-content: space-between; as it's handled by parent flex-wrap */
   }
-
-  .main-content {
+  .nav-right .d-flex {
+    /* Target the inner button container */
+    justify-content: flex-start; /* Align buttons to start when wrapped */
+  }
+  .container-fluid {
     padding: 1rem;
   }
-
   .card-header,
   .card-body,
   .card-footer {
     padding: 1rem;
   }
-
   .table th,
   .table td {
     padding: 0.5rem;
   }
-
   .action-buttons {
     flex-direction: column;
     gap: 0.25rem;
   }
-
   .btn-sm {
     padding: 0.25rem 0.5rem;
     font-size: 0.75rem;
   }
-
   .product-image {
     width: 40px;
     height: 40px;
   }
 }
-
 @media (max-width: 576px) {
   .navigation-bar {
     padding: 0.75rem;
   }
-
-  .nav-title {
+  .page-title {
     font-size: 1.125rem;
   }
-
-  .nav-subtitle {
+  .page-subtitle {
     font-size: 0.75rem;
   }
-
-  .main-content {
+  .container-fluid {
     padding: 0.75rem;
   }
-
   .table {
     font-size: 0.8125rem;
   }
-
   .badge {
     font-size: 0.7rem;
     padding: 0.2rem 0.4rem;
   }
-
   .empty-icon i {
     font-size: 3rem;
   }
-
   .product-image {
     width: 36px;
     height: 36px;
@@ -638,15 +593,12 @@
 .text-primary {
   color: var(--color-primary) !important;
 }
-
 .text-muted {
   color: #6b7280 !important;
 }
-
 .text-dark {
   color: #111827 !important;
 }
-
 .fw-bold {
   font-weight: 700 !important;
 }
@@ -655,174 +607,40 @@
 .table-responsive::-webkit-scrollbar {
   height: 6px;
 }
-
 .table-responsive::-webkit-scrollbar-track {
   background: #f1f1f1;
   border-radius: 3px;
 }
-
 .table-responsive::-webkit-scrollbar-thumb {
   background: #d1d5db;
   border-radius: 3px;
 }
-
 .table-responsive::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
 }
 
-/* Additional Product-specific Styles */
-.nav-btn {
-  white-space: nowrap;
-}
-
-.filter-section .row.g-3 > * {
-  padding-right: 0.75rem;
-  padding-left: 0.75rem;
-}
-
 /* Status Icons */
-.fa-circle {
+.fas.fa-circle {
   font-size: 0.5rem;
 }
-
-.fa-exclamation-triangle {
+.fas.fa-exclamation-triangle {
   font-size: 0.75rem;
 }
-
-.fa-times-circle {
+.fas.fa-times-circle {
   font-size: 0.75rem;
 }
-
-.fa-check-circle {
+.fas.fa-check-circle {
   font-size: 0.75rem;
 }
-
-/* Export button styles */
-.p-button-info {
-  background-color: #17a2b8;
-  border-color: #17a2b8;
+.fas.fa-pause-circle {
+  font-size: 0.75rem;
 }
-
-.p-button-info:hover {
-  background-color: #138496;
-  border-color: #117a8b;
-}
-
-.p-button-info:focus {
-  box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
-}
-
-/* Export dropdown styles */
-.dropdown-menu {
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  padding: 0.5rem 0;
-  border: 1px solid #e9ecef;
-  min-width: 200px;
-}
-
-.dropdown-item {
-  font-size: 0.9rem;
-  padding: 0.6rem 1rem;
-  display: flex;
-  align-items: center;
-  transition: all 0.15s ease;
-  color: #495057;
-}
-
-.dropdown-item:hover {
-  background-color: #f0f7ff;
-  transform: translateX(3px);
-  color: #212529;
-}
-
-.dropdown-item i {
-  margin-right: 0.5rem;
-  font-size: 0.85rem;
+.fas.fa-question-circle {
+  font-size: 0.75rem;
 }
 
 /* Loading spinner in dropdown */
-.dropdown-item .pi-spinner {
+.pi-spinner {
   font-size: 0.8rem;
   color: #6c757d;
-}
-
-/* Product table container for PDF export */
-#product-table-container {
-  background: white;
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Loading state */
-.p-button[loading] {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-/* Product image styles */
-.product-image-cell {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.product-thumbnail {
-  width: 50px;
-  height: 50px;
-  object-fit: cover;
-  border-radius: 4px;
-}
-
-/* Status badge styles */
-.status-badge {
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.status-active {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.status-low {
-  background-color: #fff3cd;
-  color: #856404;
-}
-
-.status-inactive {
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-/* Action buttons */
-.action-buttons {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.action-btn {
-  width: 32px;
-  height: 32px;
-}
-
-/* Filter styles */
-.filter-row {
-  background-color: #f8f9fa;
-}
-
-.price-filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.bootstrap-dropdown .dropdown-menu {
-  max-height: 200px;
-  overflow-y: auto;
 }

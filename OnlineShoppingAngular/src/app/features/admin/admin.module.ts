@@ -91,10 +91,16 @@ import { AdminNotificationListComponent } from './notificationManagement/admin-n
 import { AdminNotificationDetailComponent } from './notificationManagement/admin-notification-detail/admin-notification-detail.component';
 import { AdminNotiTypesComponent } from './notificationManagement/admin-noti-types/admin-noti-types.component';
 import { AdminSentNotisComponent } from './notificationManagement/admin-sent-notis/admin-sent-notis.component';
+import { AuditLogComponent } from './policy-management/audit-log/audit-log.component';
+import { VlogFilesCreateComponent } from './vlog-management/vlogfilescreate/vlogfilescreate.component';
+import { VlogFilesListComponent } from './vlog-management/vlogfileslist/vlogfileslist.component';
+import { VlogCreateComponent } from './vlog-management/vlogcreate/vlogcreate.component';
+import { VlogListComponent } from './vlog-management/vloglist/vloglist.component';
+import { CreateDeliveryMethodComponent } from './deliveryMethodManagement/create-delivery-method/create-delivery-method.component';
+import { DeliveryMethodListComponent } from './deliveryMethodManagement/delivery-method-list/delivery-method-list.component';
+import { EditDeliveryMethodComponent } from './deliveryMethodManagement/edit-delivery-method/edit-delivery-method.component';
 import { DiscountListComponent } from './discount_management/discount-list/discount-list.component';
-import { QuestionComponent } from './QuestionManagement/question/question.component';
-
-
+import { QuestionComponent } from './QuesionManagement/question/question.component';
 
 
 @NgModule({
@@ -165,6 +171,15 @@ import { QuestionComponent } from './QuestionManagement/question/question.compon
     AdminNotificationListComponent,
     AdminNotiTypesComponent,
     AdminSentNotisComponent,
+    AuditLogComponent,
+    VlogListComponent,
+    VlogCreateComponent,
+    VlogFilesListComponent,
+    VlogFilesCreateComponent,
+
+    CreateDeliveryMethodComponent,
+    DeliveryMethodListComponent,
+    EditDeliveryMethodComponent,
    DiscountListComponent,
    QuestionComponent
   ],
@@ -192,8 +207,6 @@ import { QuestionComponent } from './QuestionManagement/question/question.compon
     NgxChartsModule,
     NgxMaskModule.forRoot(),
     
-  
-   
 ]
 })
 export class AdminModule { }

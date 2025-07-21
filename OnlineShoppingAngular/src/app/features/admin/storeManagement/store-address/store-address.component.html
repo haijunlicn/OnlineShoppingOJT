@@ -1,168 +1,154 @@
-<div class="container">
-  <div class="content-wrapper">
-    <!-- Left section: Store list -->
-    <div class="left-section">
-      <h2 class="title">Store Branches</h2>
-      <ul class="store-list">
-        <li *ngFor="let store of stores">
-          <div class="store-info">
-            <span class="store-name">{{ store.name }}</span>
-            <span class="store-location">{{ store.city }}, {{ store.country }}</span>
-          </div>
-          <div class="store-actions">
-            <button (click)="selectStore(store)" class="edit-btn">Edit</button>
-            <button (click)="deleteStore(store.id!)" class="delete-btn">Delete</button>
-          </div>
-        </li>
-      </ul>
-    </div>
+<div class="store-location-header">
+  <div class="header-title-group">
+    <div class="header-title">Store Location Management</div>
+    <div class="header-subtitle">Manage your store branches and addresses</div>
+  </div>
+  <button class="add-store-btn" (click)="openAddStore()">
+    <span class="add-icon">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="12" fill="white" opacity="0.15"/>
+        <path d="M12 7v10M7 12h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </span>
+    Add New Store Location
+  </button>
+</div>
 
-    <!-- Right section: Form and map -->
-    <div class="right-section">
-      <div class="address-card">
-        <h2 class="card-title">{{ selectedStore ? 'Edit Store' : 'Add New Store' }}</h2>
-
-        <!-- Search Box -->
-        <div class="search-box">
-          <input 
-            type="text" 
-            [formControl]="searchControl"
-            placeholder="Search location and press Enter"
-            class="form-input search-input"
-            (keyup.enter)="onSearch()"
-            [disabled]="isLoading"
-          />
-          <button 
-            type="button" 
-            (click)="onSearch()" 
-            [disabled]="isLoading"
-            class="search-btn"
-            title="Search location"
-          >
-            🔍
-          </button>
+<div class="store-location-content">
+  <div class="store-cards-vertical">
+    <div
+      class="store-card-vertical"
+      *ngFor="let store of stores"
+      [class.active]="store.id === activeStoreId"
+      (click)="setActiveCard(store)"
+    >
+      <div class="store-card-header-row">
+        <div class="store-card-header-left">
+          <span class="store-name">{{ store.name }}</span>
+          <span *ngIf="store.id === activeStoreId" class="active-badge">Active</span>
         </div>
-
-        <form [formGroup]="storeForm" class="address-form">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Name</label>
-              <input 
-                type="text" 
-                formControlName="name"
-                placeholder="Store Name"
-                class="form-input"
-              />
-            </div>
-            <div class="form-group">
-              <label>Phone Number</label>
-              <input 
-                type="text" 
-                formControlName="phoneNumber"
-                placeholder="Phone Number"
-                class="form-input"
-              />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Full Address</label>
-              <div class="input-wrapper">
-                <input 
-                  type="text" 
-                  formControlName="fullAddress"
-                  placeholder="Full Address"
-                  class="form-input"
-                />
-                <button 
-                  type="button" 
-                  class="locate-btn" 
-                  (click)="autoLocate()"
-                  [disabled]="isLoading"
-                  title="Auto locate">
-                  <svg *ngIf="!isLoading" width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 8C14.21 8 16 9.79 16 12C16 14.21 14.21 16 12 16C9.79 16 8 14.21 8 12C8 9.79 9.79 8 12 8ZM20.94 11C20.48 6.83 17.17 3.52 13 3.06V1H11V3.06C6.83 3.52 3.52 6.83 3.06 11H1V13H3.06C3.52 17.17 6.83 20.48 11 20.94V23H13V20.94C17.17 20.48 20.48 17.17 20.94 13H23V11H20.94ZM12 19C8.13 19 5 15.87 5 12C5 8.13 8.13 5 12 5C15.87 5 19 8.13 19 12C19 15.87 15.87 19 12 19Z" fill="currentColor"/>
-                  </svg>
-                  <div *ngIf="isLoading" class="loading-spinner"></div>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>City</label>
-              <input 
-                type="text" 
-                formControlName="city"
-                placeholder="City"
-                class="form-input"
-              />
-            </div>
-            <div class="form-group">
-              <label>Country</label>
-              <input 
-                type="text" 
-                formControlName="country"
-                placeholder="Country"
-                class="form-input"
-              />
-            </div>
-            <div class="form-group">
-              <label>Zip Code</label>
-              <input 
-                type="text" 
-                formControlName="zipCode"
-                placeholder="Zip Code"
-                class="form-input"
-              />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Latitude</label>
-              <input
-                type="number"
-                formControlName="lat"
-                placeholder="Latitude"
-                class="form-input"
-                step="any"
-              />
-            </div>
-            <div class="form-group">
-              <label>Longitude</label>
-              <input
-                type="number"
-                formControlName="lng"
-                placeholder="Longitude"
-                class="form-input"
-                step="any"
-              />
-            </div>
-          </div>
-        </form>
-
-        <div class="map-container">
-          <div id="map"></div>
+        <div class="store-card-header-actions">
+          <button class="edit-btn" (click)="editStore(store); $event.stopPropagation()">Edit</button>
+          <button class="delete-btn" (click)="deleteStore(store.id!); $event.stopPropagation()">Delete</button>
         </div>
-
-        <button 
-          type="button" 
-          class="save-btn" 
-          (click)="saveStore()"
-          [disabled]="!currentLatLng">
-          {{ selectedStore ? 'Update Store' : 'Add Store' }}
-        </button>
-        <button 
-          type="button" 
-          class="cancel-btn" 
-          *ngIf="selectedStore" 
-          (click)="cancelEdit()">
-          Cancel
-        </button>
+      </div>
+      <div class="store-details">
+        <div>{{ store.city }}, {{ store.country }}</div>
+        <div>{{ store.fullAddress }}</div>
+        <div>Phone: {{ store.phoneNumber }}</div>
+        <div>Email: {{ store.email }}</div>
       </div>
     </div>
   </div>
+
+  <div class="active-store-map">
+    <h3 *ngIf="activeStore">Active Store Location Map</h3>
+    <div id="activeStoreMap"></div>
+  </div>
 </div>
+
+<!-- Modal for Add/Edit Store -->
+<div *ngIf="showModal" class="modal-backdrop">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>{{ selectedStore ? 'Edit Store' : 'Add New Store' }}</h2>
+      <button class="close-modal-btn" type="button" (click)="closeModal()" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="storeForm" class="address-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" formControlName="name" placeholder="Store Name" class="form-input" />
+            <div *ngIf="storeForm.get('name')?.touched && storeForm.get('name')?.invalid" class="error-message">
+              <span *ngIf="storeForm.get('name')?.errors?.['required']">Name is required.</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Full Address</label>
+            <div class="input-wrapper">
+              <input type="text" formControlName="fullAddress" placeholder="Full Address" class="form-input" />
+              <button type="button" class="locate-btn" (click)="autoLocate()" [disabled]="isLoading" title="Auto locate">
+                <svg *ngIf="!isLoading" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 8C14.21 8 16 9.79 16 12C16 14.21 14.21 16 12 16C9.79 16 8 14.21 8 12C8 9.79 9.79 8 12 8ZM20.94 11C20.48 6.83 17.17 3.52 13 3.06V1H11V3.06C6.83 3.52 3.52 6.83 3.06 11H1V13H3.06C3.52 17.17 6.83 20.48 11 20.94V23H13V20.94C17.17 20.48 20.48 17.17 20.94 13H23V11H20.94ZM12 19C8.13 19 5 15.87 5 12C5 8.13 8.13 5 12 5C15.87 5 19 8.13 19 12C19 15.87 15.87 19 12 19Z" fill="currentColor"/>
+                </svg>
+                <div *ngIf="isLoading" class="loading-spinner"></div>
+              </button>
+            </div>
+            <div *ngIf="storeForm.get('fullAddress')?.touched && storeForm.get('fullAddress')?.invalid" class="error-message">
+              <span *ngIf="storeForm.get('fullAddress')?.errors?.['required']">Full address is required.</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>City</label>
+            <input type="text" formControlName="city" placeholder="City" class="form-input" />
+            <div *ngIf="storeForm.get('city')?.touched && storeForm.get('city')?.invalid" class="error-message">
+              <span *ngIf="storeForm.get('city')?.errors?.['required']">City is required.</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Country</label>
+            <input type="text" formControlName="country" placeholder="Country" class="form-input" />
+            <div *ngIf="storeForm.get('country')?.touched && storeForm.get('country')?.invalid" class="error-message">
+              <span *ngIf="storeForm.get('country')?.errors?.['required']">Country is required.</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Zip Code</label>
+            <input type="text" formControlName="zipCode" placeholder="Zip Code" class="form-input" />
+            <div *ngIf="storeForm.get('zipCode')?.touched && storeForm.get('zipCode')?.invalid" class="error-message">
+              <span *ngIf="storeForm.get('zipCode')?.errors?.['required']">Zip code is required.</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Latitude</label>
+            <input type="number" formControlName="lat" placeholder="Latitude" class="form-input" step="any" />
+            <div *ngIf="storeForm.get('lat')?.touched && storeForm.get('lat')?.invalid" class="error-message">
+              <span *ngIf="storeForm.get('lat')?.errors?.['required']">Latitude is required.</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Longitude</label>
+            <input type="number" formControlName="lng" placeholder="Longitude" class="form-input" step="any" />
+            <div *ngIf="storeForm.get('lng')?.touched && storeForm.get('lng')?.invalid" class="error-message">
+              <span *ngIf="storeForm.get('lng')?.errors?.['required']">Longitude is required.</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="text" formControlName="phoneNumber" placeholder="Phone Number" class="form-input" />
+          <div *ngIf="storeForm.get('phoneNumber')?.touched && storeForm.get('phoneNumber')?.invalid" class="error-message">
+            <span *ngIf="storeForm.get('phoneNumber')?.errors?.['required']">Phone number is required.</span>
+            <span *ngIf="storeForm.get('phoneNumber')?.errors?.['myanmarPhone']">Please enter a valid Myanmar mobile (09..,959..,+959...)</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" formControlName="email" placeholder="Email Address" class="form-input" />
+          <div *ngIf="storeForm.get('email')?.touched && storeForm.get('email')?.invalid" class="error-message">
+            <span *ngIf="storeForm.get('email')?.errors?.['required']">Email is required.</span>
+            <span *ngIf="storeForm.get('email')?.errors?.['email']">Invalid email format.</span>
+            <span *ngIf="storeForm.get('email')?.errors?.['gmailOnly']">Only Gmail addresses are allowed.</span>
+          </div>
+        </div>
+        <div class="map-container">
+          <div id="modalMap"></div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="save-btn" (click)="saveStore()" [disabled]="!currentLatLng">
+        {{ selectedStore ? 'Update' : 'Add' }}
+      </button>
+      <button type="button" class="cancel-btn" (click)="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+

@@ -17,6 +17,9 @@ public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+   
+    @Column(length = 100, nullable = false)
+    private String username;
 
     @Column(length = 255, nullable = false, unique = false)
     private String email;
@@ -43,7 +46,6 @@ public class UserEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<OtpEntity> otp;
 
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserAddressEntity> addresses;
 
@@ -61,5 +63,7 @@ public class UserEntity {
 
     @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductAnswerEntity> productAnswer = new ArrayList<>();
+    @Column(name = "last_login_date")
+    private LocalDateTime lastLoginDate;
 
 }

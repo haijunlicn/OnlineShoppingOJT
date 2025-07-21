@@ -50,6 +50,7 @@ public class AuditAspect {
                 entityId,
                 changes,
                 userId,
+                getCurrentUsername(), 
                 userType,
                 ip,
                 userAgent
@@ -90,5 +91,13 @@ public class AuditAspect {
         }
         return Map.of();
     }
+    private String getCurrentUsername() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof CustomUserDetails userDetails) {
+            return userDetails.getUser().getUsername();
+        }
+        return "UNKNOWN";
+    }
+
 
 }

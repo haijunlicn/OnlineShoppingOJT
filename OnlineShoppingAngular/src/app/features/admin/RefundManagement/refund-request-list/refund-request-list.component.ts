@@ -425,4 +425,12 @@ export class RefundRequestListComponent implements OnInit, OnDestroy {
       'Refund Request Detail'
     );
   }
+
+  exportTableToPdf() {
+    this.exportRefundsToPdf();
+  }
+
+  async exportTableToExcel() {
+    await this.exportRefundsToExcel();
+  }
 }

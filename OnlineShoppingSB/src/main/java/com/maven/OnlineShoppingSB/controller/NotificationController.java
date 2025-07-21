@@ -91,4 +91,11 @@ public class NotificationController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/list/custom")
+    public ResponseEntity<List<NotificationDTO>> getCustomNotifications() {
+        List<NotificationDTO> notifications = notificationService.getNotificationsByTypeName("CUSTOM");
+        return ResponseEntity.ok(notifications);
+    }
+
+
 }

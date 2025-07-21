@@ -1,7 +1,7 @@
 import { Component, ViewChild, ElementRef } from "@angular/core"
-import  { OnInit } from "@angular/core"
-import {  FormBuilder, FormGroup, FormArray, Validators } from "@angular/forms"
-import  { Router } from "@angular/router"
+import { OnInit } from "@angular/core"
+import { FormBuilder, FormGroup, FormArray, Validators } from "@angular/forms"
+import { Router } from "@angular/router"
 import {
   Operator,
   DiscountConditionEA_D,
@@ -14,7 +14,8 @@ import {
 } from "@app/core/models/discount"
 import { ProductDTO } from "@app/core/models/product.model"
 import { CloudinaryService } from "@app/core/services/cloudinary.service"
-import  { DiscountService } from "@app/core/services/discount.service"
+import { DiscountService } from "@app/core/services/discount.service"
+import { distinctUntilChanged } from "rxjs"
 export interface Rule {
   id: string
   type: string
@@ -149,8 +150,8 @@ export class CreateDiscountComponent implements OnInit {
       startDate: ["", Validators.required],
       endDate: ["", Validators.required],
       isActive: [true],
-      usageLimit: [1, [ Validators.min(1)]],
-      perUserLimit: [1, [ Validators.min(1)]],
+      usageLimit: [1, [Validators.min(1)]],
+      perUserLimit: [1, [Validators.min(1)]],
       discountMechanisms: this.fb.array([]),
     })
   }
@@ -350,9 +351,13 @@ export class CreateDiscountComponent implements OnInit {
       // If user switches back to DISCOUNT, set discountType to PERCENTAGE if not set
       if (type === MechanismType.DISCOUNT) {
         const discountTypeControl = mechanismGroup.get("discountType")
-        if (!discountTypeControl?.value) {
-          discountTypeControl?.setValue(DiscountType.PERCENTAGE)
+        if (!discountTypeControl?.value || discountTypeControl.value !== DiscountType.PERCENTAGE) {
+          discountTypeControl!.setValue(DiscountType.PERCENTAGE, { emitEvent: false });
         }
+
+        // if (!discountTypeControl?.value) {
+        //   discountTypeControl?.setValue(DiscountType.PERCENTAGE)
+        // }
         discountTypeControl?.setValidators([Validators.required])
         discountTypeControl?.updateValueAndValidity()
       }
@@ -364,9 +369,16 @@ export class CreateDiscountComponent implements OnInit {
       }
     })
 
-    mechanismGroup.get("discountType")?.valueChanges.subscribe((discountType) => {
-      this.onDiscountTypeValueChange(mechanismGroup, discountType)
-    })
+    mechanismGroup.get("discountType")?.valueChanges
+      .pipe(distinctUntilChanged())
+      .subscribe((discountType) => {
+        this.onDiscountTypeValueChange(mechanismGroup, discountType)
+      })
+
+
+    // mechanismGroup.get("discountType")?.valueChanges.subscribe((discountType) => {
+    //   this.onDiscountTypeValueChange(mechanismGroup, discountType)
+    // })
 
     this.discountMechanisms.push(mechanismGroup)
   }
@@ -570,9 +582,9 @@ export class CreateDiscountComponent implements OnInit {
     const discountType = mechanismGroup.get("discountType")?.value
     return (
       (mechanismType === MechanismType.DISCOUNT ||
-       mechanismType === MechanismType.B2B ||
-       mechanismType === MechanismType.Coupon ||
-       mechanismType === 'Coupon') &&
+        mechanismType === MechanismType.B2B ||
+        mechanismType === MechanismType.Coupon ||
+        mechanismType === 'Coupon') &&
       discountType === DiscountType.PERCENTAGE
     )
   }
@@ -996,12 +1008,12 @@ export class CreateDiscountComponent implements OnInit {
       const mechanismType = group.get('mechanismType')?.value;
       const value = group.get('value')?.value;
       const couponCode = group.get('couponcode')?.value;
-      
+
       // For DISCOUNT, B2B, and Coupon mechanisms, value is required
       if ((mechanismType === 'DISCOUNT' || mechanismType === 'B2B' || mechanismType === 'Coupon') && (!value || value === '')) {
         return false;
       }
-      
+
       // For Coupon mechanism, coupon code is also required
       if (mechanismType === 'Coupon' && (!couponCode || couponCode.trim() === '')) {
         return false;

@@ -14,7 +14,7 @@ public class DiscountConditionGroupEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private Boolean logicOperator; // 0=AND, 1=OR
+    private Boolean logicOperator; // 0=OR, 1=AND
 
     @ManyToOne
     @JoinColumn(name = "discountMechanism_id")

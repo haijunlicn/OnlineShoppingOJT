@@ -13,18 +13,20 @@ public class AuditEventDTO {
     private final Long entityId;
     private final Map<String, Object> changedData;
     private final Long userId;
+    private final String username;         // add this field
     private final String userType;
     private final String ipAddress;
     private final String userAgent;
 
     public AuditEventDTO(String action, String entityType, Long entityId,
-                         Map<String, Object> changedData, Long userId, String userType,
-                         String ipAddress, String userAgent) {
+                         Map<String, Object> changedData, Long userId, String username,
+                         String userType, String ipAddress, String userAgent) {
         this.action = action;
         this.entityType = entityType;
         this.entityId = entityId;
         this.changedData = changedData;
         this.userId = userId;
+        this.username = username;
         this.userType = userType;
         this.ipAddress = ipAddress;
         this.userAgent = userAgent;

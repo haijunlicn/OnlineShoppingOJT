@@ -5,8 +5,9 @@ export interface StoreLocationDto {
   lat: number;
   lng: number;
   phoneNumber: string;
-  delFg?: boolean;
   city: string;
   country: string;
   zipCode: string;
+  email: string;
+  delFg?: boolean;
 }

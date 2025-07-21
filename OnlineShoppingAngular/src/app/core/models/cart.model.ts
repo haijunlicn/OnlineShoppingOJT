@@ -7,4 +7,6 @@ export interface CartItem {
   price: number;
   imgPath?: string;
   quantity: number;
+  brandId: number;
+  categoryId: number;
 }
