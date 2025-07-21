@@ -32,6 +32,7 @@ declare interface EditReviewData {
   templateUrl: "./product-detail.component.html",
   styleUrl: "./product-detail.component.css",
 })
+
 export class ProductDetailComponent implements OnInit, OnDestroy {
 
   private carouselInterval: any;
@@ -96,6 +97,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   hasReviewedProduct: boolean = false;
   editingReview: any = null;
   editReviewData: EditReviewData = { rating: 5, comment: '', images: [] };
+  loggedIn = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -113,6 +115,11 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
+
+    this.authService.isLoggedIn$.subscribe((isLoggedIn) => {
+      this.loggedIn = isLoggedIn;
+    });
+
     this.route.paramMap.subscribe((params) => {
       const id = params.get("id")
       if (id) {

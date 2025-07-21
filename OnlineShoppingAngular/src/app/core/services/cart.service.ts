@@ -35,16 +35,28 @@ export class CartService {
   }
 
   // Dynamic localStorage key based on current user
-  private get storageKey(): string {
+  private get storageKey(): string | null {
     const userId = this.authService?.getCurrentUser?.()?.id;
-    return userId ? `cart_user_${userId}` : 'cart_guest';
+    return userId ? `cart_user_${userId}` : null; // null for guests
   }
+
+
+  // private get storageKey(): string {
+  //   const userId = this.authService?.getCurrentUser?.()?.id;
+  //   return userId ? `cart_user_${userId}` : 'cart_guest';
+  // }
 
   /** Read full cart */
   getCart(): CartItem[] {
+    if (!this.storageKey) return [];
     const cart = localStorage.getItem(this.storageKey);
     return cart ? JSON.parse(cart) : [];
   }
+
+  // getCart(): CartItem[] {
+  //   const cart = localStorage.getItem(this.storageKey);
+  //   return cart ? JSON.parse(cart) : [];
+  // }
 
   /** Add product variant to cart */
   addToCart(product: {
@@ -58,6 +70,9 @@ export class CartService {
     brandId: number;
     categoryId: number;
   }): void {
+
+    if (!this.storageKey) return; // Do nothing for guest
+
     const cart = this.getCart();
     const index = cart.findIndex(
       (item) => item.productId === product.id && item.variantId === product.variantId
@@ -115,6 +130,7 @@ export class CartService {
 
   /** Remove an item from the cart */
   removeFromCart(productId: number, variantId: number): void {
+    if (!this.storageKey) return;
     const updatedCart = this.getCart().filter(
       (item) => !(item.productId === productId && item.variantId === variantId)
     );
@@ -125,6 +141,7 @@ export class CartService {
 
   /** Clear the cart completely */
   clearCart(): void {
+    if (!this.storageKey) return;
     localStorage.removeItem(this.storageKey);
     this.cartItemsSubject.next([]);
     this.emitCount();
@@ -150,6 +167,7 @@ export class CartService {
   }
 
   private updateCart(cart: CartItem[]) {
+    if (!this.storageKey) return;
     localStorage.setItem(this.storageKey, JSON.stringify(cart));
     this.cartItemsSubject.next(cart);
     this.emitCount();
