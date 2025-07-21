@@ -56,7 +56,7 @@
 
     <div class="description-section">
       <h3>Description</h3>
-      <p>{{ vlogFile?.description || 'No description provided for this vlog.' }}</p>
+      <p>{{ vlogFile?.title || 'No description provided for this vlog.' }}</p>
     </div>
 
     <!-- User Engagement & Community: Comments Section -->
@@ -118,7 +118,7 @@
         </div>
         <div class="related-vlog-info">
           <h4 class="related-vlog-title">{{ relatedVlog.title }}</h4>
-          <p class="related-vlog-description">{{ relatedVlog.description }}</p>
+          <p class="related-vlog-description">{{ relatedVlog.title }}</p>
         </div>
       </a>
     </div>

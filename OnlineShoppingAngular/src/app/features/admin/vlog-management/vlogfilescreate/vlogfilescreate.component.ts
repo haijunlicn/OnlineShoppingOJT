@@ -15,7 +15,7 @@ export class VlogFilesCreateComponent implements OnInit {
     vlogId: 0,
     fileType: "",
     filePath: "",
-    description: "",
+   // description: "",
     title: "",
     duration: "",
     publishedDate: "",
