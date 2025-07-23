@@ -179,16 +179,9 @@
 
               <!-- Enhanced Price Section -->
               <div class="price-section mb-3">
-                <app-discount-display [discountHints]="getAppliedDiscountHints(product)" [displayMode]="'grid'"
+                <app-discount-display [discountHints]="getUnconditionalDiscountHints(product)" [displayMode]="'grid'"
                   [originalPrice]="product.originalPrice" [discountedPrice]="product.discountedPrice">
                 </app-discount-display>
-
-                <!-- Fallback price display when no discounts applied -->
-                <!-- <div *ngIf="!hasAppliedDiscounts(product)" class="price-display">
-                  <span class="current-price fw-bold">
-                    MMK {{ product.originalPrice | number:'1.0-0' }}
-                  </span>
-                </div> -->
               </div>
 
               <!-- Bottom Action Row -->

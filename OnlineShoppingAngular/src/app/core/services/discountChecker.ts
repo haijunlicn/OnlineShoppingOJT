@@ -26,7 +26,7 @@ export function evaluateCartConditions(
             return false;
         }
 
-        console.log(`Conditions (${conditions.length}):`, conditions);
+        // console.log(`Conditions (${conditions.length}):`, conditions);
 
         if (group.logicOperator) {
             // AND group logic with PRODUCT filter propagation
@@ -90,7 +90,7 @@ function evaluateSingleCondition(
     const operator = condition.operator;
     const detail = condition.conditionDetail;
 
-    console.log(`🔎 Evaluating condition type='${condition.conditionType}' detail='${detail}' operator='${operator}' with values=`, values);
+    // console.log(`🔎 Evaluating condition type='${condition.conditionType}' detail='${detail}' operator='${operator}' with values=`, values);
 
     switch (condition.conditionType) {
         case "PRODUCT":
@@ -100,7 +100,7 @@ function evaluateSingleCondition(
             return checkOrderCondition(detail, values, operator, cartItems, shipping);
 
         case "CUSTOMER_GROUP":
-            console.log(`👥 Using backend-calculated eligibility: ${condition.eligible}`);
+            // console.log(`👥 Using backend-calculated eligibility: ${condition.eligible}`);
             return condition.eligible === true;
 
         default:

@@ -24,10 +24,9 @@ export class DiscountDisplayComponent implements OnInit, OnChanges {
   // Categorized discounts for better display
   discountBadges: DiscountDisplayDTO[] = []
   couponCards: DiscountDisplayDTO[] = []
-  freeGiftBanners: DiscountDisplayDTO[] = []
   regularDiscounts: DiscountDisplayDTO[] = []
 
-  constructor(private discountTextService: DiscountTextService) {}
+  constructor(private discountTextService: DiscountTextService) { }
 
   ngOnInit(): void {
     this.categorizeDiscounts()
@@ -45,7 +44,6 @@ export class DiscountDisplayComponent implements OnInit, OnChanges {
     // Reset categories
     this.discountBadges = []
     this.couponCards = []
-    this.freeGiftBanners = []
     this.regularDiscounts = []
 
     // Categorize discounts based on mechanism type and display mode
@@ -65,12 +63,6 @@ export class DiscountDisplayComponent implements OnInit, OnChanges {
           }
           break
 
-        case "freeGift":
-          if (this.displayMode === "detail") {
-            this.freeGiftBanners.push(hint)
-          }
-          break
-
         default:
           // Handle other types if needed
           break
@@ -84,12 +76,8 @@ export class DiscountDisplayComponent implements OnInit, OnChanges {
     switch (mechanismType) {
       case "Coupon":
         return "pi-tag"
-      case "freeGift":
-        return "pi-gift"
       case "Discount":
         return "pi-percentage"
-      case "B2B":
-        return "pi-shopping-cart"
       default:
         return "pi-dollar"
     }
@@ -97,22 +85,34 @@ export class DiscountDisplayComponent implements OnInit, OnChanges {
 
   getDiscountBadgeClass(mechanismType: string): string {
     switch (mechanismType) {
-      case "coupon":
+      case "Coupon":
         return "badge-coupon"
-      case "freeGift":
-        return "badge-gift"
       case "Discount":
         return "badge-discount"
-      case "wholeSale":
-        return "badge-wholesale"
       default:
         return "badge-default"
     }
   }
 
+  // formatDiscountBadge(discount: DiscountDisplayDTO): string {
+  //   return this.discountTextService.formatDiscountValue(discount)
+  // }
+
   formatDiscountBadge(discount: DiscountDisplayDTO): string {
-    return this.discountTextService.formatDiscountValue(discount)
+    let base = this.discountTextService.formatDiscountValue(discount);
+
+    // If it's a percentage discount with a max cap
+    if (
+      discount.discountType === 'PERCENTAGE' &&
+      discount.maxDiscountAmount &&
+      Number(discount.maxDiscountAmount) > 0
+    ) {
+      base += ` (Up to MMK ${discount.maxDiscountAmount.toLocaleString()})`;
+    }
+
+    return base;
   }
+
 
   // ===== LEGACY METHODS FOR BACKWARD COMPATIBILITY =====
 
@@ -126,10 +126,6 @@ export class DiscountDisplayComponent implements OnInit, OnChanges {
 
   getCouponCards(): DiscountDisplayDTO[] {
     return this.couponCards
-  }
-
-  getFreeGiftBanners(): DiscountDisplayDTO[] {
-    return this.freeGiftBanners
   }
 
   // ===== CLIPBOARD AND COUPON METHODS =====
@@ -167,10 +163,6 @@ export class DiscountDisplayComponent implements OnInit, OnChanges {
     return this.couponCards.length > 0
   }
 
-  hasFreeGiftBanners(): boolean {
-    return this.freeGiftBanners.length > 0
-  }
-
   shouldShowPriceComparison(): boolean {
     return (
       this.originalPrice !== undefined &&
@@ -189,7 +181,7 @@ export class DiscountDisplayComponent implements OnInit, OnChanges {
       case "grid":
         return this.discountBadges.length
       case "detail":
-        return this.couponCards.length + this.freeGiftBanners.length + this.regularDiscounts.length
+        return this.couponCards.length + this.regularDiscounts.length
       case "cart":
         return this.couponCards.length + this.regularDiscounts.length
       default:

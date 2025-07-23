@@ -60,6 +60,9 @@ public class authController {
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@RequestBody UserEntity user) {
+
+
+
         String result = userService.registerUser(user);
 
         Map<String, Object> response = new HashMap<>();

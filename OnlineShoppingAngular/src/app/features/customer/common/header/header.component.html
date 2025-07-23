@@ -37,7 +37,9 @@
           </button>
 
           <!-- Auth Section - Conditional Rendering -->
-          <ng-container *ngIf="!isLoggedIn || !isCustomer">
+          <ng-template  #guestBlock>
+          <!-- *ngIf="!isLoggedIn || !isCustomer" -->
+          
             <!-- Not Logged In - Show Auth Buttons -->
             <button class="auth-btn auth-btn-outline d-none d-md-inline-block" (click)="onRegister()">
               Register
@@ -45,9 +47,9 @@
             <button class="auth-btn auth-btn-filled d-none d-md-inline-block" (click)="onSignIn()">
               Sign In
             </button>
-          </ng-container>
+          </ng-template>
 
-          <ng-container *ngIf="isLoggedIn && isCustomer && currentUser">
+          <ng-container *ngIf="isLoggedIn && isCustomer && currentUser; else guestBlock">
             <!-- Wishlist -->
             <button class="action-btn" (click)="onWishlist()" title="Wishlist">
               <i class="fas fa-heart"></i>
@@ -89,7 +91,7 @@
                 <div class="profile-dropdown-divider"></div>
 
                 <div class="profile-dropdown-menu">
-                 <button class="profile-menu-item" (click)="onProfile()">
+                  <button class="profile-menu-item" (click)="onProfile()">
                     <i class="fas fa-user"></i>
                     <span>Profile</span>
                   </button>
@@ -153,7 +155,8 @@
 
       <!-- Mobile Auth Section -->
       <div class="mobile-auth">
-        <ng-container *ngIf="!isLoggedIn || !isCustomer">
+
+        <ng-container *ngIf="!isLoggedIn || !isCustomer; else loggedInBlock">
           <button class="mobile-auth-btn outline" (click)="onRegister(); toggleMenu()">
             Register
           </button>
@@ -162,8 +165,8 @@
           </button>
         </ng-container>
 
-        <ng-container *ngIf="isLoggedIn && isCustomer && currentUser">
-          <div class="mobile-profile-section">
+        <ng-template #loggedInBlock>
+          <div class="mobile-profile-section" *ngIf="currentUser">
             <div class="mobile-profile-header">
               <div class="profile-avatar-large">
                 {{ getUserInitials(currentUser.name) }}
@@ -193,7 +196,7 @@
               </button>
             </div>
           </div>
-        </ng-container>
+        </ng-template>
       </div>
     </div>
   </div>

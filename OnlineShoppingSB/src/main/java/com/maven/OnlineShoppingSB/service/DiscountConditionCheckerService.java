@@ -21,16 +21,22 @@ public class DiscountConditionCheckerService {
     private OrderRepository orderRepository;
 
     public boolean isEligible(UserEntity user, DiscountMechanismEntity mechanism) {
+        System.out.println("🧠 Checking eligibility for user: " + user.getId() + " and mechanism: " + mechanism.getId());
+
         List<DiscountConditionGroupEntity> groups = mechanism.getDiscountConditionGroup();
 
         if (groups == null || groups.isEmpty()) {
+            System.out.println("✅ No condition groups → eligible by default");
             return true; // No condition means eligible for all
         }
 
         for (DiscountConditionGroupEntity group : groups) {
+            System.out.println("🔍 Evaluating group ID: " + group.getId() + " with operator: " + (group.getLogicOperator() ? "AND" : "OR"));
+
             List<DiscountConditionEntity> conditions = group.getDiscountCondition();
 
             if (conditions == null || conditions.isEmpty()) {
+                System.out.println("❌ Group has no conditions → fail");
                 return false;
             }
 
@@ -39,44 +45,94 @@ public class DiscountConditionCheckerService {
             for (DiscountConditionEntity condition : conditions) {
                 boolean passed = evaluateCondition(user, condition);
                 results.add(passed);
+
+                System.out.println("   ➤ Condition ID: " + condition.getId() +
+                        " | Type: " + condition.getConditionType() +
+                        " | Detail: " + condition.getConditionDetail() +
+                        " | Passed: " + passed);
             }
 
             boolean groupPassed = group.getLogicOperator()
                     ? results.stream().allMatch(Boolean::booleanValue)
                     : results.stream().anyMatch(Boolean::booleanValue);
 
-            if (!groupPassed) return false;
+            System.out.println("🔎 Group result: " + groupPassed);
+
+            if (!groupPassed) {
+                System.out.println("❌ Group failed → not eligible");
+                return false;
+            }
         }
 
+        System.out.println("✅ All groups passed → eligible");
         return true;
     }
 
     public boolean evaluateCondition(UserEntity user, DiscountConditionEntity condition) {
-        List<String> values = parseValueJsonToList(condition.getValue());
-
         return switch (condition.getConditionType()) {
-            case CUSTOMER_GROUP -> evaluateCustomerGroupCondition(user, condition.getConditionDetail(), values);
-            case ORDER -> evaluateOrderCondition(user, condition.getConditionDetail(), condition.getOperator(), values);
-            default -> false; // Unsupported condition types are ignored here
+            case CUSTOMER_GROUP -> evaluateCustomerGroupCondition(user, condition);
+            case ORDER ->
+                    evaluateOrderCondition(user, condition.getConditionDetail(), condition.getOperator(), parseValueJsonToList(condition.getValue()));
+            default -> false;
         };
     }
 
-    private boolean evaluateCustomerGroupCondition(UserEntity user, String groupIdStr, List<String> valueList) {
-        if (user == null) return false;
-
-        boolean mustBeInGroup = valueList.contains("true");
-
-        try {
-            Long groupId = Long.parseLong(groupIdStr);
-            List<Long> userGroupIds = customerGroupRepository.findGroupIdsByUser(user.getId());
-            boolean isInGroup = userGroupIds.contains(groupId);
-
-            return mustBeInGroup == isInGroup;
-
-        } catch (NumberFormatException e) {
+    private boolean evaluateCustomerGroupCondition(UserEntity user, DiscountConditionEntity condition) {
+        if (user == null) {
+            System.out.println("❌ User is null");
             return false;
         }
+
+        System.out.println("🧠 Evaluating condition for user ID: " + user.getId());
+
+        List<Integer> requiredGroupIds = parseValueJsonToList(condition.getValue())
+                .stream()
+                .map(Integer::parseInt)
+                .toList();
+
+        System.out.println("🔍 Required Group IDs: " + requiredGroupIds);
+
+        List<Long> userGroupIds = customerGroupRepository.findGroupIdsByUser(user.getId());
+
+        System.out.println("👤 User's Group IDs: " + userGroupIds);
+
+        for (Integer groupId : requiredGroupIds) {
+            if (userGroupIds.contains(groupId.longValue())) {
+                System.out.println("✅ User is in required group: " + groupId);
+                return true;
+            }
+        }
+
+        System.out.println("❌ No matching groups found.");
+        return false;
     }
+
+//    public boolean evaluateCondition(UserEntity user, DiscountConditionEntity condition) {
+//        List<String> values = parseValueJsonToList(condition.getValue());
+//
+//        return switch (condition.getConditionType()) {
+//            case CUSTOMER_GROUP -> evaluateCustomerGroupCondition(user, condition.getConditionDetail(), values);
+//            case ORDER -> evaluateOrderCondition(user, condition.getConditionDetail(), condition.getOperator(), values);
+//            default -> false; // Unsupported condition types are ignored here
+//        };
+//    }
+//
+//    private boolean evaluateCustomerGroupCondition(UserEntity user, String groupIdStr, List<String> valueList) {
+//        if (user == null) return false;
+//
+//        boolean mustBeInGroup = valueList.contains("true");
+//
+//        try {
+//            Long groupId = Long.parseLong(groupIdStr);
+//            List<Long> userGroupIds = customerGroupRepository.findGroupIdsByUser(user.getId());
+//            boolean isInGroup = userGroupIds.contains(groupId);
+//
+//            return mustBeInGroup == isInGroup;
+//
+//        } catch (NumberFormatException e) {
+//            return false;
+//        }
+//    }
 
     private boolean evaluateOrderCondition(UserEntity user, String field, Operator operator, List<String> values) {
         if (user == null || values.isEmpty()) return false;
@@ -105,7 +161,8 @@ public class DiscountConditionCheckerService {
     }
 
     public String buildShortLabel(DiscountMechanismEntity mechanism) {
-        if (mechanism.getMechanismType() != MechanismType.Discount) return "";
+        if (mechanism.getMechanismType() != MechanismType.Discount && mechanism.getMechanismType() != MechanismType.Coupon)
+            return "";
 
         String value = mechanism.getValue();
         String type = mechanism.getDiscountType() != null ? mechanism.getDiscountType().name() : "";
@@ -153,7 +210,7 @@ public class DiscountConditionCheckerService {
         return switch (condition.getConditionType()) {
             case PRODUCT -> capitalize(field) + " " + operator + " " + valueStr;
             case ORDER -> buildOrderConditionText(field, operator, valueStr);
-            case CUSTOMER_GROUP -> buildCustomerGroupConditionText(field, values);
+            case CUSTOMER_GROUP -> buildCustomerGroupConditionText(values);
             default -> "";
         };
     }
@@ -166,16 +223,25 @@ public class DiscountConditionCheckerService {
         };
     }
 
-    private String buildCustomerGroupConditionText(String groupId, List<String> values) {
-        Long id = Long.parseLong(groupId);
-        GroupEntity group = groupRepository.findById(id).orElse(null);
-        if (group == null) return "";
+    private String buildCustomerGroupConditionText(List<String> groupIds) {
+        if (groupIds == null || groupIds.isEmpty()) return "";
 
-        boolean included = values.contains("true");
-        return included
-                ? "Customer belongs to group '" + group.getName() + "'"
-                : "Customer does not belong to group '" + group.getName() + "'";
+        // Fetch group names for all group IDs
+        List<String> groupNames = new ArrayList<>();
+        for (String groupIdStr : groupIds) {
+            try {
+                Long id = Long.parseLong(groupIdStr);
+                groupRepository.findById(id).ifPresent(group -> groupNames.add(group.getName()));
+            } catch (NumberFormatException e) {
+                // ignore invalid IDs
+            }
+        }
+
+        if (groupNames.isEmpty()) return "";
+
+        return "Customer belongs to one of groups: " + String.join(", ", groupNames);
     }
+
 
     private String capitalize(String input) {
         return input == null || input.isEmpty()

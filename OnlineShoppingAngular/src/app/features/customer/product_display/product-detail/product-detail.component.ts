@@ -97,7 +97,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   hasReviewedProduct: boolean = false;
   editingReview: any = null;
   editReviewData: EditReviewData = { rating: 5, comment: '', images: [] };
-  loggedIn = false;
+  // loggedIn = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -117,7 +117,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
 
     this.authService.isLoggedIn$.subscribe((isLoggedIn) => {
-      this.loggedIn = isLoggedIn;
+      this.isLoggedIn = isLoggedIn;
     });
 
     this.route.paramMap.subscribe((params) => {

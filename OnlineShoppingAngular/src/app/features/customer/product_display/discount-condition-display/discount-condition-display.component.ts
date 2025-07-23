@@ -241,54 +241,6 @@ export class DiscountConditionDisplayComponent implements OnInit, OnChanges {
     return this.sanitizer.bypassSecurityTrustHtml(renderedText);
   }
 
-
-  // renderTextWithLinks(textOutput: { text: string; linkedEntities: any[] }): SafeHtml {
-  //   let renderedText = textOutput.text;
-
-  //   textOutput.linkedEntities.forEach((entity, index) => {
-  //     const placeholder =
-  //       index === 0 ? `{{${entity.type.toUpperCase()}}}` : `{{${entity.type.toUpperCase()}${index + 1}}}`;
-  //     const clickableElement = `<span class="clickable-entity" data-entity-index="${index}">${entity.name}</span>`;
-  //     renderedText = renderedText.replace(placeholder, clickableElement);
-  //   });
-
-  //   // Mark as safe HTML
-  //   return this.sanitizer.bypassSecurityTrustHtml(renderedText);
-  // }
-
-  // renderTextWithLinks(textOutput: { text: string; linkedEntities: any[] }): string {
-  //   // Create a cache key based on the text and entities
-  //   const cacheKey = `${textOutput.text}_${JSON.stringify(textOutput.linkedEntities.map((e) => e.name))}`
-
-  //   // Find if we have this cached in any parsed discount
-  //   const cachedItem = this.parsedDiscounts.find(
-  //     (item) => item.renderedTextWithLinks && item.linkedConditionText?.text === textOutput.text,
-  //   )
-
-  //   if (cachedItem?.renderedTextWithLinks) {
-  //     return cachedItem.renderedTextWithLinks
-  //   }
-
-  //   // Compute the rendered text
-  //   let renderedText = textOutput.text
-
-  //   textOutput.linkedEntities.forEach((entity, index) => {
-  //     // Use dynamic placeholder generation instead of hardcoded patterns
-  //     const placeholder =
-  //       index === 0 ? `{{${entity.type.toUpperCase()}}}` : `{{${entity.type.toUpperCase()}${index + 1}}}`
-  //     const clickableElement = `<span class="clickable-entity" data-entity-index="${index}">${entity.name}</span>`
-  //     renderedText = renderedText.replace(placeholder, clickableElement)
-  //   })
-
-  //   // Cache the result if we found the corresponding parsed discount
-  //   const correspondingItem = this.parsedDiscounts.find((item) => item.linkedConditionText?.text === textOutput.text)
-  //   if (correspondingItem) {
-  //     correspondingItem.renderedTextWithLinks = renderedText
-  //   }
-
-  //   return renderedText
-  // }
-
   /**
    * Handle entity clicks in template
    */

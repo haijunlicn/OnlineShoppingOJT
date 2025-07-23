@@ -140,7 +140,7 @@
 
             <div class="action-buttons">
               <button class="btn btn-primary add-to-cart-btn" (click)="addToCart(this.product)" 
-                [disabled]="!loggedIn || 
+                [disabled]="!isLoggedIn || 
                             !selectedVariant || 
                             selectedVariant.stock === 0 || 
                             getCurrentVariantRemainingStock() === 0">
@@ -149,7 +149,7 @@
               </button>
 
               <button class="btn btn-outline-secondary wishlist-btn" (click)="toggleWish(product.product.id!)"
-                [disabled]="!loggedIn">
+                [disabled]="!isLoggedIn">
                 <i class="pi" [ngClass]="isWished(product.product.id!) ? 'pi-heart-fill text-danger' : 'pi-heart'"></i>
               </button>
             </div>

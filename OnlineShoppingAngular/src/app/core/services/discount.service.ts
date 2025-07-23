@@ -8,9 +8,9 @@ import { ProductDTO } from "../models/product.model"
   providedIn: 'root'
 })
 export class DiscountService {
-   private apiUrl = "http://localhost:8080/api/discounts"
+  private apiUrl = "http://localhost:8080/api/discounts"
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getAllGroups(): Observable<GroupEA_G[]> {
     return this.http.get<GroupEA_G[]>(`${this.apiUrl}/groups`);
@@ -45,7 +45,9 @@ export class DiscountService {
     return this.http.get<ProductDTO[]>(`${this.apiUrl}/products`);
   }
 
- 
+
+
+
   createDiscount(discount: DiscountEA_A): Observable<string> {
     return this.http.post(`${this.apiUrl}/createDiscount`, discount, { responseType: 'text' });
   }
@@ -82,12 +84,12 @@ export class DiscountService {
   }
 
   // Get all condition groups for a group
-getGroupConditions(groupId: number): Observable<DiscountConditionGroupEA_C[]> {
-  return this.http.get<DiscountConditionGroupEA_C[]>(`${this.apiUrl}/groups/${groupId}/conditions`);
-}
+  getGroupConditions(groupId: number): Observable<DiscountConditionGroupEA_C[]> {
+    return this.http.get<DiscountConditionGroupEA_C[]>(`${this.apiUrl}/groups/${groupId}/conditions`);
+  }
 
-// Delete a condition group by id
-deleteConditionGroup(conditionGroupId: number): Observable<string> {
-  return this.http.delete(`${this.apiUrl}/conditionGroups/${conditionGroupId}`, { responseType: 'text' });
-}
+  // Delete a condition group by id
+  deleteConditionGroup(conditionGroupId: number): Observable<string> {
+    return this.http.delete(`${this.apiUrl}/conditionGroups/${conditionGroupId}`, { responseType: 'text' });
+  }
 }

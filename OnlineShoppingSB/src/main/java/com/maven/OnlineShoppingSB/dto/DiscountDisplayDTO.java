@@ -16,6 +16,7 @@ public class DiscountDisplayDTO {
 
     private Integer id;
     private String name;
+    private String title;
     private typeCA type; // e.g. AUTO or COUPON
     private String couponcode; // nullable for AUTO type
 
@@ -31,9 +32,10 @@ public class DiscountDisplayDTO {
 
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private Integer usageLimit;
     private List<FreeGiftES_F> freeGifts;
     private List<Long> offeredProductIds;
+    private Integer usageLimitTotal;
+    private Integer usageLimitPerUser;
 
     @Getter
     @Setter

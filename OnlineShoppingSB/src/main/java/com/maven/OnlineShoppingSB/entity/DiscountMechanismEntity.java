@@ -19,13 +19,13 @@ public class DiscountMechanismEntity {
     @Enumerated(EnumType.STRING)
     private MechanismType mechanismType;
 
-    
+
     @Column(nullable = true)
     private Integer quantity;
 
     @Column(name = "couponcode", nullable = true)
     private String couponcode;
-    
+
     private String serviceDiscount;
     @Enumerated(EnumType.STRING)
     private DiscountType discountType;
@@ -36,16 +36,23 @@ public class DiscountMechanismEntity {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
 
+    @Column(nullable = true)
+    private Integer usageLimitTotal;
+
+    @Column(nullable = true)
+    private Integer usageLimitPerUser;
+
+
     @ManyToOne
     @JoinColumn(name = "discounts_id")
     private DiscountEntity discount;
 
-    @OneToMany(mappedBy = "discountMechanism",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "discountMechanism", cascade = CascadeType.ALL)
     private List<DiscountConditionGroupEntity> discountConditionGroup;
 
-    @OneToMany(mappedBy = "mechanism",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "mechanism", cascade = CascadeType.ALL)
     private List<FreeGiftEntity> freeGifts;
 
-    @OneToMany(mappedBy = "discountMechanism",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "discountMechanism", cascade = CascadeType.ALL)
     private List<DiscountProductEntity> discountProducts;
 }
