@@ -476,19 +476,49 @@
       <button class="scroll-btn left" (click)="scrollLeft()">‹</button>
 
       <div class="related-products-scroll" #scrollContainer>
-        <div class="related-product-card" *ngFor="let relatedProduct of relatedProducts">
-          <div class="card">
-            <img [src]="getMainProductImage(relatedProduct)" alt="Product Image" />
-            <div class="card-body">
-              <h6 class="card-title">{{ relatedProduct.name }}</h6>
-              <p class="card-text">From MMK {{ relatedProduct.basePrice | number:'1.0-0' }}</p>
+        <div class="product-card-container" *ngFor="let relatedProduct of relatedProducts">
+          <div class="card h-100 product-card" (click)="goToDetail(relatedProduct)" style="cursor:pointer;">
+            <div class="position-relative product-img-wrapper">
+              <img [src]="getMainProductImage(relatedProduct)" class="card-img-top product-image" alt="Product Image" />
+            </div>
+            <div class="card-body product-info">
+              <div class="d-flex justify-content-between align-items-center mb-2 brand-category-row">
+                <small class="brand-text">{{ relatedProduct.brand?.name }}</small>
+                <small class="category-text">{{ relatedProduct.category?.name }}</small>
+              </div>
+              <h6 class="product-name mb-3">
+                {{ relatedProduct.name }}
+              </h6>
+              <div class="price-section mb-3">
+                <span class="current-price fw-bold">
+                  From MMK {{ relatedProduct.basePrice | number:'1.0-0' }}
+                </span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mt-auto">
+              
+                <span class="stock-badge" [ngClass]="{'stock-in': hasStock(relatedProduct), 'stock-out': !hasStock(relatedProduct)}">
+                  {{ hasStock(relatedProduct) ? 'In Stock' : 'Out of Stock' }}
+                </span>
+
+                <button class="btn btn-action btn-sm" (click)="goToDetail(relatedProduct); $event.stopPropagation()">
+                  <i class="pi pi-eye me-1"></i>
+                  View
+                </button> 
+              </div>
             </div>
           </div>
         </div>
+       
       </div>
-
       <button class="scroll-btn right" (click)="scrollRight()">›</button>
     </div>
+
+  
+
+
+
+
+
   </div>
 </main>
 

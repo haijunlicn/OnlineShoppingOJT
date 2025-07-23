@@ -158,7 +158,9 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     // Update cart items for discount calculations
     this.cartItems = this.cartService.getCart()
   }
-
+  hasStock(product: ProductDTO): boolean {
+    return !!(product.productVariants && product.productVariants.some(v => v.stock > 0));
+  }
 
   fetchProductDetail(id: number): void {
     this.productService.getPublicProductById(id).subscribe({
@@ -256,6 +258,10 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     );
   }
 
+  goToDetail(product: ProductDTO): void {
+   
+    this.router.navigate(["/customer/product", product.id]);
+  }
   // Discount carousel methods
   private startDiscountCarouselAutoplay(): void {
     this.carouselInterval = setInterval(() => {

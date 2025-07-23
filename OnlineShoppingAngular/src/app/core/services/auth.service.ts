@@ -13,6 +13,7 @@ import { StorageService } from './StorageService';
 import { AccessControlService } from './AccessControl.service';
 import { AuthGuard } from '../guards/auth.guard';
 import { NotificationService } from './notification.service';
+import { UserResponse } from '../models/UserResponse';
 
 @Injectable({
   providedIn: 'root'
@@ -159,6 +160,7 @@ export class AuthService {
           email: res.email,
           name: res.name,
           phone: res.phone,
+          profile:res.profile,
           roleName: res.roleName,
           isVerified: res.isVerified,
           delFg: res.delFg,
@@ -254,4 +256,19 @@ export class AuthService {
     );
   }
 
+  updateProfile(id: number, profileData: any): Observable<User> {
+    return this.http.put<User>(`${this.apiUrl}/update/${id}`, profileData);
+  }
+  // auth.service.ts
+checkCurrentPassword(userId: number, currentPassword: string): Observable<boolean> {
+  return this.http.post<boolean>(`${this.apiUrl}/check-password`, { userId, currentPassword });
 }
+changePassword(userId: number, newPassword: string): Observable<UserResponse> {
+  return this.http.post<UserResponse>(`${this.apiUrl}/change-password`, {
+    userId,
+    newPassword
+  });
+}
+
+}
+

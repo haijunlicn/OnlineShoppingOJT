@@ -2,7 +2,9 @@ export interface UserResponse {
   id: number;
   email: string;
   name: string;
-  phone: string;
+  profile?:string;
+  password?:string;
+  phone?: string;
   isVerified: boolean;
   delFg: boolean;
   createdDate: string;

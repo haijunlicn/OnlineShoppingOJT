@@ -12,12 +12,12 @@
     <!-- Profile Photo Card -->
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-header bg-white border-bottom py-3">
-            <h5 class="card-title mb-0 text-primary fw-semibold">Profile Photo</h5>
+            <h5 class="card-title mb-0  fw-semibold" style="color: #212529;">Profile Photo</h5>
         </div>
         <div class="card-body">
             <div class="row align-items-center">
                 <div class="col-auto">
-                    <img [src]="currentUser?.avatar || '/assets/images/default-avatar.png'" alt="Profile Photo"
+                    <img [src]="currentUser?.profile ||'/assets/images/default-avatar.png'" alt="Profile Photo"
                         class="rounded-circle border" width="80" height="80">
                 </div>
                 <div class="col">
@@ -26,8 +26,8 @@
                     <div class="upload-area border-2 border-dashed rounded-3 p-3 d-inline-block">
                         <label for="photo-input" class="d-flex align-items-center text-decoration-none mb-0"
                             style="cursor: pointer;">
-                            <i class="bi bi-cloud-upload text-primary me-2"></i>
-                            <span class="fw-medium text-primary">Choose New Photo</span>
+                            <i class="bi bi-cloud-upload  me-2" style="color: #212529;"></i>
+                            <span class="fw-medium " style="color: #212529;">Choose New Photo</span>
                         </label>
                         <input type="file" id="photo-input" accept="image/*" (change)="onFileSelected($event)"
                             class="d-none">
@@ -40,7 +40,7 @@
     <!-- Basic Information Form -->
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-header bg-white border-bottom py-3">
-            <h5 class="card-title mb-0 text-primary fw-semibold">Basic Information</h5>
+            <h5 class="card-title mb-0  fw-semibold" style="color: #212529;">Basic Information</h5>
         </div>
         <div class="card-body">
             <form [formGroup]="profileForm" (ngSubmit)="onProfileSubmit()">
@@ -54,25 +54,15 @@
                     </div>
                     <div class="col-md-6">
                         <label for="email" class="form-label fw-medium">Email Address *</label>
-                        <input type="email" class="form-control" id="email" formControlName="email">
+                        <input type="email" class="form-control" id="email" formControlName="email" [disabled]="true">
                         <div class="text-danger small mt-1" *ngIf="getFieldError(profileForm, 'email')">
                             {{ getFieldError(profileForm, 'email') }}
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <label for="phone" class="form-label fw-medium">Mobile Number</label>
-                        <input type="tel" class="form-control" id="phone" formControlName="phone">
-                        <div class="text-danger small mt-1" *ngIf="getFieldError(profileForm, 'phone')">
-                            {{ getFieldError(profileForm, 'phone') }}
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-medium">Member ID</label>
-                        <input type="text" class="form-control" [value]="currentUser?.id" readonly>
-                    </div>
+                 
                 </div>
                 <div class="mt-4">
-                    <button type="submit" class="btn btn-primary" [disabled]="!profileForm.valid || isUpdating">
+                    <button type="submit" style="background-color: #212529;color: white;" [disabled]="!profileForm.valid || isUpdating">
                         <span *ngIf="isUpdating" class="spinner-border spinner-border-sm me-2"></span>
                         {{ isUpdating ? 'Saving...' : 'Save Profile Changes' }}
                     </button>
@@ -84,28 +74,70 @@
     <!-- Change Password Form -->
     <div class="card shadow-sm border-0">
         <div class="card-header bg-white border-bottom py-3">
-            <h5 class="card-title mb-0 text-primary fw-semibold">Change Password</h5>
+            <h5 class="card-title mb-0  fw-semibold" style="color: #212529;">Change Password</h5>
         </div>
         <div class="card-body">
             <form [formGroup]="passwordForm" (ngSubmit)="onPasswordSubmit()">
-                <div class="row g-3">
+                <div class="row g-3 align-items-end">
+                    <!-- Current Password -->
                     <div class="col-md-4">
                         <label for="currentPassword" class="form-label fw-medium">Current Password *</label>
                         <input type="password" class="form-control" id="currentPassword"
                             formControlName="currentPassword">
+                        <!-- Status message -->
+                        <div *ngIf="passwordForm.get('currentPassword')?.value" style="margin-bottom: -23px;">
+                          <span *ngIf="currentPasswordStatus === 'checking'" class="text-secondary">Checking...</span>
+                          <span *ngIf="currentPasswordStatus === 'success'" class="text-success">Password matched</span>
+                          <span *ngIf="currentPasswordStatus === 'unmatched'" class="text-danger">Password unmatched</span>
+                          <span *ngIf="currentPasswordStatus === 'error'" class="text-danger">Error checking password</span>
+                        </div>
                     </div>
-                    <div class="col-md-4">
+                    <!-- New Password -->
+                    <div class="col-md-3 position-relative" >
                         <label for="newPassword" class="form-label fw-medium">New Password *</label>
-                        <input type="password" class="form-control" id="newPassword" formControlName="newPassword">
+                        <input [type]="showNewPassword ? 'text' : 'password'" class="form-control" id="newPassword"
+                            formControlName="newPassword" (input)="onNewPasswordInput()">
+                        <!-- Strength Bar: Only show if newPassword has value -->
+                        <ng-container *ngIf="passwordForm.get('newPassword')?.value">
+                          <div class="mt-4" style="margin-bottom:-55px;">
+                              <div class="progress" style="height: 6px;">
+                                  <div class="progress-bar" [ngClass]="getStrengthBarClass()" [style.width.%]="passwordStrength"></div>
+                              </div>
+                              <small [ngClass]="getStrengthTextClass()">{{ getStrengthText() }}</small>
+                          </div>
+                        </ng-container>
+                        <!-- Toggle eye icon -->
+                        <i class="toggle-password far"
+                           [ngClass]="showNewPassword ? 'fa-eye-slash' : 'fa-eye'"
+                           (click)="toggleNewPasswordVisibility()"
+                           style="position: absolute; right: 30px; margin-top: -28px; cursor: pointer;"></i>
                     </div>
-                    <div class="col-md-4">
+                    <!-- Confirm Password -->
+                    <div class="col-md-4 position-relative">
                         <label for="confirmPassword" class="form-label fw-medium">Confirm New Password *</label>
-                        <input type="password" class="form-control" id="confirmPassword"
-                            formControlName="confirmPassword">
+                        <input [type]="showConfirmPassword ? 'text' : 'password'" class="form-control" id="confirmPassword"
+                            formControlName="confirmPassword" (input)="onConfirmPasswordInput()">
+                        <!-- <div *ngIf="confirmPasswordTouched" class="mt-1" style="margin-bottom: -30px;">
+                            <span *ngIf="isConfirmPasswordValid()" class="text-success">Passwords match</span>
+                            <span *ngIf="!isConfirmPasswordValid()" class="text-danger">Passwords do not match</span>
+                        </div> -->
+                        <div
+                        *ngIf="confirmPasswordTouched && !isConfirmPasswordValid() && passwordForm.get('newPassword')?.value && passwordForm.get('confirmPassword')?.value"
+                        class="mt-1"
+                        style="margin-bottom: -30px;"
+                      >
+                        <span class="text-danger">Passwords aren't matched</span>
+                      </div>
+                        <!-- Toggle eye icon -->
+                        <i class="toggle-password far"
+                           [ngClass]="showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'"
+                           (click)="toggleConfirmPasswordVisibility()"
+                           style="position: absolute; right: 30px; margin-top: -28px; cursor: pointer;"></i>
                     </div>
                 </div>
                 <div class="mt-4">
-                    <button type="submit" class="btn btn-primary" [disabled]="!passwordForm.valid || isUpdating">
+                    <button type="submit" style="background-color: #212529;color: white;"
+                            [disabled]="!passwordForm.valid || !isConfirmPasswordValid() || passwordStrength < 40 || isUpdating">
                         <span *ngIf="isUpdating" class="spinner-border spinner-border-sm me-2"></span>
                         {{ isUpdating ? 'Updating...' : 'Update Password' }}
                     </button>

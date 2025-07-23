@@ -100,8 +100,7 @@ import { CreateDeliveryMethodComponent } from './deliveryMethodManagement/create
 import { DeliveryMethodListComponent } from './deliveryMethodManagement/delivery-method-list/delivery-method-list.component';
 import { EditDeliveryMethodComponent } from './deliveryMethodManagement/edit-delivery-method/edit-delivery-method.component';
 import { DiscountListComponent } from './discount_management/discount-list/discount-list.component';
-import { QuestionComponent } from './QuesionManagement/question/question.component';
-
+import { QuestionComponent } from './QuestionManagement/question/question.component';
 
 @NgModule({
   declarations: [
