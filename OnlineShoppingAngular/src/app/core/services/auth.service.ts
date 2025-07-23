@@ -46,7 +46,7 @@ export class AuthService {
   );
 
   public isCustomer$: Observable<boolean> = this.user$.pipe(
-    map(user => !!user && user.roleName === 'CUSTOMER')
+    map(user => !!user && user.roleName === 'customer')
   );
 
   initializeUserFromToken(): Promise<void> {
@@ -153,6 +153,7 @@ export class AuthService {
   fetchCurrentUser(): Observable<User> {
     return this.http.get<User>(`${this.apiUrl}/me`).pipe(
       map((res: any) => {
+
         const user: User = {
           id: res.id,
           email: res.email,
@@ -165,6 +166,7 @@ export class AuthService {
           updatedDate: res.updatedDate,
           permissions: res.permissions
         };
+      
         return user;
       }),
       tap((user: User) => {
