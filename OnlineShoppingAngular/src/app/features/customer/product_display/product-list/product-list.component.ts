@@ -255,7 +255,7 @@ export class ProductListComponent {
 
     const cart = this.cartService.getCart()
     console.log("precomputing method cart : ", cart);
-    
+
 
     for (const product of this.products) {
       const allHints = hintMap[product.id] || []
@@ -795,6 +795,19 @@ export class ProductListComponent {
 
     const cart = this.cartService.getCart()
     return this.discountDisplayService.evaluateEligibleDiscounts(product.discountHints, cart)
+  }
+
+  getUnconditionalDiscountHints(product: ProductCardItem): DiscountDisplayDTO[] {
+    if (!product.discountHints || product.discountHints.length === 0) {
+      return [];
+    }
+
+    const unconditionalHints = product.discountHints.filter(
+      hint => !hint.conditionGroups || hint.conditionGroups.length === 0
+    );
+
+    const cart = this.cartService.getCart();
+    return this.discountDisplayService.evaluateEligibleDiscounts(unconditionalHints, cart);
   }
 
   getAvailableDiscountLabel(hint: DiscountDisplayDTO): string {

@@ -1,0 +1,83 @@
+.discount-carousel {
+  position: relative;
+  background: #f9f9f9;
+  overflow: hidden;
+
+  .carousel-slide {
+    display: none;
+    padding: 2rem;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    &.active {
+      display: flex;
+    }
+
+    .carousel-content {
+      display: flex;
+      flex-wrap: wrap;
+      max-width: 1200px;
+      margin: auto;
+      width: 100%;
+      gap: 2rem;
+
+      .text-content {
+        flex: 1;
+
+        h2 {
+          font-size: 2rem;
+          margin-bottom: 0.5rem;
+        }
+
+        p {
+          font-size: 1rem;
+          margin-bottom: 1rem;
+        }
+
+        .meta {
+          font-size: 0.9rem;
+          margin-bottom: 1rem;
+          strong {
+            color: #d32f2f;
+          }
+        }
+
+        .explore-btn {
+          padding: 0.6rem 1.2rem;
+          background: black;
+          color: white;
+          border-radius: 5px;
+          text-decoration: none;
+        }
+      }
+
+      .image-content {
+        flex: 1;
+        img {
+          max-width: 100%;
+          border-radius: 10px;
+        }
+      }
+    }
+  }
+
+  .carousel-indicators {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+
+    span {
+      width: 10px;
+      height: 10px;
+      background: #ccc;
+      border-radius: 50%;
+      margin: 0 5px;
+      cursor: pointer;
+
+      &.active {
+        background: black;
+      }
+    }
+  }
+}

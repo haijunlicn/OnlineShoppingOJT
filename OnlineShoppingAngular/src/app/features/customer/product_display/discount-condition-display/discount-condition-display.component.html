@@ -24,10 +24,6 @@
           {{ getHumanReadableText(item.discount) }}
         </div>
 
-        <!-- <div class="discount-description" [innerHTML]="renderTextWithLinks(getLinkedConditionText(item.discount))"
-          (click)="onEntityClick($event, getLinkedConditionText(item.discount).linkedEntities)">
-        </div> -->
-
         <!-- Coupon Code Display (for Coupon mechanism) -->
         <div class="coupon-code-display" *ngIf="item.discount.mechanismType === 'Coupon' && item.discount.couponcode">
           <div class="code-box" [class.copyable]="isConditionsMet(item.discount)">

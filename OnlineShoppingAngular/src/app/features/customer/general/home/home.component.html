@@ -2,8 +2,12 @@
 
 <main class="main-content">
   <div>
-    <!-- Hero Section -->
-    <section class="hero-section">
+
+    <!-- Replace Hero Section only if discounts exist -->
+    <app-discount-hero-carousel *ngIf="discounts.length > 0" [discounts]="discounts"></app-discount-hero-carousel>
+
+    <!-- Fallback Hero Section -->
+    <section class="hero-section" *ngIf="discounts.length === 0">
       <div class="hero-content">
         <h1 class="hero-title">Discover Your Next Favorite</h1>
         <p class="hero-subtitle">Shop the latest trends and exclusive deals, all in one place.</p>
@@ -52,52 +56,6 @@
             <h3>New Arrivals</h3>
             <p>Fresh styles just landed</p>
             <a href="#" class="promo-btn">Explore</a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Featured Products -->
-    <section class="featured-section">
-      <h2 class="section-title">Featured Products</h2>
-      <div class="featured-grid">
-        <div class="product-card" *ngFor="let product of featuredProducts">
-          <img [src]="product.image" [alt]="product.name" class="product-image">
-          <div class="product-info">
-            <h3 class="product-title">{{ product.name }}</h3>
-            <div class="product-rating">
-              <span *ngFor="let filled of getRatingStars(product.rating); let i = index" class="star"
-                [class.star-filled]="filled" [class.star-empty]="!filled">
-                <i class="fas fa-star"></i>
-              </span>
-              <span class="rating-text">({{ product.rating }})</span>
-            </div>
-            <p class="product-price">{{ product.price | currency:'MMK' }}</p>
-            <div class="product-actions">
-              <button class="add-to-cart-btn" (click)="onAddToCart(product)"><i
-                  class="fas fa-shopping-bag"></i></button>
-              <button class="wishlist-btn" (click)="onWishlist(product)"><i class="fas fa-heart"></i></button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Testimonials -->
-    <section class="testimonials-section">
-      <h2 class="section-title">What Our Customers Say</h2>
-      <div class="testimonials-grid">
-        <div class="testimonial-card" *ngFor="let testimonial of testimonials">
-          <div class="testimonial-quote">“{{ testimonial.quote }}”</div>
-          <div class="testimonial-user">
-            <img [src]="testimonial.avatar" [alt]="testimonial.name" class="testimonial-avatar">
-            <div>
-              <div class="testimonial-name">{{ testimonial.name }}</div>
-              <div class="testimonial-rating">
-                <i class="fas fa-star" *ngFor="let s of [1,2,3,4,5]; let i = index"
-                  [class.star-filled]="i < testimonial.rating"></i>
-              </div>
-            </div>
           </div>
         </div>
       </div>

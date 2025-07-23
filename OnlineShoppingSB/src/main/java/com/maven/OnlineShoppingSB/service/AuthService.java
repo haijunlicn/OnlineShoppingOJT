@@ -109,9 +109,10 @@ public class AuthService {
         RoleEntity customerRole = roleRepo.findByName("customer")
                 .orElseThrow(() -> new RuntimeException("Role not found"));
 
+        System.out.println("user input : " + userInput);;
+
         // Step 3: Encrypt password and set default fields
         String encryptedPassword = passwordEncoder.encode(userInput.getPassword());
-
         userInput.setPassword(encryptedPassword);
         userInput.setRole(customerRole);
         userInput.setIsVerified(false);

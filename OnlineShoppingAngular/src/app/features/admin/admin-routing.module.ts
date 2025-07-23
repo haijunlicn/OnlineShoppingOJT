@@ -62,6 +62,7 @@ import { EditDeliveryMethodComponent } from './deliveryMethodManagement/edit-del
 import { CreateDiscountGroupComponent } from './discount_management/create-discount-group/create-discount-group.component';
 import { CreateDiscountComponent } from './discount_management/create-discount/create-discount.component';
 import { DiscountListComponent } from './discount_management/discount-list/discount-list.component';
+import { NewCreateDiscountComponent } from './discount_management/new-create-discount/new-create-discount.component';
 
 const routes: Routes = [
   {

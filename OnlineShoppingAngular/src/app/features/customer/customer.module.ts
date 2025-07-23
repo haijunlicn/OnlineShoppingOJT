@@ -1,10 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
 import { CustomerRoutingModule } from './customer-routing.module';
 import { LoginComponent } from './auth/login/login.component';
-
-
 import { HomeComponent } from './general/home/home.component';
 import { HeaderComponent } from './common/header/header.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -42,7 +39,6 @@ import { OrderListComponent } from './orderManagements/order-list/order-list.com
 import { FileUploadComponent } from './refundManagements/file-upload/file-upload.component';
 import { RefundRequestFormComponent } from './refundManagements/refund-request-form/refund-request-form.component';
 import { AccountSettingsComponent } from './common/account-settings/account-settings.component';
-
 import { NotificationBellComponent } from './notification/notification-bell/notification-bell.component';
 import { SearchBarComponent } from './common/search-bar/search-bar.component';
 import { LocationCardComponent } from './account/location-card/location-card.component';
@@ -54,11 +50,11 @@ import { NotiSettingComponent } from './common/noti-setting/noti-setting.compone
 import { VlogComponent } from './policy/vlog/vlog.component';
 import { VlogListComponent } from './policy/vlog-list/vlog-list.component';
 import { VlogDetailComponent } from './policy/vlog-detail/vlog-detail.component';
-
 import { DiscountDisplayComponent } from './product_display/discount-display/discount-display.component';
 import { StickyDiscountProgressComponent } from './product_display/sticky-discount-progress/sticky-discount-progress.component';
 import { DiscountConditionDisplayComponent } from './product_display/discount-condition-display/discount-condition-display.component';
 import { ProductqandaComponent } from './product_display/productqanda/productqanda.component';
+import { DiscountHeroCarouselComponent } from './product_display/discount-hero-carousel/discount-hero-carousel.component';
 
 @NgModule({
   declarations: [
@@ -109,7 +105,8 @@ import { ProductqandaComponent } from './product_display/productqanda/productqan
     DiscountDisplayComponent,
     StickyDiscountProgressComponent,
     DiscountConditionDisplayComponent,
-    ProductqandaComponent
+    ProductqandaComponent,
+    DiscountHeroCarouselComponent
   ],
   imports: [
     CommonModule,

@@ -850,9 +850,7 @@ export class CreateDiscountComponent implements OnInit {
     }
 
     mechanisms.forEach((m) => {
-      if (m.mechanismType === MechanismType.FREE_GIFT) {
-        m.discountType = undefined // Use undefined to match TS type, will be sent as null/missing in JSON
-      } else if (m.mechanismType === MechanismType.DISCOUNT) {
+      if (m.mechanismType === MechanismType.DISCOUNT) {
         if (!m.discountType || m.discountType === undefined || m.discountType === "") {
           m.discountType = DiscountType.PERCENTAGE // DISCOUNT: default to PERCENTAGE
         }

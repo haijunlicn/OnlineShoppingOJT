@@ -40,4 +40,12 @@ public interface DiscountRepository extends JpaRepository<DiscountEntity, Intege
     // Check if code exists
     boolean existsByCodeAndDelFgFalse(String code);
 
+    @Query("""
+                SELECT d FROM DiscountEntity d
+                WHERE d.isActive = true AND d.delFg = false
+                AND (d.startDate IS NULL OR d.startDate <= :now)
+                AND (d.endDate IS NULL OR d.endDate >= :now)
+            """)
+    List<DiscountEntity> findAllActivePublicDiscounts(@Param("now") LocalDateTime now);
+
 }

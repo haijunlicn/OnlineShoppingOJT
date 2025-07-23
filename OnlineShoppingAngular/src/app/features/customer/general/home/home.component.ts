@@ -6,6 +6,8 @@ import { ForgotPasswordModalService } from '../../../../core/services/ForgotPass
 import { CategoryService } from '@app/core/services/category.service';
 import { CategoryDTO } from '@app/core/models/category-dto';
 import { AuthService } from '@app/core/services/auth.service';
+import { DiscountDisplayService } from '@app/core/services/discount-display.service';
+import { DiscountEventDTO } from '@app/core/models/discount';
 
 interface Category {
   name: string;
@@ -38,29 +40,29 @@ export class HomeComponent implements OnInit {
 
   @ViewChild('carousel', { static: false }) carouselRef!: ElementRef;
 
-  featuredProducts: Product[] = [
-    { name: 'Classic Black Handbag', image: 'assets/images/products/handbag.jpg', price: 285000, rating: 4.8 },
-    { name: 'Designer Watch', image: 'assets/images/products/watch.jpg', price: 450000, rating: 4.9 },
-    { name: 'Leather Wallet', image: 'assets/images/products/wallet.jpg', price: 85000, rating: 4.5 },
-    { name: 'Sunglasses', image: 'assets/images/products/sunglasses.jpg', price: 120000, rating: 4.7 },
-  ];
-
-  testimonials: Testimonial[] = [
-    { name: 'Aye Chan', avatar: 'assets/images/testimonials/user1.jpg', quote: 'Amazing quality and fast delivery!', rating: 5 },
-    { name: 'Myo Min', avatar: 'assets/images/testimonials/user2.jpg', quote: 'Great customer service and beautiful products.', rating: 5 },
-    { name: 'Su Su', avatar: 'assets/images/testimonials/user3.jpg', quote: 'I love shopping here. Always something new!', rating: 4 },
-  ];
+  discounts: DiscountEventDTO[] = [];
+  currentIndex = 0;
+  countdowns: string[] = [];
+  private countdownInterval: any;
 
   constructor(
     private categoryService: CategoryService,
     private loginModalService: LoginModalService,
     private registerModalService: RegisterModalService,
     private forgotModalService: ForgotPasswordModalService,
-    private authService: AuthService
+    private authService: AuthService,
+    private discountDisplayService: DiscountDisplayService,
   ) { }
 
   ngOnInit(): void {
+    this.loadDiscounts();
     this.loadCategories();
+  }
+
+  loadDiscounts(): void {
+    this.discountDisplayService.getAllPublicActiveDiscounts().subscribe(data => {
+      this.discounts = data;
+    });
   }
 
   loadCategories(): void {

@@ -10,7 +10,6 @@ import java.util.List;
 public class DiscountConditionGroupES_C {
     private Integer id;
     private Boolean logicOperator;
-
     private Integer discountMechanismId;
     private long groupId;
     private DiscountMechanismES_B discountMechanism;

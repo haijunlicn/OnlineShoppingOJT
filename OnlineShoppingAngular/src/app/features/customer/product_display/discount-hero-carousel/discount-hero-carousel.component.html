@@ -1,0 +1,27 @@
+<section class="discount-carousel" *ngIf="discounts.length > 0">
+    <div class="carousel-slide" *ngFor="let discount of discounts; let i = index" [class.active]="i === currentIndex">
+        <div class="carousel-content">
+            <div class="text-content">
+                <h2>{{ discount.name }}</h2>
+                <p>{{ discount.description || '' }}</p>
+                <div class="meta">
+                    <span *ngIf="discount.endDate">Ends in: <strong>{{ countdowns[i] }}</strong></span>
+                    <span *ngIf="discount.type === 'COUPON' && discount.mechanisms?.length">
+                        Use Code:
+                        <strong>{{ discount.mechanisms[0].couponCode }}</strong>
+                    </span>
+                </div>
+                <a [routerLink]="['/discounts', discount.id]" class="explore-btn">View Offers</a>
+            </div>
+            <div class="image-content" *ngIf="discount.imgUrl">
+                <img [src]="discount.imgUrl" [alt]="discount.name" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide Indicators -->
+    <div class="carousel-indicators">
+        <span *ngFor="let d of discounts; let i = index" (click)="setSlide(i)"
+            [class.active]="i === currentIndex"></span>
+    </div>
+</section>

@@ -82,15 +82,6 @@
       </div>
     </div>
 
-    <!-- Free Gift Banners -->
-    <div class="free-gift-section" *ngIf="hasFreeGiftBanners()">
-      <div class="alert free-gift-banner" *ngFor="let gift of getFreeGiftBanners()">
-        <i class="pi pi-gift me-2"></i>
-        <strong>Free Gift:</strong> {{ gift.name }}
-        <small class="d-block mt-1" *ngIf="gift.conditionSummary">{{ gift.conditionSummary }}</small>
-      </div>
-    </div>
-
     <!-- Regular Discounts Summary -->
     <div class="discount-summary" *ngIf="hasVisibleDiscounts()">
       <div class="card">
@@ -112,13 +103,5 @@
       </div>
     </div>
 
-  </div>
-</div>
-
-<!-- Cart Display Mode -->
-<div *ngIf="displayMode === 'cart'">
-  <!-- Similar to detail but more compact -->
-  <div class="discount-cart-display">
-    <!-- Compact coupon and discount display for cart -->
   </div>
 </div>

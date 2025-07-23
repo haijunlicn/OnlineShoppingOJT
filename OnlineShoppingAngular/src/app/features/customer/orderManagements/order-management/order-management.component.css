@@ -420,7 +420,7 @@
 }
 
 .summary-content {
-  padding: 1.5rem;
+  padding: 0.5rem 1.5rem;
 }
 
 .order-items {
@@ -430,7 +430,7 @@
 .order-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   padding: 0.75rem 0;
   border-bottom: 1px solid #f1f3f4;
 }
@@ -451,12 +451,47 @@
   color: var(--color-brown);
 }
 
+/* Enhanced discount badges for items */
+.item-discount-badges {
+  margin-top: 0.5rem;
+}
+
+.item-discount-badges .badge {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  background: var(--color-success);
+  color: white;
+  margin-right: 0.25rem;
+  display: inline-block;
+}
+
+.item-price-container {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.original-item-price {
+  font-size: 0.8rem;
+  color: #6c757d;
+  line-height: 1.2;
+}
+
 .item-price {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--color-primary);
 }
 
+.item-savings {
+  font-size: 0.75rem;
+  color: var(--color-success);
+  font-weight: 500;
+}
+
+/* Enhanced price breakdown */
 .price-breakdown {
   margin: 1rem 0;
 }
@@ -469,6 +504,23 @@
   color: var(--color-brown);
 }
 
+.price-line.original-subtotal {
+  color: #6c757d;
+  font-size: 0.8rem;
+}
+
+.price-line.auto-discount-savings .discount-amount,
+.price-line.coupon-discount .discount-amount {
+  color: var(--color-success);
+  font-weight: 500;
+}
+
+.price-line.total-savings {
+  border-top: 1px solid var(--color-border);
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+}
+
 .price-line.total {
   font-weight: 600;
   color: var(--color-primary);
@@ -476,6 +528,48 @@
   border-top: 1px solid var(--color-border);
   padding-top: 0.75rem;
   margin-top: 0.75rem;
+}
+
+.text-success {
+  color: var(--color-success) !important;
+}
+
+/* Applied discounts summary */
+.applied-discounts-summary {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: rgba(40, 167, 69, 0.05);
+  border-radius: 6px;
+  border: 1px solid rgba(40, 167, 69, 0.2);
+}
+
+.applied-discounts-summary h6 {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.discount-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.discount-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: var(--color-success);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.discount-label i {
+  font-size: 0.7rem;
 }
 
 .delivery-info {
