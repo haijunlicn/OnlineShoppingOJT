@@ -98,6 +98,8 @@ import { DiscountListComponent } from './discount_management/discount-list/disco
 import { NewCreateDiscountComponent } from './discount_management/new-create-discount/new-create-discount.component';
 import { NewDiscountRulesComponent } from './discount_management/new-discount-rules/new-discount-rules.component';
 import { NewProductSelectionComponent } from './discount_management/new-product-selection/new-product-selection.component';
+import { QuestionComponent } from './QuestionManagement/question/question.component';
+
 @NgModule({
   declarations: [
     ProductEditComponent,
@@ -121,7 +123,6 @@ import { NewProductSelectionComponent } from './discount_management/new-product-
     FaqListComponent,
     FaqCreateComponent,
     FaqUpdateComponent,
-
     ProductBulkUploadComponent,
     RoleListComponent,
     RoleFormComponent,
@@ -147,7 +148,6 @@ import { NewProductSelectionComponent } from './discount_management/new-product-
     ProductSelectionComponent,
     DiscountRulesComponent,
     CreateDiscountGroupComponent,
-
     SaleAnalysisComponent,
     AdminAccountCreateComponent,
     RefundReasonFormComponent,
@@ -156,7 +156,6 @@ import { NewProductSelectionComponent } from './discount_management/new-product-
     RefundReasonListComponent,
     RefundRequestListComponent,
     RefundRequestDetailComponent,
-
     PolicyUpdateComponent,
     ChartTestingComponent,
     AdminLayoutComponent,
@@ -171,7 +170,6 @@ import { NewProductSelectionComponent } from './discount_management/new-product-
     VlogCreateComponent,
     VlogFilesListComponent,
     VlogFilesCreateComponent,
-
     CreateDeliveryMethodComponent,
     DeliveryMethodListComponent,
     EditDeliveryMethodComponent,
@@ -179,6 +177,7 @@ import { NewProductSelectionComponent } from './discount_management/new-product-
     NewCreateDiscountComponent,
     NewDiscountRulesComponent,
     NewProductSelectionComponent,
+    QuestionComponent
 
   ],
   imports: [

@@ -208,10 +208,6 @@ public class DiscountService {
     // READ BY ID
     public DiscountES_A getDiscountById(Integer id) {
         DiscountEntity entity = discountRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Not found"));
-        DiscountES_A dto = mapToDto(entity, true);
-        System.out.println("[Service:getDiscountById] Discount " + id + " has " + (dto.getDiscountMechanisms() != null ? dto.getDiscountMechanisms().size() : 0) + " mechanisms: " + (dto.getDiscountMechanisms() != null ? dto.getDiscountMechanisms().stream().map(m -> m.getId()).toList() : "null"));
-        return dto;
                 .orElseThrow(() -> new RuntimeException("Not found"));
         return mapToDto(entity, true);
     }
