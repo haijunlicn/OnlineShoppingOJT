@@ -4,6 +4,8 @@ import { Subscription } from 'rxjs';
 import { OrderService } from '../../../../core/services/order.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ORDER_STATUS, ORDER_STATUS_LABELS, OrderDetail, OrderItemDetail, PAYMENT_STATUS, StatusStep, TIMELINE_STEPS } from '@app/core/models/order.dto';
+import { StoreLocationService } from '../../../../core/services/store-location.service';
+import { PdfExportService } from '../../../../core/services/pdf-export.service';
 
 // Define all possible order statuses for user
 export type OrderStatus = "pending" | "order_confirmed" | "packed" | "out_for_delivery" | "delivered" | "cancelled"
@@ -23,11 +25,16 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   private subscriptions: Subscription[] = []
 
+  showProofModal = false;
+  proofImageUrl: string | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private orderService: OrderService,
     private authService: AuthService,
+    private storeLocationService: StoreLocationService,
+    private pdfExportService: PdfExportService,
   ) { }
 
   ngOnInit(): void {
@@ -198,9 +205,18 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     this.router.navigate(["/customer/orders"])
   }
 
-  downloadInvoice(): void {
-    // TODO: Implement invoice download functionality
-    console.log("Download invoice for order:", this.orderId)
+  async downloadInvoice(): Promise<void> {
+    if (!this.order) return;
+    try {
+      const store = await this.storeLocationService.getActive().toPromise();
+      this.pdfExportService.exportOrderInvoiceToPdf(
+        this.order,
+        store,
+        `Invoice_Order_${this.order.id}.pdf`
+      );
+    } catch (error) {
+      console.error('Failed to generate invoice PDF:', error);
+    }
   }
 
   trackOrder(): void {
@@ -284,8 +300,14 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   viewPaymentProof(): void {
     if (this.order?.paymentProofPath) {
-      window.open(this.order.paymentProofPath, "_blank")
+      this.proofImageUrl = this.order.paymentProofPath;
+      this.showProofModal = true;
     }
+  }
+
+  closeProofModal(): void {
+    this.showProofModal = false;
+    this.proofImageUrl = null;
   }
 
   getUnifiedStatusSteps(): StatusStep[] {

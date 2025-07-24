@@ -338,6 +338,21 @@ export class RefundRequestListComponent implements OnInit, OnDestroy {
     }
   }
 
+  getStatusIcon(status: string): string {
+    switch (status) {
+      case RefundStatus.REQUESTED:
+        return 'bi bi-pencil-square text-primary';
+      case RefundStatus.IN_PROGRESS:
+        return 'bi bi-hourglass-split text-warning';
+      case RefundStatus.COMPLETED:
+        return 'bi bi-check-circle text-success';
+      case RefundStatus.REJECTED:
+        return 'bi bi-x-circle text-danger';
+      default:
+        return 'bi bi-question-circle text-secondary';
+    }
+  }
+
   getStatusDisplayText(status: string): string {
     switch (status) {
       case RefundStatus.REQUESTED:

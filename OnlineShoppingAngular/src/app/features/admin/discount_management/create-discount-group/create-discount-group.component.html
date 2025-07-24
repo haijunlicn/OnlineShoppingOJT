@@ -2,76 +2,221 @@
 <div *ngIf="!isRuleBuilderOpen">
   <div class="user-management-container" *ngIf="!isConditionBuilderOpen" style="margin-top: -80px;">
     <div class="content-wrapper" style="margin-top:25px ;">
-      <!-- Filters Sidebar -->
-      <div class="filters-sidebar">
-        <div class="filters-header">
-          <button class="btn btn-primary" (click)="openCreateGroupDialog()">
-            <i class="fas fa-plus"></i>
-            Create Group
-          </button>
-        </div>
-      </div>
     </div>
 
     <!-- Main Layout -->
     <div class="main-layout">
 
-      <!-- Sidebar -->
-      <div class="sidebar-card">
-        <div class="sidebar-header">
-          <h3 class="sidebar-title">Groups & Filters</h3>
+      <!-- Horizontal Groups & Filters Card -->
+      <div class="horizontal-filters-card">
+        <div class="filters-header">
+          <div class="filters-title">
+            <i class="fas fa-filter"></i>
+            <h3>Groups & Filters</h3>
+          </div>
+          <button class="btn btn-primary" (click)="openCreateGroupDialog()">
+            <i class="fas fa-plus"></i>
+            Create Group
+          </button>
         </div>
 
-        <div class="sidebar-content">
-          <!-- Group Search -->
-          <div class="search-section">
-            <label class="search-label">Search Groups</label>
-            <div class="search-input-wrapper">
-              <i class="fas fa-search search-icon"></i>
-              <input type="text" class="search-input" placeholder="Search groups..." [(ngModel)]="groupSearchTerm"
-                (input)="onGroupSearchChange()">
-            </div>
-          </div>
-
-          <!-- Groups List -->
-          <div class="groups-section">
-            <h3>Customer Groups</h3>
-            <div class="groups-list">
-              <!-- All Customers Option -->
-              <div class="group-item" [class.selected]="selectedGroup === 'all'"
-                (click)="selectedGroup = 'all'; onGroupFilterChange()">
-                <i class="fas fa-users group-icon"></i>
-                <span class="group-name">All Customers</span>
+        <div class="filters-content">
+          <!-- Search and Groups Row -->
+          <div class="filters-row">
+            <!-- Groups List -->
+            <div class="groups-section">
+              <div class="groups-header">
+                <h4>Customer Groups</h4>
+                <!-- Group Search -->
+                <div class="search-section">
+                  <div class="search-input-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input
+                      id="group-search"
+                      type="text"
+                      class="search-input"
+                      placeholder="Search groups..."
+                      [(ngModel)]="groupSearchTerm"
+                      (input)="onGroupSearchChange()"
+                    />
+                  </div>
+                </div>
               </div>
+              <div class="groups-list">
+                <!-- All Customers Option -->
+                <div
+                  class="group-item"
+                  [class.selected]="selectedGroup === 'all'"
+                  (click)="selectedGroup = 'all'; onGroupFilterChange()"
+                >
+                  <i class="fas fa-users group-icon"></i>
+                  <span class="group-name">All Customers</span>
+                </div>
 
-              <!-- Individual Groups -->
-              <div *ngFor="let group of filteredGroups" class="group-item"
-                [class.selected]="selectedGroup === group.id.toString()"
-                (click)="selectedGroup = group.id.toString(); onGroupFilterChange()">
-                <i class="fas fa-users group-icon"></i>
-                <span class="group-name">{{ group.name }}</span>
-                <div class="group-actions">
-                  <button class="action-btn edit-btn" (click)="openEditGroupDialog(group); $event.stopPropagation()"
-                    title="Edit Group">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button class="action-btn condition-btn" (click)="openConditionPopup(group); $event.stopPropagation()"
-                    title="Manage Conditions">
-                    <i class="fas fa-cog"></i>
-                  </button>
-                  <button class="action-btn delete-btn" (click)="confirmDeleteGroup(group.id); $event.stopPropagation()"
-                    title="Delete Group">
-                    <i class="fas fa-trash"></i>
-                  </button>
+                <!-- Individual Groups -->
+                <div
+                  *ngFor="let group of filteredGroups"
+                  class="group-item"
+                  [class.selected]="selectedGroup === group.id.toString()"
+                  (click)="selectedGroup = group.id.toString(); onGroupFilterChange()"
+                >
+                  <i class="fas fa-users group-icon"></i>
+                  <span class="group-name">{{ group.name }}</span>
+                  <div class="group-actions">
+                    <button
+                      class="action-btn edit-btn"
+                      (click)="openEditGroupDialog(group); $event.stopPropagation()"
+                      title="Edit Group"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button
+                      class="action-btn condition-btn"
+                      (click)="openConditionPopup(group); $event.stopPropagation()"
+                      title="Manage Conditions"
+                    >
+                      <i class="fas fa-cog"></i>
+                    </button>
+                    <button
+                      class="action-btn delete-btn"
+                      (click)="confirmDeleteGroup(group.id); $event.stopPropagation()"
+                      title="Delete Group"
+                    >
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <button class="clear-filters-btn" (click)="clearAllFilters()">
-              <i class="fas fa-refresh"></i>
-              Clear All Filters
+            <!-- Clear Filters -->
+            <div class="clear-filters-section">
+              <button class="clear-filters-btn" (click)="clearAllFilters()">
+                <i class="fas fa-refresh"></i>
+                Clear All Filters
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bar Chart Section -->
+      <div class="chart-container">
+        <div class="chart-header">
+          <div class="chart-title-section">
+            <h3 style="margin:0 0 8px 0; font-weight:700; color:#667eea; font-size:1.4rem;">
+              <i class="fas fa-chart-bar" style="margin-right:10px; color:#764ba2;"></i>
+              User Distribution by Group
+            </h3>
+            <p class="chart-subtitle">Real-time visualization of customer group distribution based on current filters</p>
+          </div>
+          <div class="chart-stats">
+            <div class="stat-item">
+              <span class="stat-label">Total Groups</span>
+              <span class="stat-value">{{ groups.length }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Total Users</span>
+              <span class="stat-value">{{ allUsers.length }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="chart-wrapper">
+          <ngx-charts-bar-vertical
+            [view]="chartView"
+            [scheme]="chartColorScheme"
+            [results]="chartData"
+            [legend]="chartShowLegend"
+            [xAxis]="chartShowXAxis"
+            [yAxis]="chartShowYAxis"
+            [showXAxisLabel]="chartShowXAxisLabel"
+            [showYAxisLabel]="chartShowYAxisLabel"
+            [xAxisLabel]="chartXAxisLabel"
+            [yAxisLabel]="chartYAxisLabel"
+            [gradient]="chartGradient"
+            [showDataLabel]="chartShowDataLabel"
+            [barPadding]="chartBarPadding"
+            [animations]="chartAnimations"
+            [roundEdges]="chartRoundEdges"
+            [tooltipDisabled]="chartTooltipDisabled">
+          </ngx-charts-bar-vertical>
+        </div>
+      </div>
+
+      <!-- Pie Chart Section for User Grouped by City or Township -->
+      <div class="chart-container">
+        <div class="chart-header">
+          <div class="chart-title-section">
+            <h3 style="margin:0 0 8px 0; font-weight:700; color:#43e97b; font-size:1.4rem;">
+              <i class="fas fa-chart-pie" style="margin-right:10px; color:#43e97b;"></i>
+              User Distribution
+            </h3>
+            <p class="chart-subtitle">
+              <ng-container *ngIf="!filterActive">
+                Pie chart of users grouped by <b>city</b>
+              </ng-container>
+              <ng-container *ngIf="filterActive">
+                Pie chart of users grouped by <b>township</b> in <b>{{ selectedCity }}</b>
+              </ng-container>
+            </p>
+          </div>
+        </div>
+        <div class="chart-wrapper">
+          <div class="filter-bar" style="margin-bottom: 1rem; display: flex; gap: 1.5rem; align-items: center;">
+            <label style="font-weight: 500; color: #374151; display: flex; align-items: center; gap: 0.5rem;">
+              <span>Filter by City:</span>
+              <select [(ngModel)]="selectedCity" (change)="onCityChange()">
+                <option value="">-- All Cities --</option>
+                <option *ngFor="let city of cityList" [value]="city">{{ city }}</option>
+              </select>
+            </label>
+            <label style="font-weight: 500; color: #374151; display: flex; align-items: center; gap: 0.5rem;">
+              <span>Order Status:</span>
+              <select [(ngModel)]="orderStatus" (change)="onOrderStatusChange()">
+                <option value="all">All users</option>
+                <option value="ordered">Only users who have ordered</option>
+              </select>
+            </label>
+            <label *ngIf="orderStatus === 'notOrdered'" style="font-weight: 500; color: #374151; display: flex; align-items: center; gap: 0.5rem;">
+              <span>City:</span>
+              <select [(ngModel)]="unorderCity" (change)="onUnorderCityChange()">
+                <option value="">All Cities</option>
+                <option *ngFor="let city of cityList" [value]="city">{{ city }}</option>
+              </select>
+            </label>
+            <button *ngIf="filterActive" class="btn btn-outline" (click)="clearFilter()">
+              <i class="fas fa-times"></i> Clear Filter
             </button>
           </div>
+          <ng-container *ngIf="!filterActive">
+            <ngx-charts-pie-chart
+              [results]="cityUserCounts"
+              [legend]="true"
+              [labels]="true"
+              [doughnut]="false"
+              [explodeSlices]="false"
+              [gradient]="true"
+              [view]="[700,400]">
+            </ngx-charts-pie-chart>
+          </ng-container>
+          <ng-container *ngIf="filterActive">
+            <ngx-charts-pie-chart
+              [results]="townshipPieData"
+              [legend]="true"
+              [labels]="true"
+              [doughnut]="false"
+              [explodeSlices]="false"
+              [gradient]="true"
+              [view]="[1100,400]"
+              [tooltipText]="getTownshipTooltip">
+            </ngx-charts-pie-chart>
+            <ng-container *ngIf="townshipPieData.length === 0">
+              <div class="no-data-message">
+                <i class="fas fa-info-circle" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                <p>No township data for this city.</p>
+              </div>
+            </ng-container>
+          </ng-container>
         </div>
       </div>
 
@@ -100,7 +245,9 @@
             <thead>
               <tr>
                 <th>User Information</th>
-                <th>Contact</th>
+                <!-- <th>User Address (City)</th> -->
+                <th>Order Count</th>
+                <th>Total Spent</th>
                 <th>Groups</th>
               </tr>
             </thead>
@@ -120,11 +267,17 @@
                     </div>
                   </div>
                 </td>
-                <td>
-                  <div class="phone-info">
-                    <i class="fas fa-phone icon"></i>
-                    {{ user.phone || 'N/A' }}
+                <!-- <td>
+                  <div class="address-info">
+                    <i class="fas fa-map-marker-alt icon"></i>
+                    {{ user.city || 'N/A' }}
                   </div>
+                </td> -->
+                <td>
+                  {{ (user.orderCount ?? 0) > 0 ? user.orderCount : 'N/A' }}
+                </td>
+                <td>
+                  {{ (user.totalSpent ?? 0) > 0 ? (user.totalSpent | number:'1.0-0') + ' Ks' : 'N/A' }}
                 </td>
                 <td>
                   <div class="groups-info">

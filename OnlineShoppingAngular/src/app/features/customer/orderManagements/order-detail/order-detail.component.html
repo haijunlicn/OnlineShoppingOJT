@@ -56,13 +56,28 @@
         <div class="header-left">
           <div class="header-title-section">
             <h1>
-              {{ order.orderType === 'REPLACEMENT' ? 'Replacement' : 'Order' }} #{{ order.id }}
+              {{ order.orderType === 'REPLACEMENT' ? 'Replacement' : 'Order Detail' }}
+              <span class="order-status-badge" [ngClass]="getOrderStatusClass(order.currentOrderStatus)">
+                <i [class]="getStatusIcon(order.currentOrderStatus)"></i>
+                {{ getStatusMessage(order.currentOrderStatus, order.orderType) }}
+              </span>
             </h1>
             <div class="header-meta">
-              <span class="order-date">{{ formatDate(order.createdDate) }}</span>
-              <span class="order-customer">Customer: {{ order.user.name }}</span>
+              <span class="order-date">
+                <i class="fas fa-calendar-alt"></i>
+                {{ formatDate(order.createdDate) }}
+              </span>
+              <span class="order-customer">
+                <i class="fas fa-user"></i>
+                {{ order.user.name }}
+              </span>
               <span *ngIf="order.orderType === 'REPLACEMENT'" class="order-type">
-                <i class="fas fa-exchange-alt"></i> Replacement Order
+                <i class="fas fa-exchange-alt"></i>
+                Replacement Order
+              </span>
+              <span *ngIf="order.trackingNumber" class="order-tracking">
+                <i class="fas fa-truck"></i>
+                {{ order.trackingNumber }}
               </span>
             </div>
           </div>
@@ -70,7 +85,11 @@
 
         <div class="header-right">
           <div class="header-actions">
-            <button *ngIf="order.orderType !== 'REPLACEMENT'" class="btn-action primary" (click)="downloadInvoice()">
+            <button *ngIf="order.orderType !== 'REPLACEMENT'" 
+                    class="btn-action primary" 
+                    (click)="downloadInvoice()" 
+                    [disabled]="order.currentOrderStatus === 'ORDER_PENDING'" 
+                    [title]="order.currentOrderStatus === 'ORDER_PENDING' ? 'Cannot download invoice while order is pending.' : ''">
               <i class="fas fa-download"></i>
               <span>Download Invoice</span>
             </button>
@@ -123,12 +142,10 @@
                 <div class="shipment-details">
                   <div class="shipment-label">Delivery Address</div>
                   <div class="shipment-value">
-                    {{ order.shippingAddress.address }}<span *ngIf="order.shippingAddress.township">, {{
-                      order.shippingAddress.township }}</span><br />
+                    {{ order.shippingAddress.address }}<span *ngIf="order.shippingAddress.township">, {{ order.shippingAddress.township }}</span><br />
                     {{ order.shippingAddress.city }}, {{ order.shippingAddress.zipCode }}<br />
                     {{ order.shippingAddress.country }}
-                    <span *ngIf="order.shippingAddress.phoneNumber"><br />Phone: {{ order.shippingAddress.phoneNumber
-                      }}</span>
+                    <span *ngIf="order.shippingAddress.phoneNumber"><br />Phone: {{ order.shippingAddress.phoneNumber }}</span>
                   </div>
                 </div>
               </div>
@@ -171,15 +188,12 @@
                 </div>
 
                 <!-- Compact Refund Details -->
-
                 <div class="refund-details-section" *ngIf="getRefundsForItem(item.id).length > 0">
                   <div class="refund-header">
                     <i class="fas fa-undo refund-icon"></i>
                     <h4>Refund Details</h4>
                   </div>
-
                   <div *ngFor="let refund of getRefundsForItem(item.id); let last = last" class="refund-item">
-                    <!-- Find the specific refundItem matching this item -->
                     <ng-container *ngFor="let refundItem of refund.items">
                       <ng-container *ngIf="refundItem.orderItemId === item.id">
                         <div class="refund-grid">
@@ -187,7 +201,6 @@
                             <span class="refund-label">ID:</span>
                             <span class="refund-value">{{ refund.id }}</span>
                           </div>
-
                           <div class="refund-field">
                             <span class="refund-label">Status:</span>
                             <span class="refund-status-badge"
@@ -195,87 +208,28 @@
                               {{ refundItem.status || 'N/A' }}
                             </span>
                           </div>
-
                           <div class="refund-field">
                             <span class="refund-label">Action:</span>
                             <span class="refund-value">{{ refundItem.requestedAction || 'N/A' }}</span>
                           </div>
-
                           <div class="refund-field">
                             <span class="refund-label">Qty:</span>
                             <span class="refund-value">{{ refundItem.quantity }}</span>
                           </div>
-
                           <div class="refund-field full-width" *ngIf="refundItem.customReasonText">
                             <span class="refund-label"><i class="fas fa-comment-alt"></i> Reason:</span>
                             <span class="refund-value refund-comment">{{ refundItem.customReasonText }}</span>
                           </div>
-
                           <div class="refund-field full-width" *ngIf="refund.adminComment">
                             <span class="refund-label"><i class="fas fa-user-shield"></i> Admin:</span>
                             <span class="refund-value refund-comment">{{ refund.adminComment }}</span>
                           </div>
                         </div>
-
                         <div class="refund-divider" *ngIf="!last"></div>
                       </ng-container>
                     </ng-container>
                   </div>
                 </div>
-
-
-                <!-- <div class="refund-details-section" *ngIf="getRefundsForItem(item.id).length > 0">
-                  <div class="refund-header">
-                    <i class="fas fa-undo refund-icon"></i>
-                    <h4>Refund Details</h4>
-                  </div>
-
-                  <div *ngFor="let refund of getRefundsForItem(item.id); let last = last" class="refund-item">
-                    <div class="refund-grid">
-                      <div class="refund-field">
-                        <span class="refund-label">ID:</span>
-                        <span class="refund-value">{{ refund.id }}</span>
-                      </div>
-
-                      <div class="refund-field">
-                        <span class="refund-label">Status:</span>
-                        <span class="refund-status-badge"
-                          [ngClass]="'status-' + (refund.items[0].status?.toLowerCase() || 'unknown')">
-                          {{ refund.items[0].status || 'N/A' }}
-                        </span>
-                      </div>
-
-                      <div class="refund-field">
-                        <span class="refund-label">Action:</span>
-                        <span class="refund-value">{{ refund.items[0].requestedAction || 'N/A' }}</span>
-                      </div>
-
-                      <div class="refund-field">
-                        <span class="refund-label">Qty:</span>
-                        <span class="refund-value">{{ refund.items[0].quantity }}</span>
-                      </div>
-
-                      <div class="refund-field full-width" *ngIf="refund.items[0].customReasonText">
-                        <span class="refund-label">
-                          <i class="fas fa-comment-alt"></i>
-                          Reason:
-                        </span>
-                        <span class="refund-value refund-comment">{{ refund.items[0].customReasonText }}</span>
-                      </div>
-
-                      <div class="refund-field full-width" *ngIf="refund.adminComment">
-                        <span class="refund-label">
-                          <i class="fas fa-user-shield"></i>
-                          Admin:
-                        </span>
-                        <span class="refund-value refund-comment">{{ refund.adminComment }}</span>
-                      </div>
-                    </div>
-
-                    <div class="refund-divider" *ngIf="!last"></div>
-                  </div>
-                </div> -->
-
               </div>
               <div *ngIf="order.orderType !== 'REPLACEMENT'" class="item-price">
                 {{ formatCurrency(item.totalPrice) }}
@@ -290,7 +244,8 @@
             <h3>Order Summary</h3>
             <div class="payment-status">
               <span class="status-badge" [ngClass]="getOrderStatusClass(order.currentOrderStatus)">
-                {{ order.currentOrderStatus }}
+                <i [class]="getStatusIcon(order.currentOrderStatus)"></i>
+                <span class="status-text">{{ getStatusMessage(order.currentOrderStatus, order.orderType) }}</span>
               </span>
             </div>
           </div>
@@ -310,14 +265,13 @@
                 <span>{{ formatCurrency(order.totalAmount) }}</span>
               </div>
             </div>
-
             <div class="summary-actions">
               <button class="btn-refund" (click)="goToRefundForm()" [disabled]="isRefundDisabled()"
                 [title]="getRefundButtonTooltip()">
                 <i class="fas fa-undo"></i>
                 <span>Refund & Return</span>
               </button>
-              <button class="btn-invoice" (click)="downloadInvoice()">
+              <button class="btn-invoice" (click)="downloadInvoice()" [disabled]="order.currentOrderStatus === 'ORDER_PENDING'" [title]="order.currentOrderStatus === 'ORDER_PENDING' ? 'Cannot download invoice while order is pending.' : ''">
                 <i class="fas fa-file-invoice"></i>
                 <span>Download Invoice</span>
               </button>
@@ -344,7 +298,6 @@
                 <div class="payment-type">{{ order.paymentMethod.type | titlecase }}</div>
               </div>
             </div>
-
             <div *ngIf="order.paymentProofPath" class="payment-proof">
               <div class="proof-label">Payment Proof</div>
               <img [src]="order.paymentProofPath" alt="Payment Proof" class="proof-image"
@@ -358,21 +311,19 @@
           <div class="info-header">
             <h3>{{ order.orderType === 'REPLACEMENT' ? 'Replacement' : 'Order' }} Timeline</h3>
             <span class="status-badge" [ngClass]="getOrderStatusClass(order.currentOrderStatus)">
-              {{ getStatusMessage(order.currentOrderStatus, order.orderType) }}
+              <i [class]="getStatusIcon(order.currentOrderStatus)"></i>
+              <span class="status-text">{{ getStatusMessage(order.currentOrderStatus, order.orderType) }}</span>
             </span>
           </div>
           <div class="vertical-timeline">
             <div *ngFor="let step of getUnifiedStatusSteps(); let i = index; let last = last" class="timeline-step"
               [ngClass]="step.class">
-
               <!-- Timeline connector line -->
               <div class="timeline-connector" *ngIf="!last" [ngClass]="step.connectorClass"></div>
-
               <!-- Step circle with icon -->
               <div class="timeline-circle">
                 <i [class]="step.icon"></i>
               </div>
-
               <!-- Step content -->
               <div class="timeline-content">
                 <div class="timeline-label">{{ step.label }}</div>
@@ -385,7 +336,19 @@
             </div>
           </div>
         </div>
+        <!-- End of Timeline -->
       </div>
+      <!-- End of Right Column -->
+    </div>
+    <!-- End of Content Grid -->
+  </div>
+  <!-- End of Order Details -->
+
+  <!-- Payment Proof Modal -->
+  <div *ngIf="showProofModal" class="modal-backdrop" (click)="closeProofModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeProofModal()">&times;</button>
+      <img [src]="proofImageUrl" alt="Payment Proof" class="modal-image" />
     </div>
   </div>
 </main>

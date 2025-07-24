@@ -656,4 +656,21 @@ public class OrderService {
         return refundItemRepository.sumReturnedQuantityByOrderItemId(orderItemId, excluded);
     }
 
+    /**
+     * Returns a list of user stats (order count and total spent) for all users.
+     */
+    public List<UserStatsDTO> getAllUserStats() {
+        List<UserEntity> users = userRepository.findAll();
+        List<UserStatsDTO> stats = new ArrayList<>();
+        for (UserEntity user : users) {
+            UserStatsDTO dto = new UserStatsDTO();
+            dto.setUserId(user.getId());
+            Long orderCount = orderRepository.countCompletedOrdersByUser(user.getId());
+            dto.setOrderCount(orderCount != null ? orderCount : 0L);
+            BigDecimal totalSpent = orderRepository.sumTotalPaidByUser(user.getId());
+            dto.setTotalSpent(totalSpent != null ? totalSpent.doubleValue() : 0.0);
+            stats.add(dto);
+        }
+        return stats;
+    }
 }

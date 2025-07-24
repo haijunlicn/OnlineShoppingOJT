@@ -826,3 +826,14 @@
   max-height: 200px;
   overflow-y: auto;
 }
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+.header-actions > * {
+  margin-right: 0 !important;
+}

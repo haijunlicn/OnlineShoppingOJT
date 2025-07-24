@@ -146,6 +146,12 @@ public class OrderController {
         }
     }
 
+    @GetMapping("/user-stats")
+    public ResponseEntity<List<UserStatsDTO>> getAllUserStats() {
+        List<UserStatsDTO> stats = orderService.getAllUserStats();
+        return ResponseEntity.ok(stats);
+    }
+
     @PutMapping("/{id}/payment-status")
     public ResponseEntity<?> updatePaymentStatus(
             @PathVariable Long id,
