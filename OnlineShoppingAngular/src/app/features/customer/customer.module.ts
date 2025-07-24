@@ -7,6 +7,7 @@ import { HeaderComponent } from './common/header/header.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RegisterComponent } from './auth/register/register.component';
 import { RouterModule } from '@angular/router';
+import { CountdownModule } from 'ngx-countdown';
 import { ForgetPasswordComponent } from './auth/forget-password/forget-password.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { VerifyComponent } from './auth/verify/verify.component';
@@ -57,6 +58,7 @@ import { StickyDiscountProgressComponent } from './product_display/sticky-discou
 import { DiscountConditionDisplayComponent } from './product_display/discount-condition-display/discount-condition-display.component';
 import { ProductqandaComponent } from './product_display/productqanda/productqanda.component';
 import { DiscountHeroCarouselComponent } from './product_display/discount-hero-carousel/discount-hero-carousel.component';
+import { DiscountDetailComponent } from './product_display/discount-detail/discount-detail.component';
 
 @NgModule({
   declarations: [
@@ -111,7 +113,8 @@ import { DiscountHeroCarouselComponent } from './product_display/discount-hero-c
     StickyDiscountProgressComponent,
     DiscountConditionDisplayComponent,
     ProductqandaComponent,
-    DiscountHeroCarouselComponent
+    DiscountHeroCarouselComponent,
+    DiscountDetailComponent
   ],
   imports: [
     CommonModule,
@@ -128,6 +131,7 @@ import { DiscountHeroCarouselComponent } from './product_display/discount-hero-c
     MatButtonModule,
     FormsModule,
     HttpClientModule,
+    CountdownModule
   ]
 })
 export class CustomerModule { }

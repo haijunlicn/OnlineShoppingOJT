@@ -39,5 +39,9 @@ public class DiscountDisplayController {
         return ResponseEntity.ok(discounts);
     }
 
+    @GetMapping("/public/discount/{id}")
+    public DiscountEventDTO getDiscountById(@PathVariable Long id, @RequestParam(required = false) Long userId) {
+        return discountDisplayService.getDiscountById(id, userId);
+    }
 
 }

@@ -420,4 +420,20 @@ public class DiscountDisplayService {
         return dto;
     }
 
+    public DiscountEventDTO getDiscountById(Long discountId, Long userId) {
+        Optional<DiscountEntity> discountOpt = discountRepository.findById(discountId.intValue());
+
+        if (discountOpt.isEmpty()) {
+            throw new RuntimeException("Discount not found for id: " + discountId);
+        }
+
+        UserEntity user = null;
+        if (userId != null) {
+            user = userRepository.findById(userId).orElse(null);
+        }
+
+        return mapToDiscountEventDTO(discountOpt.get(), user);
+    }
+
+
 }

@@ -18,6 +18,7 @@ import { AuthService } from '@app/core/services/auth.service';
 import { CloudinaryService } from '@app/core/services/cloudinary.service';
 import { ReviewService } from '@app/core/services/review.service';
 import { ProductReview } from '@app/core/models/review';
+import { AlertService } from '@app/core/services/alert.service';
 
 // Change editReviewData type and default value
 declare interface EditReviewData {
@@ -111,7 +112,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     private discountTextService: DiscountTextService,
     private reviewService: ReviewService,
     private cloudinaryService: CloudinaryService,
-    private authService: AuthService
+    private authService: AuthService,
+    private alertService: AlertService,
   ) { }
 
   ngOnInit(): void {

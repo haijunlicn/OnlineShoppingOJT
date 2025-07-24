@@ -38,7 +38,7 @@ export class CloudinaryService {
   }
 
   validateImageFile(file: File): { valid: boolean; error?: string } {
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 10 * 1024 * 1024; // 5MB
 
     if (!file.type.startsWith("image/")) {
       return { valid: false, error: "Only image files are allowed" };
