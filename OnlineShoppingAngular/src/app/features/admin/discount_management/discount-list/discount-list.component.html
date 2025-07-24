@@ -175,7 +175,10 @@
 
   <!-- Enhanced Professional Edit Discount Popup Modal -->
   <div class="edit-popup-backdrop" *ngIf="showEditPopup && !showProductSelectionModal" (click)="closeEditPopup()"></div>
-  <div class="edit-popup modern-modal" *ngIf="showEditPopup && !showProductSelectionModal" style="margin-left: 100px; margin-top: 40px;height: 550px; width: 800px;border-radius: 0px;">
+  <!-- Modal Container enhancement -->
+  <div class="edit-popup modern-modal"
+       *ngIf="showEditPopup && !showProductSelectionModal" 
+       style="background: #fff; margin-left: 100px;height: 545px;width: 800px;margin-top: 30px; border-radius: 18px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); padding: 0; overflow: hidden;">
     
     <!-- Professional Header -->
     <!-- <div class="modal-header">
@@ -185,10 +188,10 @@
 
     <!-- Enhanced Tab Navigation -->
     <div class="modal-tabs">
-      <button [class.active]="activeTab === 'info'" (click)="activeTab = 'info'">
+      <button (click)="onTabChange('info')" >
          Basic Information
       </button>
-      <button [class.active]="activeTab === 'mechanisms'" (click)="activeTab = 'mechanisms'">
+      <button (click)="onTabChange('mechanisms')">
          Discount Mechanisms
       </button>
     </div>
@@ -197,13 +200,14 @@
     <div class="modal-body">
       <!-- Basic Information Tab -->
       <form *ngIf="activeTab === 'info'" [formGroup]="editForm" (ngSubmit)="saveEditDiscount()" autocomplete="off" (click)="$event.stopPropagation()">
-        <div class="edit-card">
+        <div class="edit-card"
+             style="background: #f9fafb; border-radius: 14px; box-shadow: 0 2px 8px rgba(59,130,246,0.07);">
           <div class="edit-row">
             <div class="edit-section">
               <label> Discount Name</label>
               <input type="text" formControlName="name" placeholder="Enter a compelling discount name" />
             </div>
-            <div class="edit-section code-section">
+            <!-- <div class="edit-section code-section">
               <label> Promotional Code</label>
               <div class="code-input-group">
                 <input type="text" formControlName="code" placeholder="Enter or generate unique code" />
@@ -211,7 +215,7 @@
                    Generate
                 </button>
               </div>
-            </div>
+            </div> -->
           </div>
 
           <div class="edit-row">
@@ -240,15 +244,6 @@
             <label> Description</label>
             <textarea rows="3" formControlName="description" placeholder="Enter a detailed description of your discount"></textarea>
           </div>
-
-          <div class="actions">
-            <button type="button" (click)="activeTab = 'mechanisms'">
-              Next
-            </button>
-            <button type="button" (click)="closeEditPopup()">
-              Cancel
-            </button>
-          </div>
         </div>
       </form>
 
@@ -260,34 +255,31 @@
               <span> <strong>{{ i + 1 }}</strong></span>
               <span>{{ mech.mechanismType || 'Configure Mechanism' }}</span>
               <span>{{ mech.discountType || '' }}</span>
-              <span><strong>{{ mech.value || '' }}{{ mech.discountType === 'PERCENTAGE' ? '%' : '' }}</strong></span>
+              <span><strong>{{ mech.value || '' }}{{ mech.mechanismType === 'Discount' && mech.discountType === 'PERCENTAGE' ? '%' : '' }}</strong></span>
               <span style="margin-left: auto;">
-               
+                <button type="button"
+                        (click)="deleteMechanism(i); $event.stopPropagation();"
+                        style="background: #ef4444; color: #fff; border: none; border-radius: 6px; padding: 4px 16px; font-size: 1rem; font-weight: 500; cursor: pointer;">
+                  Delete
+                </button>
               </span>
             </div>
 
             <div class="mech-accordion-body" *ngIf="accordionOpenIndex === i">
+            
               <div class="edit-row">
                 <div class="edit-section">
                   <label> Offer type</label>
-                  <select [(ngModel)]="mech.mechanismType" name="mechType{{i}}">
-                    <option value="">Select Offer Type</option>
-                    <option value="freeGift">Free gift</option>
-                    <option value="Disocunt">Percentage</option>
-                    <option value="Coupon">Coupon</option>
-                    <option value="B2B">Business to Business </option>
-                  </select>
+                  <input type="text" [value]="mech.mechanismType" readonly style="width: 100%; height: 40px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 8px; padding: 0 16px;" />
                 </div>
-                <div class="edit-section">
+                <div class="edit-section" *ngIf="mech.mechanismType !== 'freeGift'">
                   <label> Discount Type</label>
-                  <select [(ngModel)]="mech.discountType" name="mechDiscountType{{i}}">
-                    <option value="">Select Discount Type</option>
-                    <option value="PERCENTAGE">Percentage</option>
-                    <option value="FIXED_AMOUNT">Fixed Amount</option>
-                  </select>
+                  <input type="text" [value]="mech.discountType" readonly style="width: 100%; height: 40px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 8px; padding: 0 16px;" />
                 </div>
               </div>
 
+              <!-- Only show value/max amount/coupon code if not freeGift -->
+              <div *ngIf="mech.mechanismType !== 'freeGift'">
               <div class="edit-row">
                 <div class="edit-section">
                   <label> Value</label>
@@ -298,21 +290,99 @@
                   <input type="number" [(ngModel)]="mech.maxDiscountAmount" name="mechMaxAmount{{i}}" placeholder="Maximum discount cap" />
                 </div>
               </div>
-
-              <div class="edit-section">
-                <label> Selected Products</label>
-                <div class="selected-products-box">
-                  <span *ngFor="let name of mech.selectedProductNames" class="product-chip">
-                    {{ name }}
-                  </span>
-                  <div *ngIf="!mech.selectedProductNames?.length" style="color: #9ca3af; font-style: italic; display: flex; align-items: center; justify-content: center; width: 100%; min-height: 40px;">
-                    No products selected yet
+                <div class="edit-row" style="display: flex; gap: 24px;">
+                  <!-- Coupon Code Field -->
+                  <div class="edit-section" *ngIf="mech.mechanismType === 'Coupon' && mech.couponcode !== undefined" style="flex: 1 1 0; min-width: 0;">
+                    <label>Coupon Code</label>
+                    <input
+                      type="text"
+                      [(ngModel)]="mech.couponcode"
+                      placeholder="Enter or generate coupon code"
+                      style="width: 100%; height: 40px; background: #fff; border: 1px solid #d1d5db; border-radius: 8px; padding: 0 16px; margin-bottom: 8px;"
+                    />
+                    <button
+                      type="button"
+                      class="generate-btn"
+                      (click)="generateMechanismCouponCode(i)"
+                      style="width: 100%; height: 40px; display: block;">
+                      Generate
+                    </button>
+                  </div>
+                  <!-- Selected Products -->
+                  <div class="edit-section" style="flex: 1 1 0; min-width: 0;">
+                    <label>Selected Products</label>
+                    <input
+                      class="selected-products-input"
+                      [value]="mech.selectedProductNames?.join(', ')"
+                      readonly
+                      placeholder="No products selected yet"
+                      style="width: 100%; height: 40px; background: #fff; border: 1px solid #d1d5db; border-radius: 8px; padding: 0 16px; margin-bottom: 8px;"
+                    />
+                    <button
+                      type="button"
+                      class="product-edit-btn"
+                      (click)="openMechanismProductSelection(i)"
+                      style="width: 100%; height: 40px; display: block;">
+                      Select Products
+                    </button>
                   </div>
                 </div>
-                <div style="display: flex; justify-content: center; margin-top: 16px;">
-                  <button type="button" class="product-edit-btn" (click)="openMechanismProductSelection(i)" style="min-width: 180px;">
+              </div>
+
+              <!-- For freeGift: show Quantity and Selected Products -->
+              <div *ngIf="mech.mechanismType === 'freeGift'">
+                <div class="form-group enhanced">
+                  <label style="font-weight: 500; margin-bottom: 6px; display: block; color: #222;">Quantity <span style="color: #ef4444;">*</span></label>
+                  <div style="display: flex; align-items: center; max-width: 320px;">
+                    <button type="button" (click)="decrementQuantity(mech)" style="width: 44px; height: 44px; border: none; background: #f3f4f6; border-radius: 10px 0 0 10px; font-size: 1.5rem; color: #374151;">-</button>
+                    <input type="number" [(ngModel)]="mech.quantity" min="1" style="width: 80px; height: 44px; text-align: center; border: none; background: #f9fafb; font-size: 1.2rem; margin-bottom:-3px;" />
+                    <button type="button" (click)="incrementQuantity(mech)" style="width: 44px; height: 44px; border: none; background: #f3f4f6; border-radius: 0 10px 10px 0; font-size: 1.5rem; color: #374151;">+</button>
+                  </div>
+                  <div style="color: #64748b; font-size: 0.98rem; margin-top: 6px;">Number of free items to give</div>
+                </div>
+                <div class="edit-section" style="flex: 1 1 0; min-width: 0; margin-top: 16px;">
+                  <label>Selected Products</label>
+                  <input
+                    class="selected-products-input"
+                    [value]="mech.selectedProductNames?.join(', ')"
+                    readonly
+                    placeholder="No products selected yet"
+                    style="width: 100%; height: 40px; background: #fff; border: 1px solid #d1d5db; border-radius: 8px; padding: 0 16px; margin-bottom: 8px;"
+                  />
+                  <button
+                    type="button"
+                    class="product-edit-btn"
+                    (click)="openMechanismProductSelection(i)"
+                    style="width: 100%; height: 40px; display: block;">
                      Select Products
                   </button>
+                </div>
+              </div>
+
+              <!-- List all condition groups and their conditions (inspired by create-discount-group) -->
+              <div *ngIf="mech.discountConditionGroup && mech.discountConditionGroup.length > 0" class="condition-list" style="margin-top: 18px;">
+                <div *ngFor="let group of mech.discountConditionGroup; let gi = index" style="margin-bottom: 18px;">
+                  <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                    <span style="font-weight: bold;">Apply When</span>
+                    <span style="margin-left: 8px; font-weight: normal;">
+                      {{ group.logicOperator === true || group.logicOperator === 'true' ? 'All of the conditions are matched' : 'Any of the conditions are matched' }}
+                    </span>
+                    <button 
+                      type="button"
+                      (click)="deleteConditionGroup(i, gi)"
+                      style="margin-left: auto; background: #ef4444; color: #fff; border: none; border-radius: 6px; padding: 4px 16px; font-size: 1rem; font-weight: 500; cursor: pointer;">
+                      Delete
+                    </button>
+                  </div>
+                  <ul style="list-style: none; padding-left: 0;">
+                    <li *ngFor="let cond of group.discountCondition; let ci = index" style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                      <span style="font-size: 18px; color: #007bff;">•</span>
+                      <span>
+                        {{ getConditionDisplay(cond) }}
+                      </span>
+                     
+                    </li>
+                  </ul>
                 </div>
               </div>
 
@@ -324,23 +394,29 @@
             </div>
           </div>
         </div>
-
-        <div class="modal-footer">
-          <button type="button" class="cancel-btn" (click)="closeEditPopup()">
+      </div>
+    </div>
+    <!-- Modal Footer enhancement -->
+    <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 16px; padding: 24px 32px 16px 32px; background: #f8fafc; border-top: 1.5px solid #e5e7eb;">
+      <button type="button" class="cancel-btn" (click)="closeEditPopup()"
+              style="height: 44px; min-width: 120px; border-radius: 8px; border: 1.5px solid #d1d5db; background: #fff; color: #222; font-weight: 500; font-size: 1rem; box-shadow: none; transition: border 0.2s;">
              Cancel
           </button>
-          <button type="button" class="save-btn" (click)="saveEditDiscount()">
+      <button *ngIf="activeTab === 'info'" type="button" class="save-btn" (click)="onTabChange('mechanisms')"
+              style="height: 44px; min-width: 140px; border-radius: 8px; background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%); color: #fff; font-weight: 600; font-size: 1rem; border: none; box-shadow: 0 4px 16px rgba(34,197,94,0.10); transition: background 0.2s;">
+        Next
+      </button>
+      <button *ngIf="activeTab === 'mechanisms'" type="button" class="save-btn" (click)="saveEditDiscount()"
+              style="height: 44px; min-width: 140px; border-radius: 8px; background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%); color: #fff; font-weight: 600; font-size: 1rem; border: none; box-shadow: 0 4px 16px rgba(34,197,94,0.10); transition: background 0.2s;">
              Save All Changes
           </button>
-        </div>
-      </div>
     </div>
   </div>
 </ng-container>
 
 <ng-container *ngIf="showProductSelectionModal">
   <app-product-selection
-    [selectedProducts]="getSelectedProductsForProductSelection()"
+    [selectedProducts]="mechanismProductSelectionProducts"
     (onProductsSelected)="onProductsSelected($event)"
     (onBack)="onProductSelectionBack()"
   ></app-product-selection>

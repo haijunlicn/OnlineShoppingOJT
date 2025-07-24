@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { DiscountDisplayDTO } from '../models/discount';
+import { DiscountDisplayDTO, DiscountEventDTO } from '../models/discount';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 import { evaluateCartConditions } from './discountChecker';
@@ -17,6 +17,23 @@ export class DiscountDisplayService {
     private http: HttpClient,
     private authService: AuthService
   ) { }
+
+  getAllPublicActiveDiscounts(): Observable<DiscountEventDTO[]> {
+    const userId = this.authService.isLoggedIn()
+      ? this.authService.getCurrentUser()?.id
+      : null;
+
+    const params = new HttpParams().set('userId', userId ?? '');
+
+    return this.http.get<DiscountEventDTO[]>(
+      `${this.baseUrl}/public/active-discounts`,
+      { params }
+    );
+  }
+
+  getDiscountById(id: number): Observable<DiscountEventDTO> {
+    return this.http.get<DiscountEventDTO>(`${this.baseUrl}/public/discount/${id}`);
+  }
 
   getProductDiscountHints(): Observable<Record<number, DiscountDisplayDTO[]>> {
     const userId = this.authService.isLoggedIn()
@@ -46,7 +63,6 @@ export class DiscountDisplayService {
     });
   }
 
-
   calculateDiscountedPrice(
     originalPrice: number,
     eligibleDiscounts: DiscountDisplayDTO[]
@@ -58,6 +74,11 @@ export class DiscountDisplayService {
     const breakdown: { label: string; amount: number }[] = [];
 
     for (const discount of eligibleDiscounts) {
+      // Skip coupon mechanism discounts
+      if (discount.mechanismType === 'Coupon') {
+        continue;
+      }
+
       const label = discount.shortLabel || discount.name || 'Discount';
       const valueNum = discount.value ? Number(discount.value) : 0;
       let amount = 0;

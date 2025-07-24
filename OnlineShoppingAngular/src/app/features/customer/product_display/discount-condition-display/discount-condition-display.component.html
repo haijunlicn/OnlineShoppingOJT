@@ -1,0 +1,52 @@
+<div class="discount-cards-container" *ngIf="parsedDiscounts.length > 0">
+  <div class="discount-cards-list">
+    <div *ngFor="let item of parsedDiscounts; let i = index" class="discount-card">
+
+      <!-- Featured Banner for high-value discounts -->
+      <div class="featured-ribbon" *ngIf="isHighValueDiscount(item.discount)">
+        <span>FEATURED</span>
+      </div>
+
+      <!-- Main Discount Display -->
+      <div class="discount-main">
+        <!-- Large Discount Value -->
+        <div class="discount-value-large">
+          {{ getDiscountPercentage(item.discount) }}
+        </div>
+
+        <!-- Discount Type Label -->
+        <div class="discount-type-label">
+          {{ getDiscountTypeLabel(item.discount) }}
+        </div>s
+
+        <!-- Mechanism-based Description -->
+        <div class="discount-description">
+          {{ getHumanReadableText(item.discount) }}
+        </div>
+
+        <!-- Coupon Code Display (for Coupon mechanism) -->
+        <div class="coupon-code-display" *ngIf="item.discount.mechanismType === 'Coupon' && item.discount.couponcode">
+          <div class="code-box" [class.copyable]="isConditionsMet(item.discount)">
+            <span class="code-text">{{ item.discount.couponcode }}</span>
+            <button class="copy-code-btn" *ngIf="isConditionsMet(item.discount)"
+              (click)="copyToClipboard(item.discount.couponcode)" title="Copy code">
+              <i class="pi pi-copy"></i>
+            </button>
+          </div>
+          <div class="code-status" *ngIf="!isConditionsMet(item.discount)">
+            <small class="text-muted">Code available when conditions are met</small>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Empty State -->
+<div class="empty-discounts" *ngIf="parsedDiscounts.length === 0">
+  <div class="empty-content">
+    <i class="pi pi-gift"></i>
+    <p>No offers available</p>
+  </div>
+</div>

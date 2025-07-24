@@ -9,8 +9,8 @@ export enum typeCA {
 export enum MechanismType {
   DISCOUNT = 'Discount',
   FREE_GIFT = 'freeGift',
-  B2B='B2B',
-  Coupon='Coupon'
+  B2B = 'B2B',
+  Coupon = 'Coupon'
 }
 
 export enum DiscountType {
@@ -49,14 +49,14 @@ export interface DiscountMechanismEA_B {
   delFg?: boolean;
   createdDate?: string;
   updatedDate?: string;
-  couponcode?:string;
+  couponcode?: string;
   discountId?: number;
   disocunt?: DiscountEA_A;
   discountProducts?: DiscountProductEA_E[];
-
   discountConditionGroup?: DiscountConditionGroupEA_C[];
   freeGifts?: FreeGiftEA_F[];
-
+  usageLimitTotal?: number;
+  usageLimitPerUser?: number;
 }
 
 
@@ -93,7 +93,7 @@ export interface DiscountConditionGroupEA_C {
   group?: GroupEA_G;
   discountCondition: DiscountConditionEA_D[];
   conditions?: DiscountConditionEA_D[]; // for discountChecker
-  eligible?: boolean | null; 
+  eligible?: boolean | null;
 }
 
 export interface DiscountConditionEA_D {
@@ -107,13 +107,15 @@ export interface DiscountConditionEA_D {
   value: string[];
   discountConditionGroupId?: number;
   discountConditionGroup?: DiscountConditionGroupEA_C;
-  eligible?: boolean | null; 
+  eligible?: boolean | null;
+  relatedEntities?: any[];
 }
 
 export interface FreeGiftEA_F {
   id: number;
   mechanismId: number;
   productId: number;
+  product?: ProductDTO;
   discount: DiscountEA_A;
   discountMechanism: DiscountMechanismEA_B;
 }
@@ -179,13 +181,43 @@ export interface DiscountDisplayDTO {
   id: number;
   name: string;
   type: 'AUTO' | 'COUPON';
-  code: string | null;
+  couponcode: string | null;
   value: string | null;        // e.g. "10" for 10% or $10, depending on type
   discountType?: 'PERCENTAGE' | 'FIXED'; // optional, for price calculation
-  mechanismType?: 'freeGift' | 'Discount' | 'coupon' | 'wholeSale';
+  mechanismType?: MechanismType;
   maxDiscountAmount?: string | null;     // cap for percentage discounts
   shortLabel?: string;
   conditionSummary?: string;
   conditionGroups?: DiscountConditionGroupEA_C[];
   requireFrontendChecking?: boolean;
+  startDate?: string;
+  endDate?: string;
+  usageLimit?: number;
+  offeredProductIds?: number[];
+  usageLimitTotal?: number;
+  usageLimitPerUser?: number;
+}
+
+export interface DiscountEventDTO {
+  id: number;
+  name: string;
+  description: string;
+  type: 'COUPON' | 'AUTO';
+  imgUrl: string;
+  startDate: string;
+  endDate: string;
+  mechanisms: DiscountMechanismDTO[];
+}
+
+export interface DiscountMechanismDTO {
+  id: number;
+  couponCode: string | null;
+  value: number | null;
+  discountType: 'PERCENTAGE' | 'FIXED';
+  mechanismType: 'DISCOUNT' | 'FREE_GIFT' | 'COUPON' | 'B2B';
+  maxDiscountAmount: number | null;
+  usageLimitTotal: number | null;
+  usageLimitPerUser: number | null;
+  offeredProducts: ProductDTO[];
+  conditionGroups: DiscountConditionGroupEA_C[];
 }

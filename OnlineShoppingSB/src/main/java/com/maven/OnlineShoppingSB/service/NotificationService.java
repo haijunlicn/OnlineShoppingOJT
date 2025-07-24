@@ -355,5 +355,21 @@ public class NotificationService {
                 .map(UserEntity::getId)
                 .toList();
     }
+    public List<NotificationDTO> getNotificationsByTypeName(String typeName) {
+        List<NotificationEntity> entities = notificationRepository.findByType_Name(typeName);
+        return entities.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    private NotificationDTO convertToDTO(NotificationEntity entity) {
+        NotificationDTO dto = new NotificationDTO();
+        dto.setTitle(entity.getTitle());
+        dto.setMessage(entity.getMessage());
+        dto.setImageUrl(entity.getImageUrl());
+        dto.setMetadata(entity.getMetadata());
+        dto.setScheduledAt(entity.getScheduledAt());
+        return dto;
+    }
 
 }

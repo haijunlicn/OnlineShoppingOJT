@@ -72,7 +72,9 @@ public class AdminAccountService {
             dto.setId(user.getId());
             dto.setEmail(user.getEmail());
             dto.setName(user.getName());
-            dto.setPhone(user.getPhone());
+//            dto.setPhone(user.getPhone());
+            dto.setProfile(user.getProfile());
+            dto.setProfile(user.getProfile());
             dto.setRoleName(user.getRole().getName());
             dto.setIsVerified(user.getIsVerified());
             dto.setDelFg(user.getDelFg());
@@ -92,7 +94,9 @@ public class AdminAccountService {
                     dto.setId(user.getId());
                     dto.setEmail(user.getEmail());
                     dto.setName(user.getName());
-                    dto.setPhone(user.getPhone());
+//                    dto.setPhone(user.getPhone());
+
+                    dto.setProfile(user.getProfile());
                     dto.setRoleName(user.getRole().getName());
                     dto.setIsVerified(user.getIsVerified());
                     dto.setDelFg(user.getDelFg());

@@ -1,0 +1,248 @@
+<!-- Modal Overlay -->
+<div class="modal-overlay-custom">
+    <div class="modal-container-custom">
+        <!-- Modal Header -->
+        <div class="modal-header-custom">
+            <div class="modal-header-left">
+                <h2 class="modal-title-custom">
+                    <i class="fas fa-box me-2"></i>Product Selection
+                </h2>
+                <p class="modal-subtitle-custom">Select products for your discount offer</p>
+            </div>
+            <div class="modal-header-right">
+                <button type="button" class="btn btn-outline-secondary btn-sm me-2" (click)="clearAllFilters()">
+                    <i class="fas fa-filter me-1"></i>Clear Filters
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" (click)="handleBack()">
+                    <i class="fas fa-times me-1"></i>Close
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body-custom">
+            <!-- Filters Section -->
+            <div class="filters-section-custom">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-filter me-2"></i>Filters & Search
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <!-- Search -->
+                            <div class="col-12 col-lg-4">
+                                <label for="searchInput" class="form-label">Search</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-search text-muted"></i>
+                                    </span>
+                                    <input id="searchInput" type="text" class="form-control" [(ngModel)]="searchText"
+                                        (input)="onSearchChange()" placeholder="Search by name, category, or brand...">
+                                </div>
+                            </div>
+
+                            <!-- Category Filter -->
+                            <div class="col-6 col-lg-2">
+                                <label class="form-label">Category</label>
+                                <div class="filter-dropdown-custom">
+                                    <button class="filter-dropdown-trigger"
+                                        (click)="categoryFilterOpen = !categoryFilterOpen">
+                                        <span>{{ getSelectedCategoryName() }}</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div *ngIf="categoryFilterOpen" class="filter-dropdown-menu">
+                                        <div class="filter-option" (click)="selectCategory(null)">
+                                            <input type="checkbox" [checked]="selectedCategory === null"
+                                                class="filter-checkbox">
+                                            <span>All Categories</span>
+                                        </div>
+                                        <div *ngFor="let category of categories" class="filter-option"
+                                            (click)="selectCategory(category.id ?? null)">
+                                            <input type="checkbox" [checked]="selectedCategory == category.id"
+                                                class="filter-checkbox">
+                                            <span>{{category.name}}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Brand Filter -->
+                            <div class="col-6 col-lg-2">
+                                <label class="form-label">Brand</label>
+                                <div class="filter-dropdown-custom">
+                                    <button class="filter-dropdown-trigger"
+                                        (click)="brandFilterOpen = !brandFilterOpen">
+                                        <span>{{selectedBrand || 'All Brands'}}</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div *ngIf="brandFilterOpen" class="filter-dropdown-menu">
+                                        <div class="filter-option" (click)="selectBrand('')">
+                                            <input type="checkbox" [checked]="!selectedBrand" class="filter-checkbox">
+                                            <span>All Brands</span>
+                                        </div>
+                                        <div *ngFor="let brand of brands" class="filter-option"
+                                            (click)="selectBrand(brand.name)">
+                                            <input type="checkbox" [checked]="selectedBrand === brand.name"
+                                                class="filter-checkbox">
+                                            <span>{{brand.name}}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Price Range -->
+                            <div class="col-12 col-lg-4">
+                                <label class="form-label">Price Range (MMK)</label>
+                                <div class="price-range-inputs">
+                                    <input type="number" class="form-control" placeholder="Min" [(ngModel)]="minPrice"
+                                        (input)="onPriceChange()">
+                                    <span class="price-separator">to</span>
+                                    <input type="number" class="form-control" placeholder="Max" [(ngModel)]="maxPrice"
+                                        (input)="onPriceChange()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Table Section -->
+            <div class="products-section-custom">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h6 class="card-title mb-1">
+                                    <i class="fas fa-box me-2"></i>Products
+                                    <span class="badge bg-primary ms-2">{{filteredProducts.length}} found</span>
+                                </h6>
+                                <small class="text-muted">
+                                    {{selectionMode === 'single' ? 'Single' : 'Multiple'}} selection mode
+                                    <span *ngIf="currentSelectedProducts.length > 0" class="ms-2">
+                                        • {{currentSelectedProducts.length}} selected
+                                    </span>
+                                </small>
+                            </div>
+                            <div class="col-auto" *ngIf="selectionMode === 'multiple' && filteredProducts.length > 0">
+                                <button class="btn btn-sm btn-outline-primary" (click)="toggleAllVisibleSelection()">
+                                    <i class="fas fa-check-square me-1"></i>
+                                    {{isAllVisibleSelected() ? 'Deselect All' : 'Select All'}}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <!-- Products Table -->
+                        <div class="table-responsive" *ngIf="filteredProducts.length > 0">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 50px;">
+                                            <input *ngIf="selectionMode === 'multiple'" type="checkbox"
+                                                [checked]="isAllVisibleSelected()"
+                                                [indeterminate]="isSomeVisibleSelected()"
+                                                (change)="toggleAllVisibleSelection()" class="form-check-input">
+                                        </th>
+                                        <th>Product</th>
+                                        <th class="d-none d-md-table-cell">Category</th>
+                                        <th class="d-none d-md-table-cell">Brand</th>
+                                        <th>Price</th>
+                                        <th class="d-none d-lg-table-cell">Stock</th>
+                                        <th class="d-none d-lg-table-cell">Created</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let product of filteredProducts" class="product-row-custom"
+                                        [class.selected-row]="isProductSelected(product)"
+                                        (click)="toggleProductSelection(product)">
+                                        <td>
+                                            <input type="checkbox" [checked]="isProductSelected(product)"
+                                                (change)="toggleProductSelection(product)"
+                                                (click)="$event.stopPropagation()" class="form-check-input">
+                                        </td>
+                                        <td>
+                                            <div class="product-info-custom">
+                                                <img [src]="getProductImage(product)" [alt]="product.name"
+                                                    class="product-image-custom">
+                                                <div class="product-details-custom">
+                                                    <div class="product-name-custom">{{product.name}}</div>
+                                                    <small class="text-muted">ID: {{product.id}}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="d-none d-md-table-cell">
+                                            <span class="badge bg-light text-dark">{{product.category?.name ||
+                                                'N/A'}}</span>
+                                        </td>
+                                        <td class="d-none d-md-table-cell">
+                                            <span class="badge bg-light text-dark">{{product.brand?.name ||
+                                                'N/A'}}</span>
+                                        </td>
+                                        <td>
+                                            <span
+                                                class="fw-semibold text-primary">{{getProductPriceMMK(product)}}</span>
+                                        </td>
+                                        <td class="d-none d-lg-table-cell">
+                                            <span class="badge" [class]="getStockClass(getProductStock(product))">
+                                                {{getProductStock(product)}}
+                                            </span>
+                                        </td>
+                                        <td class="d-none d-lg-table-cell">
+                                            <small class="text-muted">{{getProductCreateDate(product)}}</small>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div *ngIf="filteredProducts.length === 0" class="empty-state-custom">
+                            <div class="text-center py-5">
+                                <div class="empty-icon-custom mb-3">
+                                    <i class="fas fa-search display-1 text-muted"></i>
+                                </div>
+                                <h5 class="text-muted mb-2">No products found</h5>
+                                <p class="text-muted mb-3">
+                                    Try adjusting your search criteria or filters to find products.
+                                </p>
+                                <button class="btn btn-outline-primary" (click)="clearAllFilters()">
+                                    <i class="fas fa-times me-1"></i>Clear All Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer-custom" *ngIf="currentSelectedProducts.length > 0">
+            <div class="selection-summary-custom">
+                <div class="selection-info-custom">
+                    <span class="selection-count-custom">
+                        {{currentSelectedProducts.length}} product{{currentSelectedProducts.length !== 1 ? 's' : ''}}
+                        selected
+                    </span>
+                    <div class="selection-preview-custom">
+                        <span *ngFor="let product of currentSelectedProducts.slice(0, 3); let i = index"
+                            class="selected-item-custom">
+                            {{product.name}}{{i < Math.min(2, currentSelectedProducts.length - 1) ? ', ' : '' }} </span>
+                                <span *ngIf="currentSelectedProducts.length > 3" class="more-items-custom">
+                                    +{{currentSelectedProducts.length - 3}} more
+                                </span>
+                    </div>
+                </div>
+                <div class="selection-actions-custom">
+                    <button class="btn btn-outline-secondary me-2" (click)="clearSelection()">
+                        <i class="fas fa-times me-1"></i>Clear Selection
+                    </button>
+                    <button class="btn btn-primary" (click)="confirmSelection()">
+                        <i class="fas fa-check me-1"></i>Confirm Selection
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -121,7 +121,8 @@ public class CustomUserDetailsService implements UserDetailsService {
         UserResponseDTO dto = new UserResponseDTO();
         dto.setName(user.getName());
         dto.setEmail(user.getEmail());
-        dto.setPhone(user.getPhone());
+//        dto.setPhone(user.getPhone());
+        dto.setProfile(user.getProfile());
         return dto;
     }
 
@@ -131,7 +132,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         user.setName(updatedProfile.getName());
-        user.setPhone(updatedProfile.getPhone());
+//        user.setPhone(updatedProfile.getPhone());
+        user.setProfile(updatedProfile.getProfile());
 
         // Optional: consider if you want to allow email change here
         user.setEmail(updatedProfile.getEmail());
@@ -141,7 +143,8 @@ public class CustomUserDetailsService implements UserDetailsService {
         UserResponseDTO dto = new UserResponseDTO();
         dto.setName(user.getName());
         dto.setEmail(user.getEmail());
-        dto.setPhone(user.getPhone());
+//        dto.setPhone(user.getPhone());
+        dto.setProfile(user.getProfile());
         return dto;
     }
 

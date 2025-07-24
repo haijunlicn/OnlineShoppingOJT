@@ -6,12 +6,15 @@
   --color-secondary: #03110d; /* Rich charcoal for dark backgrounds */
   --color-brown: #3d3d3d; /* Deep bronze-brown (hover, buttons) */
   --color-background: #f5f5f3; /* Clean soft background */
+  --color-backgroundCustomer: #ffffff;
   --color-border: rgba(191, 161, 106, 0.2); /* Gold-tinted border */
   --color-shadow: rgba(15, 61, 46, 0.1); /* Soft green shadow */
   --color-highlight: #d6b56c; /* Lighter golden accent */
   --color-success: #198754; /* Bootstrap success green (kept) */
   --color-danger: #470505; /* Rich crimson */
-  --color-accents:#fafafa;
+  --color-accents: #fafafa;
+  --color-badge1: #2d373b;
+  --color-discount: #ff5722;
 }
 
 body {

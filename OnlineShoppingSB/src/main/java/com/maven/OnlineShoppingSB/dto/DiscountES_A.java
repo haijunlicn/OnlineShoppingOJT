@@ -20,8 +20,8 @@ public class DiscountES_A {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private Boolean isActive;
-    private Integer usageLimit;
-    private Integer perUserLimit;
+//    private Integer usageLimit;
+//    private Integer perUserLimit;
     private Boolean delFg;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;

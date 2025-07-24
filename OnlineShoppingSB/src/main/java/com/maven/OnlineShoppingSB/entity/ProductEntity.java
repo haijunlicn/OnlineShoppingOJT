@@ -45,7 +45,6 @@ public class ProductEntity {
     @JoinColumn(name = "created_by")
     private UserEntity createdBy;
 
-
     @Column(name = "del_fg")
     private Integer delFg = 1;
 
@@ -72,6 +71,12 @@ public class ProductEntity {
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FreeGiftEntity> freeGifts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductReview> productReviews = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductQuestionEntity> productQuestion = new ArrayList<>();
 
 
 }

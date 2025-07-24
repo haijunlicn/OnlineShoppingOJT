@@ -1,0 +1,83 @@
+<section class="discount-hero-carousel" *ngIf="discounts.length > 0">
+  <div class="carousel-container">
+    <!-- Image Side with Fade Effect -->
+    <div class="image-side">
+      <div class="image-container" [@slideInLeft]>
+        <img
+          [src]="currentDiscount?.imgUrl || 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-71KhMA44aIVtaoJRsptDGWHpDNzxgf.png'"
+          [alt]="currentDiscount?.name" class="discount-image" [@imageZoom] />
+        <!-- Gradient fade overlay -->
+        <div class="image-fade-overlay"></div>
+      </div>
+    </div>
+
+    <!-- Content Side -->
+    <div class="content-side">
+      <div class="content-wrapper">
+        <!-- Event Badge -->
+        <div class="event-badge" [@slideInRight]>
+          <i class="fas fa-sparkles"></i>
+          <span>{{ currentDiscount?.type === 'AUTO' ? 'SPECIAL OFFER' : 'EXCLUSIVE DEAL' }}</span>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content-home">
+          <h1 class="discount-title" [@slideInRight]>{{ currentDiscount?.name }}</h1>
+
+          <!-- Countdown Timer -->
+          <div class="countdown-timer" *ngIf="currentDiscount?.endDate">
+            <i class="fas fa-clock"></i>
+            <span>Ends in:</span>
+            <countdown *ngIf="showCountdown" [config]="countdownConfig" (event)="onCountdownEvent($event)">
+            </countdown>
+          </div>
+
+          <!-- Mechanisms Display -->
+          <div class="mechanisms-container" *ngIf="getVisibleMechanisms().length > 0" [@slideInRight]>
+            <div class="mechanism-pill" *ngFor="let mechanism of getVisibleMechanisms(); let i = index"
+              [@staggerIn]="i">
+              <i [class]="getMechanismIcon(mechanism.mechanismType)"></i>
+              <span>{{ getMechanismText(mechanism) }}</span>
+            </div>
+            <div class="mechanism-pill more-pill" *ngIf="getHiddenMechanismsCount() > 0" [@staggerIn]="3">
+              <i class="fas fa-plus"></i>
+              <span>+{{ getHiddenMechanismsCount() }} more</span>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="action-buttons" [@slideInRight]>
+            <button class="primary-btn" (click)="onViewDetails()">
+              <span>View Details</span>
+              <i class="fas fa-arrow-right"></i>
+            </button>
+            <button class="secondary-btn">
+              <span>Shop Now</span>
+              <i class="fas fa-external-link-alt"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Navigation Controls -->
+  <div class="navigation-controls" *ngIf="discounts.length > 1">
+    <!-- Slide Indicators -->
+    <div class="slide-indicators">
+      <button *ngFor="let discount of discounts; let i = index" class="indicator" [class.active]="i === currentIndex"
+        (click)="goToSlide(i)" [attr.aria-label]="'Go to slide ' + (i + 1)"
+        [@indicatorPulse]="i === currentIndex ? 'active' : 'inactive'"></button>
+    </div>
+
+    <!-- Arrow Navigation -->
+    <div class="arrow-navigation">
+      <button class="nav-arrow prev" (click)="goToPrevious()" [@buttonHover]>
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button class="nav-arrow next" (click)="goToNext()" [@buttonHover]>
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+</section>

@@ -150,7 +150,8 @@ export class HeaderComponent implements OnInit {
 
 
   onSettings(): void {
-    this.router.navigate(["/customer/account-settings"])
+    this.router.navigate(["/customer/account-settings/profile"])
+ 
     this.isProfileDropdownOpen = false
   }
 

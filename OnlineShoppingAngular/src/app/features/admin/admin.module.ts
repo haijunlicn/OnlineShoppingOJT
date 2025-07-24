@@ -66,14 +66,9 @@ import { AdminOrdersDetailComponent } from './adminOrderManagement/admin-orders-
 import { ProductDetailComponent } from './product_management/product-detail/product-detail.component';
 import { StockUpdateModalComponent } from './product_management/stock-update-modal/stock-update-modal.component';
 import { CreateDiscountComponent } from './discount_management/create-discount/create-discount.component';
-
 import { DiscountRulesComponent } from './discount_management/discount-rules/discount-rules.component';
-
 import { CreateDiscountGroupComponent } from './discount_management/create-discount-group/create-discount-group.component';
 import { ProductSelectionComponent } from './discount_management/product-selection/product-selection.component';
-
-
-
 import { SaleAnalysisComponent } from './policy-management/sale-analysis/sale-analysis.component';
 import { AdminAccountCreateComponent } from './roleAndPermission/admin-account-create/admin-account-create.component';
 import { RefundReasonFormComponent } from './policy-management/refund-reason-form/refund-reason.component';
@@ -91,13 +86,19 @@ import { AdminNotificationListComponent } from './notificationManagement/admin-n
 import { AdminNotificationDetailComponent } from './notificationManagement/admin-notification-detail/admin-notification-detail.component';
 import { AdminNotiTypesComponent } from './notificationManagement/admin-noti-types/admin-noti-types.component';
 import { AdminSentNotisComponent } from './notificationManagement/admin-sent-notis/admin-sent-notis.component';
+import { AuditLogComponent } from './policy-management/audit-log/audit-log.component';
+import { VlogFilesCreateComponent } from './vlog-management/vlogfilescreate/vlogfilescreate.component';
+import { VlogFilesListComponent } from './vlog-management/vlogfileslist/vlogfileslist.component';
+import { VlogCreateComponent } from './vlog-management/vlogcreate/vlogcreate.component';
+import { VlogListComponent } from './vlog-management/vloglist/vloglist.component';
 import { CreateDeliveryMethodComponent } from './deliveryMethodManagement/create-delivery-method/create-delivery-method.component';
 import { DeliveryMethodListComponent } from './deliveryMethodManagement/delivery-method-list/delivery-method-list.component';
 import { EditDeliveryMethodComponent } from './deliveryMethodManagement/edit-delivery-method/edit-delivery-method.component';
 import { DiscountListComponent } from './discount_management/discount-list/discount-list.component';
-
-
-
+import { NewCreateDiscountComponent } from './discount_management/new-create-discount/new-create-discount.component';
+import { NewDiscountRulesComponent } from './discount_management/new-discount-rules/new-discount-rules.component';
+import { NewProductSelectionComponent } from './discount_management/new-product-selection/new-product-selection.component';
+import { QuestionComponent } from './QuestionManagement/question/question.component';
 
 @NgModule({
   declarations: [
@@ -122,7 +123,6 @@ import { DiscountListComponent } from './discount_management/discount-list/disco
     FaqListComponent,
     FaqCreateComponent,
     FaqUpdateComponent,
-  
     ProductBulkUploadComponent,
     RoleListComponent,
     RoleFormComponent,
@@ -147,8 +147,7 @@ import { DiscountListComponent } from './discount_management/discount-list/disco
     CreateDiscountComponent,
     ProductSelectionComponent,
     DiscountRulesComponent,
-     CreateDiscountGroupComponent,
-  
+    CreateDiscountGroupComponent,
     SaleAnalysisComponent,
     AdminAccountCreateComponent,
     RefundReasonFormComponent,
@@ -157,7 +156,6 @@ import { DiscountListComponent } from './discount_management/discount-list/disco
     RefundReasonListComponent,
     RefundRequestListComponent,
     RefundRequestDetailComponent,
-   
     PolicyUpdateComponent,
     ChartTestingComponent,
     AdminLayoutComponent,
@@ -167,10 +165,20 @@ import { DiscountListComponent } from './discount_management/discount-list/disco
     AdminNotificationListComponent,
     AdminNotiTypesComponent,
     AdminSentNotisComponent,
+    AuditLogComponent,
+    VlogListComponent,
+    VlogCreateComponent,
+    VlogFilesListComponent,
+    VlogFilesCreateComponent,
     CreateDeliveryMethodComponent,
     DeliveryMethodListComponent,
     EditDeliveryMethodComponent,
-   DiscountListComponent
+    DiscountListComponent,
+    NewCreateDiscountComponent,
+    NewDiscountRulesComponent,
+    NewProductSelectionComponent,
+    QuestionComponent
+
   ],
   imports: [
     CommonModule,
@@ -195,7 +203,7 @@ import { DiscountListComponent } from './discount_management/discount-list/disco
     FormsModule,
     NgxChartsModule,
     NgxMaskModule.forRoot(),
-    
-]
+
+  ]
 })
 export class AdminModule { }

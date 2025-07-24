@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.maven.OnlineShoppingSB.config.CustomUserDetails;
-import com.maven.OnlineShoppingSB.dto.userDTO;
+import com.maven.OnlineShoppingSB.dto.*;
 import com.maven.OnlineShoppingSB.entity.UserEntity;
 import com.maven.OnlineShoppingSB.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,18 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.maven.OnlineShoppingSB.config.JwtService;
-import com.maven.OnlineShoppingSB.dto.LoginRequest;
-import com.maven.OnlineShoppingSB.dto.ResetPasswordRequest;
-import com.maven.OnlineShoppingSB.dto.otpDTO;
 import com.maven.OnlineShoppingSB.entity.OtpEntity;
 import com.maven.OnlineShoppingSB.repository.OtpRepository;
 import com.maven.OnlineShoppingSB.repository.UserRepository;
@@ -69,6 +60,9 @@ public class authController {
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@RequestBody UserEntity user) {
+
+
+
         String result = userService.registerUser(user);
 
         Map<String, Object> response = new HashMap<>();
@@ -275,7 +269,8 @@ public class authController {
             userDTO.setId(user.getId());
             userDTO.setEmail(user.getEmail());
             userDTO.setName(user.getName());
-            userDTO.setPhone(user.getPhone());
+           // userDTO.setPhone(user.getPhone());
+            userDTO.setProfile(user.getProfile());
             userDTO.setIsVerified(user.getIsVerified());
             userDTO.setDelFg(user.getDelFg());
             userDTO.setCreatedDate(user.getCreatedDate());
@@ -347,5 +342,37 @@ public class authController {
         return ResponseEntity.ok("Password reset successful.");
     }
 
+@PutMapping("/update/{id}")
+public UserResponseDTO updateProfile(@PathVariable Long id, @RequestBody UserResponseDTO userDto) {
+    return userService.updateProfile(id, userDto);
+}
 
+
+
+@PostMapping("/check-password")
+public ResponseEntity<?> checkCurrentPassword(@RequestBody Map<String, Object> payload) {
+    try {
+        Long userId = Long.valueOf(payload.get("userId").toString());
+        String currentPassword = payload.get("currentPassword").toString();
+
+        boolean isValid = userService.checkCurrentPassword(userId, currentPassword);
+        return ResponseEntity.ok(isValid);
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("success", false, "message", e.getMessage()));
+    }
+}
+@PostMapping("/change-password")
+public ResponseEntity<?> changePassword(@RequestBody Map<String, Object> payload) {
+    try {
+        Long userId = Long.valueOf(payload.get("userId").toString());
+        String newPassword = payload.get("newPassword").toString();
+
+        UserResponseDTO updatedUser = userService.changePassword(userId, newPassword);
+        return ResponseEntity.ok(updatedUser);
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("success", false, "message", e.getMessage()));
+    }
+}
 }

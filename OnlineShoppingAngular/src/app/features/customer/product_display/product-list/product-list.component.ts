@@ -15,6 +15,7 @@ import { AuthService } from '../../../../core/services/auth.service';
 import { FilterSidebarComponent, FilterState } from '../../common/filter-sidebar/filter-sidebar.component';
 import { DiscountDisplayService } from '@app/core/services/discount-display.service';
 import { DiscountDisplayDTO } from '@app/core/models/discount';
+import { DiscountTextService } from '@app/core/services/discount-text.service';
 
 @Component({
   selector: "app-product-list",
@@ -22,7 +23,6 @@ import { DiscountDisplayDTO } from '@app/core/models/discount';
   templateUrl: "./product-list.component.html",
   styleUrl: "./product-list.component.css",
 })
-
 export class ProductListComponent {
   @ViewChild(FilterSidebarComponent) filterSidebar!: FilterSidebarComponent
 
@@ -65,6 +65,7 @@ export class ProductListComponent {
   private productsLoaded = false
   private initialUrlParams: any = null
   private pendingQueryParams: any = null
+  private filtersRestored = false
 
   constructor(
     private productService: ProductService,
@@ -77,12 +78,13 @@ export class ProductListComponent {
     private route: ActivatedRoute,
     private authService: AuthService,
     private discountDisplayService: DiscountDisplayService,
-  ) {}
+    private discountTextService: DiscountTextService, // Add this line
+  ) { }
 
   ngOnInit() {
     // Store initial URL params immediately
     this.initialUrlParams = this.route.snapshot.queryParams
-    console.log("Initial URL params:", this.initialUrlParams)
+    console.log("🔵 Initial URL params:", this.initialUrlParams)
 
     this.loadCategories()
     this.loadBrands()
@@ -94,11 +96,21 @@ export class ProductListComponent {
 
     // Subscribe to future query param changes (for navigation)
     this.route.queryParams.subscribe((params) => {
-      // Only process if this is not the initial load
-      if (this.categoriesLoaded && this.brandsLoaded && this.productsLoaded) {
+      // Only process if this is not the initial load and filters haven't been restored yet
+      if (this.categoriesLoaded && this.brandsLoaded && this.productsLoaded && this.filtersRestored) {
+        console.log("🔄 Processing query param changes:", params)
         this.restoreFiltersFromUrl(params)
       }
     })
+
+    // 🔁 Listen for auth status changes and refresh discounts
+    this.authService.isLoggedIn$.subscribe((isLoggedIn) => {
+      console.log("🔁 Auth status changed:", isLoggedIn);
+
+      // 🔄 Re-fetch just discount hints and reapply them
+      this.reloadDiscountHints();
+    });
+
   }
 
   ngAfterViewInit() {
@@ -108,136 +120,275 @@ export class ProductListComponent {
     }, 100)
   }
 
-  private tryRestoreInitialFilters() {
-    if (this.categoriesLoaded && this.brandsLoaded && this.productsLoaded && this.initialUrlParams) {
-      console.log("Restoring initial filters:", this.initialUrlParams)
-      this.restoreFiltersFromUrl(this.initialUrlParams)
-    }
-  }
-
-  private restoreFiltersFromUrl(params: any) {
-    console.log("🟡 Restoring filters from URL:", params)
-
-    if (!params || Object.keys(params).length === 0) {
-      console.warn("⚠️ No URL parameters to restore. Clearing filters.")
-      this.clearAllFilters()
-      return
-    }
-
-    // ===== Categories =====
-    if (params["categories"]) {
-      const raw = params["categories"]
-      const categoryNames = raw.split(",").map((name: string) => decodeURIComponent(name.trim()))
-      console.log("📁 Decoded category names:", categoryNames)
-
-      const categoryIds = this.getCategoryIdsByNames(categoryNames)
-      console.log("✅ Matched category IDs:", categoryIds)
-      this.currentFilters.categories = categoryIds
-    } else if (params["category"]) {
-      const decodedName = decodeURIComponent(params["category"].trim())
-      const categoryId = this.getCategoryIdByName(decodedName)
-      console.log("📁 Decoded single category name:", decodedName)
-      if (categoryId !== null) {
-        this.currentFilters.categories = [categoryId]
-        console.log("✅ Restored single category ID:", categoryId)
-      } else {
-        console.warn("❌ Category not found for name:", decodedName)
-      }
-    }
-
-    // ===== Brands =====
-    if (params["brands"]) {
-      const brandNames = params["brands"].split(",").map((name: string) => decodeURIComponent(name.trim()))
-      console.log("🏷️ Decoded brand names:", brandNames)
-
-      const brandIds = this.getBrandIdsByNames(brandNames)
-      console.log("✅ Matched brand IDs:", brandIds)
-
-      this.currentFilters.brands = brandIds
-    }
-
-    // ===== Price Range =====
-    if (params["priceMin"] || params["priceMax"]) {
-      const min = params["priceMin"] ? Number.parseFloat(params["priceMin"]) : null
-      const max = params["priceMax"] ? Number.parseFloat(params["priceMax"]) : null
-      this.currentFilters.priceRange = { min, max }
-      console.log("💰 Restored price range:", this.currentFilters.priceRange)
-    }
-
-    // ===== Availability =====
-    this.currentFilters.inStock = params["inStock"] === "true"
-    this.currentFilters.onSale = params["onSale"] === "true"
-    this.currentFilters.isNew = params["isNew"] === "true"
-    console.log(
-      "📦 Restored availability filters: inStock =",
-      this.currentFilters.inStock,
-      ", onSale =",
-      this.currentFilters.onSale,
-      ", isNew =",
-      this.currentFilters.isNew,
-    )
-
-    // ===== Rating =====
-    if (params["rating"]) {
-      const rating = Number.parseInt(params["rating"])
-      this.currentFilters.rating = !isNaN(rating) ? rating : null
-      console.log("⭐ Restored rating:", this.currentFilters.rating)
-    }
-
-    // ===== Sort Option =====
-    if (params["sort"]) {
-      this.currentSort = params["sort"]
-      this.currentSortLabel = this.getSortLabel(params["sort"])
-      console.log("⬇️ Restored sort:", this.currentSort)
-    }
-
-    // ===== Pagination =====
-    if (params["page"]) {
-      const page = Number.parseInt(params["page"])
-      this.currentPage = !isNaN(page) && page > 0 ? page : 1
-      console.log("📄 Restored page:", this.currentPage)
-    }
-
-    // ===== Final Steps =====
-    console.log("🔄 Syncing filter sidebar with restored filters...")
-    this.updateFilterSidebarFromFilters()
-
-    console.log("🟢 Applying restored filters...")
-    this.applyFiltersAndSort()
-  }
-
-  private getCategoryIdsByNames(names: string[]): number[] {
-    return names.map((name) => this.getCategoryIdByName(name)).filter((id): id is number => id !== null)
-  }
-
   private getCategoryIdByName(name: string): number | null {
     const normalizedInput = this.formatNameForUrl(decodeURIComponent(name))
-
-    console.log("🔍 Normalized input:", normalizedInput)
+    console.log("🔍 Looking for category with normalized name:", normalizedInput)
 
     const found = this.categories.find((cat) => {
       const categoryUrlName = this.formatNameForUrl(cat.name!)
-      console.log(`🆚 Comparing: "${categoryUrlName}" === "${normalizedInput}"`)
-      return categoryUrlName === normalizedInput
+      const matches = categoryUrlName === normalizedInput
+      if (matches) {
+        console.log(`✅ Found match: "${cat.name}" (ID: ${cat.id})`)
+      }
+      return matches
     })
 
     if (!found) {
       console.warn("❌ Category not found for:", normalizedInput)
-    } else {
-      console.log("✅ Matched category:", found.name, "=> ID:", found.id)
+      console.log(
+        "Available categories:",
+        this.categories.map((c) => ({ name: c.name, formatted: this.formatNameForUrl(c.name!) })),
+      )
     }
 
     return found ? +found.id! : null
   }
 
   private getBrandIdsByNames(names: string[]): number[] {
-    return names.map((name) => this.getBrandIdByName(name)).filter((id): id is number => id !== null)
+    const ids = names.map((name) => this.getBrandIdByName(name)).filter((id): id is number => id !== null)
+    console.log("🔍 Resolved brand names to IDs:", names, "→", ids)
+    return ids
   }
 
   private getBrandIdByName(name: string): number | null {
-    const lowerName = name.trim().toLowerCase()
-    const found = this.brands.find((brand) => brand.name.toLowerCase() === lowerName)
+    const decodedName = decodeURIComponent(name).trim().toLowerCase()
+    console.log("🔍 Looking for brand with name:", decodedName)
+
+    const found = this.brands.find((brand) => brand.name.toLowerCase() === decodedName)
+
+    if (!found) {
+      console.warn("❌ Brand not found for:", decodedName)
+      console.log(
+        "Available brands:",
+        this.brands.map((b) => b.name.toLowerCase()),
+      )
+    } else {
+      console.log(`✅ Found brand match: "${found.name}" (ID: ${found.id})`)
+    }
+
     return found ? +found.id : null
+  }
+
+  loadProducts() {
+    this.loadingProducts = true
+    this.productService.getPublicProductList().subscribe({
+      next: (products) => {
+        // Initialize products with basic data
+        this.products = products.map((product) => ({
+          ...product,
+          status: this.getStockStatus(product),
+          originalPrice: 0,
+          discountedPrice: 0,
+        }))
+        this.productsLoaded = true
+        this.loadingProducts = false
+
+        console.log("✅ Products loaded:", this.products.length)
+
+        // Load discount hints and precompute prices
+        this.discountDisplayService.getProductDiscountHints().subscribe({
+          next: (hintMap) => {
+            console.log("✅ Discount hints received from backend:", hintMap)
+            this.precomputeProductPrices(hintMap)
+            this.filteredProducts = [...this.products]
+            this.tryRestoreInitialFilters()
+          },
+          error: (err) => {
+            console.error("Failed to load discount hints", err)
+            this.precomputeProductPrices({})
+            this.filteredProducts = [...this.products]
+            this.tryRestoreInitialFilters()
+          },
+        })
+      },
+      error: (err) => {
+        console.error("Failed to load products", err)
+        this.loadingProducts = false
+      },
+    })
+  }
+
+  loadCategories() {
+    this.loadingCategories = true
+    this.categoryService.getAllPublicCategories().subscribe({
+      next: (categories) => {
+        this.categories = categories
+        this.categoriesLoaded = true
+        this.loadingCategories = false
+        console.log("✅ Categories loaded:", this.categories.length)
+        this.tryRestoreInitialFilters()
+      },
+      error: (err) => {
+        console.error("Failed to load categories", err)
+        this.loadingCategories = false
+      },
+    })
+  }
+
+  loadBrands() {
+    this.loadingBrands = true
+    this.brandService.getAllPublicBrands().subscribe({
+      next: (brands) => {
+        this.brands = brands
+        this.brandsLoaded = true
+        this.loadingBrands = false
+        console.log("✅ Brands loaded:", this.brands.length)
+        this.tryRestoreInitialFilters()
+      },
+      error: (err) => {
+        console.error("Failed to load brands", err)
+        this.loadingBrands = false
+      },
+    })
+  }
+
+  onFiltersChanged(filters: FilterState) {
+    console.log("🔄 Filters changed from sidebar:", filters)
+    this.currentFilters = filters
+    this.currentPage = 1
+    this.applyFiltersAndSort()
+    this.updateUrlWithFilters(filters)
+  }
+
+  private precomputeProductPrices(hintMap: { [productId: number]: DiscountDisplayDTO[] }) {
+    console.log("🚀 Precomputing product prices for performance optimization...")
+
+    const cart = this.cartService.getCart()
+    console.log("precomputing method cart : ", cart);
+
+
+    for (const product of this.products) {
+      const allHints = hintMap[product.id] || []
+      product.discountHints = allHints
+
+      const eligibleHints = this.discountDisplayService.evaluateEligibleDiscounts(allHints, cart)
+      product.originalPrice = this.calculateLowestVariantPrice(product)
+
+      // 👇 Filter only the hints that actually affect this product
+      const affectingHints = eligibleHints.filter(hint =>
+        hint.offeredProductIds?.includes(product.id)
+      )
+
+      const result = this.discountDisplayService.calculateDiscountedPrice(
+        product.originalPrice,
+        affectingHints
+      )
+
+      product.discountedPrice = result.discountedPrice
+      product.discountBreakdown = result.breakdown
+    }
+
+    console.log("✅ Price precomputation completed!")
+  }
+
+  private calculateLowestVariantPrice(product: ProductCardItem): number {
+    if (product.variants && product.variants.length > 0) {
+      const prices = product.variants.map((v: any) => v.price)
+      return Math.min(...prices)
+    }
+    return product.product.basePrice
+  }
+
+  private checkScreenSize() {
+    if (window.innerWidth < 768) {
+      this.showFilters = false
+    }
+  }
+
+  private getAllDescendantCategoryIds(categoryIds: number[]): number[] {
+    const allIds = [...categoryIds]
+    return [...new Set(allIds)]
+  }
+
+  private getDescendantCategories(parentId: number): CategoryDTO[] {
+    const children = this.categories.filter((cat) => cat.parentCategoryId === parentId)
+    const descendants = [...children]
+
+    children.forEach((child) => {
+      descendants.push(...this.getDescendantCategories(child.id!))
+    })
+
+    return descendants
+  }
+
+  private applySorting(products: ProductCardItem[]) {
+    switch (this.currentSort) {
+      case "price-asc":
+        products.sort((a, b) => a.discountedPrice! - b.discountedPrice!)
+        break
+      case "price-desc":
+        products.sort((a, b) => b.discountedPrice! - a.discountedPrice!)
+        break
+      case "name-asc":
+        products.sort((a, b) => a.product.name.localeCompare(b.product.name))
+        break
+      case "newest":
+        products.sort((a, b) => {
+          const dateA = new Date(a.product.createdDate || 0)
+          const dateB = new Date(b.product.createdDate || 0)
+          return dateB.getTime() - dateA.getTime()
+        })
+        break
+      case "rating":
+        break
+      default:
+        break
+    }
+  }
+
+  private updateUrlWithFilters(filters: FilterState) {
+    const queryParams: any = {}
+
+    if (filters.categories.length > 0) {
+      const categoryNames = this.getCategoryNamesByIds(filters.categories)
+      if (categoryNames.length > 0) {
+        queryParams.categories = categoryNames.map((name) => this.sanitizeForUrl(name.trim())).join(",")
+      }
+    }
+
+    if (filters.brands.length > 0) {
+      const brandNames = this.getBrandNamesByIds(filters.brands)
+      if (brandNames.length > 0) {
+        queryParams.brands = brandNames.map((name) => this.sanitizeForUrl(name.trim())).join(",")
+      }
+    }
+
+    if (filters.priceRange.min !== null) {
+      queryParams.priceMin = filters.priceRange.min
+    }
+    if (filters.priceRange.max !== null) {
+      queryParams.priceMax = filters.priceRange.max
+    }
+
+    if (filters.inStock) {
+      queryParams.inStock = "true"
+    }
+    if (filters.onSale) {
+      queryParams.onSale = "true"
+    }
+    if (filters.isNew) {
+      queryParams.isNew = "true"
+    }
+
+    if (filters.rating !== null) {
+      queryParams.rating = filters.rating
+    }
+
+    if (this.currentSort !== "featured") {
+      queryParams.sort = this.currentSort
+    }
+
+    if (this.currentPage > 1) {
+      queryParams.page = this.currentPage
+    }
+
+    console.log("🔗 Updating URL with params:", queryParams)
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: queryParams,
+      queryParamsHandling: "replace",
+    })
   }
 
   private getCategoryNamesByIds(ids: number[]): string[] {
@@ -262,328 +413,20 @@ export class ProductListComponent {
     return encodeURIComponent(name.toLowerCase().replace(/\s+/g, "-"))
   }
 
-  private updateFilterSidebarFromFilters() {
-    if (this.filterSidebar) {
-      console.log("Updating filter sidebar with filters:", this.currentFilters)
-
-      // Update categories
-      this.filterSidebar.selectedCategories.clear()
-      this.currentFilters.categories.forEach((categoryId) => {
-        this.filterSidebar.selectedCategories.add(categoryId)
-      })
-
-      // Update brands
-      this.filterSidebar.selectedBrands.clear()
-      this.currentFilters.brands.forEach((brandId) => {
-        this.filterSidebar.selectedBrands.add(brandId)
-      })
-
-      // Update price range
-      this.filterSidebar.customPriceMin = this.currentFilters.priceRange.min
-      this.filterSidebar.customPriceMax = this.currentFilters.priceRange.max
-
-      // Update availability filters
-      this.filterSidebar.inStockOnly = this.currentFilters.inStock
-      this.filterSidebar.onSaleOnly = this.currentFilters.onSale
-      this.filterSidebar.newItemsOnly = this.currentFilters.isNew
-
-      // Update rating
-      this.filterSidebar.minRating = this.currentFilters.rating
-
-      // Force change detection
-      this.filterSidebar.emitFilters()
-    }
+  private sanitizeForUrl(name: string): string {
+    return encodeURIComponent(name.trim())
   }
 
-  // Enhanced URL update method - stores ALL filters with NAMES
-  private updateUrlWithFilters(filters: FilterState) {
-    const queryParams: any = {}
-
-    // Store multiple categories by names
-    if (filters.categories.length > 0) {
-      const categoryNames = this.getCategoryNamesByIds(filters.categories)
-      if (categoryNames.length > 0) {
-        queryParams.categories = categoryNames.map((name) => this.sanitizeForUrl(name.trim())).join(",")
-      }
+  private getSortLabel(sort: string): string {
+    const labels: { [key: string]: string } = {
+      featured: "Featured",
+      "price-asc": "Price: Low to High",
+      "price-desc": "Price: High to Low",
+      "name-asc": "Name: A to Z",
+      newest: "Newest First",
+      rating: "Highest Rated",
     }
-
-    // Store multiple brands by names
-    if (filters.brands.length > 0) {
-      const brandNames = this.getBrandNamesByIds(filters.brands)
-      if (brandNames.length > 0) {
-        queryParams.brands = brandNames.map((name) => this.sanitizeForUrl(name.trim())).join(",")
-      }
-    }
-
-    // Store price range
-    if (filters.priceRange.min !== null) {
-      queryParams.priceMin = filters.priceRange.min
-    }
-    if (filters.priceRange.max !== null) {
-      queryParams.priceMax = filters.priceRange.max
-    }
-
-    // Store availability filters
-    if (filters.inStock) {
-      queryParams.inStock = "true"
-    }
-    if (filters.onSale) {
-      queryParams.onSale = "true"
-    }
-    if (filters.isNew) {
-      queryParams.isNew = "true"
-    }
-
-    // Store rating filter
-    if (filters.rating !== null) {
-      queryParams.rating = filters.rating
-    }
-
-    // Store sort option
-    if (this.currentSort !== "featured") {
-      queryParams.sort = this.currentSort
-    }
-
-    // Store current page if not first page
-    if (this.currentPage > 1) {
-      queryParams.page = this.currentPage
-    }
-
-    console.log("Updating URL with params:", queryParams)
-
-    // Update URL without triggering navigation
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: queryParams,
-      queryParamsHandling: "replace",
-    })
-  }
-
-  // ===== OPTIMIZED DATA LOADING METHODS =====
-
-  loadProducts() {
-    this.loadingProducts = true
-    this.productService.getPublicProductList().subscribe({
-      next: (products) => {
-        // Initialize products with basic data
-        this.products = products.map((product) => ({
-          ...product,
-          status: this.getStockStatus(product),
-          // Initialize with default values - will be computed after discount hints are loaded
-          originalPrice: 0,
-          discountedPrice: 0,
-        }))
-        this.productsLoaded = true
-        this.loadingProducts = false
-
-        console.log("Products loaded, trying to restore filters")
-        this.tryRestoreInitialFilters()
-
-        // Load discount hints and precompute prices
-        this.discountDisplayService.getProductDiscountHints().subscribe({
-          next: (hintMap) => {
-            console.log("✅ Discount hints received from backend:", hintMap)
-
-            // OPTIMIZATION: Precompute prices once for all products
-            this.precomputeProductPrices(hintMap)
-
-            this.filteredProducts = [...this.products]
-          },
-          error: (err) => {
-            console.error("Failed to load discount hints", err)
-            // Even without discount hints, compute original prices
-            this.precomputeProductPrices({})
-            this.filteredProducts = [...this.products]
-          },
-        })
-      },
-      error: (err) => {
-        console.error("Failed to load products", err)
-        this.loadingProducts = false
-      },
-    })
-  }
-
-  // NEW: Precompute all product prices once to avoid recalculation
-
-  private precomputeProductPrices(hintMap: { [productId: number]: DiscountDisplayDTO[] }) {
-    console.log("🚀 Precomputing product prices for performance optimization...")
-
-    const cart = this.cartService.getCart()
-
-    for (const product of this.products) {
-      // Step 1: Get all discount hints from backend
-      const allHints = hintMap[product.id] || []
-
-      // Step 2: Store all hints for badges
-      product.discountHints = allHints
-
-      // Step 3: Evaluate which hints are actually eligible
-      const eligibleHints = this.discountDisplayService.evaluateEligibleDiscounts(allHints, cart)
-
-      // Step 4: Calculate lowest variant price as base
-      product.originalPrice = this.calculateLowestVariantPrice(product)
-
-      // Step 5: Apply discounts to get final price
-      const result = this.discountDisplayService.calculateDiscountedPrice(product.originalPrice, eligibleHints)
-
-      product.discountedPrice = result.discountedPrice
-      product.discountBreakdown = result.breakdown
-
-      console.log(
-        `💰 Product ${product.id} → from: ${product.discountedPrice}, original: ${product.originalPrice}`,
-        result.breakdown,
-      )
-    }
-
-    console.log("✅ Price precomputation completed!")
-  }
-
-  private calculateLowestVariantPrice(product: ProductCardItem): number {
-    if (product.variants && product.variants.length > 0) {
-      const prices = product.variants.map((v: any) => v.price)
-      return Math.min(...prices)
-    }
-    return product.product.basePrice
-  }
-
-  loadCategories() {
-    this.loadingCategories = true
-    this.categoryService.getAllPublicCategories().subscribe({
-      next: (categories) => {
-        this.categories = categories
-        this.categoriesLoaded = true
-        this.loadingCategories = false
-        console.log("Categories loaded:", this.categories.length)
-        this.tryRestoreInitialFilters()
-      },
-      error: (err) => {
-        console.error("Failed to load categories", err)
-        this.loadingCategories = false
-      },
-    })
-  }
-
-  loadBrands() {
-    this.loadingBrands = true
-    this.brandService.getAllPublicBrands().subscribe({
-      next: (brands) => {
-        this.brands = brands
-        this.brandsLoaded = true
-        this.loadingBrands = false
-        console.log("Brands loaded:", this.brands.length)
-        this.tryRestoreInitialFilters()
-      },
-      error: (err) => {
-        console.error("Failed to load brands", err)
-        this.loadingBrands = false
-      },
-    })
-  }
-
-  // ===== EXISTING METHODS (Updated to use precomputed values) =====
-
-  private checkScreenSize() {
-    if (window.innerWidth < 768) {
-      this.showFilters = false
-    }
-  }
-
-  // Filter methods
-  onFiltersChanged(filters: FilterState) {
-    console.log("Filters changed:", filters)
-    this.currentFilters = filters
-    this.currentPage = 1 // Reset to first page
-    this.applyFiltersAndSort()
-    this.updateUrlWithFilters(filters)
-  }
-
-  private applyFiltersAndSort() {
-    let filtered = [...this.products]
-
-    // Apply category filter
-    if (this.currentFilters.categories.length > 0) {
-      const categoryIds = this.getAllDescendantCategoryIds(this.currentFilters.categories)
-      filtered = filtered.filter((product) => categoryIds.includes(product.category.id!))
-    }
-
-    // Apply brand filter
-    if (this.currentFilters.brands.length > 0) {
-      filtered = filtered.filter((product) => this.currentFilters.brands.includes(+product.brand.id))
-    }
-
-    // OPTIMIZED: Use precomputed discounted price
-    if (this.currentFilters.priceRange.min !== null || this.currentFilters.priceRange.max !== null) {
-      filtered = filtered.filter((product) => {
-        const price = product.discountedPrice // Use precomputed value
-        const min = this.currentFilters.priceRange.min || 0
-        const max = this.currentFilters.priceRange.max || Number.POSITIVE_INFINITY
-        return price! >= min && price! <= max
-      })
-    }
-
-    // Apply availability filters
-    if (this.currentFilters.inStock) {
-      filtered = filtered.filter((product) => this.hasStock(product))
-    }
-
-    if (this.currentFilters.onSale) {
-      filtered = filtered.filter((product) => this.isOnSale(product))
-    }
-
-    if (this.currentFilters.isNew) {
-      filtered = filtered.filter((product) => this.isNew(product))
-    }
-
-    // Apply sorting
-    this.applySorting(filtered)
-
-    this.filteredProducts = filtered
-    this.updatePagination()
-  }
-
-  private getAllDescendantCategoryIds(categoryIds: number[]): number[] {
-    const allIds = [...categoryIds]
-    return [...new Set(allIds)] // Remove duplicates
-  }
-
-  private getDescendantCategories(parentId: number): CategoryDTO[] {
-    const children = this.categories.filter((cat) => cat.parentCategoryId === parentId)
-    const descendants = [...children]
-
-    children.forEach((child) => {
-      descendants.push(...this.getDescendantCategories(child.id!))
-    })
-
-    return descendants
-  }
-
-  // OPTIMIZED: Use precomputed discounted prices for sorting
-  private applySorting(products: ProductCardItem[]) {
-    switch (this.currentSort) {
-      case "price-asc":
-        products.sort((a, b) => a.discountedPrice! - b.discountedPrice!) // Use precomputed value
-        break
-      case "price-desc":
-        products.sort((a, b) => b.discountedPrice! - a.discountedPrice!) // Use precomputed value
-        break
-      case "name-asc":
-        products.sort((a, b) => a.product.name.localeCompare(b.product.name))
-        break
-      case "newest":
-        products.sort((a, b) => {
-          const dateA = new Date(a.product.createdDate || 0)
-          const dateB = new Date(b.product.createdDate || 0)
-          return dateB.getTime() - dateA.getTime()
-        })
-        break
-      case "rating":
-        // Implement rating sort if you have rating data
-        break
-      default: // featured
-        // Keep original order or implement featured logic
-        break
-    }
+    return labels[sort] || "Featured"
   }
 
   // UI interaction methods
@@ -606,18 +449,6 @@ export class ProductListComponent {
     this.currentSortLabel = this.getSortLabel(sort)
     this.applyFiltersAndSort()
     this.updateUrlWithFilters(this.currentFilters)
-  }
-
-  private getSortLabel(sort: string): string {
-    const labels: { [key: string]: string } = {
-      featured: "Featured",
-      "price-asc": "Price: Low to High",
-      "price-desc": "Price: High to Low",
-      "name-asc": "Name: A to Z",
-      newest: "Newest First",
-      rating: "Highest Rated",
-    }
-    return labels[sort] || "Featured"
   }
 
   // Filter management
@@ -771,8 +602,7 @@ export class ProductListComponent {
     console.log("View all categories")
   }
 
-  // ===== OPTIMIZED PRODUCT HELPER METHODS (Using precomputed values) =====
-
+  // Product helper methods
   getStockStatus(product: ProductListItemDTO): string {
     return product.variants.some((v) => v.stock > 0) ? "In Stock" : "Out of Stock"
   }
@@ -790,12 +620,10 @@ export class ProductListComponent {
     return "assets/images/placeholder.jpg"
   }
 
-  // OPTIMIZED: Use precomputed original price
   getOriginalPrice(product: ProductCardItem): number {
     return product.originalPrice!
   }
 
-  // OPTIMIZED: Use precomputed discounted price
   getLowestDiscountedPrice(product: ProductCardItem): number {
     return product.discountedPrice!
   }
@@ -807,7 +635,6 @@ export class ProductListComponent {
     return false
   }
 
-  // OPTIMIZED: Use precomputed prices for sale detection
   isOnSale(product: ProductCardItem): boolean {
     return product.discountedPrice! < product.originalPrice!
   }
@@ -859,7 +686,6 @@ export class ProductListComponent {
     this.router.navigate(["/customer/product", product.id])
   }
 
-  // OPTIMIZED: Use precomputed prices for sorting
   sortByPriceAsc() {
     this.products.sort((a, b) => a.discountedPrice! - b.discountedPrice!)
   }
@@ -920,9 +746,302 @@ export class ProductListComponent {
     return this.wishList.has(id)
   }
 
-  Math = Math
 
-  private sanitizeForUrl(name: string): string {
-    return encodeURIComponent(name.trim())
+  // NEW METHODS FOR DISCOUNT BADGE FUNCTIONALITY
+  hasUnappliedDiscounts(product: ProductCardItem): boolean {
+    if (!product.discountHints || product.discountHints.length === 0) {
+      return false
+    }
+
+    const cart = this.cartService.getCart()
+    const eligibleHints = this.discountDisplayService.evaluateEligibleDiscounts(product.discountHints, cart)
+
+    // Has hints but none are currently eligible/applied
+    return product.discountHints.length > 0
+    //&& eligibleHints.length === 0
   }
+
+  hasAppliedDiscounts(product: ProductCardItem): boolean {
+    if (!product.discountHints || product.discountHints.length === 0) {
+      return false
+    }
+
+    const cart = this.cartService.getCart()
+    const eligibleHints = this.discountDisplayService.evaluateEligibleDiscounts(product.discountHints, cart)
+
+    return eligibleHints.length > 0
+  }
+
+  getUnappliedDiscountHints(product: ProductCardItem): DiscountDisplayDTO[] {
+    if (!product.discountHints || product.discountHints.length === 0) {
+      return []
+    }
+
+    const cart = this.cartService.getCart()
+    const eligibleHints = this.discountDisplayService.evaluateEligibleDiscounts(product.discountHints, cart)
+    const eligibleIds = new Set(eligibleHints.map((h) => h.id))
+
+    return product.discountHints.filter(hint => {
+      const isProductOffered = hint.offeredProductIds?.includes(product.id)
+      const isEligible = eligibleIds.has(hint.id)
+      return !isProductOffered || (isProductOffered && !isEligible)
+    })
+  }
+
+  getAppliedDiscountHints(product: ProductCardItem): DiscountDisplayDTO[] {
+    if (!product.discountHints || product.discountHints.length === 0) {
+      return []
+    }
+
+    const cart = this.cartService.getCart()
+    return this.discountDisplayService.evaluateEligibleDiscounts(product.discountHints, cart)
+  }
+
+  getUnconditionalDiscountHints(product: ProductCardItem): DiscountDisplayDTO[] {
+    if (!product.discountHints || product.discountHints.length === 0) {
+      return [];
+    }
+
+    const unconditionalHints = product.discountHints.filter(
+      hint => !hint.conditionGroups || hint.conditionGroups.length === 0
+    );
+
+    const cart = this.cartService.getCart();
+    return this.discountDisplayService.evaluateEligibleDiscounts(unconditionalHints, cart);
+  }
+
+  getAvailableDiscountLabel(hint: DiscountDisplayDTO): string {
+    return this.discountTextService.getAvailableDiscountLabel(hint)
+  }
+
+  getCombinedDiscountLabel(product: ProductCardItem): string {
+    const hints = this.getUnappliedDiscountHints(product);
+    return this.discountTextService.getCombinedDiscountLabel(hints);
+  }
+
+  getDiscountConditionTooltip(hint: DiscountDisplayDTO): string {
+    return this.discountTextService.getDiscountConditionTooltip(hint)
+  }
+
+  // Keep all your existing methods unchanged...
+  private tryRestoreInitialFilters() {
+    if (this.categoriesLoaded && this.brandsLoaded && this.productsLoaded && !this.filtersRestored) {
+      console.log("🟢 All data loaded, restoring initial filters:", this.initialUrlParams)
+      this.restoreFiltersFromUrl(this.initialUrlParams)
+      this.filtersRestored = true
+    }
+  }
+
+  private restoreFiltersFromUrl(params: any) {
+    console.log("🟡 Restoring filters from URL:", params)
+    if (!params || Object.keys(params).length === 0) {
+      console.warn("⚠️ No URL parameters to restore. Applying default filters.")
+      this.applyFiltersAndSort()
+      return
+    }
+
+    // ===== Categories =====
+    if (params["categories"]) {
+      const raw = params["categories"]
+      const categoryNames = raw.split(",").map((name: string) => decodeURIComponent(name.trim()))
+      console.log("📁 Decoded category names:", categoryNames)
+
+      const categoryIds = this.getCategoryIdsByNames(categoryNames)
+      console.log("✅ Matched category IDs:", categoryIds)
+      this.currentFilters.categories = categoryIds
+    } else if (params["category"]) {
+      const decodedName = decodeURIComponent(params["category"].trim())
+      const categoryId = this.getCategoryIdByName(decodedName)
+      console.log("📁 Decoded single category name:", decodedName)
+      if (categoryId !== null) {
+        this.currentFilters.categories = [categoryId]
+        console.log("✅ Restored single category ID:", categoryId)
+      } else {
+        console.warn("❌ Category not found for name:", decodedName)
+      }
+    }
+
+    // ===== Brands =====
+    if (params["brands"]) {
+      const brandNames = params["brands"].split(",").map((name: string) => decodeURIComponent(name.trim()))
+      console.log("🏷️ Decoded brand names:", brandNames)
+
+      const brandIds = this.getBrandIdsByNames(brandNames)
+      console.log("✅ Matched brand IDs:", brandIds)
+
+      this.currentFilters.brands = brandIds
+    }
+
+    // ===== Price Range =====
+    if (params["priceMin"] || params["priceMax"]) {
+      const min = params["priceMin"] ? Number.parseFloat(params["priceMin"]) : null
+      const max = params["priceMax"] ? Number.parseFloat(params["priceMax"]) : null
+      this.currentFilters.priceRange = { min, max }
+      console.log("💰 Restored price range:", this.currentFilters.priceRange)
+    }
+
+    // ===== Availability =====
+    this.currentFilters.inStock = params["inStock"] === "true"
+    this.currentFilters.onSale = params["onSale"] === "true"
+    this.currentFilters.isNew = params["isNew"] === "true"
+    console.log(
+      "📦 Restored availability filters: inStock =",
+      this.currentFilters.inStock,
+      ", onSale =",
+      this.currentFilters.onSale,
+      ", isNew =",
+      this.currentFilters.isNew,
+    )
+
+    // ===== Rating =====
+    if (params["rating"]) {
+      const rating = Number.parseInt(params["rating"])
+      this.currentFilters.rating = !isNaN(rating) ? rating : null
+      console.log("⭐ Restored rating:", this.currentFilters.rating)
+    }
+
+    // ===== Sort Option =====
+    if (params["sort"]) {
+      this.currentSort = params["sort"]
+      this.currentSortLabel = this.getSortLabel(params["sort"])
+      console.log("⬇️ Restored sort:", this.currentSort)
+    }
+
+    // ===== Pagination =====
+    if (params["page"]) {
+      const page = Number.parseInt(params["page"])
+      this.currentPage = !isNaN(page) && page > 0 ? page : 1
+      console.log("📄 Restored page:", this.currentPage)
+    }
+
+    console.log("🔄 Applying restored filters to product list...")
+    this.applyFiltersAndSort()
+
+    console.log("🔄 Syncing filter sidebar with restored filters...")
+    this.updateFilterSidebarFromFilters()
+    this.updateUrlWithFilters(this.currentFilters)
+    console.log("🟢 Filter restoration completed!")
+  }
+
+  private applyFiltersAndSort() {
+    console.log("🔍 Applying filters:", this.currentFilters)
+
+    let filtered = [...this.products]
+    console.log("📊 Starting with", filtered.length, "products")
+
+    // Apply category filter
+    if (this.currentFilters.categories.length > 0) {
+      const categoryIds = this.getAllDescendantCategoryIds(this.currentFilters.categories)
+      console.log("📁 Filtering by category IDs:", categoryIds)
+
+      const beforeCount = filtered.length
+      filtered = filtered.filter((product) => categoryIds.includes(product.category.id!))
+      console.log(`📁 Category filter: ${beforeCount} → ${filtered.length} products`)
+    }
+
+    // Apply brand filter
+    if (this.currentFilters.brands.length > 0) {
+      console.log("🏷️ Filtering by brand IDs:", this.currentFilters.brands)
+
+      const beforeCount = filtered.length
+      filtered = filtered.filter((product) => this.currentFilters.brands.includes(+product.brand.id))
+      console.log(`🏷️ Brand filter: ${beforeCount} → ${filtered.length} products`)
+    }
+
+    // Apply price filter
+    if (this.currentFilters.priceRange.min !== null || this.currentFilters.priceRange.max !== null) {
+      const beforeCount = filtered.length
+      filtered = filtered.filter((product) => {
+        const price = product.discountedPrice
+        const min = this.currentFilters.priceRange.min || 0
+        const max = this.currentFilters.priceRange.max || Number.POSITIVE_INFINITY
+        return price! >= min && price! <= max
+      })
+      console.log(`💰 Price filter: ${beforeCount} → ${filtered.length} products`)
+    }
+
+    // Apply availability filters
+    if (this.currentFilters.inStock) {
+      const beforeCount = filtered.length
+      filtered = filtered.filter((product) => this.hasStock(product))
+      console.log(`📦 Stock filter: ${beforeCount} → ${filtered.length} products`)
+    }
+
+    if (this.currentFilters.onSale) {
+      const beforeCount = filtered.length
+      filtered = filtered.filter((product) => this.isOnSale(product))
+      console.log(`🏷️ Sale filter: ${beforeCount} → ${filtered.length} products`)
+    }
+
+    if (this.currentFilters.isNew) {
+      const beforeCount = filtered.length
+      filtered = filtered.filter((product) => this.isNew(product))
+      console.log(`✨ New filter: ${beforeCount} → ${filtered.length} products`)
+    }
+
+    // Apply sorting
+    this.applySorting(filtered)
+    console.log("🔄 Applied sorting:", this.currentSort)
+
+    this.filteredProducts = filtered
+    this.updatePagination()
+
+    console.log("✅ Final filtered products count:", this.filteredProducts.length)
+  }
+
+  private updateFilterSidebarFromFilters() {
+    if (!this.filterSidebar) {
+      console.warn("⚠️ Filter sidebar not available yet")
+      return
+    }
+
+    console.log("🔄 Updating filter sidebar with filters:", this.currentFilters)
+
+    // Update categories
+    this.filterSidebar.selectedCategories.clear()
+    this.currentFilters.categories.forEach((categoryId) => {
+      this.filterSidebar.selectedCategories.add(categoryId)
+    })
+    console.log("📁 Updated sidebar categories:", Array.from(this.filterSidebar.selectedCategories))
+
+    // Update brands
+    this.filterSidebar.selectedBrands.clear()
+    this.currentFilters.brands.forEach((brandId) => {
+      this.filterSidebar.selectedBrands.add(brandId)
+    })
+    console.log("🏷️ Updated sidebar brands:", Array.from(this.filterSidebar.selectedBrands))
+
+    // Update price range
+    this.filterSidebar.customPriceMin = this.currentFilters.priceRange.min
+    this.filterSidebar.customPriceMax = this.currentFilters.priceRange.max
+
+    // Update availability filters
+    this.filterSidebar.inStockOnly = this.currentFilters.inStock
+    this.filterSidebar.onSaleOnly = this.currentFilters.onSale
+    this.filterSidebar.newItemsOnly = this.currentFilters.isNew
+
+    // Update rating
+    this.filterSidebar.minRating = this.currentFilters.rating
+
+    console.log("✅ Filter sidebar updated successfully")
+  }
+
+  private getCategoryIdsByNames(names: string[]): number[] {
+    const ids = names.map((name) => this.getCategoryIdByName(name)).filter((id): id is number => id !== null)
+    console.log("🔍 Resolved category names to IDs:", names, "→", ids)
+    return ids
+  }
+
+  reloadDiscountHints() {
+    this.discountDisplayService.getProductDiscountHints().subscribe({
+      next: (hintMap) => {
+        this.precomputeProductPrices(hintMap)
+      },
+      error: (err) => {
+        console.error("❌ Failed to reload discount hints", err)
+      }
+    })
+  }
+
+  Math = Math
 }

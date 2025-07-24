@@ -7,6 +7,7 @@ export interface User {
   email: string;
   name: string;
   role?:string;
+  profile?:string;
   groupIds?:number[] ;
   customerGroup?: CustomerGroupEA_H[]
   phone?: string; // Optional

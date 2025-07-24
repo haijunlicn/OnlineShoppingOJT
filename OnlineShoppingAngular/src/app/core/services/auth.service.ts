@@ -13,7 +13,7 @@ import { StorageService } from './StorageService';
 import { AccessControlService } from './AccessControl.service';
 import { AuthGuard } from '../guards/auth.guard';
 import { NotificationService } from './notification.service';
-
+import { UserResponse } from '../models/UserResponse';
 
 @Injectable({
   providedIn: 'root'
@@ -47,38 +47,8 @@ export class AuthService {
   );
 
   public isCustomer$: Observable<boolean> = this.user$.pipe(
-    map(user => !!user && user.roleName === 'CUSTOMER')
+    map(user => !!user && user.roleName === 'customer')
   );
-
-  // initializeUserFromToken(): void {
-  //   const token = this.storageService.getItem('token');
-
-  //   if (token && !this.isTokenExpired(token)) {
-  //     const decoded: any = jwtDecode(token);
-  //     const email = decoded.sub;
-  //     const roleType = decoded.roleType;
-
-  //     // this.getCurrentUserByEmailAndRoleType(email, roleType).subscribe({
-  //     this.fetchCurrentUser().subscribe({
-  //       next: (user) => {
-  //         this.userLoadedSubject.next(true); // ✅ Done
-  //         // 👇 NEW: connect WebSocket
-  //         if (user?.roleName === 'CUSTOMER' || user?.roleName === 'ADMIN') {
-  //           this.notificationService.connectWebSocket();
-  //           this.notificationService.loadInAppNotificationsForUser(user.id);
-  //         }
-  //       },
-  //       error: () => {
-  //         this.userSubject.next(null);
-  //         this.storageService.removeItem('token');
-  //         this.userLoadedSubject.next(true); // ✅ Still done
-  //       }
-  //     });
-  //   } else {
-  //     this.userSubject.next(null);
-  //     this.userLoadedSubject.next(true); // ✅ Still done
-  //   }
-  // }
 
   initializeUserFromToken(): Promise<void> {
     return new Promise((resolve) => {
@@ -184,11 +154,13 @@ export class AuthService {
   fetchCurrentUser(): Observable<User> {
     return this.http.get<User>(`${this.apiUrl}/me`).pipe(
       map((res: any) => {
+
         const user: User = {
           id: res.id,
           email: res.email,
           name: res.name,
           phone: res.phone,
+          profile:res.profile,
           roleName: res.roleName,
           isVerified: res.isVerified,
           delFg: res.delFg,
@@ -196,6 +168,7 @@ export class AuthService {
           updatedDate: res.updatedDate,
           permissions: res.permissions
         };
+      
         return user;
       }),
       tap((user: User) => {
@@ -282,4 +255,20 @@ export class AuthService {
       catchError((error) => throwError(() => error))
     );
   }
+
+  updateProfile(id: number, profileData: any): Observable<User> {
+    return this.http.put<User>(`${this.apiUrl}/update/${id}`, profileData);
+  }
+  // auth.service.ts
+checkCurrentPassword(userId: number, currentPassword: string): Observable<boolean> {
+  return this.http.post<boolean>(`${this.apiUrl}/check-password`, { userId, currentPassword });
 }
+changePassword(userId: number, newPassword: string): Observable<UserResponse> {
+  return this.http.post<UserResponse>(`${this.apiUrl}/change-password`, {
+    userId,
+    newPassword
+  });
+}
+
+}
+

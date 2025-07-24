@@ -51,6 +51,7 @@ public class SecurityConfig {
                                 .requestMatchers("/ws-notifications/**").permitAll()
                                 // 👉 Token မလို GET method အားလုံးကို allow
                                 .requestMatchers(HttpMethod.GET, "/**").permitAll()
+
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/orders/**").permitAll()
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -80,6 +81,7 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of("http://localhost:4200"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
         config.setAllowedHeaders(List.of("*"));
+
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

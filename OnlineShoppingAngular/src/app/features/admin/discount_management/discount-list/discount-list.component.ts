@@ -56,6 +56,9 @@ export class DiscountListComponent {
   mechanisms: any[] = [];
   accordionOpenIndex: number | null = null;
   mechanismProductSelectionIndex: number | null = null;
+  mechanismProductSelectionProducts: ProductDTO[] = [];
+  // Store basic info from the form when moving to mechanisms tab
+  discountBasicInfo: any = {};
 
   constructor(
     private discountService: DiscountService,
@@ -91,6 +94,7 @@ export class DiscountListComponent {
         this.filteredDiscounts = data
         this.calculateStats()
         this.loading = false
+        console.log('Loaded discounts:', this.discounts);
       },
       error: (error) => {
         console.error("Error loading discounts:", error)
@@ -201,6 +205,8 @@ export class DiscountListComponent {
 
   // Open edit popup and bind data
   editDiscount(discount: DiscountEA_A): void {
+    console.log('Selected discount for edit:', discount);
+    console.log('Original discountMechanisms:', discount.discountMechanisms);
     this.editingDiscountId = discount.id;
     this.offerMechanism = discount.discountMechanisms && discount.discountMechanisms.length > 0 ? discount.discountMechanisms[0] : null;
     this.selectedProducts = this.offerMechanism && this.offerMechanism.discountProducts
@@ -211,7 +217,38 @@ export class DiscountListComponent {
         this.allProducts = products;
         this.selectedProductDTOs = this.allProducts.filter(p => this.selectedProducts.includes(p.id!));
         this.setEditFormValues(discount);
-        this.mechanisms = discount.discountMechanisms ? JSON.parse(JSON.stringify(discount.discountMechanisms)) : [];
+        // Bind selectedProductNames for each mechanism
+        this.mechanisms = discount.discountMechanisms ? discount.discountMechanisms.map((mech: any) => {
+          let selectedProductNames: string[] = [];
+          if (mech.mechanismType === 'freeGift' && mech.freeGifts) {
+            selectedProductNames = mech.freeGifts
+              .map((gift: any) => {
+                const prod = this.allProducts.find(p => p.id === gift.productId);
+                return prod ? prod.name : null;
+              })
+              .filter((name: string | null) => !!name);
+          } else if ((mech.mechanismType === 'Discount' || mech.mechanismType === 'Coupon' || mech.mechanismType === 'B2B') && mech.discountProducts) {
+            selectedProductNames = mech.discountProducts
+              .map((dp: any) => {
+                const prod = this.allProducts.find(p => p.id === dp.productId);
+                return prod ? prod.name : null;
+              })
+              .filter((name: string | null) => !!name);
+          }
+          // Normalize discountConditionGroup[].discountCondition to always be array
+          const normalizedGroups = (mech.discountConditionGroup || []).map((group: any) => ({
+            ...group,
+            discountCondition: Array.isArray(group.discountCondition)
+              ? group.discountCondition
+              : group.discountCondition ? [group.discountCondition] : []
+          }));
+          return {
+            ...mech,
+            selectedProductNames,
+            discountConditionGroup: normalizedGroups
+          };
+        }) : [];
+        console.log('Mechanisms after mapping (products loaded):', this.mechanisms);
         this.activeTab = 'info';
         this.accordionOpenIndex = null;
         this.showEditPopup = true;
@@ -219,7 +256,38 @@ export class DiscountListComponent {
     } else {
       this.selectedProductDTOs = this.allProducts.filter(p => this.selectedProducts.includes(p.id!));
       this.setEditFormValues(discount);
-      this.mechanisms = discount.discountMechanisms ? JSON.parse(JSON.stringify(discount.discountMechanisms)) : [];
+      // Bind selectedProductNames for each mechanism
+      this.mechanisms = discount.discountMechanisms ? discount.discountMechanisms.map((mech: any) => {
+        let selectedProductNames: string[] = [];
+        if (mech.mechanismType === 'freeGift' && mech.freeGifts) {
+          selectedProductNames = mech.freeGifts
+            .map((gift: any) => {
+              const prod = this.allProducts.find(p => p.id === gift.productId);
+              return prod ? prod.name : null;
+            })
+            .filter((name: string | null) => !!name);
+        } else if ((mech.mechanismType === 'Discount' || mech.mechanismType === 'Coupon' || mech.mechanismType === 'B2B') && mech.discountProducts) {
+          selectedProductNames = mech.discountProducts
+            .map((dp: any) => {
+              const prod = this.allProducts.find(p => p.id === dp.productId);
+              return prod ? prod.name : null;
+            })
+            .filter((name: string | null) => !!name);
+        }
+        // Normalize discountConditionGroup[].discountCondition to always be array
+        const normalizedGroups = (mech.discountConditionGroup || []).map((group: any) => ({
+          ...group,
+          discountCondition: Array.isArray(group.discountCondition)
+            ? group.discountCondition
+            : group.discountCondition ? [group.discountCondition] : []
+        }));
+        return {
+          ...mech,
+          selectedProductNames,
+          discountConditionGroup: normalizedGroups
+        };
+      }) : [];
+      console.log('Mechanisms after mapping (products cached):', this.mechanisms);
       this.activeTab = 'info';
       this.accordionOpenIndex = null;
       this.showEditPopup = true;
@@ -264,6 +332,7 @@ export class DiscountListComponent {
     this.editingDiscountId = null;
     this.offerMechanism = null;
     this.selectedProducts = [];
+    this.mechanisms = []; // Clear mechanisms array when closing modal
   }
 
   // Product selection modal logic
@@ -294,6 +363,15 @@ export class DiscountListComponent {
 
   openMechanismProductSelection(i: number) {
     this.mechanismProductSelectionIndex = i;
+    // Prepare selected products for the modal
+    const mechanism = this.mechanisms[i];
+    let selectedIds: number[] = [];
+    if (mechanism.mechanismType === 'freeGift' && mechanism.freeGifts) {
+      selectedIds = mechanism.freeGifts.map((gift: any) => gift.productId);
+    } else if ((mechanism.mechanismType === 'Discount' || mechanism.mechanismType === 'Coupon' || mechanism.mechanismType === 'B2B') && mechanism.discountProducts) {
+      selectedIds = mechanism.discountProducts.map((dp: any) => dp.productId);
+    }
+    this.mechanismProductSelectionProducts = this.allProducts.filter(p => selectedIds.includes(p.id!));
     this.showProductSelectionModal = true;
     this.showEditPopup = false;
   }
@@ -302,8 +380,15 @@ export class DiscountListComponent {
   onProductsSelected(selected: ProductDTO[]): void {
     if (this.mechanismProductSelectionIndex !== null) {
       // For mechanism product selection
-      this.mechanisms[this.mechanismProductSelectionIndex].selectedProducts = selected.map(p => p.id).filter((id): id is number => id !== undefined);
-      this.mechanisms[this.mechanismProductSelectionIndex].selectedProductNames = selected.map(p => p.name);
+      const mechanism = this.mechanisms[this.mechanismProductSelectionIndex];
+      mechanism.selectedProducts = selected.map(p => p.id).filter((id): id is number => id !== undefined);
+      mechanism.selectedProductNames = selected.map(p => p.name);
+      // Update discountProducts or freeGifts array for persistence
+      if (mechanism.mechanismType === 'freeGift') {
+        mechanism.freeGifts = selected.map(p => ({ productId: p.id }));
+      } else {
+        mechanism.discountProducts = selected.map(p => ({ productId: p.id }));
+      }
       this.mechanismProductSelectionIndex = null;
       this.showProductSelectionModal = false;
       this.showEditPopup = true;
@@ -323,26 +408,48 @@ export class DiscountListComponent {
     this.mechanismProductSelectionIndex = null;
   }
 
+  onNext(): void {
+    const formValue = this.editForm.value;
+    this.discountBasicInfo = {
+      name: formValue.name,
+      description: formValue.description,
+      code: formValue.code,
+      startDate: formValue.startDate,
+      endDate: formValue.endDate,
+      usageLimit: formValue.usageLimit,
+      perUserLimit: formValue.perUserLimit
+    };
+    this.activeTab = 'mechanisms';
+  }
+
+  onTabChange(tab: 'info' | 'mechanisms'): void {
+    // Save basic info when switching to mechanisms tab
+    if (tab === 'mechanisms') {
+      const formValue = this.editForm.value;
+      this.discountBasicInfo = {
+        name: formValue.name,
+        description: formValue.description,
+        code: formValue.code,
+        startDate: formValue.startDate,
+        endDate: formValue.endDate,
+        usageLimit: formValue.usageLimit,
+        perUserLimit: formValue.perUserLimit
+      };
+    }
+    this.activeTab = tab;
+  }
+
   // Save logic
   saveEditDiscount(): void {
-    if (!this.editForm.valid || this.editingDiscountId == null) return;
-    const formValue = { ...this.editForm.value };
-    // Prepare payload for backend
+    if (!this.editingDiscountId) return;
+    // Combine basic info and mechanisms array
+    console.log('Mechanisms to be saved:', this.mechanisms);
     const payload: any = {
-      ...formValue,
+      ...this.discountBasicInfo,
       id: this.editingDiscountId,
-      startDate: new Date(formValue.startDate).toISOString(),
-      endDate: new Date(formValue.endDate).toISOString(),
-      discountMechanisms: [
-        {
-          ...this.offerMechanism,
-          mechanismType: this.offerMechanism.mechanismType,
-          discountType: this.offerMechanism.discountType,
-          value: formValue.value,
-          maxDiscountAmount: formValue.maxDiscountAmount,
-          discountProducts: this.selectedProducts.map(productId => ({ productId }))
-        }
-      ]
+      startDate: new Date(this.discountBasicInfo.startDate).toISOString(),
+      endDate: new Date(this.discountBasicInfo.endDate).toISOString(),
+      discountMechanisms: this.mechanisms // Send all mechanisms with latest edits
     };
     this.discountService.updateDiscount(this.editingDiscountId, payload).subscribe({
       next: (updated: DiscountEA_A) => {
@@ -474,5 +581,71 @@ export class DiscountListComponent {
       return [];
     }
     return this.selectedProductDTOs || [];
+  }
+
+  // Generate coupon code for mechanism
+  generateMechanismCouponCode(i: number): void {
+    const name = this.mechanisms[i].mechanismType || 'COUPON';
+    const randomSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const code = `${name.replace(/\s+/g, '').toUpperCase().substring(0, 8)}_${randomSuffix}`;
+    this.mechanisms[i].couponcode = code;
+  }
+
+  // Delete a condition from a mechanism
+  deleteMechanismCondition(mechIndex: number, groupIndex: number, condIndex: number): void {
+    const group = this.mechanisms[mechIndex].discountConditionGroup?.[groupIndex];
+    if (group && group.discountCondition) {
+      group.discountCondition.splice(condIndex, 1);
+    }
+  }
+
+  // Delete a whole condition group from a mechanism
+  deleteConditionGroup(mechIndex: number, groupIndex: number): void {
+    const mech = this.mechanisms[mechIndex];
+    if (mech && mech.discountConditionGroup) {
+      mech.discountConditionGroup.splice(groupIndex, 1);
+    }
+  }
+
+  deleteMechanism(index: number): void {
+    this.mechanisms.splice(index, 1);
+  }
+
+  // User-friendly condition display (inspired by create-discount-group)
+  getConditionDisplay(cond: any): string {
+    const operatorMap: { [key: string]: string } = {
+      EQUAL: 'is equal to',
+      GREATER_THAN: 'is greater than',
+      LESS_THAN: 'is less than',
+      GREATER_THAN_OR_EQUAL: 'is greater than or equal to',
+      LESS_THAN_OR_EQUAL: 'is less than or equal to',
+      IS_ONE_OF: 'is one of',
+      equals: 'is equal to',
+      greater_than: 'is greater than',
+      less_than: 'is less than',
+      greater_equal: 'is greater than or equal to',
+      less_equal: 'is less than or equal to',
+      one_of: 'is one of',
+    };
+    const fieldMap: { [key: string]: string } = {
+      last_login_date: 'Last Login Date',
+      days_since_signup: 'Days Since Signup',
+      total_spent: 'Total Spent',
+      days_since_last_purchase: 'Days Since Last Purchase',
+      account_age_days: 'Account Age Days',
+      // Add more as needed
+    };
+    const field = fieldMap[cond.conditionDetail] || cond.conditionDetail || cond.conditionType;
+    const op = operatorMap[cond.operator] || cond.operator;
+    const val = cond.value ? (Array.isArray(cond.value) ? cond.value.join(', ') : cond.value) : '';
+    return `${field} ${op} ${val}`;
+  }
+
+  // Quantity increment/decrement for free gift
+  incrementQuantity(mech: any): void {
+    mech.quantity = (mech.quantity || 1) + 1;
+  }
+  decrementQuantity(mech: any): void {
+    mech.quantity = Math.max(1, (mech.quantity || 1) - 1);
   }
 }

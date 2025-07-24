@@ -191,7 +191,8 @@ public class OrderService {
         userDto.setId(order.getUser().getId());
         userDto.setName(order.getUser().getName());
         userDto.setEmail(order.getUser().getEmail());
-        userDto.setPhone(order.getUser().getPhone());
+       // userDto.setPhone(order.getUser().getPhone());
+        userDto.setProfile(order.getUser().getProfile());
         dto.setUser(userDto);
 
         // Convert shipping address

@@ -1,19 +1,23 @@
+/* Make the wrapper fixed at the bottom */
 .sticky-discount-progress {
   position: relative;
   z-index: 1060;
 }
 
-/* Desktop/Tablet Sticky Bar */
+/* Fixed Bar at Bottom of Screen */
 .discount-progress-sticky-bar {
-  position: sticky;
-  top: 0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   background: linear-gradient(135deg, #fff4ec 0%, #fef7f0 100%);
-  border-bottom: 1px solid #ffd6a2;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-top: 1px solid #ffd6a2;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1); /* shadow above the bar */
   z-index: 1060;
-  animation: slideDown 0.3s ease-out;
+  animation: slideUp 0.3s ease-out; /* new animation */
 }
 
+/* Content layout inside the bar */
 .bar-content {
   display: flex;
   justify-content: space-between;
@@ -23,11 +27,22 @@
   margin: 0 auto;
 }
 
+/* Optional: progress text area */
 .progress-info {
   display: flex;
   align-items: center;
   flex: 1;
   min-width: 0;
+}
+
+/* Slide-up animation for bottom bar */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 .progress-details {

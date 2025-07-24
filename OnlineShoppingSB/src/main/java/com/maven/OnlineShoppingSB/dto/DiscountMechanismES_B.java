@@ -15,7 +15,6 @@ public class DiscountMechanismES_B {
     private Integer id;
     private MechanismType mechanismType;
     private Integer quantity;
-
     private DiscountType discountType;
     private String value;
     private String maxDiscountAmount;
@@ -29,4 +28,7 @@ public class DiscountMechanismES_B {
     private List<DiscountConditionGroupES_C> discountConditionGroup;
     private List<FreeGiftES_F> freeGifts;
     private List<DiscountProductES_E> discountProducts;
+    private Integer usageLimitTotal;
+    private Integer usageLimitPerUser;
+    private Boolean logicOperator;
 }

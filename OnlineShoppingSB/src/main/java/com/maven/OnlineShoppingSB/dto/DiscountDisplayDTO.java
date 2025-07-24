@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -15,8 +16,9 @@ public class DiscountDisplayDTO {
 
     private Integer id;
     private String name;
+    private String title;
     private typeCA type; // e.g. AUTO or COUPON
-    private String code; // nullable for AUTO type
+    private String couponcode; // nullable for AUTO type
 
     private BigDecimal value; // Parsed numeric discount value
     private DiscountType discountType; // PERCENTAGE or FIXED
@@ -28,6 +30,13 @@ public class DiscountDisplayDTO {
     private String conditionSummary; // e.g. "Buy 3 or more items to unlock this discount"
     private boolean requireFrontendChecking;
 
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
+    private List<FreeGiftES_F> freeGifts;
+    private List<Long> offeredProductIds;
+    private Integer usageLimitTotal;
+    private Integer usageLimitPerUser;
+
     @Getter
     @Setter
     public static class DiscountConditionGroupDTO {
@@ -37,12 +46,14 @@ public class DiscountDisplayDTO {
 
     @Getter
     @Setter
+    @ToString
     public static class DiscountConditionDTO {
         private conditionType conditionType;
         private String conditionDetail;
         private Operator operator;
         private String value; // Raw JSON string
         private Boolean eligible;
+        private List<?> relatedEntities;
     }
 
 }
