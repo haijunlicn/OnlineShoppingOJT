@@ -68,7 +68,8 @@
             <div class="profile-dropdown-container">
               <button class="profile-btn d-none d-md-flex" (click)="toggleProfileDropdown()">
                 <div class="profile-avatar">
-                  {{ getUserInitials(currentUser.name) }}
+                  <!-- {{ getUserInitials(currentUser.name) }} -->
+                  <img [src]="currentUser?.profile || '/assets/images/default-avatar.png'" alt="Profile Photo" width="32" height="32" class="rounded-circle" />
                 </div>
                 <span class="profile-name">{{ currentUser.name.split(' ')[0] }}</span>
                 <i class="fas fa-chevron-down profile-chevron" [class.rotated]="isProfileDropdownOpen"></i>
@@ -78,7 +79,8 @@
               <div class="profile-dropdown" [class.show]="isProfileDropdownOpen">
                 <div class="profile-dropdown-header">
                   <div class="profile-avatar-large">
-                    {{ getUserInitials(currentUser.name) }}
+                    <!-- {{ getUserInitials(currentUser.name) }} -->
+                    <img [src]="currentUser?.profile || '/assets/images/default-avatar.png'" alt="Profile Photo" width="80" height="80" class="rounded-circle" />
                   </div>
                   <div class="profile-info">
                     <div class="profile-name-full">{{ currentUser.name }}</div>

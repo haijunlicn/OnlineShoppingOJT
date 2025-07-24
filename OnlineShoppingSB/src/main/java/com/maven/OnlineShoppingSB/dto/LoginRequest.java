@@ -11,6 +11,7 @@ public class LoginRequest {
 
     private String email;
     private String password;
+    private String profile;
     private Boolean rememberMe;
     private String roleName;
     private Integer roleType;

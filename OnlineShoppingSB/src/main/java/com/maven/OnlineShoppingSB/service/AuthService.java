@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
+import com.maven.OnlineShoppingSB.dto.UserResponseDTO;
 import com.maven.OnlineShoppingSB.entity.UserEntity;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -222,5 +223,61 @@ public class AuthService {
         }
     }
 
+    public UserResponseDTO updateProfile(Long id, UserResponseDTO userDto) {
+        UserEntity user = userRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
+        user.setName(userDto.getName());
+        user.setProfile(userDto.getProfile());
+        // ... update other fields as needed
+
+        userRepo.save(user);
+
+        // map UserEntity to UserResponseDTO and return
+        return toDto(user);
+    }
+
+    public UserResponseDTO toDto(UserEntity user) {
+        UserResponseDTO dto = new UserResponseDTO();
+        dto.setId(user.getId());
+        dto.setEmail(user.getEmail());
+        dto.setName(user.getName());
+        dto.setProfile(user.getProfile());
+
+        dto.setIsVerified(user.getIsVerified());
+        dto.setDelFg(user.getDelFg());
+        dto.setCreatedDate(user.getCreatedDate());
+        dto.setUpdatedDate(user.getUpdatedDate());
+        dto.setRoleName(user.getRole() != null ? user.getRole().getName() : null);
+        // ... other fields
+        return dto;
+
+    }
+
+
+public boolean checkCurrentPassword(Long userId, String currentPassword) {
+    try {
+        UserEntity user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // user.getPassword() is the hashed password from DB
+        return passwordEncoder.matches(currentPassword, user.getPassword());
+    } catch (Exception e) {
+        // Log error if needed
+        throw new RuntimeException("Error checking password: " + e.getMessage());
+    }
+}
+public UserResponseDTO changePassword(Long userId, String newPassword) {
+    UserEntity user = userRepo.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+    // Hash the new password
+    String hashedPassword = passwordEncoder.encode(newPassword);
+    user.setPassword(hashedPassword);
+
+    userRepo.save(user);
+
+    // Map to DTO and return
+    return toDto(user);
+}
 }

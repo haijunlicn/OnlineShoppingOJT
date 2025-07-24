@@ -212,9 +212,8 @@ public class DiscountService {
         return mapToDto(entity, true);
     }
 
-    // UPDATE: Replace all mechanisms for the given discount with the new mechanisms from the DTO
+    // UPDATE
     public DiscountES_A updateDiscount(Integer id, DiscountES_A dto) {
-        System.out.println("[Service:updateDiscount] Incoming mechanisms: " + (dto.getDiscountMechanisms() != null ? dto.getDiscountMechanisms().stream().map(m -> m.getId()).toList() : "null"));
         DiscountEntity entity = discountRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Not found"));
 
@@ -322,9 +321,7 @@ public class DiscountService {
 
         // Save and return DTO
         DiscountEntity saved = discountRepository.save(entity);
-        DiscountES_A result = mapToDto(saved, true);
-        System.out.println("[Service:updateDiscount] After update, discount " + id + " has " + (result.getDiscountMechanisms() != null ? result.getDiscountMechanisms().size() : 0) + " mechanisms: " + (result.getDiscountMechanisms() != null ? result.getDiscountMechanisms().stream().map(m -> m.getId()).toList() : "null"));
-        return result;
+        return mapToDto(saved, true);
     }
 
     public void updateDiscountStatus(Integer id, Boolean isActive) {

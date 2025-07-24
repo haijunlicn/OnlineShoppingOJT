@@ -24,8 +24,9 @@ public class UserEntity {
     @Column(length = 100, nullable = false)
     private String name;
 
-    @Column(length = 20)
-    private String phone;
+    @Column(name = "profile", columnDefinition = "TEXT")
+    private String profile;
+
 
     @Column(length = 255, nullable = false)
     private String password;

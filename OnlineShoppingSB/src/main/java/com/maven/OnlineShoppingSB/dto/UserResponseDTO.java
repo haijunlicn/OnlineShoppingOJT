@@ -23,6 +23,9 @@ public class UserResponseDTO {
 
     private String phone;
 
+    private String password;
+
+    private String profile;
 
     private Boolean isVerified;
 
