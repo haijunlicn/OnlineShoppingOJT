@@ -159,7 +159,7 @@
                   <div class="shipment-value">
                     {{ order.deliveryMethod.name }}
                     <div *ngIf="order.orderType !== 'REPLACEMENT'" class="delivery-fee">
-                      {{ formatCurrency(order.deliveryMethod.baseFee) }}
+                      {{ formatCurrency(order.shippingFee) }}
                     </div>
                   </div>
                 </div>

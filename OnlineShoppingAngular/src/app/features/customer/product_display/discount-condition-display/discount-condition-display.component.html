@@ -1,6 +1,7 @@
 <div class="discount-cards-container" *ngIf="parsedDiscounts.length > 0">
   <div class="discount-cards-list">
-    <div *ngFor="let item of parsedDiscounts; let i = index" class="discount-card">
+    <div *ngFor="let item of parsedDiscounts; let i = index" class="discount-card"
+      (click)="onOfferClicked(item.discount.id)">
 
       <!-- Featured Banner for high-value discounts -->
       <div class="featured-ribbon" *ngIf="isHighValueDiscount(item.discount)">

@@ -117,7 +117,7 @@ export class HomeComponent implements OnInit {
   }
 
   onShopNow() {
-    window.scrollTo({ top: 600, behavior: "smooth" })
+    this.router.navigate(['/customer/productList']);
   }
 
   onAddToCart(product: Product) {
@@ -143,4 +143,5 @@ export class HomeComponent implements OnInit {
   onSubscribe(email: string) {
     console.log("Newsletter subscribe:", email)
   }
+  
 }

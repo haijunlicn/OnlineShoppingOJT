@@ -103,7 +103,7 @@
 .discount-hero {
   position: relative;
   background: var(--color-primary);
-  border-radius: 16px;
+  border-radius: 14px;
   overflow: hidden;
   margin-bottom: 3rem;
   min-height: 500px;
@@ -217,7 +217,7 @@
   color: rgba(255, 255, 255, 0.9);
   margin: 0;
 }
-
+/* 
 .countdown-timer {
   display: flex;
   align-items: center;
@@ -232,6 +232,62 @@
 .countdown-timer i {
   color: var(--color-accent);
   font-size: 1.2rem;
+} */
+
+/* Professional Countdown Timer Design */
+.countdown-timer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(230, 186, 98, 0.1);
+  border: 1px solid rgba(230, 186, 98, 0.2);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  backdrop-filter: blur(10px);
+  margin: 0.5rem 0;
+}
+
+.countdown-timer i {
+  color: var(--color-accent);
+  font-size: 1.1rem;
+}
+
+.countdown-timer > span {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Style the ngx-countdown component */
+.countdown-timer countdown {
+  color: var(--color-accent);
+  font-weight: 700;
+  font-size: 1.1rem;
+  font-family: "Courier New", monospace;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Style the countdown numbers */
+.countdown-timer countdown ::ng-deep .countdown-time {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 0 0.2rem;
+  min-width: 2.5rem;
+  text-align: center;
+  display: inline-block;
+}
+
+.countdown-timer countdown ::ng-deep .countdown-time:first-child {
+  margin-left: 0;
+}
+
+.countdown-timer countdown ::ng-deep .countdown-time:last-child {
+  margin-right: 0;
 }
 
 .timer-label {
@@ -359,10 +415,10 @@
 }
 
 .discount-value {
-  background: var(--color-accent);
-  color: var(--color-primary);
+  background: var(--color-discount);
+  color: white;
   padding: 0.5rem 1rem;
-  border-radius: 20px;
+  border-radius: 8px;
   font-weight: 700;
   font-size: 0.9rem;
   text-transform: uppercase;
@@ -373,7 +429,7 @@
   background: rgba(20, 41, 37, 0.1);
   color: var(--color-primary);
   padding: 0.5rem 0.75rem;
-  border-radius: 16px;
+  border-radius: 8px;
   font-size: 0.85rem;
   font-weight: 600;
 }
@@ -423,8 +479,8 @@
 }
 
 .copy-btn-compact:hover {
-  background: var(--color-accent);
-  color: var(--color-primary);
+  background: var(--color-primary-hover);
+  color: var(--color-accentLight);
   transform: scale(1.05);
 }
 
@@ -1272,4 +1328,20 @@
     font-size: 0.8rem;
     padding: 0.4rem 0.8rem;
   }
+}
+
+.view-detail-btn {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 7px;
+  padding: 0.85rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.view-detail-btn:hover {
+  background: var(--color-primary-hover);
+  color: var(--color-accentLight);
 }

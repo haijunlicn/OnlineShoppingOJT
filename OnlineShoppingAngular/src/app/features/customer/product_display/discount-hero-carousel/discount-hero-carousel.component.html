@@ -36,7 +36,7 @@
           <div class="mechanisms-container" *ngIf="getVisibleMechanisms().length > 0" [@slideInRight]>
             <div class="mechanism-pill" *ngFor="let mechanism of getVisibleMechanisms(); let i = index"
               [@staggerIn]="i">
-              <i [class]="getMechanismIcon(mechanism.mechanismType)"></i>
+
               <span>{{ getMechanismText(mechanism) }}</span>
             </div>
             <div class="mechanism-pill more-pill" *ngIf="getHiddenMechanismsCount() > 0" [@staggerIn]="3">
@@ -51,7 +51,7 @@
               <span>View Details</span>
               <i class="fas fa-arrow-right"></i>
             </button>
-            <button class="secondary-btn">
+            <button class="secondary-btn" (click)="onShopNow()">
               <span>Shop Now</span>
               <i class="fas fa-external-link-alt"></i>
             </button>

@@ -3,7 +3,7 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem 1rem 0rem 17rem;
-  background: var(--color-background);
+  background: var(--color-backgroundCustomer);
   min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
@@ -20,7 +20,7 @@
 
 .loading-card,
 .error-card {
-  background: var(--color-background);
+  background: var(--color-backgroundCustomer);
   padding: 3rem;
   border-radius: 12px;
   text-align: center;
@@ -89,13 +89,13 @@
 
 /* Order Detail Container */
 .order-detail-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
 /* Header Section */
 .order-header {
-  background: var(--color-background);
+  background: var(--color-backgroundCustomer);
   border-radius: 12px;
   padding: 2rem;
   margin-bottom: 2rem;
@@ -128,7 +128,7 @@
 }
 
 .breadcrumb-link:hover {
-  background: var(--color-background);
+  background: var(--color-backgroundCustomer);
   color: var(--color-primary);
   text-decoration: none;
 }
@@ -198,7 +198,7 @@
 }
 
 .btn-action.secondary {
-  background: var(--color-background);
+  background: var(--color-backgroundCustomer);
   color: var(--color-primary);
 }
 
@@ -212,7 +212,7 @@
 }
 
 .btn-action.secondary:hover {
-  background: var(--color-background);
+  background: var(--color-backgroundCustomer);
 }
 
 /* Admin Actions Section */
@@ -221,7 +221,7 @@
 }
 
 .action-card {
-  background: var(--color-background);
+  background: var(--color-backgroundCustomer);
   border-radius: 12px;
   padding: 2rem;
   margin-bottom: 1.5rem;
@@ -278,7 +278,7 @@
   padding: 0.625rem 0.75rem;
   border: 1px solid var(--color-border);
   border-radius: 6px;
-  background: var(--color-background);
+  background: var(--color-backgroundCustomer);
   color: var(--color-primary);
   font-size: 0.875rem;
   transition: all 0.2s ease;
@@ -502,7 +502,7 @@
 /* Section Cards */
 .section-card,
 .info-card {
-  background: var(--color-background);
+  background: var(--color-backgroundCustomer);
   border-radius: 12px;
   box-shadow: 0 4px 16px var(--color-shadow);
   border: 1px solid var(--color-border);
@@ -517,7 +517,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--color-background);
+  background: var(--color-backgroundCustomer);
 }
 
 .section-header h3,
@@ -570,7 +570,7 @@
 }
 
 .btn-copy:hover {
-  background: var(--color-background);
+  background: var(--color-backgroundCustomer);
   color: var(--color-primary);
 }
 
@@ -642,7 +642,7 @@
 }
 
 .item-row:hover {
-  background: var(--color-background);
+  background: var(--color-backgroundCustomer);
 }
 
 .item-image {
@@ -651,7 +651,7 @@
   border-radius: 8px;
   overflow: hidden;
   flex-shrink: 0;
-  background: var(--color-background);
+  background: var(--color-backgroundCustomer);
   border: 2px solid var(--color-border);
 }
 
@@ -715,7 +715,7 @@
   font-size: 1.25rem;
   color: var(--color-primary);
   margin: 1.5rem 0;
-  background: var(--color-background);
+  background: var(--color-backgroundCustomer);
   border-radius: 8px;
 }
 
@@ -774,7 +774,7 @@
 }
 
 .btn-edit:hover {
-  background: var(--color-background);
+  background: var(--color-backgroundCustomer);
   color: var(--color-primary);
 }
 
@@ -835,7 +835,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-background);
+  background: var(--color-backgroundCustomer);
   border: 1px solid var(--color-border);
 }
 
@@ -922,7 +922,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--color-background);
+  background: var(--color-backgroundCustomer);
   border: 3px solid var(--color-border);
   display: flex;
   align-items: center;
@@ -1127,7 +1127,7 @@
   width: 2rem;
   height: 2rem;
   border: none;
-  background: var(--color-background);
+  background: var(--color-backgroundCustomer);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1160,7 +1160,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
-  background: var(--color-background);
+  background: var(--color-backgroundCustomer);
 }
 
 /* Form Styles for Modal */

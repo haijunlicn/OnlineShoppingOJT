@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:4200")
@@ -18,16 +19,26 @@ public class VariantController {
     @Autowired
     private VariantService variantService;
 
+//    @PutMapping("/reserve-stock")
+//    public ResponseEntity<List<StockUpdateResponse>> reserveStock(@RequestBody List<StockUpdateRequest> requests) {
+//        List<StockUpdateResponse> responses = new ArrayList<>();
+//        System.out.println("reserve stock : " + requests);
+//        for (StockUpdateRequest req : requests) {
+//            responses.add(variantService.reserveStock(req.getVariantId(), req.getQuantity()));
+//        }
+//        return ResponseEntity.ok(responses);
+//    }
+
     @PutMapping("/reserve-stock")
     public ResponseEntity<List<StockUpdateResponse>> reserveStock(@RequestBody List<StockUpdateRequest> requests) {
-        List<StockUpdateResponse> responses = new ArrayList<>();
-        System.out.println("reserve stock : " + requests);
-        for (StockUpdateRequest req : requests) {
-            responses.add(variantService.reserveStock(req.getVariantId(), req.getQuantity()));
+        try {
+            List<StockUpdateResponse> responses = variantService.reserveStockBatch(requests);
+            return ResponseEntity.ok(responses);
+        } catch (RuntimeException e) {
+            // Handle insufficient stock or other failures here
+            return ResponseEntity.badRequest().body(Collections.emptyList());
         }
-        return ResponseEntity.ok(responses);
     }
-
 
     @PutMapping("/rollback-stock")
     public ResponseEntity<List<StockUpdateResponse>> rollbackStock(@RequestBody List<StockUpdateRequest> requests) {
@@ -36,7 +47,6 @@ public class VariantController {
         List<StockUpdateResponse> responses = variantService.rollbackStock(requests); // fixed line
         return ResponseEntity.ok(responses);
     }
-
 
     @PutMapping("/update-stock-bulk")
     public ResponseEntity<List<StockUpdateResponse>> updateStockBulk(@RequestBody List<StockUpdateRequest> requests) {

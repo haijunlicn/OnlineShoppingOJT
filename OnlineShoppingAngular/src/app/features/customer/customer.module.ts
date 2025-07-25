@@ -49,7 +49,6 @@ import { LocationSettingComponent } from './common/location-setting/location-set
 import { ProfileInfoSettingComponent } from './common/profile-info-setting/profile-info-setting.component';
 import { NotiSettingComponent } from './common/noti-setting/noti-setting.component';
 
-
 import { VlogComponent } from './policy/vlog/vlog.component';
 import { VlogListComponent } from './policy/vlog-list/vlog-list.component';
 import { VlogDetailComponent } from './policy/vlog-detail/vlog-detail.component';
@@ -131,7 +130,7 @@ import { DiscountDetailComponent } from './product_display/discount-detail/disco
     MatButtonModule,
     FormsModule,
     HttpClientModule,
-    CountdownModule
+    CountdownModule,
   ]
 })
 export class CustomerModule { }

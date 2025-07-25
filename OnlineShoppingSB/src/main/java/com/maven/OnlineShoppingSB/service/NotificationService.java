@@ -255,7 +255,7 @@ public class NotificationService {
     }
 
 
-    public void sendNamedNotification(String typeName, Map<String, Object> metadata, List<Long> targetUserIds) {
+    private void sendNamedNotification(String typeName, Map<String, Object> metadata, List<Long> targetUserIds) {
         createNotificationAndDeliver(typeName, metadata, targetUserIds);
     }
 
@@ -282,17 +282,6 @@ public class NotificationService {
         );
         sendNamedNotification(statusCode, metadata, List.of(userId));
     }
-
-
-//    public void notifyOrderPlaced(Long orderId, BigDecimal totalAmount) {
-//        Map<String, Object> metadata = Map.of(
-//                "orderId", orderId,
-//                "totalAmount", totalAmount,
-//                "orderIdLink", "/customer/orderDetail/" + orderId
-//        );
-//        List<Long> adminIds = getAdminIdsWithPermission("ORDER_READ");
-//        sendNamedNotification("ORDER_PLACED", metadata, adminIds);
-//    }
 
     public void notifyRefundRequested(Long orderId, Long customerId, String customerName) {
         Map<String, Object> metadata = Map.of(

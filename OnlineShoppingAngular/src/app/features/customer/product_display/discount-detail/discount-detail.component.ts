@@ -1,18 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DiscountEventDTO, DiscountMechanismDTO } from '@app/core/models/discount';
+import { DiscountDisplayDTO, DiscountEventDTO, DiscountMechanismDTO } from '@app/core/models/discount';
 import { ProductDTO } from '@app/core/models/product.model';
 import { AlertService } from '@app/core/services/alert.service';
+import { CountdownService } from '@app/core/services/countdown-service.service';
+import { DiscountDetailDisplayService } from '@app/core/services/discount-detail-display.service';
 import { DiscountDisplayService } from '@app/core/services/discount-display.service';
 
 @Component({
-  selector: 'app-discount-detail',
+  selector: "app-discount-detail",
   standalone: false,
-  templateUrl: './discount-detail.component.html',
-  styleUrl: './discount-detail.component.css'
+  templateUrl: "./discount-detail.component.html",
+  styleUrl: "./discount-detail.component.css",
 })
-
-
 export class DiscountDetailComponent implements OnInit {
   discount: DiscountEventDTO | null = null
   isLoading = true
@@ -21,7 +21,9 @@ export class DiscountDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private discountDisplayService: DiscountDisplayService,
+    private discountDetailDisplayService: DiscountDetailDisplayService, // Inject the new service
     private alertService: AlertService,
+    private countdownService: CountdownService,
   ) { }
 
   ngOnInit(): void {
@@ -38,7 +40,6 @@ export class DiscountDetailComponent implements OnInit {
       },
     })
   }
-
 
   getMechanismTypeLabel(type: string): string {
     return type === "Coupon" ? "Coupon Code Offer" : "Auto Discount"
@@ -66,26 +67,33 @@ export class DiscountDetailComponent implements OnInit {
     this.router.navigate(["/customer/product", product.id])
   }
 
-  getRemainingTime(): string {
-    if (!this.discount?.endDate) return ""
+  get remainingDays(): number {
+    return this.countdownService.getRemainingDays(this.discount?.endDate)
+  }
 
-    const now = new Date().getTime()
-    const end = new Date(this.discount.endDate).getTime()
-    const diff = end - now
+  get remainingSeconds(): number {
+    return this.countdownService.getRemainingSeconds(this.discount?.endDate)
+  }
 
-    if (diff <= 0) return "Expired"
+  get countdownFormat(): string {
+    return this.countdownService.getCountdownFormat(this.discount?.endDate)
+  }
 
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-
-    if (days > 0) return `${days}d ${hours}h ${minutes}m`
-    if (hours > 0) return `${hours}h ${minutes}m`
-    return `${minutes}m`
+  onCountdownEvent(event: any): void {
+    if (event.action === "done") {
+      console.log("Countdown finished")
+    }
   }
 
   goBack(): void {
     window.history.back()
+  }
+
+  onShopNow(): void {
+    const target = document.getElementById('mechanism-section');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   shareDiscount(): void {
@@ -102,14 +110,54 @@ export class DiscountDetailComponent implements OnInit {
   }
 
   copyCode(code: string): void {
-    navigator.clipboard.writeText(code)
+    navigator.clipboard
+      .writeText(code)
       .then(() => {
-        this.alertService.toast(`Coupon code "${code}" copied to clipboard`, 'success');
+        this.alertService.toast(`Coupon code "${code}" copied to clipboard`, "success")
       })
       .catch((err) => {
-        console.error('Failed to copy:', err);
-        this.alertService.toast('Failed to copy coupon code', 'error');
-      });
+        console.error("Failed to copy:", err)
+        this.alertService.toast("Failed to copy coupon code", "error")
+      })
+  }
+
+  // UPDATED: Use the new service for showing discount details
+
+  showDiscountDetail(mechanism: DiscountMechanismDTO): void {
+    const discountDisplay = this.mapMechanismToDisplayDTO(this.discount!, mechanism)
+    this.discountDetailDisplayService.showDiscountDetail(discountDisplay)
+  }
+
+  // You can also add methods to show discount summaries or carousels
+  showDiscountSummary(discount: any): void {
+    const discountDisplay = {
+      ...discount,
+      mechanismType: discount.type || discount.mechanismType,
+    }
+    this.discountDetailDisplayService.showDiscountSummary(discountDisplay)
+  }
+
+  mapMechanismToDisplayDTO(event: DiscountEventDTO, mechanism: DiscountMechanismDTO): DiscountDisplayDTO {
+    return {
+      id: mechanism.id,
+      name: event.name,
+      type: event.type,
+      couponcode: mechanism.couponCode,
+      value: mechanism.value?.toString() ?? null,
+      discountType: mechanism.discountType,
+      mechanismType: mechanism.mechanismType,
+      maxDiscountAmount: mechanism.maxDiscountAmount?.toString() ?? null,
+      shortLabel: undefined, // optional
+      conditionSummary: undefined, // optional
+      conditionGroups: mechanism.conditionGroups,
+      requireFrontendChecking: false,
+      startDate: event.startDate,
+      endDate: event.endDate,
+      usageLimit: undefined, // optional
+      // offeredProductIds: mechanism.offeredProducts?.map(p => p.id) ?? [],
+      usageLimitTotal: mechanism.usageLimitTotal ?? 0,
+      usageLimitPerUser: mechanism.usageLimitPerUser ?? 0,
+    }
   }
 
 }

@@ -89,35 +89,6 @@ public class OrderController {
         }
     }
 
-
-//    @GetMapping("/{orderId}/details")
-//    public ResponseEntity<OrderDetailDto> getOrderByIdWithDetails(@PathVariable Long orderId) {
-//        try {
-//            OrderEntity order = orderService.getOrderByIdWithDetails(orderId);
-//            OrderDetailDto dto = orderService.convertToOrderDetailDto(order);
-//
-//            // ✅ Fetch and set refund DTOs directly from RefundRequestService
-//            List<RefundRequestAdminDTO> refunds = refundRequestService.getRefundsByOrderId(orderId);
-//            dto.setRefunds(refunds);
-//
-//            return ResponseEntity.ok(dto);
-//        } catch (Exception e) {
-//            System.err.println("Error getting order details: " + e.getMessage());
-//            return ResponseEntity.badRequest().build();
-//        }
-//    }
-
-//    @GetMapping("/{orderId}/details")
-//    public ResponseEntity<OrderDetailDto> getOrderByIdWithDetails(@PathVariable Long orderId) {
-//        try {
-//            OrderEntity order = orderService.getOrderByIdWithDetails(orderId);
-//            return ResponseEntity.ok(orderService.convertToOrderDetailDto(order));
-//        } catch (Exception e) {
-//            System.err.println("Error getting order details: " + e.getMessage());
-//            return ResponseEntity.badRequest().build();
-//        }
-//    }
-
     @PostMapping("/admin/bulk-status")
     public ResponseEntity<List<OrderDetailDto>> bulkUpdateOrderStatus(@RequestBody BulkOrderStatusUpdateRequest request) {
         try {
