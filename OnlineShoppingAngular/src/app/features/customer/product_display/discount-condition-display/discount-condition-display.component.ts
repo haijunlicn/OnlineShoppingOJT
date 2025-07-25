@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { Router } from '@angular/router';
+import { Route, Router } from '@angular/router';
 import { DiscountConditionEA_D, DiscountConditionGroupEA_C, DiscountDisplayDTO, MechanismType } from '@app/core/models/discount';
 import { DiscountTextService } from '@app/core/services/discount-text.service';
 
@@ -52,7 +52,8 @@ export class DiscountConditionDisplayComponent implements OnInit, OnChanges {
 
   constructor(
     private discountTextService: DiscountTextService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -290,6 +291,12 @@ export class DiscountConditionDisplayComponent implements OnInit, OnChanges {
 
   getHumanReadableText(discount: DiscountDisplayDTO): string {
     return this.discountTextService.generateHumanReadableConditions(discount);
+  }
+
+  onOfferClicked(discountId : number): void {
+    console.log("hello");
+    
+    this.router.navigate(['/customer/discounts', discountId]);
   }
 
   Math = Math

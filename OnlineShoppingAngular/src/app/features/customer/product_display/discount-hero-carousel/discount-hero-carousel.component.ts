@@ -10,6 +10,7 @@ import {
   Output
 } from '@angular/core';
 import { DiscountEventDTO, DiscountMechanismDTO } from '@app/core/models/discount';
+import { CountdownService } from '@app/core/services/countdown-service.service';
 import { CountdownEvent } from 'ngx-countdown';
 
 @Component({
@@ -78,13 +79,13 @@ export class DiscountHeroCarouselComponent implements OnInit {
 
   constructor(
     private cdr: ChangeDetectorRef,
-    private zone: NgZone,
+    private countdownService: CountdownService
   ) { }
 
   ngOnInit(): void {
     this.updateCountdownForCurrentDiscount()
   }
-  
+
   goToSlide(index: number): void {
     this.currentIndex = index;
     console.log('Slide changed to index:', index, 'Current discount:', this.currentDiscount);
@@ -169,19 +170,20 @@ export class DiscountHeroCarouselComponent implements OnInit {
     return Math.max(0, total - 3)
   }
 
-  getRemainingSeconds(endTime?: string | Date): number {
-    if (!endTime) return 0
-    const end = new Date(endTime).getTime()
-    const now = Date.now()
-    const diff = Math.max(0, Math.floor((end - now) / 1000))
-    return diff
-  }
+  // getRemainingSeconds(endTime?: string | Date): number {
+  //   if (!endTime) return 0
+  //   const end = new Date(endTime).getTime()
+  //   const now = Date.now()
+  //   const diff = Math.max(0, Math.floor((end - now) / 1000))
+  //   return diff
+  // }
 
   private updateCountdownForCurrentDiscount(): void {
     if (this.currentDiscount?.endDate) {
+      const end = this.currentDiscount.endDate;
       this.countdownConfig = {
-        leftTime: this.getRemainingSeconds(this.currentDiscount.endDate),
-        format: 'd:HH:mm:ss',
+        leftTime: this.countdownService.getRemainingSeconds(end),
+        format: this.countdownService.getCountdownFormat(end),
         notify: [1],
       };
     } else {
@@ -189,17 +191,18 @@ export class DiscountHeroCarouselComponent implements OnInit {
     }
   }
 
+
   // private updateCountdownForCurrentDiscount(): void {
   //   if (this.currentDiscount?.endDate) {
   //     this.countdownConfig = {
   //       leftTime: this.getRemainingSeconds(this.currentDiscount.endDate),
-  //       format: 'd:HH:mm:ss'
-  //       ,
+  //       format: 'd:HH:mm:ss',
   //       notify: [1],
   //     };
+  //   } else {
+  //     this.countdownConfig = null;
   //   }
   // }
-
 
   onCountdownEvent(event: CountdownEvent): void {
     if (event.action === 'done') {

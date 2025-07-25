@@ -12,4 +12,5 @@ public class VlogDTO {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private List<VlogFilesDTO> vlogFiles;
+    private String filePaths; // New field for storing multiple file URLs as a string
 }

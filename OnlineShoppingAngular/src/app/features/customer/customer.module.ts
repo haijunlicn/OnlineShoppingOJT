@@ -49,14 +49,14 @@ import { LocationSettingComponent } from './common/location-setting/location-set
 import { ProfileInfoSettingComponent } from './common/profile-info-setting/profile-info-setting.component';
 import { NotiSettingComponent } from './common/noti-setting/noti-setting.component';
 
-
 import { VlogComponent } from './policy/vlog/vlog.component';
 import { VlogListComponent } from './policy/vlog-list/vlog-list.component';
-import { VlogDetailComponent } from './policy/vlog-detail/vlog-detail.component';
 import { DiscountDisplayComponent } from './product_display/discount-display/discount-display.component';
 import { StickyDiscountProgressComponent } from './product_display/sticky-discount-progress/sticky-discount-progress.component';
 import { DiscountConditionDisplayComponent } from './product_display/discount-condition-display/discount-condition-display.component';
 import { ProductqandaComponent } from './product_display/productqanda/productqanda.component';
+import { VlogCommentComponent } from './policy/vlog-comment/vlog-comment.component';
+
 import { DiscountHeroCarouselComponent } from './product_display/discount-hero-carousel/discount-hero-carousel.component';
 import { DiscountDetailComponent } from './product_display/discount-detail/discount-detail.component';
 
@@ -105,10 +105,9 @@ import { DiscountDetailComponent } from './product_display/discount-detail/disco
     NotiSettingComponent,
     ProductqandaComponent,
   
-  
+  VlogCommentComponent,
     VlogComponent,
     VlogListComponent,
-    VlogDetailComponent,
     DiscountDisplayComponent,
     StickyDiscountProgressComponent,
     DiscountConditionDisplayComponent,
@@ -131,7 +130,7 @@ import { DiscountDetailComponent } from './product_display/discount-detail/disco
     MatButtonModule,
     FormsModule,
     HttpClientModule,
-    CountdownModule
+    CountdownModule,
   ]
 })
 export class CustomerModule { }

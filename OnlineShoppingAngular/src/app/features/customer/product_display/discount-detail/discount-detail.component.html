@@ -60,15 +60,19 @@
                     </p>
 
                     <!-- Timer -->
-                    <div class="countdown-timer" *ngIf="discount.endDate">
+                    <div class="countdown-timer" *ngIf="discount?.endDate">
                         <i class="pi pi-clock"></i>
                         <span class="timer-label">Ends in:</span>
-                        <span class="timer-value">{{ getRemainingTime() }}</span>
+                        <countdown [config]="{
+                            leftTime: remainingSeconds,
+                            format: countdownFormat,
+                            notify: [1]
+                            }" (event)="onCountdownEvent($event)"></countdown>
                     </div>
 
                     <!-- Action Buttons -->
                     <div class="hero-actions">
-                        <button class="btn btn-primary hero-btn">
+                        <button class="btn btn-primary hero-btn" (click)="onShopNow()">
                             <i class="pi pi-shopping-cart"></i>
                             Shop Now
                         </button>
@@ -82,7 +86,7 @@
         </section>
 
         <!-- Discount Mechanisms -->
-        <section class="discount-mechanisms">
+        <section class="discount-mechanisms" id="mechanism-section">
             <div class="container">
                 <div class="mechanism-item" *ngFor="let mechanism of discount.mechanisms; let i = index">
 
@@ -92,11 +96,14 @@
                             <div class="mechanism-basic-info">
                                 <div class="mechanism-type-compact">
                                     <i class="pi"
-                                        [ngClass]="mechanism.mechanismType === 'COUPON' ? 'pi-tag' : 'pi-percentage'"></i>
+                                        [ngClass]="mechanism.mechanismType === 'Coupon' ? 'pi-tag' : 'pi-percentage'"></i>
                                     <h3>{{ getMechanismTypeLabel(mechanism.mechanismType) }}</h3>
                                 </div>
                                 <div class="mechanism-meta">
-                                    <span class="discount-value">{{ getDiscountText(mechanism) }}</span>
+                                    <span class="discount-value">
+                                        <i class="pi pi-tag me-1"></i>
+                                        {{ getDiscountText(mechanism) }}
+                                    </span>
                                     <span class="product-count" *ngIf="mechanism.offeredProducts.length > 0">
                                         {{ mechanism.offeredProducts.length }} Products
                                     </span>
@@ -113,6 +120,10 @@
                                     </button>
                                 </div>
                             </div>
+
+                            <button class="view-detail-btn" (click)="showDiscountDetail(mechanism)">
+                                View Conditions
+                            </button>
                         </div>
                     </div>
 
@@ -157,7 +168,8 @@
                                         <!-- Product Image Container -->
                                         <div class="position-relative product-img-wrapper">
                                             <!-- Discount Badge -->
-                                            <div class="position-absolute top-0 start-0 p-2 z-1">
+                                            <div class="position-absolute top-0 start-0 p-2 z-1"
+                                                *ngIf="mechanism.mechanismType === 'Discount'">
                                                 <span class="badge discount-applied-badge">
                                                     <i class="pi pi-tag me-1"></i>
                                                     {{ getDiscountText(mechanism) }}

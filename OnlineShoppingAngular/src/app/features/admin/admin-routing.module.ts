@@ -51,8 +51,6 @@ import { AdminNotificationListComponent } from './notificationManagement/admin-n
 import { AdminNotiTypesComponent } from './notificationManagement/admin-noti-types/admin-noti-types.component';
 import { AdminSentNotisComponent } from './notificationManagement/admin-sent-notis/admin-sent-notis.component';
 import { AuditLogComponent } from './policy-management/audit-log/audit-log.component';
-import { VlogFilesListComponent } from './vlog-management/vlogfileslist/vlogfileslist.component';
-import { VlogFilesCreateComponent } from './vlog-management/vlogfilescreate/vlogfilescreate.component';
 import { VlogListComponent } from './vlog-management/vloglist/vloglist.component';
 import { VlogCreateComponent } from './vlog-management/vlogcreate/vlogcreate.component';
 import { DeliveryMethodListComponent } from './deliveryMethodManagement/delivery-method-list/delivery-method-list.component';
@@ -150,8 +148,6 @@ const routes: Routes = [
       {
         path: 'sale-analysis', component: SaleAnalysisComponent, canActivate: [AdminAuthGuard]
       },
-      { path: 'vlogfileslist', component: VlogFilesListComponent },
-      { path: 'vlogfilescreate/:vlogId', component: VlogFilesCreateComponent },
       { path: 'vloglist', component: VlogListComponent },
       { path: 'vlogcreate', component: VlogCreateComponent },
       {path:'userList',component:UserDetailListComponent},

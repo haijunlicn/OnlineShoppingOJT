@@ -14,20 +14,26 @@
     (viewDetails)="onDiscountViewDetails($event)">
   </app-discount-hero-carousel>
 
-  <!-- Fallback Hero Section -->
-  <section class="hero-section" *ngIf="!isLoadingDiscounts && discounts && discounts.length === 0">
-    <div class="hero-content">
-      <h1 class="hero-title">Discover Premium Products</h1>
-      <p class="hero-subtitle">
-        Experience the finest selection of curated items with exclusive deals and exceptional quality.
-      </p>
-      <form class="hero-search-form" (submit)="$event.preventDefault(); onSearch(heroSearchInput.value)">
-        <input #heroSearchInput type="text" class="hero-search-input"
-          placeholder="Search for products, brands, and more..." aria-label="Search">
-        <button type="submit" class="hero-search-btn">
-          <i class="fas fa-search"></i> Search
+    <!-- Replace Hero Section only if discounts exist -->
+    <app-discount-hero-carousel *ngIf="!isLoadingDiscounts && discounts.length > 0" [discounts]="discounts"
+      (viewDetails)="onDiscountViewDetails($event)" (shopNow)="onShopNow()">
+    </app-discount-hero-carousel>
+
+    <!-- Fallback Hero Section -->
+    <section class="hero-section" *ngIf="!isLoadingDiscounts && discounts && discounts.length === 0">
+      <div class="hero-content">
+        <h1 class="hero-title">Discover Your Next Favorite</h1>
+        <p class="hero-subtitle">Shop the latest trends and exclusive deals, all in one place.</p>
+        <form class="hero-search-form" (submit)="$event.preventDefault(); onSearch(heroSearchInput.value)">
+          <input #heroSearchInput type="text" class="hero-search-input"
+            placeholder="Search for products, brands, and more..." aria-label="Search">
+          <button type="submit" class="hero-search-btn"><i class="fas fa-search"></i></button>
+        </form>
+        <button class="hero-btn" (click)="onShopNow()">
+          <span>Shop Now</span>
+          <div class="btn-shine"></div>
         </button>
-      </form>
+      <!-- </form> -->
       <button class="hero-btn" (click)="onShopNow()">
         <span>Explore Collection</span>
         <div class="btn-shine"></div>

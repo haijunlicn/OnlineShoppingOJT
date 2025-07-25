@@ -13,15 +13,16 @@
       <!-- Desktop Navigation with Shop Dropdown -->
       <div class="col d-none d-lg-block">
         <nav class="main-nav">
-          <a routerLink="/customer/general/home" class="nav-item">Home</a>
+          <a routerLink="/customer/general/home" class="nav-item" routerLinkActive="active">Home</a>
 
           <!-- Shop Dropdown Component -->
           <app-category-dropdown [categories]="categories" (categorySelected)="onCategorySelected($event)"
-            (viewAllCategories)="onViewAllCategories()">
+            (viewAllCategories)="onViewAllCategories()" routerLinkActive="active">
           </app-category-dropdown>
 
-          <a [routerLink]="['/customer/about']" class="nav-item">About</a>
-          <a [routerLink]="['/customer/contact']" class="nav-item">Contact</a>
+          <a [routerLink]="['/customer/about']" class="nav-item" routerLinkActive="active">About</a>
+          <a [routerLink]="['/customer/contact']" class="nav-item" routerLinkActive="active">Contact</a>
+          <a [routerLink]="['/customer/vlog']" class="nav-item" routerLinkActive="active">Blog</a>
         </nav>
       </div>
 
@@ -131,25 +132,30 @@
     <!-- Mobile Navigation -->
     <div class="mobile-menu" [class.open]="isMenuOpen">
       <nav class="mobile-nav">
-        <a routerLink="/customer/general/home" class="mobile-nav-item" (click)="toggleMenu()">
+        <a routerLink="/customer/general/home" class="mobile-nav-item" routerLinkActive="active" (click)="toggleMenu()">
           <i class="fas fa-home"></i>
           Home
         </a>
 
         <!-- Mobile Categories Link -->
-        <a routerLink="/customer/productList" class="mobile-nav-item" (click)="toggleMenu()">
+        <a routerLink="/customer/productList" class="mobile-nav-item" routerLinkActive="active" (click)="toggleMenu()">
           <i class="fas fa-store"></i>
           Shop
         </a>
 
-        <a [routerLink]="['/customer/about']" class="mobile-nav-item" (click)="toggleMenu()">
+        <a [routerLink]="['/customer/about']" class="mobile-nav-item" routerLinkActive="active" (click)="toggleMenu()">
           <i class="fas fa-info-circle"></i>
           About
         </a>
 
-        <a [routerLink]="['/customer/contact']" class="mobile-nav-item" (click)="toggleMenu()">
+        <a [routerLink]="['/customer/contact']" class="mobile-nav-item" routerLinkActive="active" (click)="toggleMenu()">
           <i class="fas fa-envelope"></i>
           Contact
+        </a>
+
+        <a [routerLink]="['/customer/vlog']" class="mobile-nav-item" routerLinkActive="active" (click)="toggleMenu()">
+          <i class="fas fa-envelope"></i>
+          Blog
         </a>
       </nav>
 

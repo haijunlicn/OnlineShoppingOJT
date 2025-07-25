@@ -1,0 +1,41 @@
+<div class="comments-section">
+  <h3 class="comments-title">Comments ({{ comments.length }})</h3>
+  <!-- Comment Form -->
+  <div class="comment-form">
+    <textarea
+      [(ngModel)]="commentText"
+      placeholder="Add a public comment..."
+      class="comment-input"
+      [disabled]="isPostingComment"
+      rows="3"
+    ></textarea>
+    <button
+      (click)="postComment()"
+      class="post-button"
+      [disabled]="isPostingComment || !commentText.trim()"
+    >
+      <span *ngIf="!isPostingComment">Post Comment</span>
+      <span *ngIf="isPostingComment">
+        <div class="spinner-small"></div> Posting...
+      </span>
+    </button>
+  </div>
+  <!-- Comments Loading -->
+  <div *ngIf="isLoadingComments" class="comments-loading">
+    <div class="spinner-small"></div>
+    <p>Loading comments...</p>
+  </div>
+  <div *ngIf="!isLoadingComments" class="comments-list">
+    <div *ngIf="comments.length === 0" class="no-comments">
+      <p>Be the first to share your thoughts!</p>
+    </div>
+    <div *ngFor="let comment of comments" class="comment-item">
+      <div class="comment-avatar">{{ comment.avatarInitial }}</div>
+      <div class="comment-body">
+        <span class="comment-author">{{ comment.author }}</span>
+        <span class="comment-date">{{ comment.commentDate | date:'short' }}</span>
+        <p class="comment-text">{{ comment.text }}</p>
+      </div>
+    </div>
+  </div>
+</div>

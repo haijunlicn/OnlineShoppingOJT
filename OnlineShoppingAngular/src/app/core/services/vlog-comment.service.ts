@@ -15,6 +15,7 @@ export class VlogCommentService {
   createComment(comment: VlogComment): Observable<VlogComment> {
     return this.http.post<VlogComment>(`${this.baseUrl}/create`, comment);
   }
+  
 
   getCommentsByVlogId(vlogId: number): Observable<VlogComment[]> {
     return this.http.get<VlogComment[]>(`${this.baseUrl}/list/${vlogId}`);

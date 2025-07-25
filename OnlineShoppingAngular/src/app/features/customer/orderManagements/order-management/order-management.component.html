@@ -7,14 +7,14 @@
         <h1>Order Management</h1>
       </div>
       <div class="order-actions">
-        <button class="btn-back-to-cart" (click)="goBackToCart()">
-          <i class="fas fa-arrow-left"></i>
-          Back to Cart
-        </button>
         <div class="order-status">
           <div class="status-indicator active"></div>
           <span>Processing Order</span>
         </div>
+        <button class="btn-back-to-cart" (click)="goBackToCart()">
+          <i class="fas fa-arrow-left"></i>
+          Back to Cart
+        </button>
       </div>
     </div>
   </div>
@@ -124,7 +124,7 @@
 
                   <!-- Coupon Discount -->
                   <span class="badge bg-info me-1" *ngIf="getCouponDiscountForItem(item.productId, item.variantId) > 0">
-                    {{ appliedCoupon?.discount?.shortLabel || appliedCoupon?.discount?.name }}
+                    {{ appliedCoupon?.discount?.couponcode }}
                   </span>
                 </div>
 
@@ -132,21 +132,23 @@
 
               <div class="item-price-container">
                 <!-- Show original price if discounted -->
-
-                <!-- <div *ngIf="item.originalPrice !== getFinalDiscountedPrice(item)" class="original-item-price">
-                  <s>{{ (item.originalPrice * item.quantity).toLocaleString() }} MMK</s>
-                </div> -->
-
-                <div *ngIf="(item.originalPrice * item.quantity) !== getFinalDiscountedPrice(item)"
+                <div *ngIf="(item.originalPrice * item.quantity) !== getFinalDiscountedPriceWithoutCoupon(item)"
                   class="original-item-price">
                   <s>{{ (item.originalPrice * item.quantity).toLocaleString() }} MMK</s>
                 </div>
+                <div class="item-price"
+                  [title]="'Includes coupon discount of ' + getCouponDiscountForItem(item.productId, item.variantId).toLocaleString() + ' MMK'">
+                  {{ getFinalDiscountedPriceWithoutCoupon(item) }} MMK
+                </div>
 
-
+                <!-- <div *ngIf="(item.originalPrice * item.quantity) !== getFinalDiscountedPrice(item)"
+                  class="original-item-price">
+                  <s>{{ (item.originalPrice * item.quantity).toLocaleString() }} MMK</s>
+                </div>
                 <div class="item-price"
                   [title]="'Includes coupon discount of ' + getCouponDiscountForItem(item.productId, item.variantId).toLocaleString() + ' MMK'">
                   {{ getFinalDiscountedPrice(item) }} MMK
-                </div>
+                </div> -->
 
               </div>
             </div>

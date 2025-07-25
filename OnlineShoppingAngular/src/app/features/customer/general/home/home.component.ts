@@ -6,7 +6,7 @@ import { DiscountDisplayService } from '@app/core/services/discount-display.serv
 import { DiscountEventDTO } from '@app/core/models/discount';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { ProductListItemDTO } from '@app/core/models/product.model';
+import { ProductDTO, ProductListItemDTO } from '@app/core/models/product.model';
 
 @Component({
   selector: "app-home",
@@ -72,7 +72,23 @@ export class HomeComponent implements OnInit {
   }
 
   onShopNow() {
-    window.scrollTo({ top: 600, behavior: "smooth" });
+    this.router.navigate(['/customer/productList']);
+  }
+
+  onAddToCart(product: ProductDTO) {
+    console.log("Add to Cart:", product.name)
+  }
+
+  onWishlist(product: ProductDTO) {
+    console.log("Wishlist:", product.name)
+  }
+
+  getRatingStars(rating: number) {
+    const maxRating = 5
+    const filledStars = Math.round(rating)
+    return Array(maxRating)
+      .fill(0)
+      .map((_, i) => i < filledStars)
   }
 
   onSearch(query: string) {
@@ -91,4 +107,5 @@ export class HomeComponent implements OnInit {
     }
     return "assets/images/placeholder.jpg";
   }
+  
 }

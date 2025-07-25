@@ -12,18 +12,17 @@
                 </ol>
             </nav>
             <h1 class="nav-title">Notification Type Management</h1>
-            <p class="nav-subtitle">Manage system notification types for various events.</p>
         </div>
     </div>
     <div class="nav-right">
-        <button class="btn btn-outline btn-sm nav-btn" (click)="refreshData()" [disabled]="isLoading" title="Refresh">
-            <i class="fas fa-sync-alt me-1" [class.fa-spin]="isLoading"></i>Refresh
-        </button>
-       <button class="btn btn-sm nav-btn" (click)="openCreateForm()"
-              style="background-color: var(--color-primary); color: white; border-color: var(--color-primary);">
-        <i class="fas fa-plus me-1"></i>Create Type
-        </button>
-
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary btn-sm nav-btn" (click)="refreshData()" [disabled]="isLoading">
+                <i class="fas fa-sync-alt me-1" [class.fa-spin]="isLoading"></i>Refresh
+            </button>
+            <button class="btn btn-primary btn-sm nav-btn" (click)="openCreateForm()">
+                <i class="fas fa-plus me-1"></i>Create Type
+            </button>
+        </div>
     </div>
 </div>
 
@@ -34,11 +33,51 @@
         <i class="fas fa-check-circle me-2"></i>{{ message }}
         <button type="button" class="btn-close" (click)="clearMessage()" aria-label="Close"></button>
     </div>
-
     <!-- Error Message -->
     <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
         <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
         <button type="button" class="btn-close" (click)="clearError()" aria-label="Close"></button>
+    </div>
+
+    <!-- Filter Controls Card -->
+    <div class="filter-section mb-3">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-filter me-2"></i>Filters & Search
+                    </h6>
+                    <button type="button" class="btn btn-link btn-sm text-muted p-0" (click)="onReset()"
+                        *ngIf="searchTerm.trim()">
+                        <i class="fas fa-times me-1"></i>Clear All
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <!-- Search -->
+                    <div class="col-12 col-lg-6">
+                        <label for="searchInput" class="form-label">Search</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                            <input id="searchInput" type="text" class="form-control" [(ngModel)]="searchTerm"
+                                (input)="applyFilters()" placeholder="Search by name, title template...">
+                        </div>
+                    </div>
+                    <!-- Items per page -->
+                    <div class="col-6 col-lg-2">
+                        <label for="itemsPerPage" class="form-label">Show</label>
+                        <select id="itemsPerPage" class="form-select" [(ngModel)]="itemsPerPage"
+                            (change)="onItemsPerPageChange()">
+                            <option *ngFor="let option of getItemsPerPageOptions()" [value]="option">{{ option }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Create Form Card -->
