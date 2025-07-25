@@ -228,8 +228,6 @@ public class DiscountService {
         entity.setImgUrl(dto.getImgUrl());
         entity.setIsActive(dto.getIsActive());
         entity.setCurrentRedemptionCount(dto.getCurrentRedemptionCount());
-        entity.setPerUserLimit(dto.getPerUserLimit());
-        entity.setUsageLimit(dto.getUsageLimit());
 
         // --- Handle children: Mechanisms ---
         // 1. Remove old mechanisms (and cascade children)
@@ -354,8 +352,6 @@ public class DiscountService {
         entity.setStartDate(dto.getStartDate());
         entity.setEndDate(dto.getEndDate());
         entity.setIsActive(dto.getIsActive());
-        entity.setUsageLimit(dto.getUsageLimit());
-        entity.setPerUserLimit(dto.getPerUserLimit());
         entity.setDelFg(dto.getDelFg());
         entity.setCreatedDate(LocalDateTime.now());
         entity.setUpdatedDate(LocalDateTime.now());
@@ -376,6 +372,8 @@ public class DiscountService {
                 mechEntity.setCreatedDate(LocalDateTime.now());
                 mechEntity.setUpdatedDate(LocalDateTime.now());
                 mechEntity.setDiscount(entity); // set parent
+                mechEntity.setUsageLimitTotal(mechDto.getUsageLimitTotal());
+                mechEntity.setUsageLimitPerUser(mechDto.getUsageLimitPerUser());
 
                 // --- Discount Products ---
                 if (mechDto.getDiscountProducts() != null) {
@@ -413,7 +411,8 @@ public class DiscountService {
                     for (DiscountConditionGroupES_C groupDto : mechDto.getDiscountConditionGroup()) {
                         DiscountConditionGroupEntity groupEntity = new DiscountConditionGroupEntity();
                         // groupEntity.setId(groupDto.getId());
-                        groupEntity.setLogicOperator(groupDto.getLogicOperator());
+                        // groupEntity.setLogicOperator(groupDto.getLogicOperator());
+                        groupEntity.setLogicOperator(parseLogicOperator(mechDto.getLogicOperator()));
                         groupEntity.setDiscountMechanism(mechEntity);
 
                         // --- Conditions ---
@@ -506,8 +505,6 @@ public class DiscountService {
         dto.setStartDate(entity.getStartDate());
         dto.setEndDate(entity.getEndDate());
         dto.setIsActive(entity.getIsActive());
-        dto.setUsageLimit(entity.getUsageLimit());
-        dto.setPerUserLimit(entity.getPerUserLimit());
         dto.setDelFg(entity.getDelFg());
         dto.setCreatedDate(LocalDateTime.now());
         dto.setUpdatedDate(LocalDateTime.now());
@@ -527,8 +524,8 @@ public class DiscountService {
                 mechDto.setDelFg(mechEntity.getDelFg());
                 mechDto.setCreatedDate(mechEntity.getCreatedDate());
                 mechDto.setUpdatedDate(mechEntity.getUpdatedDate());
-                // mechDto.setDiscountId(entity.getId()); // REMOVE
-                // mechDto.setDiscount(dto); // REMOVE
+                mechDto.setUsageLimitTotal(mechEntity.getUsageLimitTotal());
+                mechDto.setUsageLimitPerUser(mechEntity.getUsageLimitPerUser());
 
                 // --- Discount Products ---
                 if (mechEntity.getDiscountProducts() != null) {
@@ -817,5 +814,16 @@ public class DiscountService {
     public void deleteConditionGroup(Integer conditionGroupId) {
         conditionGroupRepository.deleteById(conditionGroupId);
     }
+
+    private Boolean parseLogicOperator(Object logicOperator) {
+        if (logicOperator instanceof Boolean) return (Boolean) logicOperator;
+        if (logicOperator instanceof String) {
+            String val = ((String) logicOperator).trim().toLowerCase();
+            if ("true".equals(val)) return true;
+            if ("false".equals(val)) return false;
+        }
+        return null; // or default to true/false as per your business rule
+    }
+
 
 }

@@ -1,6 +1,7 @@
 <div class="discount-cards-container" *ngIf="parsedDiscounts.length > 0">
   <div class="discount-cards-list">
-    <div *ngFor="let item of parsedDiscounts; let i = index" class="discount-card">
+    <div *ngFor="let item of parsedDiscounts; let i = index" class="discount-card"
+      (click)="onOfferClicked(item.discount.id)">
 
       <!-- Featured Banner for high-value discounts -->
       <div class="featured-ribbon" *ngIf="isHighValueDiscount(item.discount)">
@@ -23,10 +24,6 @@
         <div class="discount-description">
           {{ getHumanReadableText(item.discount) }}
         </div>
-
-        <!-- <div class="discount-description" [innerHTML]="renderTextWithLinks(getLinkedConditionText(item.discount))"
-          (click)="onEntityClick($event, getLinkedConditionText(item.discount).linkedEntities)">
-        </div> -->
 
         <!-- Coupon Code Display (for Coupon mechanism) -->
         <div class="coupon-code-display" *ngIf="item.discount.mechanismType === 'Coupon' && item.discount.couponcode">

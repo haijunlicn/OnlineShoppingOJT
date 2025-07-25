@@ -56,7 +56,7 @@ public class DiscountEntity {
     private LocalDateTime updatedDate;
 
     // Relationships
-    @OneToMany(mappedBy = "discount",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "discount",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<DiscountMechanismEntity> discountMechanisms;
 
 }

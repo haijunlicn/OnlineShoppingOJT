@@ -139,13 +139,16 @@
             </div>
 
             <div class="action-buttons">
-              <button class="btn btn-primary add-to-cart-btn" (click)="addToCart(this.product)"
-                [disabled]="!selectedVariant || selectedVariant.stock === 0 || getCurrentVariantRemainingStock() === 0">
+              <button class="btn btn-primary add-to-cart-btn" (click)="addToCart(this.product)" [disabled]="!isLoggedIn || 
+                            !selectedVariant || 
+                            selectedVariant.stock === 0 || 
+                            getCurrentVariantRemainingStock() === 0">
                 <i class="bi bi-cart-plus"></i>
                 Add to Cart
               </button>
 
-              <button class="btn btn-outline-secondary wishlist-btn" (click)="toggleWish(product.product.id!)">
+              <button class="btn btn-outline-secondary wishlist-btn" (click)="toggleWish(product.product.id!)"
+                [disabled]="!isLoggedIn">
                 <i class="pi" [ngClass]="isWished(product.product.id!) ? 'pi-heart-fill text-danger' : 'pi-heart'"></i>
               </button>
             </div>
@@ -178,7 +181,7 @@
             <div class="discount-carousel" #discountCarousel
               [style.transform]="'translateX(' + (-currentDiscountIndex * 100) + '%)'">
               <div *ngFor="let discount of getVisibleDiscounts(); let i = index" class="discount-card-slide">
-                <div class="discount-card-compact">
+                <div class="discount-card-compact" (click)="onOfferClicked(discount.id)">
 
                   <!-- Featured Banner for high-value discounts -->
                   <div class="featured-ribbon" *ngIf="isHighValueDiscount(discount)">
@@ -199,22 +202,27 @@
 
                     <!-- Mechanism-based Description -->
                     <div class="discount-description-compact">
-                      {{ getMechanismBasedMessage(discount) }}
+                      <div class="validity-info">{{ getDiscountInfoSections(discount).validity }}</div>
+                      <div class="usage-limits-info">{{ getDiscountInfoSections(discount).usageLimits }}</div>
                     </div>
+
+                    <!-- <div class="discount-description-compact">
+                      {{ getMechanismBasedMessage(discount) }}
+                    </div> -->
 
                     <!-- Coupon Code Display (for Coupon mechanism) -->
                     <div class="coupon-code-compact" *ngIf="discount.mechanismType === 'Coupon' && discount.couponcode">
                       <div class="code-box-compact" [class.copyable]="isConditionsMet(discount)">
                         <span class="code-text-compact">{{ discount.couponcode }}</span>
                         <button class="copy-code-btn-compact" *ngIf="isConditionsMet(discount)"
-                          (click)="copyToClipboard(discount.couponcode)" title="Copy code">
+                          (click)="copyToClipboard(discount.couponcode); $event.stopPropagation()" title="Copy code">
                           <i class="pi pi-copy"></i>
                         </button>
                       </div>
                     </div>
 
                     <!-- View Detail Button -->
-                    <button class="view-detail-btn" (click)="showDiscountDetail(discount)">
+                    <button class="view-detail-btn" (click)="showDiscountDetail(discount); $event.stopPropagation()">
                       View Detail
                     </button>
                   </div>
@@ -245,7 +253,7 @@
     </div>
 
     <!-- Mobile Discount Section (Below main content) -->
-    <div class="mobile-discount-section d-lg-none" *ngIf="getVisibleDiscounts().length > 0" #mobileDiscounts>
+    <!-- <div class="mobile-discount-section d-lg-none" *ngIf="getVisibleDiscounts().length > 0" #mobileDiscounts>
       <div class="mobile-discount-container">
         <div class="mobile-discount-header">
           <h5 class="mb-3">
@@ -257,7 +265,7 @@
           [maxDisplayItems]="3">
         </app-discount-condition-display>
       </div>
-    </div>
+    </div> -->
 
     <!-- Product Details Tabs -->
     <div class="product-tabs-section">
@@ -472,27 +480,58 @@
       <button class="scroll-btn left" (click)="scrollLeft()">‹</button>
 
       <div class="related-products-scroll" #scrollContainer>
-        <div class="related-product-card" *ngFor="let relatedProduct of relatedProducts">
-          <div class="card">
-            <img [src]="getMainProductImage(relatedProduct)" alt="Product Image" />
-            <div class="card-body">
-              <h6 class="card-title">{{ relatedProduct.name }}</h6>
-              <p class="card-text">From MMK {{ relatedProduct.basePrice | number:'1.0-0' }}</p>
+        <div class="product-card-container" *ngFor="let relatedProduct of relatedProducts">
+          <div class="card h-100 product-card" (click)="goToDetail(relatedProduct)" style="cursor:pointer;">
+            <div class="position-relative product-img-wrapper">
+              <img [src]="getMainProductImage(relatedProduct)" class="card-img-top product-image" alt="Product Image" />
+            </div>
+            <div class="card-body product-info">
+              <div class="d-flex justify-content-between align-items-center mb-2 brand-category-row">
+                <small class="brand-text">{{ relatedProduct.brand?.name }}</small>
+                <small class="category-text">{{ relatedProduct.category?.name }}</small>
+              </div>
+              <h6 class="product-name mb-3">
+                {{ relatedProduct.name }}
+              </h6>
+              <div class="price-section mb-3">
+                <span class="current-price fw-bold">
+                  From MMK {{ relatedProduct.basePrice | number:'1.0-0' }}
+                </span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mt-auto">
+
+                <span class="stock-badge"
+                  [ngClass]="{'stock-in': hasStock(relatedProduct), 'stock-out': !hasStock(relatedProduct)}">
+                  {{ hasStock(relatedProduct) ? 'In Stock' : 'Out of Stock' }}
+                </span>
+
+                <button class="btn btn-action btn-sm" (click)="goToDetail(relatedProduct); $event.stopPropagation()">
+                  <i class="pi pi-eye me-1"></i>
+                  View
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
+      </div>
       <button class="scroll-btn right" (click)="scrollRight()">›</button>
     </div>
+
+
+
+
+
+
+
   </div>
 </main>
 
 <!-- Enhanced Sticky Discount Progress Bar with Real Data -->
-<app-sticky-discount-progress [conditionalDiscounts]="getConditionalDiscounts()" [currentAmount]="getCurrentCartTotal()"
+<!-- <app-sticky-discount-progress [conditionalDiscounts]="getConditionalDiscounts()" [currentAmount]="getCurrentCartTotal()"
   [cartItems]="cartItems" [currency]="'MMK'" (dismissed)="onStickyProgressDismissed()"
   (addMoreClicked)="onAddMoreItemsClicked()">
-</app-sticky-discount-progress>
+</app-sticky-discount-progress> -->
 
 
 <!-- Edit Review Modal -->

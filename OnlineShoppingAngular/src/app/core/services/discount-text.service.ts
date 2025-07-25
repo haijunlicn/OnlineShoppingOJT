@@ -9,15 +9,6 @@ interface ConditionEntity {
   routerLink: string | any[]
 }
 
-interface ParsedCondition {
-  type: string
-  detail: string
-  operator: string
-  entities: ConditionEntity[]
-  displayText: string
-  value: string | string[]
-}
-
 export interface DiscountTextOutput {
   text: string
   linkedEntities: {
@@ -68,11 +59,7 @@ export class DiscountTextService {
     })
   }
 
-  private clearCache(): void {
-    this.cache.clear()
-  }
-
-  // ===== MAIN PUBLIC METHODS FOR PRODUCT CARDS =====
+  // ===== MAIN PUBLIC METHODS =====
 
   /**
    * Get simple label for available discount badges
@@ -83,10 +70,6 @@ export class DiscountTextService {
         return "Coupon Available"
       case "Discount":
         return "Discount Available"
-      case "freeGift":
-        return "Gift Available"
-      case "B2B":
-        return "B2B Discount"
       default:
         return "Offer Available"
     }
@@ -102,12 +85,6 @@ export class DiscountTextService {
           break
         case "Discount":
           types.add("Discounts")
-          break
-        case "freeGift":
-          types.add("Gifts")
-          break
-        case "B2B":
-          types.add("B2B Offers")
           break
         default:
           types.add("Offers")
@@ -125,44 +102,29 @@ export class DiscountTextService {
     const cached = this.getFromCache<string>(cacheKey)
     if (cached) return cached
 
-    // Generate basic condition text
     let result = "Hover for conditions"
 
     if (hint.conditionGroups && hint.conditionGroups.length > 0) {
       const conditions = hint.conditionGroups[0].conditions || []
-      if (conditions.length > 0) {
-        const condition = conditions[0]
+      const orderCondition = conditions.find((c) => c.conditionType === "ORDER")
 
-        switch (condition.conditionType) {
-          case "ORDER":
-            if (condition.conditionDetail === "order_total") {
-              let values: string[] = []
+      if (orderCondition) {
+        if (orderCondition.conditionDetail === "order_total") {
+          const values = parseStringArray(orderCondition.value)
+          const amount = Number.parseFloat(values[0] || "0")
+          result = `Minimum order amount: MMK ${amount.toLocaleString("en-US")}`
+        } else if (orderCondition.conditionDetail === "item_count") {
+          const values = parseStringArray(orderCondition.value)
+          result = `Minimum ${values[0]} items required`
+        }
+      } else {
+        const productCondition = conditions.find((c) => c.conditionType === "PRODUCT")
+        const customerGroupCondition = conditions.find((c) => c.conditionType === "CUSTOMER_GROUP")
 
-              try {
-                if (typeof condition.value === "string") {
-                  values = JSON.parse(condition.value)
-                } else {
-                  values = condition.value
-                }
-              } catch (e) {
-                console.warn("Failed to parse condition.value:", condition.value)
-              }
-
-              const amount = Number.parseFloat(values?.[0] || "0")
-              result = `Minimum order amount: MMK ${amount.toLocaleString("en-US")}`
-            }
-            if (condition.conditionDetail === "item_count") {
-              result = `Minimum ${condition.value[0]} items required`
-            }
-            break
-          case "PRODUCT":
-            result = "Specific product requirements apply"
-            break
-          case "CUSTOMER_GROUP":
-            result = "Available for specific customer groups"
-            break
-          default:
-            result = "Conditions apply - see details"
+        if (customerGroupCondition) {
+          result = "Available for specific customer groups"
+        } else if (productCondition) {
+          result = "Specific product requirements apply"
         }
       }
     }
@@ -185,10 +147,6 @@ export class DiscountTextService {
     switch (discount.mechanismType) {
       case MechanismType.DISCOUNT:
         result = humanReadable || "Applied automatically at checkout"
-        break
-
-      case MechanismType.FREE_GIFT:
-        result = humanReadable || "Buy qualifying items for free gift"
         break
 
       case MechanismType.Coupon:
@@ -249,11 +207,6 @@ export class DiscountTextService {
    * Get discount type label
    */
   getDiscountTypeLabel(discount: DiscountDisplayDTO): string {
-    if (discount.discountType === "PERCENTAGE") {
-      return "Additional Discount"
-    } else if (discount.discountType === "FIXED") {
-      return "Off"
-    }
     return discount.mechanismType === MechanismType.Coupon ? "Coupon Discount" : "Auto Discount"
   }
 
@@ -281,26 +234,29 @@ export class DiscountTextService {
 
     let result: string
 
-    // Return a very simple description
     if (discount.conditionSummary && discount.conditionSummary.length < 50) {
       result = discount.conditionSummary
     } else {
-      // Generate simple description based on conditions
       const firstGroup = discount.conditionGroups?.[0]
       if (!firstGroup || !firstGroup.conditions?.length) {
         result = "Automatically applied at checkout"
       } else {
-        const conditions = firstGroup.conditions || []
-        const productCondition = conditions.find((c) => c.conditionDetail === "product")
-        const brandCondition = conditions.find((c) => c.conditionDetail === "brand")
-        const customerGroupCondition = conditions.find((c) => c.conditionDetail === "1" || c.conditionDetail === "4")
+        const conditions = firstGroup.conditions
+        const productCondition = conditions.find((c) => c.conditionType === "PRODUCT")
+        const customerGroupCondition = conditions.find((c) => c.conditionType === "CUSTOMER_GROUP")
 
         if (customerGroupCondition) {
           result = "VIP Member Exclusive"
         } else if (productCondition) {
-          result = "On selected products"
-        } else if (brandCondition) {
-          result = "On selected brands"
+          if (productCondition.conditionDetail === "product") {
+            result = "On selected products"
+          } else if (productCondition.conditionDetail === "category") {
+            result = "On selected categories"
+          } else if (productCondition.conditionDetail === "brand") {
+            result = "On selected brands"
+          } else {
+            result = "On selected items"
+          }
         } else {
           result = "Automatically applied at checkout"
         }
@@ -311,49 +267,276 @@ export class DiscountTextService {
     return result
   }
 
+  // ===== SIMPLIFIED HUMAN-READABLE CONDITIONS GENERATION =====
+
   /**
-   * Generate detailed discount information with HTML formatting (cached)
+   * Generate human-readable conditions text with simplified logic (cached)
    */
-  generateDiscountDetails(discount: DiscountDisplayDTO): string {
-    const cacheKey = this.getCacheKey(discount, "discount_details")
+  generateHumanReadableConditions(discount: DiscountDisplayDTO): string {
+    const cacheKey = this.getCacheKey(discount, "human_readable")
     const cached = this.getFromCache<string>(cacheKey)
+    if (cached) {
+      return cached
+    }
+
+    let result: string
+
+    // No condition groups - simple cases
+    if (!discount.conditionGroups || discount.conditionGroups.length === 0) {
+      if (discount.couponcode) {
+        result = `Use code ${discount.couponcode} (available for everyone)`
+      } else {
+        result = "Available for everyone"
+      }
+    } else if (discount.conditionGroups.length === 1) {
+      // Handle single condition group
+      result = this.generateSingleGroupConditionsText(discount.conditionGroups[0])
+    } else {
+      // Handle multiple condition groups
+      result = this.generateMultipleGroupConditionsText(discount.conditionGroups)
+    }
+
+    this.setCache(cacheKey, result)
+    return result
+  }
+
+  private generateSingleGroupConditionsText(group: DiscountConditionGroupEA_C): string {
+    if (!group.conditions?.length) {
+      return "No specific conditions"
+    }
+
+    const conditions = group.conditions
+    const isAndGroup = String(group.logicOperator) === "true"
+
+    // Extract different types of conditions (only one per type now)
+    const customerGroupCondition = conditions.find((c) => c.conditionType === "CUSTOMER_GROUP")
+    const orderCondition = conditions.find((c) => c.conditionType === "ORDER")
+    const productCondition = conditions.find((c) => c.conditionType === "PRODUCT")
+
+    const conditionParts: string[] = []
+
+    // Customer group condition
+    if (customerGroupCondition) {
+      const groupName = customerGroupCondition.relatedEntities?.[0]?.name || "VIP members"
+      conditionParts.push(`only for ${groupName}`)
+    }
+
+    // Order condition
+    if (orderCondition) {
+      if (orderCondition.conditionDetail === "order_total") {
+        const values = parseStringArray(orderCondition.value)
+        const amount = Number.parseFloat(values[0] || "0")
+        conditionParts.push(`spend at least MMK ${amount.toLocaleString()}`)
+      } else if (orderCondition.conditionDetail === "item_count") {
+        const values = parseStringArray(orderCondition.value)
+        conditionParts.push(`buy at least ${values[0]} items`)
+      }
+    }
+
+    // Product condition (simplified - only one type)
+    if (productCondition) {
+      const entityNames = (productCondition.relatedEntities || []).map((e) => e.name).filter(Boolean)
+
+      if (productCondition.conditionDetail === "product") {
+        if (entityNames.length === 1) {
+          conditionParts.push(`buy ${entityNames[0]}`)
+        } else if (entityNames.length > 1) {
+          const lastProduct = entityNames.pop()
+          conditionParts.push(`buy ${entityNames.join(", ")} or ${lastProduct}`)
+        }
+      } else if (productCondition.conditionDetail === "category") {
+        if (entityNames.length === 1) {
+          conditionParts.push(`buy from ${entityNames[0]}`)
+        } else if (entityNames.length > 1) {
+          const lastCategory = entityNames.pop()
+          conditionParts.push(`buy from ${entityNames.join(", ")} or ${lastCategory}`)
+        }
+      } else if (productCondition.conditionDetail === "brand") {
+        if (entityNames.length === 1) {
+          conditionParts.push(`buy from ${entityNames[0]}`)
+        } else if (entityNames.length > 1) {
+          const lastBrand = entityNames.pop()
+          conditionParts.push(`buy from ${entityNames.join(", ")} or ${lastBrand}`)
+        }
+      }
+    }
+
+    // Join condition parts
+    if (conditionParts.length === 0) {
+      return "Meet specified conditions"
+    }
+
+    if (conditionParts.length === 1) {
+      return conditionParts[0]
+    }
+
+    // Use AND or OR based on logic operator
+    const connector = isAndGroup ? " and " : " or "
+    return conditionParts.join(connector)
+  }
+
+  private generateMultipleGroupConditionsText(groups: DiscountConditionGroupEA_C[]): string {
+    const groupTexts = groups.map((group) => {
+      const singleGroupText = this.generateSingleGroupConditionsText(group)
+      return groups.length > 1 ? `(${singleGroupText})` : singleGroupText
+    })
+
+    // Multiple groups are typically joined with AND logic
+    return groupTexts.join(" and ")
+  }
+
+  /**
+   * Generate human-readable conditions with clickable entities (cached)
+   */
+  generateHumanReadableConditionsWithLinks(discount: DiscountDisplayDTO): DiscountTextOutput {
+    const cacheKey = this.getCacheKey(discount, "conditions_with_links")
+    const cached = this.getFromCache<DiscountTextOutput>(cacheKey)
     if (cached) return cached
 
-    let details = `<div style="text-align: left; line-height: 1.6;">`
+    let result: DiscountTextOutput
 
-    // Discount value
-    details += `<p><strong>Discount:</strong> ${this.getDiscountPercentage(discount)}</p>`
-
-    // Mechanism type
-    details += `<p><strong>Type:</strong> ${this.getDiscountTypeLabel(discount)}</p>`
-
-    // Human-readable conditions
-    const humanReadableConditions = this.generateHumanReadableConditions(discount)
-    if (humanReadableConditions) {
-      details += `<p><strong>How to qualify:</strong> ${humanReadableConditions}</p>`
+    // No condition groups - simple cases
+    if (!discount.conditionGroups || discount.conditionGroups.length === 0) {
+      if (discount.couponcode) {
+        result = {
+          text: `Use code ${discount.couponcode} (available for everyone)`,
+          linkedEntities: [],
+        }
+      } else {
+        result = {
+          text: "Available for everyone",
+          linkedEntities: [],
+        }
+      }
+    } else if (discount.conditionGroups.length === 1) {
+      // Handle single condition group
+      result = this.generateSingleGroupConditionsTextWithLinks(discount.conditionGroups[0])
+    } else {
+      // Handle multiple condition groups
+      result = this.generateMultipleGroupConditionsTextWithLinks(discount.conditionGroups)
     }
 
-    // Coupon code
-    if (discount.mechanismType === "Coupon" && discount.couponcode) {
-      details += `<p><strong>Coupon Code:</strong> <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">${discount.couponcode}</code></p>`
+    this.setCache(cacheKey, result)
+    return result
+  }
+
+  private generateSingleGroupConditionsTextWithLinks(group: DiscountConditionGroupEA_C): DiscountTextOutput {
+    if (!group.conditions?.length) {
+      return {
+        text: "No specific conditions",
+        linkedEntities: [],
+      }
     }
 
-    // Valid dates
-    if (discount.startDate && discount.endDate) {
-      const startDate = new Date(discount.startDate).toLocaleDateString()
-      const endDate = new Date(discount.endDate).toLocaleDateString()
-      details += `<p><strong>Valid:</strong> ${startDate} - ${endDate}</p>`
+    const conditions = group.conditions
+    const isAndGroup = String(group.logicOperator) === "true"
+
+    const customerGroupCondition = conditions.find((c) => c.conditionType === "CUSTOMER_GROUP")
+    const orderCondition = conditions.find((c) => c.conditionType === "ORDER")
+    const productCondition = conditions.find((c) => c.conditionType === "PRODUCT")
+
+    const conditionParts: string[] = []
+    const linkedEntities: DiscountTextOutput["linkedEntities"] = []
+
+    // -- Customer Group Condition --
+    if (customerGroupCondition) {
+      const groupName = customerGroupCondition.relatedEntities?.[0]?.name || "VIP members"
+      conditionParts.push(`for ${groupName}`)
+    }
+    
+    let productPhrase = ""
+    let productEntities: typeof linkedEntities = []
+
+    if (productCondition && productCondition.relatedEntities?.length) {
+      const entities = productCondition.relatedEntities.map((entity, index) => ({
+        name: entity.name,
+        routerLink: this.generateRouterLink(productCondition.conditionDetail, entity),
+        type: this.getEntityType(productCondition.conditionDetail),
+      }))
+
+      let label = ""
+      switch (productCondition.conditionDetail) {
+        case "product":
+          label = "PRODUCT"
+          break
+        case "category":
+          label = "CATEGORY"
+          break
+        case "brand":
+          label = "BRAND"
+          break
+      }
+
+      const placeholders = entities.map((_, i) => `{{${label}${i + 1}}}`)
+      const joined = placeholders.length === 1
+        ? placeholders[0]
+        : placeholders.slice(0, -1).join(", ") + " or " + placeholders[placeholders.length - 1]
+
+      productPhrase = joined
+      productEntities = entities
     }
 
-    // Usage limit
-    if (discount.usageLimit) {
-      details += `<p><strong>Usage Limit:</strong> ${discount.usageLimit} times</p>`
+
+    // -- Order Condition Parsing --
+    let orderPhrase = ""
+    if (orderCondition) {
+      const values = parseStringArray(orderCondition.value)
+      if (orderCondition.conditionDetail === "order_total") {
+        const amount = Number.parseFloat(values[0] || "0")
+        orderPhrase = `spend at least MMK ${amount.toLocaleString()}`
+      } else if (orderCondition.conditionDetail === "item_count") {
+        orderPhrase = `buy at least ${values[0]} items`
+      }
     }
 
-    details += `</div>`
+    // -- Merge Order + Product Logic Smartly --
+    if (isAndGroup && orderCondition && productCondition) {
+      const conditionText = `${orderPhrase} on ${productPhrase}`
+      conditionParts.push(conditionText)
+      linkedEntities.push(...productEntities)
+    } else {
+      if (productPhrase) {
+        const prefix = ["brand", "category"].includes(productCondition?.conditionDetail || "") ? "buy from" : "buy"
+        conditionParts.push(`${prefix} ${productPhrase}`)
+        linkedEntities.push(...productEntities)
+      }
+      if (orderPhrase) conditionParts.push(orderPhrase)
+    }
 
-    this.setCache(cacheKey, details)
-    return details
+    // -- Final Join --
+    const finalText = conditionParts.length === 1
+      ? conditionParts[0]
+      : conditionParts.slice(0, -1).join(", ") + (isAndGroup ? " and " : " or ") + conditionParts[conditionParts.length - 1]
+
+    return {
+      text: finalText.charAt(0).toUpperCase() + finalText.slice(1),
+      linkedEntities,
+    }
+  }
+
+  private generateMultipleGroupConditionsTextWithLinks(groups: DiscountConditionGroupEA_C[]): DiscountTextOutput {
+    const groupResults = groups.map((group) => this.generateSingleGroupConditionsTextWithLinks(group))
+
+    const allLinkedEntities = groupResults.flatMap((result) => result.linkedEntities)
+    const groupTexts = groupResults.map((result, index) => (groups.length > 1 ? `(${result.text})` : result.text))
+
+    return {
+      text: groupTexts.join(" and "),
+      linkedEntities: allLinkedEntities,
+    }
+  }
+
+  private getEntityType(conditionDetail: string): "product" | "category" | "brand" {
+    switch (conditionDetail) {
+      case "product":
+        return "product"
+      case "category":
+        return "category"
+      case "brand":
+        return "brand"
+      default:
+        return "product"
+    }
   }
 
   // ===== ROUTER LINK GENERATION =====
@@ -401,7 +584,6 @@ export class DiscountTextService {
    * Parse condition value from string array
    */
   parseConditionValue(value: string | string[]): string {
-    // Normalize input to a single string
     let strValue: string
 
     if (Array.isArray(value)) {
@@ -429,10 +611,9 @@ export class DiscountTextService {
   /**
    * Format condition value with appropriate units
    */
-  formatConditionValue(condition: DiscountConditionEA_D | ParsedCondition): string {
+  formatConditionValue(condition: DiscountConditionEA_D | any): string {
     const value = this.parseConditionValue(Array.isArray(condition.value) ? condition.value : [condition.value])
-
-    const detail = "conditionDetail" in condition ? condition.conditionDetail : condition.detail
+    const detail = condition.conditionDetail || condition.detail
 
     if (detail === "order_total") {
       const numValue = Number(value)
@@ -506,885 +687,6 @@ export class DiscountTextService {
     }))
   }
 
-  // ===== ENHANCED HUMAN-READABLE CONDITIONS GENERATION =====
-
-  /**
-   * Generate human-readable conditions text with proper AND/OR logic (cached)
-   */
-  generateHumanReadableConditions(discount: DiscountDisplayDTO): string {
-    const cacheKey = this.getCacheKey(discount, "human_readable")
-    const cached = this.getFromCache<string>(cacheKey)
-    if (cached) {
-      return cached
-    }
-
-    let result: string
-
-    // No condition groups - simple cases
-    if (!discount.conditionGroups || discount.conditionGroups.length === 0) {
-      if (discount.couponcode) {
-        result = `Use code ${discount.couponcode} (available for everyone)`
-      } else {
-        result = "Available for everyone"
-      }
-    } else if (discount.mechanismType === MechanismType.FREE_GIFT) {
-      // Handle free gift mechanism specially
-      result = this.generateFreeGiftConditionsText(discount)
-    } else if (discount.conditionGroups.length === 1) {
-      // Handle single condition group
-      result = this.generateSingleGroupConditionsText(discount.conditionGroups[0])
-    } else {
-      // Handle multiple condition groups
-      result = this.generateMultipleGroupConditionsText(discount.conditionGroups)
-    }
-    this.setCache(cacheKey, result)
-    return result
-  }
-
-  private generateFreeGiftConditionsText(discount: DiscountDisplayDTO): string {
-    const firstGroup = discount.conditionGroups?.[0]
-    if (!firstGroup || !firstGroup.conditions?.length) {
-      return "Buy qualifying items to get free gift"
-    }
-
-    const conditions = firstGroup.conditions
-    const productCondition = conditions.find((c) => c.conditionType === "PRODUCT" && c.conditionDetail === "product")
-    const categoryCondition = conditions.find((c) => c.conditionType === "PRODUCT" && c.conditionDetail === "category")
-    const brandCondition = conditions.find((c) => c.conditionType === "PRODUCT" && c.conditionDetail === "brand")
-    const itemCountCondition = conditions.find((c) => c.conditionDetail === "item_count")
-    const orderTotalCondition = conditions.find((c) => c.conditionDetail === "order_total")
-    const customerGroupCondition = conditions.find((c) => c.conditionType === "CUSTOMER_GROUP")
-
-    // Customer group condition
-    if (customerGroupCondition) {
-      const groupName = customerGroupCondition.relatedEntities?.[0]?.name || "VIP members"
-      return `Only for ${groupName}`
-    }
-
-    // Product/Category + Item count combination
-    if ((productCondition || categoryCondition || brandCondition) && itemCountCondition) {
-      const count = this.parseConditionValue(itemCountCondition.value)
-
-      if (productCondition) {
-        const productName = productCondition.relatedEntities?.[0]?.name || "selected product"
-        return `Buy ${count} × ${productName} to get free gift`
-      }
-
-      if (categoryCondition) {
-        const categoryName = categoryCondition.relatedEntities?.[0]?.name || "selected category"
-        return `Buy ${count} items from ${categoryName} to get free gift`
-      }
-
-      if (brandCondition) {
-        const brandName = brandCondition.relatedEntities?.[0]?.name || "selected brand"
-        return `Buy ${count} items from ${brandName} to get free gift`
-      }
-    }
-
-    // Only item count
-    if (itemCountCondition && !productCondition && !categoryCondition && !brandCondition) {
-      const count = this.parseConditionValue(itemCountCondition.value)
-      return `Buy ${count} items to get free gift`
-    }
-
-    // Only order total
-    if (orderTotalCondition) {
-      const amount = this.parseConditionValue(orderTotalCondition.value)
-      return `Spend at least MMK ${Number(amount).toLocaleString()} to get free gift`
-    }
-
-    // Product/Category/Brand alone
-    if (productCondition) {
-      const productName = productCondition.relatedEntities?.[0]?.name || "selected product"
-      return `Buy ${productName} to get free gift`
-    }
-
-    if (categoryCondition) {
-      const categoryName = categoryCondition.relatedEntities?.[0]?.name || "selected category"
-      return `Buy from ${categoryName} to get free gift`
-    }
-
-    if (brandCondition) {
-      const brandName = brandCondition.relatedEntities?.[0]?.name || "selected brand"
-      return `Buy from ${brandName} to get free gift`
-    }
-
-    return "Buy qualifying items to get free gift"
-  }
-
-  private generateSingleGroupConditionsText(group: DiscountConditionGroupEA_C): string {
-    if (!group.conditions?.length) {
-      return "No specific conditions"
-    }
-
-    const conditions = group.conditions
-    const isAndGroup = String(group.logicOperator) === "true"
-
-    // Extract different types of conditions
-    const customerGroupCondition = conditions.find((c) => c.conditionType === "CUSTOMER_GROUP")
-    const orderTotalCondition = conditions.find((c) => c.conditionDetail === "order_total")
-    const itemCountCondition = conditions.find((c) => c.conditionDetail === "item_count")
-    const productConditions = conditions.filter((c) => c.conditionType === "PRODUCT" && c.conditionDetail === "product")
-    const categoryConditions = conditions.filter(
-      (c) => c.conditionType === "PRODUCT" && c.conditionDetail === "category",
-    )
-    const brandConditions = conditions.filter((c) => c.conditionType === "PRODUCT" && c.conditionDetail === "brand")
-
-    // Customer group takes priority
-    if (customerGroupCondition) {
-      const groupName = customerGroupCondition.relatedEntities?.[0]?.name || "VIP members"
-
-      if (orderTotalCondition) {
-        const amount = parseStringArray(orderTotalCondition.value)[0]
-        return `Only for ${groupName} - spend at least MMK ${Number(amount).toLocaleString()}`
-      }
-
-      return `Only for ${groupName}`
-    }
-
-    // ===== IMPROVED AND LOGIC FOR NATURAL TEXT GENERATION =====
-    if (isAndGroup) {
-      return this.generateNaturalAndConditionsText({
-        orderTotalCondition,
-        itemCountCondition,
-        productConditions,
-        categoryConditions,
-        brandConditions,
-      })
-    }
-
-    // ===== OR LOGIC (EXISTING LOGIC) =====
-    const conditionParts: string[] = []
-
-    // Order total condition
-    if (orderTotalCondition) {
-      const amount = parseStringArray(orderTotalCondition.value)[0]
-      conditionParts.push(`spend at least MMK ${Number(amount).toLocaleString()}`)
-    }
-
-    // Item count condition
-    if (itemCountCondition) {
-      const count = this.parseConditionValue(itemCountCondition.value)
-      conditionParts.push(`buy at least ${count} items`)
-    }
-
-    // Product conditions - show all products
-    if (productConditions.length > 0) {
-      const productNames = productConditions
-        .map((c) => c.relatedEntities?.[0]?.name || "selected product")
-        .filter(Boolean)
-
-      if (productNames.length === 1) {
-        conditionParts.push(`buy ${productNames[0]}`)
-      } else if (productNames.length > 1) {
-        const lastProduct = productNames.pop()
-        conditionParts.push(`buy ${productNames.join(", ")} or ${lastProduct}`)
-      }
-    }
-
-    // Category conditions - show all categories
-    if (categoryConditions.length > 0) {
-      const categoryNames = categoryConditions
-        .map((c) => c.relatedEntities?.[0]?.name || "selected category")
-        .filter(Boolean)
-
-      console.log("human cates : ", categoryNames);
-
-      if (categoryNames.length === 1) {
-        conditionParts.push(`buy from ${categoryNames[0]}`)
-      } else if (categoryNames.length > 1) {
-        const lastCategory = categoryNames.pop()
-        conditionParts.push(`buy from ${categoryNames.join(", ")} or ${lastCategory}`)
-      }
-    }
-
-    // Brand conditions - show all brands
-    if (brandConditions.length > 0) {
-      const brandNames = brandConditions.map((c) => c.relatedEntities?.[0]?.name || "selected brand").filter(Boolean)
-      console.log("human brands : ", brandNames);
-
-      if (brandNames.length === 1) {
-        conditionParts.push(`buy from ${brandNames[0]}`)
-      } else if (brandNames.length > 1) {
-        const lastBrand = brandNames.pop()
-        conditionParts.push(`buy from ${brandNames.join(", ")} or ${lastBrand}`)
-      }
-    }
-
-    // Join all condition parts with OR
-    if (conditionParts.length === 0) {
-      return "Meet specified conditions"
-    }
-
-    if (conditionParts.length === 1) {
-      return conditionParts[0]
-    }
-
-    return conditionParts.join(" or ")
-  }
-
-  /**
-   * Generate natural text for AND conditions by intelligently merging related conditions
-   */
-  private generateNaturalAndConditionsText(conditions: {
-    orderTotalCondition?: DiscountConditionEA_D
-    itemCountCondition?: DiscountConditionEA_D
-    productConditions: DiscountConditionEA_D[]
-    categoryConditions: DiscountConditionEA_D[]
-    brandConditions: DiscountConditionEA_D[]
-  }): string {
-    const { orderTotalCondition, itemCountCondition, productConditions, categoryConditions, brandConditions } =
-      conditions
-
-    // Helper function to get all entity names (not limited to 2)
-    const getAllEntityNames = (entityConditions: DiscountConditionEA_D[]) => {
-      return entityConditions.flatMap(c => (c.relatedEntities || []).map(e => e.name)).filter(Boolean)
-    }
-
-    // ===== CASE 1: Order Total + Brand/Category/Product =====
-    if (orderTotalCondition) {
-      const amount = parseStringArray(orderTotalCondition.value)[0]
-      const formattedAmount = `MMK ${Number(amount).toLocaleString()}`
-
-      const brandNames = getAllEntityNames(brandConditions)
-      const categoryNames = getAllEntityNames(categoryConditions)
-      const productNames = getAllEntityNames(productConditions)
-
-      const entityParts: string[] = []
-
-      if (brandNames.length > 0) {
-        entityParts.push(
-          brandNames.length === 1
-            ? brandNames[0]
-            : brandNames.slice(0, -1).join(", ") + " or " + brandNames.slice(-1)
-        )
-      }
-
-      if (categoryNames.length > 0) {
-        entityParts.push(
-          categoryNames.length === 1
-            ? categoryNames[0]
-            : categoryNames.slice(0, -1).join(", ") + " or " + categoryNames.slice(-1)
-        )
-      }
-
-      if (productNames.length > 0) {
-        entityParts.push(
-          productNames.length === 1
-            ? productNames[0]
-            : productNames.slice(0, -1).join(", ") + " or " + productNames.slice(-1)
-        )
-      }
-
-      if (entityParts.length > 0) {
-        const entitiesText = entityParts.length === 1
-          ? entityParts[0]
-          : entityParts.slice(0, -1).join(", ") + " or " + entityParts.slice(-1)
-
-        return `Spend at least ${formattedAmount} on ${entitiesText} products`
-      }
-
-      // If no brand/category/product conditions, just show order total
-      return `Spend at least ${formattedAmount}`
-    }
-
-    // ===== CASE 2: Item Count + Brand/Category/Product =====
-    if (itemCountCondition) {
-      const count = this.parseConditionValue(itemCountCondition.value)
-
-      // Item Count + Brand - show all brands
-      if (brandConditions.length > 0) {
-        const brandNames = getAllEntityNames(brandConditions)
-        if (brandNames.length === 1) {
-          return `Buy at least ${count} items from ${brandNames[0]}`
-        } else if (brandNames.length > 1) {
-          const lastBrand = brandNames.pop()
-          return `Buy at least ${count} items from ${brandNames.join(", ")} and ${lastBrand}`
-        }
-      }
-
-      // Item Count + Category - show all categories
-      if (categoryConditions.length > 0) {
-        const categoryNames = getAllEntityNames(categoryConditions)
-        if (categoryNames.length === 1) {
-          return `Buy at least ${count} items from ${categoryNames[0]}`
-        } else if (categoryNames.length > 1) {
-          const lastCategory = categoryNames.pop()
-          return `Buy at least ${count} items from ${categoryNames.join(", ")} and ${lastCategory}`
-        }
-      }
-
-      // Item Count + Product - show all products
-      if (productConditions.length > 0) {
-        const productNames = getAllEntityNames(productConditions)
-        if (productNames.length === 1) {
-          return `Buy at least ${count} of ${productNames[0]}`
-        } else if (productNames.length > 1) {
-          const lastProduct = productNames.pop()
-          return `Buy at least ${count} of ${productNames.join(", ")} and ${lastProduct}`
-        }
-      }
-
-      // Item Count alone
-      return `Buy at least ${count} items`
-    }
-
-    // ===== CASE 3: Only Brand/Category/Product conditions =====
-    if (brandConditions.length > 0) {
-      const brandNames = getAllEntityNames(brandConditions)
-      if (brandNames.length === 1) {
-        return `Buy from ${brandNames[0]}`
-      } else if (brandNames.length > 1) {
-        const lastBrand = brandNames.pop()
-        return `Buy from ${brandNames.join(", ")} and ${lastBrand}`
-      }
-    }
-
-    if (categoryConditions.length > 0) {
-      const categoryNames = getAllEntityNames(categoryConditions)
-      if (categoryNames.length === 1) {
-        return `Buy from ${categoryNames[0]}`
-      } else if (categoryNames.length > 1) {
-        const lastCategory = categoryNames.pop()
-        return `Buy from ${categoryNames.join(", ")} and ${lastCategory}`
-      }
-    }
-
-    if (productConditions.length > 0) {
-      const productNames = getAllEntityNames(productConditions)
-      if (productNames.length === 1) {
-        return `Buy ${productNames[0]}`
-      } else if (productNames.length > 1) {
-        const lastProduct = productNames.pop()
-        return `Buy ${productNames.join(", ")} and ${lastProduct}`
-      }
-    }
-
-    return "Meet specified conditions"
-  }
-
-  private generateMultipleGroupConditionsText(groups: DiscountConditionGroupEA_C[]): string {
-    const groupTexts = groups.map((group) => {
-      const singleGroupText = this.generateSingleGroupConditionsText(group)
-      return groups.length > 1 ? `(${singleGroupText})` : singleGroupText
-    })
-
-    // Multiple groups are typically joined with AND logic
-    return groupTexts.join(" and ")
-  }
-
-  /**
-   * Generate human-readable conditions with clickable entities (cached)
-   */
-  generateHumanReadableConditionsWithLinks(discount: DiscountDisplayDTO): DiscountTextOutput {
-    const cacheKey = this.getCacheKey(discount, "conditions_with_links")
-    const cached = this.getFromCache<DiscountTextOutput>(cacheKey)
-    if (cached) return cached
-
-    let result: DiscountTextOutput
-
-    // No condition groups - simple cases
-    if (!discount.conditionGroups || discount.conditionGroups.length === 0) {
-      if (discount.couponcode) {
-        result = {
-          text: `Use code ${discount.couponcode} (available for everyone)`,
-          linkedEntities: [],
-        }
-      } else {
-        result = {
-          text: "Available for everyone",
-          linkedEntities: [],
-        }
-      }
-    } else if (discount.mechanismType === MechanismType.FREE_GIFT) {
-      // Handle free gift mechanism specially
-      result = this.generateFreeGiftConditionsTextWithLinks(discount)
-    } else if (discount.conditionGroups.length === 1) {
-      // Handle single condition group
-      result = this.generateSingleGroupConditionsTextWithLinks(discount.conditionGroups[0])
-    } else {
-      // Handle multiple condition groups
-      result = this.generateMultipleGroupConditionsTextWithLinks(discount.conditionGroups)
-    }
-
-    this.setCache(cacheKey, result)
-    return result
-  }
-
-  private generateFreeGiftConditionsTextWithLinks(discount: DiscountDisplayDTO): DiscountTextOutput {
-    const firstGroup = discount.conditionGroups?.[0]
-    if (!firstGroup || !firstGroup.conditions?.length) {
-      return {
-        text: "Buy qualifying items to get free gift",
-        linkedEntities: [],
-      }
-    }
-
-    const conditions = firstGroup.conditions
-    const productCondition = conditions.find((c) => c.conditionType === "PRODUCT" && c.conditionDetail === "product")
-    const categoryCondition = conditions.find((c) => c.conditionType === "PRODUCT" && c.conditionDetail === "category")
-    const brandCondition = conditions.find((c) => c.conditionType === "PRODUCT" && c.conditionDetail === "brand")
-    const itemCountCondition = conditions.find((c) => c.conditionDetail === "item_count")
-    const orderTotalCondition = conditions.find((c) => c.conditionDetail === "order_total")
-    const customerGroupCondition = conditions.find((c) => c.conditionType === "CUSTOMER_GROUP")
-
-    // Customer group condition
-    if (customerGroupCondition) {
-      const groupName = customerGroupCondition.relatedEntities?.[0]?.name || "VIP members"
-      return {
-        text: `Only for ${groupName}`,
-        linkedEntities: [],
-      }
-    }
-
-    // Product/Category + Item count combination
-    if ((productCondition || categoryCondition || brandCondition) && itemCountCondition) {
-      const count = this.parseConditionValue(itemCountCondition.value)
-
-      if (productCondition && productCondition.relatedEntities?.[0]) {
-        const entity = productCondition.relatedEntities[0]
-        return {
-          text: `Buy ${count} × {{PRODUCT}} to get free gift`,
-          linkedEntities: [
-            {
-              name: entity.name,
-              routerLink: this.generateRouterLink(productCondition.conditionDetail, entity),
-              type: "product" as const,
-            },
-          ],
-        }
-      }
-
-      if (categoryCondition && categoryCondition.relatedEntities?.[0]) {
-        const entity = categoryCondition.relatedEntities[0]
-        return {
-          text: `Buy ${count} items from {{CATEGORY}} to get free gift`,
-          linkedEntities: [
-            {
-              name: entity.name,
-              routerLink: this.generateRouterLink(categoryCondition.conditionDetail, entity),
-              type: "category" as const,
-            },
-          ],
-        }
-      }
-
-      if (brandCondition && brandCondition.relatedEntities?.[0]) {
-        const entity = brandCondition.relatedEntities[0]
-        return {
-          text: `Buy ${count} items from {{BRAND}} to get free gift`,
-          linkedEntities: [
-            {
-              name: entity.name,
-              routerLink: this.generateRouterLink(brandCondition.conditionDetail, entity),
-              type: "brand" as const,
-            },
-          ],
-        }
-      }
-    }
-
-    // Only order total
-    if (orderTotalCondition) {
-      const amount = this.parseConditionValue(orderTotalCondition.value)
-      return {
-        text: `Spend at least MMK ${Number(amount).toLocaleString()} to get free gift`,
-        linkedEntities: [],
-      }
-    }
-
-    // Product/Category/Brand alone
-    if (productCondition && productCondition.relatedEntities?.[0]) {
-      const entity = productCondition.relatedEntities[0]
-      return {
-        text: `Buy {{PRODUCT}} to get free gift`,
-        linkedEntities: [
-          {
-            name: entity.name,
-            routerLink: this.generateRouterLink(productCondition.conditionDetail, entity),
-            type: "product" as const,
-          },
-        ],
-      }
-    }
-
-    if (categoryCondition && categoryCondition.relatedEntities?.[0]) {
-      const entity = categoryCondition.relatedEntities[0]
-      return {
-        text: `Buy from {{CATEGORY}} to get free gift`,
-        linkedEntities: [
-          {
-            name: entity.name,
-            routerLink: this.generateRouterLink(categoryCondition.conditionDetail, entity),
-            type: "category" as const,
-          },
-        ],
-      }
-    }
-
-    if (brandCondition && brandCondition.relatedEntities?.[0]) {
-      const entity = brandCondition.relatedEntities[0]
-      return {
-        text: `Buy from {{BRAND}} to get free gift`,
-        linkedEntities: [
-          {
-            name: entity.name,
-            routerLink: this.generateRouterLink(brandCondition.conditionDetail, entity),
-            type: "brand" as const,
-          },
-        ],
-      }
-    }
-
-    return {
-      text: "Buy qualifying items to get free gift",
-      linkedEntities: [],
-    }
-  }
-
-  private generateSingleGroupConditionsTextWithLinks(group: DiscountConditionGroupEA_C): DiscountTextOutput {
-    if (!group.conditions?.length) {
-      return {
-        text: "No specific conditions",
-        linkedEntities: [],
-      }
-    }
-
-    const conditions = group.conditions
-    const isAndGroup = String(group.logicOperator) === "true"
-
-    // Extract different types of conditions
-    const customerGroupCondition = conditions.find((c) => c.conditionType === "CUSTOMER_GROUP")
-    const orderTotalCondition = conditions.find((c) => c.conditionDetail === "order_total")
-    const itemCountCondition = conditions.find((c) => c.conditionDetail === "item_count")
-    const productConditions = conditions.filter((c) => c.conditionType === "PRODUCT" && c.conditionDetail === "product")
-    const categoryConditions = conditions.filter(
-      (c) => c.conditionType === "PRODUCT" && c.conditionDetail === "category",
-    )
-    const brandConditions = conditions.filter((c) => c.conditionType === "PRODUCT" && c.conditionDetail === "brand")
-
-    // Customer group takes priority
-    if (customerGroupCondition) {
-      const groupName = customerGroupCondition.relatedEntities?.[0]?.name || "VIP members"
-
-      if (orderTotalCondition) {
-        const amount = parseStringArray(orderTotalCondition.value)[0]
-        return {
-          text: `Only for ${groupName} - spend at least MMK ${Number(amount).toLocaleString()}`,
-          linkedEntities: [],
-        }
-      }
-
-      return {
-        text: `Only for ${groupName}`,
-        linkedEntities: [],
-      }
-    }
-
-    // ===== IMPROVED AND LOGIC FOR NATURAL TEXT GENERATION WITH LINKS =====
-    if (isAndGroup) {
-      return this.generateNaturalAndConditionsTextWithLinks({
-        orderTotalCondition,
-        itemCountCondition,
-        productConditions,
-        categoryConditions,
-        brandConditions,
-      })
-    }
-
-    // ===== OR LOGIC WITH LINKS =====
-    return this.generateOrConditionsTextWithLinks({
-      orderTotalCondition,
-      itemCountCondition,
-      productConditions,
-      categoryConditions,
-      brandConditions,
-    })
-  }
-
-  private generateNaturalAndConditionsTextWithLinks(conditions: {
-    orderTotalCondition?: DiscountConditionEA_D
-    itemCountCondition?: DiscountConditionEA_D
-    productConditions: DiscountConditionEA_D[]
-    categoryConditions: DiscountConditionEA_D[]
-    brandConditions: DiscountConditionEA_D[]
-  }): DiscountTextOutput {
-    const { orderTotalCondition, itemCountCondition, productConditions, categoryConditions, brandConditions } =
-      conditions
-
-    // Helper function to get all entity data (not limited)
-    const getAllEntityData = (entityConditions: DiscountConditionEA_D[], type: "product" | "category" | "brand") => {
-      return entityConditions.flatMap((condition) =>
-        (condition.relatedEntities || []).map((entity) => ({
-          name: entity.name || `selected ${type}`,
-          routerLink: this.generateRouterLink(condition.conditionDetail, entity),
-          type,
-        })),
-      )
-    }
-
-    // Helper function to build dynamic placeholders for all entities
-    const buildDynamicPlaceholders = (entities: any[], type: string): string => {
-      console.log(`buildDynamicPlaceholders called with type="${type}" and entities:`, entities);
-
-      if (entities.length === 0) {
-        console.log("No entities, returning empty string.");
-        return "";
-      }
-
-      // Always use numbered placeholders, even if only 1 entity
-      const placeholders = entities.map((_, index) => `{{${type.toUpperCase()}${index + 1}}}`);
-
-
-      if (placeholders.length === 1) {
-        return placeholders[0]; // e.g. {{BRAND1}}
-      }
-
-      const lastPlaceholder = placeholders.pop();
-
-      if (placeholders.length === 0) {
-        return lastPlaceholder || "";
-      }
-
-      const result = `${placeholders.join(", ")} or ${lastPlaceholder}`;
-      return result;
-    }
-
-    // ===== CASE 1: Order Total + Brand/Category/Product =====
-    if (orderTotalCondition) {
-      const amount = parseStringArray(orderTotalCondition.value)[0]
-      const formattedAmount = `MMK ${Number(amount).toLocaleString()}`
-
-      // Order Total + Brand - show all brands
-      if (brandConditions.length > 0) {
-        const entities = getAllEntityData(brandConditions, "brand")
-        const placeholders = buildDynamicPlaceholders(entities, "brand")
-        return {
-          text: `Spend at least ${formattedAmount} on ${placeholders} products`,
-          linkedEntities: entities,
-        }
-      }
-
-      // Order Total + Category - show all categories
-      if (categoryConditions.length > 0) {
-        const entities = getAllEntityData(categoryConditions, "category")
-        const placeholders = buildDynamicPlaceholders(entities, "category")
-        return {
-          text: `Spend at least ${formattedAmount} on ${placeholders} products`,
-          linkedEntities: entities,
-        }
-      }
-
-      // Order Total + Product - show all products
-      if (productConditions.length > 0) {
-        const entities = getAllEntityData(productConditions, "product")
-        const placeholders = buildDynamicPlaceholders(entities, "product")
-        return {
-          text: `Spend at least ${formattedAmount} on ${placeholders}`,
-          linkedEntities: entities,
-        }
-      }
-
-      // Order Total alone
-      return {
-        text: `Spend at least ${formattedAmount}`,
-        linkedEntities: [],
-      }
-    }
-
-    // ===== CASE 2: Item Count + Brand/Category/Product =====
-    if (itemCountCondition) {
-      const count = this.parseConditionValue(itemCountCondition.value)
-
-      // Item Count + Brand - show all brands
-      if (brandConditions.length > 0) {
-        const entities = getAllEntityData(brandConditions, "brand")
-        const placeholders = buildDynamicPlaceholders(entities, "brand")
-        return {
-          text: `Buy at least ${count} items from ${placeholders}`,
-          linkedEntities: entities,
-        }
-      }
-
-      // Item Count + Category - show all categories
-      if (categoryConditions.length > 0) {
-        const entities = getAllEntityData(categoryConditions, "category")
-        const placeholders = buildDynamicPlaceholders(entities, "category")
-        return {
-          text: `Buy at least ${count} items from ${placeholders}`,
-          linkedEntities: entities,
-        }
-      }
-
-      // Item Count + Product - show all products
-      if (productConditions.length > 0) {
-        const entities = getAllEntityData(productConditions, "product")
-        const placeholders = buildDynamicPlaceholders(entities, "product")
-        return {
-          text: `Buy at least ${count} of ${placeholders}`,
-          linkedEntities: entities,
-        }
-      }
-
-      // Item Count alone
-      return {
-        text: `Buy at least ${count} items`,
-        linkedEntities: [],
-      }
-    }
-
-    // ===== CASE 3: Only Brand/Category/Product conditions =====
-    if (brandConditions.length > 0) {
-      const entities = getAllEntityData(brandConditions, "brand")
-      const placeholders = buildDynamicPlaceholders(entities, "brand")
-      return {
-        text: `Buy from ${placeholders}`,
-        linkedEntities: entities,
-      }
-    }
-
-    if (categoryConditions.length > 0) {
-      const entities = getAllEntityData(categoryConditions, "category")
-      const placeholders = buildDynamicPlaceholders(entities, "category")
-      return {
-        text: `Buy from ${placeholders}`,
-        linkedEntities: entities,
-      }
-    }
-
-    if (productConditions.length > 0) {
-      const entities = getAllEntityData(productConditions, "product")
-      const placeholders = buildDynamicPlaceholders(entities, "product")
-      return {
-        text: `Buy ${placeholders}`,
-        linkedEntities: entities,
-      }
-    }
-
-    return {
-      text: "Meet specified conditions",
-      linkedEntities: [],
-    }
-  }
-
-  private generateOrConditionsTextWithLinks(conditions: {
-    orderTotalCondition?: DiscountConditionEA_D
-    itemCountCondition?: DiscountConditionEA_D
-    productConditions: DiscountConditionEA_D[]
-    categoryConditions: DiscountConditionEA_D[]
-    brandConditions: DiscountConditionEA_D[]
-  }): DiscountTextOutput {
-    const { orderTotalCondition, itemCountCondition, productConditions, categoryConditions, brandConditions } =
-      conditions
-
-    const conditionParts: string[] = []
-    const linkedEntities: DiscountTextOutput["linkedEntities"] = []
-
-    // Order total condition
-    if (orderTotalCondition) {
-      const amount = parseStringArray(orderTotalCondition.value)[0]
-      conditionParts.push(`spend at least MMK ${Number(amount).toLocaleString()}`)
-    }
-
-    // Item count condition
-    if (itemCountCondition) {
-      const count = this.parseConditionValue(itemCountCondition.value)
-      conditionParts.push(`buy at least ${count} items`)
-    }
-
-    // Product conditions - handle multiple products
-    if (productConditions.length > 0) {
-      const entities = productConditions.flatMap((condition) =>
-        (condition.relatedEntities || []).map((entity) => ({
-          name: entity.name,
-          routerLink: this.generateRouterLink(condition.conditionDetail, entity),
-          type: "product" as const,
-        })),
-      )
-
-      if (entities.length === 1) {
-        conditionParts.push(`buy {{PRODUCT1}}`)
-        linkedEntities.push(entities[0])
-      } else if (entities.length > 1) {
-        const placeholders = entities.map((_, index) => `{{PRODUCT${index + 1}}}`).join(" or ")
-        conditionParts.push(`buy ${placeholders}`)
-        linkedEntities.push(...entities)
-      }
-    }
-
-    // Category conditions - handle multiple categories
-    if (categoryConditions.length > 0) {
-      const entities = categoryConditions.flatMap((condition) =>
-        (condition.relatedEntities || []).map((entity) => ({
-          name: entity.name,
-          routerLink: this.generateRouterLink(condition.conditionDetail, entity),
-          type: "category" as const,
-        })),
-      )
-
-      if (entities.length === 1) {
-        conditionParts.push(`buy from {{CATEGORY1}}`)
-        linkedEntities.push(entities[0])
-      } else if (entities.length > 1) {
-        const placeholders = entities.map((_, index) => `{{CATEGORY${index + 1}}}`).join(" or ")
-        conditionParts.push(`buy from ${placeholders}`)
-        linkedEntities.push(...entities)
-      }
-    }
-
-    // Brand conditions - handle multiple brands
-    if (brandConditions.length > 0) {
-      const entities = brandConditions.flatMap((condition) =>
-        (condition.relatedEntities || []).map((entity) => ({
-          name: entity.name,
-          routerLink: this.generateRouterLink(condition.conditionDetail, entity),
-          type: "brand" as const,
-        })),
-      )
-
-      if (entities.length === 1) {
-        conditionParts.push(`buy from {{BRAND1}}`)
-        linkedEntities.push(entities[0])
-      } else if (entities.length > 1) {
-        const placeholders = entities.map((_, index) => `{{BRAND${index + 1}}}`).join(" or ")
-        conditionParts.push(`buy from ${placeholders}`)
-        linkedEntities.push(...entities)
-      }
-    }
-
-    // Join all condition parts with OR
-    if (conditionParts.length === 0) {
-      return {
-        text: "Meet specified conditions",
-        linkedEntities: [],
-      }
-    }
-
-    if (conditionParts.length === 1) {
-      return {
-        text: conditionParts[0],
-        linkedEntities,
-      }
-    }
-
-    return {
-      text: conditionParts.join(" or "),
-      linkedEntities,
-    }
-  }
-
-  private generateMultipleGroupConditionsTextWithLinks(groups: DiscountConditionGroupEA_C[]): DiscountTextOutput {
-    const groupResults = groups.map((group) => this.generateSingleGroupConditionsTextWithLinks(group))
-
-    const allLinkedEntities = groupResults.flatMap((result) => result.linkedEntities)
-    const groupTexts = groupResults.map((result, index) => (groups.length > 1 ? `(${result.text})` : result.text))
-
-    return {
-      text: groupTexts.join(" and "),
-      linkedEntities: allLinkedEntities,
-    }
-  }
-
   // ===== UTILITY METHODS =====
 
   /**
@@ -1424,7 +726,7 @@ export class DiscountTextService {
    * Clear all cached data (useful for testing or memory management)
    */
   clearAllCache(): void {
-    this.clearCache()
+    this.cache.clear()
   }
 
   /**

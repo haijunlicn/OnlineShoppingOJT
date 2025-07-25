@@ -27,6 +27,7 @@ public class userDTO {
     @Size(max = 100, message = "Name must be at most 100 characters")
     private String name;
     private String phone;
+    private String profile;
     private Boolean isVerified;
     private Boolean delFg;
     private LocalDateTime createdDate;
@@ -43,4 +44,6 @@ public class userDTO {
     private Long roleId;
 
     private List<Long> groupIds;
+    // Add city for user address
+    private String city;
 }

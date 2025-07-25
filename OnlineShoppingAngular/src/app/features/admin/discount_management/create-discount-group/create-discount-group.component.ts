@@ -6,6 +6,16 @@ import { BehaviorSubject, type Observable, combineLatest, map, of } from "rxjs"
 import { Operator } from "@app/core/models/discount";
 import { Console } from "node:console"
 import { AdminAccountService } from "@app/core/services/admin-account.service"
+import { colorSets } from '@swimlane/ngx-charts';
+
+// Chart data interface
+interface ChartDataItem {
+  name: string;
+  value: number;
+  extra?: {
+    percentage: number;
+  };
+}
 
 @Component({
   standalone: false,
@@ -24,7 +34,7 @@ export class CreateDiscountGroupComponent implements OnInit {
   users$!: Observable<User[]>;
   filteredUsers$!: Observable<User[]>;
 
-  private allUsers: User[] = []; // Local storage
+  allUsers: User[] = []; // Local storage
 
   // Component state
   searchTerm = ""
@@ -45,6 +55,41 @@ export class CreateDiscountGroupComponent implements OnInit {
   isRuleBuilderOpen = false;
   editingConditionIndex: number | null = null;
 
+  // Chart properties
+  chartData: ChartDataItem[] = [];
+  chartView: [number, number] = [700, 400];
+  chartColorScheme = {
+    name: 'custom',
+    selectable: true,
+    group: 'Ordinal',
+    domain: [
+      '#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe',
+      '#43e97b', '#38f9d7', '#fa709a', '#fee140', '#a8edea', '#fed6e3'
+    ]
+  } as any;
+  chartShowLegend = true;
+  chartShowXAxis = true;
+  chartShowYAxis = true;
+  chartShowXAxisLabel = true;
+  chartShowYAxisLabel = true;
+  chartXAxisLabel = 'Customer Groups';
+  chartYAxisLabel = 'Number of Users';
+  chartGradient = true;
+  chartShowDataLabel = true;
+  chartBarPadding = 8;
+  chartRoundEdges = true;
+  chartTooltipDisabled = false;
+  chartAnimations = true;
+
+  // Pie chart for city user counts
+  cityUserCounts: any[] = [];
+  townshipPieData: any[] = [];
+  cityList: string[] = [];
+  selectedCity: string = '';
+  filterActive: boolean = false;
+  orderStatus: 'all' | 'ordered' | 'notOrdered' = 'all';
+  unorderCity: string = '';
+
   constructor(
     private discountService: DiscountService,
     private accountService: AdminAccountService
@@ -57,24 +102,159 @@ export class CreateDiscountGroupComponent implements OnInit {
     this.setupFilteredData();
     this.loadGroups();
     this.loadUsers();
+    this.loadCityUserCounts();
   }
 
   loadGroups() {
     this.discountService.getAllGroups().subscribe(groups => {
       this.groups = groups;
+      this.generateChartData(); // Generate chart after groups loaded (may be called again after users loaded)
     });
   }
 
   loadUsers(): void {
     this.accountService.getAllCustomers().subscribe({
       next: (users) => {
-        this.allUsers = users;
-        this.setupFilteredData();
+        this.accountService.getUserStats().subscribe({
+          next: (stats) => {
+            const statsMap = new Map(stats.map((s: any) => [s.userId, s]));
+            this.allUsers = users.map(user => {
+              const stat = statsMap.get(user.id);
+              return {
+                ...user,
+                orderCount: stat ? stat.orderCount : 0,
+                totalSpent: stat ? stat.totalSpent : 0
+              };
+            });
+            this.setupFilteredData();
+            this.generateChartData(); // Generate chart after users loaded
+          },
+          error: (err) => {
+            console.error("Failed to load user stats:", err);
+            this.allUsers = users;
+            this.setupFilteredData();
+            this.generateChartData();
+          }
+        });
       },
       error: (err) => {
         console.error("Failed to load users:", err);
       }
     });
+  }
+
+  loadCityUserCounts() {
+    this.accountService.getUserCountsByCity().subscribe(data => {
+      this.cityUserCounts = data
+        .filter(item => item.city && item.count && !isNaN(Number(item.count)))
+        .map(item => ({ name: item.city, value: Number(item.count) }))
+        .filter(item => item.value > 0);
+      this.cityList = this.cityUserCounts.map(item => item.name);
+      this.filterActive = false;
+      this.selectedCity = '';
+      this.townshipPieData = [];
+    });
+  }
+
+  onCityChange() {
+    if (!this.selectedCity) {
+      this.clearFilter();
+      return;
+    }
+    this.filterActive = true;
+    this.accountService.getUserCountsByTownshipWithOrder(this.selectedCity).subscribe(data => {
+      this.townshipPieData = data
+        .filter(item => item.township && item.count && !isNaN(Number(item.count)))
+        .map(item => ({
+          name: `${item.township} (Ordered: ${item.orderedCount || 0})`,
+          value: Number(item.count),
+          orderedCount: Number(item.orderedCount) || 0,
+          rawTownship: item.township
+        }))
+        .filter(item => item.value > 0 && item.orderedCount > 0);
+    });
+  }
+
+  clearFilter() {
+    this.selectedCity = '';
+    this.filterActive = false;
+    this.townshipPieData = [];
+  }
+
+  loadCityList() {
+    // Get all cities for dropdown (from city user counts)
+    this.accountService.getUserCountsByCity().subscribe(data => {
+      this.cityList = data.map(item => item.city).filter((c: string) => !!c);
+      if (this.cityList.length > 0) {
+        this.selectedCity = this.cityList[0];
+        this.loadTownshipPieData();
+      }
+    });
+  }
+
+  onOrderFilterChange() {
+    this.loadTownshipPieData();
+  }
+
+  onUnorderCityChange() {
+    this.filterActive = true;
+    this.loadTownshipPieData();
+  }
+
+  onOrderStatusChange() {
+    if (this.orderStatus === 'notOrdered') {
+      this.unorderCity = '';
+    }
+    if (this.filterActive) {
+      this.loadTownshipPieData();
+    }
+  }
+
+  loadTownshipPieData() {
+    if (this.orderStatus === 'notOrdered') {
+      if (!this.unorderCity) {
+        // Show un-ordered users by city
+        this.accountService.getUserCountsByCity().subscribe(data => {
+          this.cityUserCounts = data
+            .filter(item => item.city && item.count && !isNaN(Number(item.count)))
+            .map(item => ({
+              name: item.city,
+              value: Number(item.count),
+              orderedCount: Number(item.orderedCount) || 0
+            }))
+            .filter(item => item.value > 0 && item.orderedCount === 0);
+        });
+      } else {
+        // Show un-ordered users by township in selected city
+        this.accountService.getUserCountsByTownshipWithOrder(this.unorderCity).subscribe(data => {
+          this.townshipPieData = data
+            .filter(item => item.township && item.count && !isNaN(Number(item.count)))
+            .map(item => ({
+              name: `${item.township} (Ordered: ${item.orderedCount || 0})`,
+              value: Number(item.count),
+              orderedCount: Number(item.orderedCount) || 0,
+              rawTownship: item.township
+            }))
+            .filter(item => item.value > 0 && item.orderedCount === 0);
+        });
+      }
+    } else {
+      // Existing logic for ordered/all
+      this.accountService.getUserCountsByTownshipWithOrder(this.selectedCity).subscribe(data => {
+        this.townshipPieData = data
+          .filter(item => item.township && item.count && !isNaN(Number(item.count)))
+          .map(item => ({
+            name: `${item.township} (Ordered: ${item.orderedCount || 0})`,
+            value: Number(item.count),
+            orderedCount: Number(item.orderedCount) || 0,
+            rawTownship: item.township
+          }))
+          .filter(item => {
+            if (this.orderStatus === 'ordered') return item.orderedCount > 0;
+            return item.value > 0;
+          });
+      });
+    }
   }
 
   // --- Group CRUD ---
@@ -137,6 +317,7 @@ export class CreateDiscountGroupComponent implements OnInit {
         })
       )
     );
+    this.generateChartData(); // Update chart when filters change
   }
 
   // private setupFilteredData(): void {
@@ -445,5 +626,57 @@ export class CreateDiscountGroupComponent implements OnInit {
       // Add more as needed
     };
     return fieldMap[field] || field;
+  }
+
+  getTownshipTooltip = (data: any) => {
+    return `
+      <div style="padding: 8px;">
+        <div><b>${data.rawTownship || data.name}</b></div>
+        <div>Total Users: ${data.value}</div>
+        <div style="color: #43e97b; font-weight: 500;">Ordered Users: ${data.orderedCount}</div>
+      </div>
+    `;
+  };
+
+  /**
+   * Generate chart data for ngx-charts bar chart.
+   * For each filtered group, show the number of filtered users in that group.
+   */
+  generateChartData() {
+    // Get filtered users (sync)
+    let filteredUsers: User[] = this.allUsers;
+    if (this.filteredUsers$) {
+      // Try to get the latest filtered users synchronously (since filteredUsers$ is an observable of([]))
+      this.filteredUsers$.subscribe(users => {
+        filteredUsers = users;
+      }).unsubscribe();
+    }
+    
+    // Use filtered groups
+    const groups = this.filteredGroups;
+    this.chartData = groups.map(group => {
+      const userCount = filteredUsers.filter(u => (u.groupIds || []).includes(group.id)).length;
+      return {
+        name: group.name,
+        value: userCount,
+        extra: {
+          percentage: this.allUsers.length > 0 ? Math.round((userCount / this.allUsers.length) * 100) : 0
+        }
+      };
+    });
+    
+    // Optionally, add 'All Customers' as a bar
+    if (this.selectedGroup === 'all') {
+      this.chartData.unshift({ 
+        name: 'All Customers', 
+        value: filteredUsers.length,
+        extra: {
+          percentage: 100
+        }
+      });
+    }
+    
+    // Sort by value descending for better visualization
+    this.chartData.sort((a, b) => b.value - a.value);
   }
 }

@@ -969,10 +969,54 @@
 }
 
 .status-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 0.25rem;
-  font-size: 0.75rem;
-  font-weight: 500;
+  padding: 0.35rem 1rem;
+  border-radius: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.06);
+  letter-spacing: 0.01em;
+  transition: box-shadow 0.2s, background 0.2s;
+}
+
+.status-badge i {
+  font-size: 1.1em;
+  vertical-align: middle;
+  margin-right: 0.3em;
+  margin-left: 0;
+  line-height: 1;
+}
+
+.status-badge.bg-primary {
+  background-color: #3b82f6 !important;
+  color: #fff;
+}
+.status-badge.bg-info {
+  background-color: #06b6d4 !important;
+  color: #fff;
+}
+.status-badge.bg-success {
+  background-color: #10b981 !important;
+  color: #fff;
+}
+.status-badge.bg-danger {
+  background-color: #ef4444 !important;
+  color: #fff;
+}
+.status-badge.bg-secondary {
+  background-color: #6b7280 !important;
+  color: #fff;
+}
+.status-badge.bg-warning {
+  background-color: #f59e0b !important;
+  color: #fff;
+}
+
+.status-badge:hover, .status-badge:focus {
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.12);
+  filter: brightness(1.05);
 }
 
 .timeline-date {
@@ -1027,41 +1071,54 @@
 
 /* Badge Styles */
 .badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 0.25rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  display: inline-block;
+  padding: 0.35rem 1rem;
+  border-radius: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.06);
+  letter-spacing: 0.01em;
+  transition: box-shadow 0.2s, background 0.2s;
 }
 
-.bg-primary {
-  background-color: #3b82f6 !important;
-  color: white;
+.badge i {
+  font-size: 1.1em;
+  vertical-align: middle;
+  margin-right: 0.3em;
+  margin-left: 0;
+  line-height: 1;
 }
 
-.bg-info {
-  background-color: #06b6d4 !important;
-  color: white;
+.badge.bg-primary {
+  background-color: #77a3e9 !important;
+  color: #0a0a0a;
+}
+.badge.bg-info {
+  background-color: #8de6f5 !important;
+  color: #080808;
+}
+.badge.bg-success {
+  background-color: #7ef0ca !important;
+  color: #121010;
+}
+.badge.bg-danger {
+  background-color: #f08282 !important;
+  color: #0a0909;
+}
+.badge.bg-secondary {
+  background-color: #9eb7e9 !important;
+  color: #070505;
+}
+.badge.bg-warning {
+  background-color: #e8eb57 !important;
+  color: #040404;
 }
 
-.bg-success {
-  background-color: #10b981 !important;
-  color: white;
-}
-
-.bg-danger {
-  background-color: #ef4444 !important;
-  color: white;
-}
-
-.bg-secondary {
-  background-color: #6b7280 !important;
-  color: white;
-}
-
-.bg-warning {
-  background-color: #f59e0b !important;
-  color: white;
+.badge:hover, .badge:focus {
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.12);
+  filter: brightness(1.05);
 }
 
 /* Button Styles */

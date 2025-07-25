@@ -1,15 +1,13 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
 import { CustomerRoutingModule } from './customer-routing.module';
 import { LoginComponent } from './auth/login/login.component';
-
-
 import { HomeComponent } from './general/home/home.component';
 import { HeaderComponent } from './common/header/header.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RegisterComponent } from './auth/register/register.component';
 import { RouterModule } from '@angular/router';
+import { CountdownModule } from 'ngx-countdown';
 import { ForgetPasswordComponent } from './auth/forget-password/forget-password.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { VerifyComponent } from './auth/verify/verify.component';
@@ -42,7 +40,6 @@ import { OrderListComponent } from './orderManagements/order-list/order-list.com
 import { FileUploadComponent } from './refundManagements/file-upload/file-upload.component';
 import { RefundRequestFormComponent } from './refundManagements/refund-request-form/refund-request-form.component';
 import { AccountSettingsComponent } from './common/account-settings/account-settings.component';
-
 import { NotificationBellComponent } from './notification/notification-bell/notification-bell.component';
 import { SearchBarComponent } from './common/search-bar/search-bar.component';
 import { LocationCardComponent } from './account/location-card/location-card.component';
@@ -52,14 +49,16 @@ import { LocationSettingComponent } from './common/location-setting/location-set
 import { ProfileInfoSettingComponent } from './common/profile-info-setting/profile-info-setting.component';
 import { NotiSettingComponent } from './common/noti-setting/noti-setting.component';
 
+import { VlogComponent } from './policy/vlog/vlog.component';
+import { VlogListComponent } from './policy/vlog-list/vlog-list.component';
 import { DiscountDisplayComponent } from './product_display/discount-display/discount-display.component';
 import { StickyDiscountProgressComponent } from './product_display/sticky-discount-progress/sticky-discount-progress.component';
 import { DiscountConditionDisplayComponent } from './product_display/discount-condition-display/discount-condition-display.component';
 import { ProductqandaComponent } from './product_display/productqanda/productqanda.component';
-import { VlogListComponent } from './policy/vlog-list/vlog-list.component';
-import { VlogComponent } from './policy/vlog/vlog.component';
 import { VlogCommentComponent } from './policy/vlog-comment/vlog-comment.component';
 
+import { DiscountHeroCarouselComponent } from './product_display/discount-hero-carousel/discount-hero-carousel.component';
+import { DiscountDetailComponent } from './product_display/discount-detail/discount-detail.component';
 
 @NgModule({
   declarations: [
@@ -104,13 +103,17 @@ import { VlogCommentComponent } from './policy/vlog-comment/vlog-comment.compone
     LocationSettingComponent,
     ProfileInfoSettingComponent,
     NotiSettingComponent,
+    ProductqandaComponent,
+  
+  VlogCommentComponent,
+    VlogComponent,
+    VlogListComponent,
     DiscountDisplayComponent,
     StickyDiscountProgressComponent,
     DiscountConditionDisplayComponent,
     ProductqandaComponent,
-    VlogListComponent,
-    VlogComponent,
-    VlogCommentComponent
+    DiscountHeroCarouselComponent,
+    DiscountDetailComponent
   ],
   imports: [
     CommonModule,
@@ -127,7 +130,7 @@ import { VlogCommentComponent } from './policy/vlog-comment/vlog-comment.compone
     MatButtonModule,
     FormsModule,
     HttpClientModule,
- 
+    CountdownModule,
   ]
 })
 export class CustomerModule { }

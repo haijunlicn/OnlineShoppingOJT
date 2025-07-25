@@ -623,4 +623,120 @@ export class AdminOrdersDetailComponent implements OnInit, OnDestroy {
       console.error("Error handling payment logo error:", error)
     }
   }
+
+  // Discount-related helper methods
+  hasItemDiscounts(item: any): boolean {
+    return item.appliedDiscounts && item.appliedDiscounts.length > 0;
+  }
+
+  getItemAutoDiscounts(item: any): any[] {
+    if (!item.appliedDiscounts) return [];
+    return item.appliedDiscounts.filter((discount: any) =>
+      discount.mechanismType === 'Discount'
+    );
+  }
+
+  getItemCouponDiscounts(item: any): any[] {
+    if (!item.appliedDiscounts) return [];
+    return item.appliedDiscounts.filter((discount: any) =>
+      discount.mechanismType === 'Coupon'
+    );
+  }
+
+  getItemOriginalTotal(item: any): number {
+    if (!item.appliedDiscounts || item.appliedDiscounts.length === 0) {
+      return this.calculateItemTotal(item);
+    }
+
+    // Calculate original price by adding back all discounts
+    const currentTotal = this.calculateItemTotal(item);
+    const totalDiscounts = item.appliedDiscounts.reduce((sum: number, discount: any) => {
+      return sum + (discount.discountAmount * item.quantity);
+    }, 0);
+
+    return currentTotal + totalDiscounts;
+  }
+
+  getItemTotalSavings(item: any): number {
+    if (!item.appliedDiscounts) return 0;
+
+    return item.appliedDiscounts.reduce((sum: number, discount: any) => {
+      return sum + (discount.discountAmount * item.quantity);
+    }, 0);
+  }
+
+  hasAnyDiscounts(): boolean {
+    if (!this.order?.items) return false;
+
+    return this.order.items.some((item: any) =>
+      item.appliedDiscounts && item.appliedDiscounts.length > 0
+    );
+  }
+
+  getOriginalSubtotal(): number {
+    if (!this.order?.items) return 0;
+
+    return this.order.items.reduce((total: number, item: any) => {
+      return total + this.getItemOriginalTotal(item);
+    }, 0);
+  }
+
+  getDiscountedSubtotal(): number {
+    if (!this.order?.items) return 0;
+
+    return this.order.items.reduce((total: number, item: any) => {
+      return total + this.calculateItemTotal(item);
+    }, 0);
+  }
+
+  getAutoDiscountSavings(): number {
+    if (!this.order?.items) return 0;
+
+    return this.order.items.reduce((total: number, item: any) => {
+      if (!item.appliedDiscounts) return total;
+
+      const autoDiscounts = item.appliedDiscounts.filter((discount: any) =>
+        discount.mechanismType === 'Discount'
+      );
+
+      return total + autoDiscounts.reduce((sum: number, discount: any) => {
+        return sum + (discount.discountAmount * item.quantity);
+      }, 0);
+    }, 0);
+  }
+
+  getCouponDiscountSavings(): number {
+    if (!this.order?.items) return 0;
+
+    return this.order.items.reduce((total: number, item: any) => {
+      if (!item.appliedDiscounts) return total;
+
+      const couponDiscounts = item.appliedDiscounts.filter((discount: any) =>
+        discount.mechanismType === 'Coupon'
+      );
+
+      return total + couponDiscounts.reduce((sum: number, discount: any) => {
+        return sum + (discount.discountAmount * item.quantity);
+      }, 0);
+    }, 0);
+  }
+
+  getCouponCode(): string {
+    if (!this.order?.items) return '';
+    for (const item of this.order.items) {
+      if (item.appliedDiscounts) {
+        const couponDiscount = item.appliedDiscounts.find(
+          (discount) => discount.mechanismType === 'Coupon' && discount.couponCode
+        );
+        if (couponDiscount) {
+          return couponDiscount.couponCode || '';
+        }
+      }
+    }
+    return '';
+  }
+
+  getTotalSavings(): number {
+    return this.getAutoDiscountSavings() + this.getCouponDiscountSavings();
+  }
 }

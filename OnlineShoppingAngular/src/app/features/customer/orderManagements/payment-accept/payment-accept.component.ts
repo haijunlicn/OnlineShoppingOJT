@@ -8,13 +8,16 @@ import { CartService } from '../../../../core/services/cart.service';
 import { PaymentMethodService } from '../../../../core/services/paymentmethod.service';
 import { PaymentMethodDTO } from '../../../../core/models/payment';
 import { OrderService } from '../../../../core/services/order.service';
-import { OrderRequestDTO } from '../../../../core/models/order.dto';
+import { OrderItemRequestDTO, OrderRequestDTO } from '../../../../core/models/order.dto';
 import { VariantService } from '../../../../core/services/variant.service';
 import Swal from 'sweetalert2';
 import { Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { CanDeactivate } from '@angular/router';
 import { NavigationBlockerService } from '@app/core/services/navigation-blocker.service';
+import { OrderDiscountMechanismDTO } from '@app/core/models/discount';
+
+
 export interface CreditCardPayment {
   cardNumber: string
   expiryDate: string
@@ -22,11 +25,13 @@ export interface CreditCardPayment {
   cardHolderName: string
   amount: number
 }
+
 export interface QRPayment {
   method: string
   amount: number
   qrCode: string
 }
+
 export interface PaymentMethod {
   id: string
   name: string
@@ -36,27 +41,36 @@ export interface PaymentMethod {
   logo?: string
   qrPath?: string
 }
+
 export interface CanComponentDeactivate {
   canDeactivate: () => Observable<boolean> | Promise<boolean> | boolean
 }
+
 @Component({
   selector: "app-payment-accept",
   standalone: false,
   templateUrl: "./payment-accept.component.html",
   styleUrl: "./payment-accept.component.css",
 })
-export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDeactivate {
+export class PaymentAcceptComponent implements OnInit, OnDestroy {
   // Browser check
   isBrowser = false
-  L: any // Leaflet namespace
+  L: any
 
   // Order Data from navigation
   orderItems: any[] = []
+  orderItemsWithDiscounts: OrderItemRequestDTO[] = [] // NEW: Items with attached discounts
   selectedAddress: any = null
   shippingFee = 0
   totalAmount = 0
   itemSubtotal = 0
   currentUserId = 0
+
+  // Discount summary data (for display only)
+  originalSubtotal = 0
+  autoDiscountSavings = 0
+  couponSavings = 0
+  totalSavings = 0
 
   // User state
   currentUser: any = null
@@ -106,10 +120,10 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
 
   // Enhanced Timer properties
   timer: any = null
-  timeLeft = 600 // 10 minutes in seconds
+  timeLeft = 600
   timerDisplay = "10:00"
   timerExpired = false
-  timerWarning = false // For last 2 minutes warning
+  timerWarning = false
   timerProgressPercent = 100
 
   stockReserved = false
@@ -117,8 +131,8 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
   private subscriptions: Subscription[] = []
 
   // Payment state tracking
-  paymentInProgress = true // timer မပြည့်သေးရင် true
-  paymentFailed = false;
+  paymentInProgress = true
+  paymentFailed = false
 
   constructor(
     private router: Router,
@@ -129,13 +143,10 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
     private paymentMethodService: PaymentMethodService,
     private orderService: OrderService,
     private variantService: VariantService,
-    @Inject(PLATFORM_ID) private platformId: any
   ) {
-    this.isBrowser = isPlatformBrowser(this.platformId);
+    this.isBrowser = window.navigator.userAgent.includes("Chrome") || window.navigator.userAgent.includes("Firefox")
   }
 
-  // Listen for browser navigation events (back button, etc.)
-  @HostListener("window:beforeunload", ["$event"])
   unloadNotification($event: any): void {
     if (this.shouldBlockNavigation()) {
       $event.returnValue =
@@ -144,12 +155,10 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
   }
 
   ngOnInit(): void {
-    // Initialize user ID first (like HeaderComponent)
     this.authService.initializeUserFromToken()
     const user = this.authService.getCurrentUser()
     this.currentUserId = user ? user.id : 0
 
-    // Listen to auth changes (reactively tracks login/logout)
     this.authService.user$.subscribe((user: any) => {
       this.currentUser = user
       this.currentUserId = user ? user.id : 0
@@ -178,12 +187,10 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
     // Try to get state from router navigation
     let state = this.router.getCurrentNavigation()?.extras?.state as any
 
-    // Fallback: if state is undefined, get it from history.state
     if (!state || Object.keys(state).length === 0) {
       state = history.state
     }
 
-    // NEW: If still no state, try to load from localStorage
     if (!state || Object.keys(state).length === 0) {
       const localData = localStorage.getItem("paymentData")
       if (localData) {
@@ -192,7 +199,8 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
     }
 
     if (state) {
-      this.orderItems = state.orderItems || []
+      // this.orderItems = state.orderItems || []
+      this.orderItemsWithDiscounts = state.orderItemsWithDiscounts || [] // NEW: Load items with discounts
       this.selectedAddress = state.selectedAddress || null
       this.shippingFee = state.shippingFee || 0
       this.totalAmount = state.totalAmount || 0
@@ -204,26 +212,29 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
       this.creditCardData = state.creditCardData || this.creditCardData
       this.qrPaymentData = state.qrPaymentData || null
       this.selectedDeliveryMethod = state.selectedDeliveryMethod || null
+
+      // Load discount summary data (for display)
+      this.originalSubtotal = state.originalSubtotal || 0
+      this.autoDiscountSavings = state.autoDiscountSavings || 0
+      this.couponSavings = state.couponSavings || 0
+      this.totalSavings = state.totalSavings || 0
+
+      console.log("Loaded order items with attached discounts:", this.orderItemsWithDiscounts)
     }
 
-    // Calculate total items
     this.totalItems = this.orderItems.reduce((total, item) => total + item.quantity, 0)
-
-    // Get customer information
     this.loadCustomerInformation()
-
     this.initPaymentAccept()
 
     this.paymentMethodService.getPaymentMethodsByType("qr").subscribe((methods) => {
       this.qrPaymentMethods = methods
-      // Auto-select if only one method
       if (this.qrPaymentMethods.length === 1) {
         this.selectQRMethod((this.qrPaymentMethods[0].id ?? "").toString())
       }
     })
+
     this.paymentMethodService.getPaymentMethodsByType("credit").subscribe((methods) => {
       this.creditCardMethods = methods
-      // Auto-select if only one credit card method
       if (this.creditCardMethods.length === 1) {
         if (this.creditCardMethods[0].id !== undefined) {
           this.selectedCreditMethod = String(this.creditCardMethods[0].id)
@@ -231,7 +242,6 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
       }
     })
 
-    // Start global timer for payment
     this.startGlobalTimer()
   }
 
@@ -241,29 +251,20 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
     if (this.timer) clearInterval(this.timer)
     this.subscriptions.forEach((sub) => sub.unsubscribe())
 
-    // Auto rollback if payment not completed
-    if (this.paymentInProgress || !this.paymentSuccess && !this.paymentFailed && !this.timerExpired) {
-      this.rollbackReservedStock() // call rollback
+    if (this.paymentInProgress || (!this.paymentSuccess && !this.paymentFailed && !this.timerExpired)) {
+      this.rollbackReservedStock()
     }
   }
 
-  /**
-   * Determines if navigation should be blocked based on payment state
-   */
   private shouldBlockNavigation(): boolean {
     return this.paymentInProgress && !this.paymentSuccess && !this.paymentFailed && !this.timerExpired
   }
 
-  /**
-   * CanDeactivate implementation - this is the main navigation guard
-   */
   canDeactivate(): Observable<boolean> | Promise<boolean> | boolean {
-    // Allow navigation if payment is completed, failed, or timer expired
     if (!this.shouldBlockNavigation()) {
       return true
     }
 
-    // Show confirmation dialog for incomplete payments
     return new Promise((resolve) => {
       Swal.fire({
         title: "Leave Payment Page?",
@@ -279,7 +280,6 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
       }).then((result) => {
         if (result.isConfirmed) {
           this.paymentInProgress = false
-          // this.rollbackReservedStock()
           resolve(true)
         } else {
           resolve(false)
@@ -289,18 +289,13 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
   }
 
   private initPaymentAccept(): void {
-    // Remove duplicate user initialization since it's done in ngOnInit
     this.paymentAmount = this.totalAmount
-
-    // Initialize enhanced order summary data
     this.initializeOrderSummary(this.authService.getCurrentUser())
 
-    // Fetch payment methods dynamically
     this.paymentMethodService.getAllPaymentMethods().subscribe({
       next: (methods: PaymentMethodDTO[]) => {
         this.qrPaymentMethods = (methods || []).filter((m) => Number(m.status) === 1 && m.type === "qr")
         this.creditCardMethods = (methods || []).filter((m) => Number(m.status) === 1 && m.type === "credit")
-        // Auto-select if only one credit card method
         if (this.creditCardMethods.length === 1) {
           if (this.creditCardMethods[0].id !== undefined) {
             this.selectedCreditMethod = String(this.creditCardMethods[0].id)
@@ -316,19 +311,11 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
   }
 
   private initializeOrderSummary(user: any): void {
-    // Generate order number
     this.orderNumber = this.generateOrderNumber()
-
-    // Set order date
     this.orderDate = new Date()
-
-    // Calculate estimated delivery date (3-5 business days from now)
     this.estimatedDeliveryDate = this.calculateEstimatedDeliveryDate()
-
-    // Calculate total items
     this.totalItems = this.orderItems.reduce((total, item) => total + item.quantity, 0)
 
-    // Set customer information
     if (user) {
       this.customerName = user.name || "Guest User"
       this.customerEmail = user.email || ""
@@ -347,14 +334,11 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
     let businessDays = 0
     let daysToAdd = 0
 
-    // Add 3-5 business days (excluding weekends)
     while (businessDays < 4) {
-      // 4 business days (3-5 range)
       daysToAdd++
       const checkDate = new Date(deliveryDate.getTime() + daysToAdd * 24 * 60 * 60 * 1000)
       const dayOfWeek = checkDate.getDay()
 
-      // Skip weekends (0 = Sunday, 6 = Saturday)
       if (dayOfWeek !== 0 && dayOfWeek !== 6) {
         businessDays++
       }
@@ -364,7 +348,6 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
     return deliveryDate
   }
 
-  // Helper method to format date
   formatDate(date: Date): string {
     return date.toLocaleDateString("en-US", {
       year: "numeric",
@@ -373,7 +356,6 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
     })
   }
 
-  // Helper method to format delivery date range
   formatDeliveryRange(): string {
     const startDate = new Date(this.orderDate)
     startDate.setDate(startDate.getDate() + 3)
@@ -384,7 +366,6 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
     return `${this.formatDate(startDate)} - ${this.formatDate(endDate)}`
   }
 
-  // Helper method to get item count text
   getItemCountText(): string {
     if (this.totalItems === 1) {
       return "1 item"
@@ -392,7 +373,6 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
     return `${this.totalItems} items`
   }
 
-  // Helper method to get delivery address summary
   getDeliveryAddressSummary(): string {
     if (!this.selectedAddress) return "No address selected"
 
@@ -404,7 +384,6 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
     return parts.join(", ")
   }
 
-  // Payment Methods
   selectPaymentMethod(method: string): void {
     if (!method) return
     this.selectedPaymentMethod = method
@@ -418,9 +397,6 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
     }
   }
 
-  /**
-   * Enhanced back to payment methods with confirmation
-   */
   backToPaymentMethods(): void {
     if (this.selectedPaymentMethod && (this.uploadedImage || this.creditCardData.cardNumber)) {
       Swal.fire({
@@ -478,7 +454,6 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
         }
         this.isProcessing = false
         this.cdr.detectChanges()
-        // No per-QR timer, only global timer
       } catch (error) {
         console.error("Error generating QR code:", error)
         this.isProcessing = false
@@ -547,7 +522,7 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
       return
     }
 
-    if (this.orderItems.length === 0) {
+    if (this.orderItemsWithDiscounts.length === 0) {
       alert("Your cart is empty.")
       this.isProcessing = false
       return
@@ -559,6 +534,8 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
     } else if (this.selectedPaymentMethod === "credit-card") {
       paymentMethodId = this.selectedCreditMethod ? Number(this.selectedCreditMethod) : null
     }
+
+    // SIMPLIFIED: Use order items with attached discount mechanisms
     const orderRequest: OrderRequestDTO = {
       userId: this.currentUserId,
       shippingAddressId: this.selectedAddress.id,
@@ -568,15 +545,7 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
       totalAmount: this.totalAmount,
       shippingFee: this.shippingFee,
       deliveryMethod: this.selectedDeliveryMethod,
-      items: this.orderItems.map((item) => ({
-        variantId: item.variantId,
-        productId: item.id,
-        quantity: item.quantity,
-        price: item.price,
-        variantSku: item.variantSku,
-        productName: item.name,
-        imgPath: item.imgPath,
-      })),
+      items: this.orderItemsWithDiscounts, // Use items with attached discounts
     }
 
     const formData = new FormData()
@@ -586,21 +555,19 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
     }
     this.isProcessing = true
 
-    console.log("order req : ", orderRequest)
+    console.log("Simplified order request with discount mechanisms attached to items:", orderRequest)
 
     this.orderService.createOrderWithImage(formData).subscribe({
       next: (response) => {
         this.isProcessing = false
         this.paymentSuccess = true
-        this.paymentInProgress = false // Payment completed successfully
+        this.paymentInProgress = false
         this.paymentFailed = false
         this.paymentMessage = `Order placed successfully`
 
-        // Handle both direct response and ResponseEntity wrapper
         const orderData = response.body || response
         this.orderStatus = orderData.paymentStatus || "PENDING"
 
-        // Show SweetAlert on success
         Swal.fire({
           icon: "success",
           title: "Payment Successful!",
@@ -612,20 +579,16 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
           cancelButtonColor: "#6c757d",
         }).then((result) => {
           if (result.isConfirmed) {
-            // Navigate to order detail page with the order ID
             this.navigateToOrderDetail(orderData.id)
           } else if (result.dismiss === Swal.DismissReason.cancel) {
-            // Navigate to home page to continue shopping
             this.router.navigate(["/customer/home"])
           } else {
-            // If user closes the dialog, navigate to order detail after a delay
             setTimeout(() => {
               this.navigateToOrderDetail(orderData.id)
             }, 2000)
           }
         })
 
-        // Only clear cart on successful payment
         this.clearCartAfterOrder()
         this.showQRCode = false
         this.uploadedImage = null
@@ -638,7 +601,6 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
         this.paymentFailed = true
         console.error("Order creation error:", err)
 
-        // Handle different error response formats
         let errorMessage = "Order failed"
         if (err.error) {
           if (typeof err.error === "string") {
@@ -655,7 +617,6 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
         this.paymentMessage = `Order failed: ${errorMessage}`
         this.orderStatus = "Payment Failed"
 
-        // Show error alert
         Swal.fire({
           icon: "error",
           title: "Order Failed",
@@ -664,13 +625,11 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
           confirmButtonText: "OK",
         })
 
-        // DON'T clear cart on payment failure - keep items for retry
         this.cdr.detectChanges()
       },
     })
   }
 
-  // Image Upload and Translation Methods
   onImageUpload(event: any): void {
     const file = event.target.files[0]
     if (file && file.type.startsWith("image/")) {
@@ -802,12 +761,10 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
     })
   }
 
-  // Helper method to track items by ID
   trackByItemId(index: number, item: any): string {
     return `${item.id}-${item.variantId}`
   }
 
-  // Helper method to handle image errors
   onImageError(event: any): void {
     event.target.src = "assets/img/default-product.jpg"
   }
@@ -825,9 +782,8 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
     return this.selectedAddress && this.selectedAddress.phoneNumber ? this.selectedAddress.phoneNumber : ""
   }
 
-  // Enhanced timer with modern design
   startGlobalTimer() {
-    this.timeLeft = 15 // 10 minutes
+    this.timeLeft = 600 // 10 minutes
     this.timerExpired = false
     this.timerWarning = false
     this.updateTimerDisplay()
@@ -840,10 +796,8 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy, CanComponentDe
         this.updateTimerDisplay()
         this.updateTimerProgress()
 
-        // Warning state for last 2 minutes (120 seconds)
         if (this.timeLeft <= 120 && !this.timerWarning) {
           this.timerWarning = true
-          // Show warning notification
           Swal.fire({
             title: "Payment Time Warning!",
             text: "Only 2 minutes left to complete your payment!",

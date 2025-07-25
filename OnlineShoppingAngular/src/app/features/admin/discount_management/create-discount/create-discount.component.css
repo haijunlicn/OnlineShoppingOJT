@@ -5,7 +5,8 @@
   padding: 0px;
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   min-height: 100vh;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
 
 /* Enhanced Hero Header */
@@ -157,7 +158,7 @@
   justify-content: center;
   width: 44px;
   height: 44px;
-  background: linear-gradient(135deg, #458f46 0%, #265827 );
+  background: linear-gradient(135deg, #458f46 0%, #265827);
   border-radius: 12px;
   color: white;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
@@ -414,7 +415,7 @@
 }
 
 .upload-area:hover {
-  border-color:  #458f46 ;
+  border-color: #458f46;
   background: #f1f5f9;
 }
 
@@ -551,7 +552,7 @@
 }
 
 .change-image-btn {
-  background: linear-gradient(135deg,  #458f46, #265827);
+  background: linear-gradient(135deg, #458f46, #265827);
   color: white;
 }
 
@@ -659,7 +660,7 @@
 
 /* Enhanced Add Offer Button */
 .add-offer-btn.enhanced {
-  background:  #265827;
+  background: #265827;
   color: #fff;
   border: none;
   padding: 10px 20px;
@@ -671,7 +672,7 @@
 }
 
 .add-offer-btn.enhanced:hover {
-  background:  #458f46;
+  background: #458f46;
 }
 
 .btn-icon {
@@ -802,7 +803,7 @@
 }
 
 .radio-option.selected {
-  border-color:  #458f46;
+  border-color: #458f46;
   background: rgba(102, 126, 234, 0.05);
   box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
 }
@@ -875,7 +876,7 @@
 }
 
 .quantity-selector:focus-within {
-  border-color:  #458f46;
+  border-color: #458f46;
   box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
 }
 
@@ -970,7 +971,7 @@
 }
 
 .action-btn.primary {
-  background: linear-gradient(135deg,  #458f46, #265827);
+  background: linear-gradient(135deg, #458f46, #265827);
   color: white;
 }
 
@@ -1040,7 +1041,7 @@
 
 .status-badge.info {
   background: rgba(59, 130, 246, 0.1);
-  color:  #458f46;
+  color: #458f46;
   border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
@@ -1157,7 +1158,7 @@
 }
 
 .empty-action-btn {
-  background: linear-gradient(135deg,  #458f46, #265827);
+  background: linear-gradient(135deg, #458f46, #265827);
   color: white;
   border: none;
   padding: 12px 24px;
@@ -1173,7 +1174,7 @@
 }
 
 .empty-action-btn:hover {
-  background: linear-gradient(135deg,  #458f46, #265827);
+  background: linear-gradient(135deg, #458f46, #265827);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
@@ -1278,7 +1279,7 @@
 }
 
 .create-btn.enhanced {
-  background: linear-gradient(135deg,  #458f46, #265827);
+  background-color: var(--color-primary);
   color: white;
   border: none;
   padding: 12px 28px;
@@ -1296,7 +1297,7 @@
 }
 
 .create-btn.enhanced:hover:not(:disabled) {
-  background: linear-gradient(135deg,  #458f46, #265827);
+  background: linear-gradient(135deg, #458f46, #265827);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
@@ -1379,7 +1380,7 @@
   justify-content: center;
   width: 48px;
   height: 48px;
-  background: linear-gradient(135deg,  #458f46, #265827);
+  background: linear-gradient(135deg, #458f46, #265827);
   border-radius: 12px;
   color: white;
   flex-shrink: 0;
@@ -1425,7 +1426,7 @@
 
 .service-textarea.enhanced {
   width: 100%;
-    padding: 16px;
+  padding: 16px;
   border: 2px solid #e2e8f0;
   border-radius: 12px;
   font-size: 14px;
@@ -1541,8 +1542,8 @@
   font-weight: 600;
   transition: all 0.3s ease;
   min-width: 120px;
-    justify-content: center;
-  }
+  justify-content: center;
+}
 
 .modal-btn.secondary {
   background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
@@ -1674,7 +1675,7 @@
   }
 
   .action-grid {
-  gap: 12px;
+    gap: 12px;
   }
 
   .submit-section.enhanced {
@@ -1759,7 +1760,7 @@
 
 /* Focus visible for accessibility */
 *:focus-visible {
-  outline: 2px solid  #458f46;
+  outline: 2px solid #458f46;
   outline-offset: 2px;
 }
 

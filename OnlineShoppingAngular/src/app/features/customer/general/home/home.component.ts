@@ -6,121 +6,142 @@ import { ForgotPasswordModalService } from '../../../../core/services/ForgotPass
 import { CategoryService } from '@app/core/services/category.service';
 import { CategoryDTO } from '@app/core/models/category-dto';
 import { AuthService } from '@app/core/services/auth.service';
+import { DiscountDisplayService } from '@app/core/services/discount-display.service';
+import { DiscountEventDTO } from '@app/core/models/discount';
+import { Router } from '@angular/router';
 
 interface Category {
-  name: string;
-  image: string;
-  link: string;
+  name: string
+  image: string
+  link: string
 }
 
 interface Product {
-  name: string;
-  image: string;
-  price: number;
-  rating: number;
+  name: string
+  image: string
+  price: number
+  rating: number
 }
 
 interface Testimonial {
-  name: string;
-  avatar: string;
-  quote: string;
-  rating: number;
+  name: string
+  avatar: string
+  quote: string
+  rating: number
 }
 
 @Component({
-  selector: 'app-home',
+  selector: "app-home",
   standalone: false,
-  templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css']
+  templateUrl: "./home.component.html",
+  styleUrls: ["./home.component.css"],
 })
 export class HomeComponent implements OnInit {
-  categories: { name: string, image: string, link: string }[] = [];
+  categories: { name: string; image: string; link: string }[] = []
 
-  @ViewChild('carousel', { static: false }) carouselRef!: ElementRef;
+  @ViewChild("carousel", { static: false }) carouselRef!: ElementRef
 
-  featuredProducts: Product[] = [
-    { name: 'Classic Black Handbag', image: 'assets/images/products/handbag.jpg', price: 285000, rating: 4.8 },
-    { name: 'Designer Watch', image: 'assets/images/products/watch.jpg', price: 450000, rating: 4.9 },
-    { name: 'Leather Wallet', image: 'assets/images/products/wallet.jpg', price: 85000, rating: 4.5 },
-    { name: 'Sunglasses', image: 'assets/images/products/sunglasses.jpg', price: 120000, rating: 4.7 },
-  ];
-
-  testimonials: Testimonial[] = [
-    { name: 'Aye Chan', avatar: 'assets/images/testimonials/user1.jpg', quote: 'Amazing quality and fast delivery!', rating: 5 },
-    { name: 'Myo Min', avatar: 'assets/images/testimonials/user2.jpg', quote: 'Great customer service and beautiful products.', rating: 5 },
-    { name: 'Su Su', avatar: 'assets/images/testimonials/user3.jpg', quote: 'I love shopping here. Always something new!', rating: 4 },
-  ];
+  discounts: DiscountEventDTO[] = []
+  isLoadingDiscounts = true
 
   constructor(
     private categoryService: CategoryService,
     private loginModalService: LoginModalService,
     private registerModalService: RegisterModalService,
     private forgotModalService: ForgotPasswordModalService,
-    private authService: AuthService
+    private authService: AuthService,
+    private discountDisplayService: DiscountDisplayService,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
-    this.loadCategories();
+    this.loadDiscounts()
+    this.loadCategories()
+  }
+
+  loadDiscounts(): void {
+    this.isLoadingDiscounts = true
+    this.discountDisplayService.getAllPublicActiveDiscounts().subscribe({
+      next: (data) => {
+        this.discounts = data
+        this.isLoadingDiscounts = false
+        console.log("discount datas home page : ", this.discounts)
+      },
+      error: (error) => {
+        console.error("Failed to load discounts:", error)
+        this.discounts = []
+        this.isLoadingDiscounts = false
+      },
+    })
   }
 
   loadCategories(): void {
     this.categoryService.getAllPublicCategories().subscribe((data: CategoryDTO[]) => {
-      this.categories = data.map(dto => ({
-        name: dto.name || '',
-        image: dto.imgPath || 'assets/images/categories/default.jpg',
-        link: `/customer/productList?category=${encodeURIComponent(dto.name || '')}`
-      }));
-    });
+      this.categories = data.map((dto) => ({
+        name: dto.name || "",
+        image: dto.imgPath || "assets/images/categories/default.jpg",
+        link: `/customer/productList?category=${encodeURIComponent(dto.name || "")}`,
+      }))
+    })
+  }
+
+  onDiscountViewDetails(discount: DiscountEventDTO): void {
+    // console.log('View discount details:', discount);
+    if (discount?.id != null) {
+      this.router.navigate(['/customer/discount', discount.id]);
+    }
   }
 
   scrollLeft(): void {
-    const carousel = this.carouselRef.nativeElement as HTMLElement;
-    const cardWidth = carousel.querySelector('.category-card')?.clientWidth || 300;
-    carousel.scrollBy({ left: -cardWidth * 4, behavior: 'smooth' });
+    const carousel = this.carouselRef.nativeElement as HTMLElement
+    const cardWidth = carousel.querySelector(".category-card")?.clientWidth || 300
+    carousel.scrollBy({ left: -cardWidth * 4, behavior: "smooth" })
   }
 
   scrollRight(): void {
-    const carousel = this.carouselRef.nativeElement as HTMLElement;
-    const cardWidth = carousel.querySelector('.category-card')?.clientWidth || 300;
-    carousel.scrollBy({ left: cardWidth * 4, behavior: 'smooth' });
+    const carousel = this.carouselRef.nativeElement as HTMLElement
+    const cardWidth = carousel.querySelector(".category-card")?.clientWidth || 300
+    carousel.scrollBy({ left: cardWidth * 4, behavior: "smooth" })
   }
 
-
   get loginVisible$() {
-    return this.loginModalService.loginVisible$;
+    return this.loginModalService.loginVisible$
   }
 
   get registerVisible$() {
-    return this.registerModalService.registerVisible$;
+    return this.registerModalService.registerVisible$
   }
 
   get forgotVisible$() {
-    return this.forgotModalService.forgotVisible$;
+    return this.forgotModalService.forgotVisible$
   }
 
   onShopNow() {
-    window.scrollTo({ top: 600, behavior: 'smooth' });
+    this.router.navigate(['/customer/productList']);
   }
 
   onAddToCart(product: Product) {
-    console.log('Add to Cart:', product.name);
+    console.log("Add to Cart:", product.name)
   }
 
   onWishlist(product: Product) {
-    console.log('Wishlist:', product.name);
+    console.log("Wishlist:", product.name)
   }
 
   getRatingStars(rating: number) {
-    const maxRating = 5;
-    const filledStars = Math.round(rating);
-    return Array(maxRating).fill(0).map((_, i) => i < filledStars);
+    const maxRating = 5
+    const filledStars = Math.round(rating)
+    return Array(maxRating)
+      .fill(0)
+      .map((_, i) => i < filledStars)
   }
 
   onSearch(query: string) {
-    console.log('Homepage search:', query);
+    console.log("Homepage search:", query)
   }
 
   onSubscribe(email: string) {
-    console.log('Newsletter subscribe:', email);
+    console.log("Newsletter subscribe:", email)
   }
+  
 }

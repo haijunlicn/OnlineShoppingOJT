@@ -3,7 +3,8 @@ import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";
 import { User } from "@app/core/models/User";
 import { AuthService } from "@app/core/services/auth.service";
-import { ProfileService } from "@app/core/services/profile.service";
+import { CloudinaryService } from "@app/core/services/cloudinary.service";
+
 
 
 @Component({
@@ -28,7 +29,7 @@ export class AccountSettingsComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private profileService: ProfileService,
+    private cloudinaryService: CloudinaryService ,
     private authService: AuthService,
     private router: Router,
     private route: ActivatedRoute,
@@ -36,7 +37,7 @@ export class AccountSettingsComponent implements OnInit {
     this.profileForm = this.fb.group({
       name: ["", [Validators.required, Validators.minLength(2)]],
       email: ["", [Validators.required, Validators.email]],
-      phone: ["", [Validators.pattern(/^[0-9+\-\s()]+$/)]],
+      // phone: ["", [Validators.pattern(/^[0-9+\-\s()]+$/)]],
     })
 
     this.passwordForm = this.fb.group({
@@ -61,7 +62,7 @@ export class AccountSettingsComponent implements OnInit {
       this.profileForm.patchValue({
         name: currentUser.name,
         email: currentUser.email,
-        phone: currentUser.phone || "",
+        profile:currentUser.profile || '/assets/images/default-avatar.png'
       })
       this.isLoading = false
     } else {
@@ -104,11 +105,11 @@ export class AccountSettingsComponent implements OnInit {
       this.isUpdating = true
       this.clearMessages()
 
-      const email = this.currentUser.email
+      const id = this.currentUser.id
       const roleType = 1
       const profileData = this.profileForm.value
 
-      this.profileService.updateProfile(email, roleType, profileData).subscribe({
+      this.authService.updateProfile(id, profileData).subscribe({
         next: (updatedUser) => {
           this.currentUser = updatedUser
           this.successMessage = "Profile updated successfully!"

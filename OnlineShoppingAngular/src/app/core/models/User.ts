@@ -7,6 +7,7 @@ export interface User {
   email: string;
   name: string;
   role?:string;
+  profile?:string;
   groupIds?:number[] ;
   customerGroup?: CustomerGroupEA_H[]
   phone?: string; // Optional
@@ -18,4 +19,7 @@ export interface User {
   permissions?: string[];
   avatar?: string;
   roleType?: number;
+  orderCount?: number;
+  totalSpent?: number;
+  city?: string;
 }

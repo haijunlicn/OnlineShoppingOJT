@@ -26,22 +26,9 @@ export class VariantService {
     return this.http.put<StockUpdateResponse>(`${this.baseUrl}/update-stock`, request);
   }
 
-  // updateStockBulk(requests: StockUpdateRequest[]): Observable<StockUpdateResponse[]> {
-  //   return this.http.put<StockUpdateResponse[]>(`${this.baseUrl}/update-stock-bulk`, requests);
-  // }
-
   getVariantById(variantId: number): Observable<ProductVariantDTO> {
     return this.http.get<ProductVariantDTO>(`${this.baseUrl}/${variantId}`);
   }
-
-  // processOrderStockUpdate(orderItems: any[]): Observable<StockUpdateResponse[]> {
-  //   const stockUpdates = orderItems.map(item => ({
-  //     variantId: item.variantId,
-  //     quantity: item.quantity
-  //   }));
-    
-  //   return this.updateStockBulk(stockUpdates);
-  // }
 
   recudeStock(orderItems: any[]): Observable<StockUpdateResponse[]> {
     const requests = orderItems.map(item => ({

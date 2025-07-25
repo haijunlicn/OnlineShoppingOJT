@@ -8,7 +8,9 @@ import com.maven.OnlineShoppingSB.entity.OptionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.maven.OnlineShoppingSB.entity.OptionValueEntity;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public interface OptionValueRepository extends JpaRepository<OptionValueEntity, Long> {
 
    // List<OptionValueEntity> findByDeletedFalse(); // del_fg = false

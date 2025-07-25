@@ -644,3 +644,94 @@
   font-size: 0.8rem;
   color: #6c757d;
 }
+
+/* Product table container for PDF export */
+#product-table-container {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Loading state */
+.p-button[loading] {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Product image styles */
+.product-image-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.product-thumbnail {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+/* Status badge styles */
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-active {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-low {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-inactive {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Action buttons */
+.action-buttons {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.action-btn {
+  width: 32px;
+  height: 32px;
+}
+
+/* Filter styles */
+.filter-row {
+  background-color: #f8f9fa;
+}
+
+.price-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.bootstrap-dropdown .dropdown-menu {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+.header-actions > * {
+  margin-right: 0 !important;
+}

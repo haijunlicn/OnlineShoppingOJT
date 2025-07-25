@@ -44,6 +44,21 @@ public class DiscountDisplayService {
     @Autowired
     private ObjectMapper objectMapper;
 
+    public List<DiscountEventDTO> getAllPublicActiveDiscounts(Long userId) {
+        LocalDateTime now = LocalDateTime.now();
+        List<DiscountEntity> discounts = discountRepository.findAllActivePublicDiscounts(now);
+
+        UserEntity resolvedUser = null;
+        if (userId != null) {
+            resolvedUser = userRepository.findById(userId).orElse(null);
+        }
+        final UserEntity userFinal = resolvedUser;  // <-- make final here
+
+        return discounts.stream()
+                .map(discount -> mapToDiscountEventDTO(discount, userFinal)) // use userFinal here
+                .collect(Collectors.toList());
+    }
+
     public Map<Long, List<DiscountDisplayDTO>> getProductDiscountHints(Long userId) {
         UserEntity currentUser = null;
         if (userId != null) {
@@ -163,10 +178,11 @@ public class DiscountDisplayService {
                 dto.setConditionSummary(discountConditionCheckerService.buildConditionSummary(mechanism));
                 dto.setDiscountType(mechanism.getDiscountType());
                 dto.setMechanismType(mechanism.getMechanismType());
+                dto.setUsageLimitTotal(mechanism.getUsageLimitTotal());
+                dto.setUsageLimitPerUser(mechanism.getUsageLimitPerUser());
                 dto.setConditionGroups(mapConditionGroups(mechanism.getDiscountConditionGroup(), currentUser));
                 dto.setStartDate(discount.getStartDate());
                 dto.setEndDate(discount.getEndDate());
-                dto.setUsageLimit(discount.getUsageLimit());
                 dto.setOfferedProductIds(offeredProductIds);
 
                 if (freeGiftDTOs != null) {
@@ -264,13 +280,22 @@ public class DiscountDisplayService {
 
             case "CUSTOMER_GROUP" -> {
                 try {
-                    Long groupId = Long.parseLong(detail);
-                    groupRepository.findById(groupId).ifPresent(group -> {
-                        dto.setRelatedEntities(List.of(GroupES_G.fromEntity(group)));
-                        System.out.println("✅ Resolved group entity: " + dto.getRelatedEntities());
+                    ObjectMapper mapper = new ObjectMapper();
+                    List<String> stringIds = mapper.readValue(dto.getValue(), new TypeReference<List<String>>() {
                     });
-                } catch (NumberFormatException e) {
-                    System.out.println("❌ Invalid CUSTOMER_GROUP ID: " + detail);
+                    List<Long> groupIds = new ArrayList<>();
+                    for (String idStr : stringIds) {
+                        groupIds.add(Long.parseLong(idStr));
+                    }
+                    List<GroupES_G> groups = groupRepository.findAllById(groupIds)
+                            .stream()
+                            .map(GroupES_G::fromEntity)
+                            .toList();
+
+                    dto.setRelatedEntities(groups);
+                    System.out.println("✅ Resolved groups: " + groups);
+                } catch (Exception e) {
+                    System.out.println("❌ Invalid CUSTOMER_GROUP IDs in value: " + dto.getValue());
                 }
             }
 
@@ -324,5 +349,91 @@ public class DiscountDisplayService {
     private <T, R> List<R> resolveEntities(List<Long> ids, JpaRepository<T, Long> repo, Function<T, R> mapper) {
         return repo.findAllById(ids).stream().map(mapper).toList();
     }
+
+    private DiscountEventDTO mapToDiscountEventDTO(DiscountEntity discount, UserEntity user) {
+        DiscountEventDTO eventDTO = new DiscountEventDTO();
+
+        eventDTO.setId(discount.getId());
+        eventDTO.setName(discount.getName());
+        eventDTO.setDescription(discount.getDescription());
+        eventDTO.setType(discount.getType());
+        eventDTO.setImgUrl(discount.getImgUrl());
+        eventDTO.setStartDate(discount.getStartDate());
+        eventDTO.setEndDate(discount.getEndDate());
+
+        // Map mechanisms
+        List<DiscountEventDTO.DiscountMechanismDTO> mechanismDTOs = discount.getDiscountMechanisms().stream()
+                .filter(Objects::nonNull)
+                .filter(m -> Boolean.TRUE.equals(discount.getIsActive()))  // active check on discount
+                .map(mechanism -> mapToMechanismDTO(mechanism, user))
+                .collect(Collectors.toList());
+
+        eventDTO.setMechanisms(mechanismDTOs);
+
+        return eventDTO;
+    }
+
+    private DiscountEventDTO.DiscountMechanismDTO mapToMechanismDTO(DiscountMechanismEntity mechanism, UserEntity user) {
+        DiscountEventDTO.DiscountMechanismDTO dto = new DiscountEventDTO.DiscountMechanismDTO();
+
+        dto.setId(mechanism.getId());
+        dto.setCouponCode(mechanism.getCouponcode());
+
+        // Value parsing
+        if (mechanism.getValue() != null) {
+            try {
+                dto.setValue(new BigDecimal(mechanism.getValue()));
+            } catch (NumberFormatException e) {
+                dto.setValue(BigDecimal.ZERO);
+            }
+        }
+
+        // Max discount cap
+        if (mechanism.getMaxDiscountAmount() != null && !mechanism.getMaxDiscountAmount().isBlank()) {
+            try {
+                dto.setMaxDiscountAmount(new BigDecimal(mechanism.getMaxDiscountAmount()));
+            } catch (NumberFormatException e) {
+                dto.setMaxDiscountAmount(BigDecimal.ZERO);
+            }
+        }
+
+        dto.setDiscountType(mechanism.getDiscountType());
+        dto.setMechanismType(mechanism.getMechanismType());
+        dto.setUsageLimitTotal(mechanism.getUsageLimitTotal());
+        dto.setUsageLimitPerUser(mechanism.getUsageLimitPerUser());
+
+        // Map condition groups
+        List<DiscountDisplayDTO.DiscountConditionGroupDTO> conditionGroups =
+                mapConditionGroups(mechanism.getDiscountConditionGroup(), user);
+        dto.setConditionGroups(conditionGroups);
+
+        // Map offered products — get from discountProducts relation
+        List<ProductDTO> offeredProducts = Optional.ofNullable(mechanism.getDiscountProducts())
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(DiscountProductEntity::getProduct)
+                .filter(Objects::nonNull)
+                .map(ProductDTO::fromEntity)
+                .collect(Collectors.toList());
+        dto.setOfferedProducts(offeredProducts);
+
+        return dto;
+    }
+
+    public DiscountEventDTO getDiscountById(Long discountId, Long userId) {
+        Optional<DiscountEntity> discountOpt = discountRepository.findById(discountId.intValue());
+
+        if (discountOpt.isEmpty()) {
+            throw new RuntimeException("Discount not found for id: " + discountId);
+        }
+
+        UserEntity user = null;
+        if (userId != null) {
+            user = userRepository.findById(userId).orElse(null);
+        }
+
+        return mapToDiscountEventDTO(discountOpt.get(), user);
+    }
+
 
 }

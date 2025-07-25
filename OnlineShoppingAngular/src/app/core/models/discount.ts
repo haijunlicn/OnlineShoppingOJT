@@ -53,10 +53,10 @@ export interface DiscountMechanismEA_B {
   discountId?: number;
   disocunt?: DiscountEA_A;
   discountProducts?: DiscountProductEA_E[];
-
   discountConditionGroup?: DiscountConditionGroupEA_C[];
   freeGifts?: FreeGiftEA_F[];
-
+  usageLimitTotal?: number;
+  usageLimitPerUser?: number;
 }
 
 
@@ -115,7 +115,7 @@ export interface FreeGiftEA_F {
   id: number;
   mechanismId: number;
   productId: number;
-  product?: ProductDTO;    
+  product?: ProductDTO;
   discount: DiscountEA_A;
   discountMechanism: DiscountMechanismEA_B;
 }
@@ -193,6 +193,50 @@ export interface DiscountDisplayDTO {
   startDate?: string;
   endDate?: string;
   usageLimit?: number;
-  freeGifts?: FreeGiftEA_F[];
   offeredProductIds?: number[];
+  usageLimitTotal?: number;
+  usageLimitPerUser?: number;
+}
+
+export interface DiscountEventDTO {
+  id: number;
+  name: string;
+  description: string;
+  type: 'COUPON' | 'AUTO';
+  imgUrl: string;
+  startDate: string;
+  endDate: string;
+  mechanisms: DiscountMechanismDTO[];
+}
+
+export interface DiscountMechanismDTO {
+  id: number;
+  couponCode: string | null;
+  value: number | null;
+  discountType: 'PERCENTAGE' | 'FIXED';
+  mechanismType: MechanismType;
+  maxDiscountAmount: number | null;
+  usageLimitTotal: number | null;
+  usageLimitPerUser: number | null;
+  offeredProducts: ProductDTO[];
+  conditionGroups: DiscountConditionGroupEA_C[];
+}
+
+export interface OrderDiscountMechanismDTO {
+  id?: number
+  mechanismType: MechanismType
+  discountType: DiscountType
+  couponCode?: string
+  totalAppliedAmount: number
+  discountMechanismId?: number
+  itemDiscounts: OrderItemDiscountDTO[]
+}
+
+export interface OrderItemDiscountDTO {
+  id?: number
+  orderItemId?: number
+  productId: number
+  variantId: number
+  discountAmount: number
+  description: string
 }

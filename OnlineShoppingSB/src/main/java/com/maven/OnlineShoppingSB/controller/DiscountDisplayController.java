@@ -26,10 +26,22 @@ public class DiscountDisplayController {
 
         Map<Long, List<DiscountDisplayDTO>> hints = discountDisplayService.getProductDiscountHints(userId);
 
-        System.out.println("hint logs : " + hints);
+        // System.out.println("hint logs : " + hints);
 
         return ResponseEntity.ok(hints);
     }
 
+    @GetMapping("/public/active-discounts")
+    public ResponseEntity<List<DiscountEventDTO>> getActiveDiscounts(
+            @RequestParam(required = false) Long userId) {
+
+        List<DiscountEventDTO> discounts = discountDisplayService.getAllPublicActiveDiscounts(userId);
+        return ResponseEntity.ok(discounts);
+    }
+
+    @GetMapping("/public/discount/{id}")
+    public DiscountEventDTO getDiscountById(@PathVariable Long id, @RequestParam(required = false) Long userId) {
+        return discountDisplayService.getDiscountById(id, userId);
+    }
 
 }

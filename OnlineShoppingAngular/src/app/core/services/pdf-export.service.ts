@@ -260,6 +260,211 @@ export class PdfExportService {
   }
 
   /**
+   * Export an order invoice to PDF (styled, no logo, always MMK, no tax/terms)
+   */
+  exportOrderInvoiceToPdf(
+    order: any, // OrderDetail
+    store: any, // StoreLocationDto
+    filename: string = 'invoice.pdf'
+  ): void {
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    let y = 18;
+    const leftMargin = 18;
+    const rightMargin = 18;
+    const contentWidth = pageWidth - leftMargin - rightMargin;
+    // Black and white only
+    const tableHeaderBg = [255, 255, 255]; // white
+    const tableHeaderText = [0, 0, 0]; // black
+    const rowAltBg = [255, 255, 255]; // white
+
+    // --- Company Info ---
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(18);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text(store?.name || 'Store Name', leftMargin, y);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(11);
+    pdf.setTextColor(0, 0, 0);
+    y += 7;
+    if (store?.address) {
+      pdf.text(store.address, leftMargin, y);
+      y += 5;
+    }
+    let addrLine = '';
+    if (store?.city) addrLine += store.city;
+    if (store?.state) addrLine += (addrLine ? ', ' : '') + store.state;
+    // if (store?.zipCode) addrLine += (addrLine ? ', ' : '') + store.zipCode;
+    if (addrLine) {
+      pdf.text(addrLine, leftMargin, y);
+      y += 5;
+    }
+    if (store?.phoneNumber) {
+      pdf.text('Phone: ' + store.phoneNumber, leftMargin, y);
+      y += 5;
+    }
+
+    // --- Invoice Title ---
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(22);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text('INVOICE', pageWidth - rightMargin, 22, { align: 'right' });
+    pdf.setTextColor(0, 0, 0);
+
+    // --- Invoice Info Box ---
+    y += 6;
+    const infoBoxX = pageWidth - rightMargin - 60;
+    const infoBoxY = y - 2;
+    const infoBoxW = 60;
+    let infoBoxH = 24; // will adjust if needed
+    pdf.setFontSize(10);
+    let infoY = y + 3;
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Invoice #', infoBoxX + 3, infoY);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(String(order.id).padStart(7, '0'), infoBoxX + 30, infoY);
+    infoY += 6;
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Date', infoBoxX + 3, infoY);
+    pdf.setFont('helvetica', 'normal');
+    const dateStr = order.createdDate ? new Date(order.createdDate).toLocaleDateString('en-US') : '';
+    pdf.text(dateStr, infoBoxX + 30, infoY);
+    infoY += 6;
+    // --- Order Status in Info Box ---
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Status', infoBoxX + 3, infoY);
+    pdf.setFont('helvetica', 'normal');
+    const statusText = order.currentOrderStatus || '';
+    pdf.text(statusText, infoBoxX + 30, infoY);
+    // Find status date from statusHistory if available
+    let statusDate = '';
+    if (order.statusHistory && Array.isArray(order.statusHistory)) {
+      const statusEntry = order.statusHistory.find((s: any) => s.statusCode === order.currentOrderStatus);
+      if (statusEntry && statusEntry.createdAt) {
+        statusDate = new Date(statusEntry.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      }
+    }
+    if (!statusDate && order.createdDate) {
+      statusDate = new Date(order.createdDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+    if (statusDate) {
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(9);
+      pdf.text(`as of ${statusDate}`, infoBoxX + 3, infoY + 5);
+      infoBoxH = Math.max(infoBoxH, (infoY + 8) - infoBoxY);
+    }
+
+    // --- Payment Method (below Info Box) ---
+    let paymentY = infoY + 10;
+    if (order.paymentMethod && order.paymentMethod.methodName) {
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(10);
+      pdf.text('Payment Method:', infoBoxX + 3, paymentY);
+      pdf.setFont('helvetica', 'normal');
+      let paymentText = order.paymentMethod.methodName;
+      if (order.paymentMethod.type) {
+        paymentText += ` (${order.paymentMethod.type})`;
+      }
+      pdf.text(paymentText, infoBoxX + 35, paymentY);
+    }
+
+    // --- Bill To ---
+    y += 20;
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(12);
+    pdf.text('Bill To', leftMargin, y);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(11);
+    pdf.text(order.user?.name || '', leftMargin, y + 6);
+    let custAddrY = y + 12;
+    if (order.shippingAddress) {
+      let addr = order.shippingAddress.address || '';
+      if (order.shippingAddress.township) addr += ', ' + order.shippingAddress.township;
+      pdf.text(addr, leftMargin, custAddrY);
+      custAddrY += 5;
+      let cityLine = '';
+      if (order.shippingAddress.city) cityLine += order.shippingAddress.city;
+      // if (order.shippingAddress.zipCode) cityLine += (cityLine ? ', ' : '') + order.shippingAddress.zipCode;
+      if (cityLine) {
+        pdf.text(cityLine, leftMargin, custAddrY);
+        custAddrY += 5;
+      }
+      // if (order.shippingAddress.country) {
+      //   pdf.text(order.shippingAddress.country, leftMargin, custAddrY);
+      //   custAddrY += 5;
+      // }
+      if (order.shippingAddress.phoneNumber) {
+        pdf.text('Phone: ' + order.shippingAddress.phoneNumber, leftMargin, custAddrY);
+        custAddrY += 5;
+      }
+    }
+
+    // --- Table Header ---
+    y = Math.max(custAddrY, y + 18) + 6;
+    pdf.setFillColor(tableHeaderBg[0], tableHeaderBg[1], tableHeaderBg[2]);
+    pdf.setTextColor(tableHeaderText[0], tableHeaderText[1], tableHeaderText[2]);
+    pdf.setFont('helvetica', 'bold');
+    pdf.rect(leftMargin, y, contentWidth, 10, 'F');
+    // Restore columns: SL, Description, Qty, Unit Price, Amount
+    const colWidths = [12, 80, 18, 35, 35];
+    let colX = leftMargin;
+    ['SL', 'Description', 'Qty', 'Unit Price', 'Amount'].forEach((header, i) => {
+      pdf.text(header, colX + 2, y + 7);
+      colX += colWidths[i];
+    });
+
+    // --- Table Rows ---
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(11);
+    pdf.setTextColor(0, 0, 0);
+    let rowY = y + 10;
+    order.items.forEach((item: any, idx: number) => {
+      colX = leftMargin;
+      // All rows white background
+      pdf.setFillColor(rowAltBg[0], rowAltBg[1], rowAltBg[2]);
+      pdf.rect(leftMargin, rowY, contentWidth, 10, 'F');
+      // SL (serial number)
+      pdf.text(String(idx + 1), colX + 2, rowY + 7);
+      colX += colWidths[0];
+      // Description
+      pdf.text(item.product?.name || '', colX + 2, rowY + 7);
+      colX += colWidths[1];
+      // Qty
+      pdf.text(String(item.quantity), colX + 2, rowY + 7);
+      colX += colWidths[2];
+      // Unit Price
+      pdf.text((item.price || 0).toLocaleString() + ' MMK', colX + 2, rowY + 7, { align: 'left' });
+      colX += colWidths[3];
+      // Amount
+      pdf.text((item.totalPrice || 0).toLocaleString() + ' MMK', colX + 2, rowY + 7, { align: 'left' });
+      rowY += 10;
+    });
+
+    // --- Subtotal and Total ---
+    rowY += 2;
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(11);
+    // Move to Unit Price + Amount columns (right side)
+    let totalLabelX = leftMargin + colWidths[0] + colWidths[1] + colWidths[2];
+    pdf.text('Subtotal', totalLabelX, rowY + 7);
+    pdf.text((order.subtotal || order.totalAmount || 0).toLocaleString() + ' MMK', totalLabelX + colWidths[3], rowY + 7, { align: 'left' });
+    rowY += 8;
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(13);
+    pdf.text('Total', totalLabelX, rowY + 7);
+    pdf.text((order.totalAmount || 0).toLocaleString() + ' MMK', totalLabelX + colWidths[3], rowY + 7, { align: 'left' });
+    pdf.setTextColor(0, 0, 0);
+
+    // --- Footer ---
+    pdf.setFontSize(10);
+    pdf.setTextColor(150, 150, 150);
+    pdf.text('Thank you for your purchase!', leftMargin, 285);
+
+    // Save
+    pdf.save(filename);
+  }
+
+  /**
    * Calculate optimal column widths based on content
    */
   private calculateColumnWidths(columns: { header: string; field: string; width?: number }[], totalWidth: number): number[] {

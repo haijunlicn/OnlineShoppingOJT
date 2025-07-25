@@ -7,14 +7,14 @@
         <h1>Order Management</h1>
       </div>
       <div class="order-actions">
-        <button class="btn-back-to-cart" (click)="goBackToCart()">
-          <i class="fas fa-arrow-left"></i>
-          Back to Cart
-        </button>
         <div class="order-status">
           <div class="status-indicator active"></div>
           <span>Processing Order</span>
         </div>
+        <button class="btn-back-to-cart" (click)="goBackToCart()">
+          <i class="fas fa-arrow-left"></i>
+          Back to Cart
+        </button>
       </div>
     </div>
   </div>
@@ -63,7 +63,7 @@
                 <div class="address-info">
                   <h5>{{ address.address }}</h5>
                   <p>{{ address.township }}, {{ address.city }}</p>
-                  <small>Fee: {{ getShippingFeeForAddress(address).toLocaleString() }} MMK</small>
+                  <!-- <small>Feesss: {{ getShippingFeeForAddress(address).toLocaleString() }} MMK</small> -->
                 </div>
                 <div class="address-actions">
                   <button class="btn-icon" (click)="editAddress(address); $event.stopPropagation()">
@@ -98,7 +98,7 @@
       </div>
     </div>
 
-    <!-- Right Column: Order Summary -->
+    <!-- Right Column: Enhanced Order Summary with Discount Information -->
     <div class="right-panel">
       <div class="order-summary-card">
         <div class="summary-header">
@@ -106,29 +106,111 @@
           <div class="item-count">{{ orderItems.length }} items</div>
         </div>
         <div class="summary-content">
+          <!-- Order Items -->
           <div class="order-items">
             <div class="order-item" *ngFor="let item of orderItems">
               <div class="item-info">
-                <h5>{{ item.name }}({{item.variantSku}})</h5>
+                <h5>{{ item.productName }} ({{ item.variantSku }})</h5>
                 <span class="item-qty">Qty: {{ item.quantity }}</span>
+
+                <div
+                  *ngIf="(item.appliedDiscounts?.length || 0) > 0 || getCouponDiscountForItem(item.productId, item.variantId) > 0"
+                  class="item-discount-badges">
+
+                  <!-- Auto Discounts -->
+                  <span class="badge bg-success me-1" *ngFor="let discount of item.appliedDiscounts">
+                    {{ discount.shortLabel || discount.name }}
+                  </span>
+
+                  <!-- Coupon Discount -->
+                  <span class="badge bg-info me-1" *ngIf="getCouponDiscountForItem(item.productId, item.variantId) > 0">
+                    {{ appliedCoupon?.discount?.couponcode }}
+                  </span>
+                </div>
+
               </div>
-              <div class="item-price">{{ item.total.toLocaleString() }} MMK</div>
+
+              <div class="item-price-container">
+                <!-- Show original price if discounted -->
+                <div *ngIf="(item.originalPrice * item.quantity) !== getFinalDiscountedPriceWithoutCoupon(item)"
+                  class="original-item-price">
+                  <s>{{ (item.originalPrice * item.quantity).toLocaleString() }} MMK</s>
+                </div>
+                <div class="item-price"
+                  [title]="'Includes coupon discount of ' + getCouponDiscountForItem(item.productId, item.variantId).toLocaleString() + ' MMK'">
+                  {{ getFinalDiscountedPriceWithoutCoupon(item) }} MMK
+                </div>
+
+                <!-- <div *ngIf="(item.originalPrice * item.quantity) !== getFinalDiscountedPrice(item)"
+                  class="original-item-price">
+                  <s>{{ (item.originalPrice * item.quantity).toLocaleString() }} MMK</s>
+                </div>
+                <div class="item-price"
+                  [title]="'Includes coupon discount of ' + getCouponDiscountForItem(item.productId, item.variantId).toLocaleString() + ' MMK'">
+                  {{ getFinalDiscountedPrice(item) }} MMK
+                </div> -->
+
+              </div>
             </div>
           </div>
+
           <div class="price-breakdown">
+            <!-- Original Subtotal (if different from discounted) -->
+            <div *ngIf="hasDiscounts()" class="price-line original-subtotal">
+              <span>Original Subtotal</span>
+              <span><s>{{ originalSubtotal.toLocaleString() }} MMK</s></span>
+            </div>
+
+            <!-- Auto Discount Savings -->
+            <div *ngIf="hasAutoDiscounts()" class="price-line auto-discount-savings">
+              <span>Auto Discounts</span>
+              <span class="discount-amount">-{{ autoDiscountSavings.toLocaleString() }} MMK</span>
+            </div>
+
+            <!-- Coupon Discount -->
+            <div *ngIf="hasCouponDiscount()" class="price-line coupon-discount">
+              <span>{{ appliedCoupon?.discount?.shortLabel || 'Coupon' }}</span>
+              <span class="discount-amount">-{{ couponSavings.toLocaleString() }} MMK</span>
+            </div>
+
+            <!-- Subtotal after all discounts -->
             <div class="price-line">
               <span>Subtotal</span>
-              <span>{{ itemSubtotal.toLocaleString() }} MMK</span>
+              <span>{{ discountedSubtotal.toLocaleString() }} MMK</span>
             </div>
+
+            <!-- Delivery Fee -->
             <div class="price-line">
               <span>Delivery Fee</span>
               <span>{{ shippingFee.toLocaleString() }} MMK</span>
             </div>
+
+            <!-- Total Savings Summary -->
+            <div *ngIf="hasDiscounts()" class="price-line total-savings">
+              <span class="text-success"><strong>Total Savings</strong></span>
+              <span class="text-success"><strong>{{ totalSavings.toLocaleString() }} MMK</strong></span>
+            </div>
+
+            <!-- Final Total -->
             <div class="price-line total">
               <span>Total Amount</span>
               <span>{{ totalAmount.toLocaleString() }} MMK</span>
             </div>
           </div>
+
+
+          <!-- Applied Discounts Summary -->
+          <div *ngIf="hasDiscounts()" class="applied-discounts-summary">
+            <h6>Applied Discounts</h6>
+            <div class="discount-labels">
+              <span class="discount-label" *ngFor="let label of getAppliedDiscountLabels()">
+                <i class="fas fa-tag"></i>
+                {{ label }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Delivery Information -->
           <div class="delivery-info" *ngIf="selectedAddress">
             <h6>Delivery Information</h6>
             <div class="delivery-details">

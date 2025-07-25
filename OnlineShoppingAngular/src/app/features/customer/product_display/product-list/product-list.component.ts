@@ -255,7 +255,7 @@ export class ProductListComponent {
 
     const cart = this.cartService.getCart()
     console.log("precomputing method cart : ", cart);
-    
+
 
     for (const product of this.products) {
       const allHints = hintMap[product.id] || []
@@ -772,6 +772,16 @@ export class ProductListComponent {
     return eligibleHints.length > 0
   }
 
+  getProductLinkedDiscountHints(product: ProductCardItem): DiscountDisplayDTO[] {
+    if (!product.discountHints || product.discountHints.length === 0) {
+      return [];
+    }
+
+    return product.discountHints.filter(hint =>
+      hint.offeredProductIds?.includes(product.id)
+    );
+  }
+
   getUnappliedDiscountHints(product: ProductCardItem): DiscountDisplayDTO[] {
     if (!product.discountHints || product.discountHints.length === 0) {
       return []
@@ -797,12 +807,27 @@ export class ProductListComponent {
     return this.discountDisplayService.evaluateEligibleDiscounts(product.discountHints, cart)
   }
 
+  getUnconditionalDiscountHints(product: ProductCardItem): DiscountDisplayDTO[] {
+    if (!product.discountHints || product.discountHints.length === 0) {
+      return [];
+    }
+
+    const unconditionalHints = product.discountHints.filter(
+      hint => !hint.conditionGroups || hint.conditionGroups.length === 0
+    );
+
+    const cart = this.cartService.getCart();
+    return this.discountDisplayService.evaluateEligibleDiscounts(unconditionalHints, cart);
+  }
+
   getAvailableDiscountLabel(hint: DiscountDisplayDTO): string {
     return this.discountTextService.getAvailableDiscountLabel(hint)
   }
 
   getCombinedDiscountLabel(product: ProductCardItem): string {
-    const hints = this.getUnappliedDiscountHints(product);
+    // const hints = this.getUnappliedDiscountHints(product);
+    // return this.discountTextService.getCombinedDiscountLabel(hints);
+    const hints = product.discountHints ?? [];
     return this.discountTextService.getCombinedDiscountLabel(hints);
   }
 

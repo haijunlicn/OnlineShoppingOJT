@@ -10,6 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
@@ -48,6 +51,60 @@ public class UserAddressController {
         System.out.println("hello2");
         List<UserAddressDto> dtos = userAddressService.getUserAddressesByUserId(userId);
         return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/city-user-counts")
+    public ResponseEntity<List<Map<String, Object>>> getUserCountsByCity() {
+        List<Object[]> results = userAddressService.getUserCountsByCity();
+        List<Map<String, Object>> response = new java.util.ArrayList<>();
+        for (Object[] row : results) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("city", row[0]);
+            map.put("count", row[1]);
+            response.add(map);
+        }
+        System.out.println("City user counts response: " + response);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/township-user-counts")
+    public ResponseEntity<List<Map<String, Object>>> getUserCountsByTownship(@RequestParam String city) {
+        List<Object[]> results = userAddressService.getUserCountsByTownship(city);
+        List<Map<String, Object>> response = new ArrayList<>();
+        for (Object[] row : results) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("township", row[0]);
+            map.put("count", row[1]);
+            response.add(map);
+        }
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/township-user-counts-with-order")
+    public ResponseEntity<List<Map<String, Object>>> getUserCountsByTownshipWithOrder(@RequestParam String city) {
+        List<Object[]> results = userAddressService.getUserCountsByTownshipWithOrder(city);
+        List<Map<String, Object>> response = new ArrayList<>();
+        for (Object[] row : results) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("township", row[0]);
+            map.put("count", row[1]);
+            map.put("orderedCount", row[2]);
+            response.add(map);
+        }
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/city-user-counts-filtered")
+    public ResponseEntity<List<Map<String, Object>>> getUserCountsByCityWithOrderFilter(@RequestParam boolean orderedOnly) {
+        List<Object[]> results = userAddressService.getUserCountsByCityWithOrderFilter(orderedOnly);
+        List<Map<String, Object>> response = new ArrayList<>();
+        for (Object[] row : results) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("city", row[0]);
+            map.put("count", row[1]);
+            response.add(map);
+        }
+        return ResponseEntity.ok(response);
     }
 
 

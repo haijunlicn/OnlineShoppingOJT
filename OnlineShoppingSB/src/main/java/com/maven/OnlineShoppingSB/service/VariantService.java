@@ -6,6 +6,7 @@ import com.maven.OnlineShoppingSB.entity.ProductVariantEntity;
 import com.maven.OnlineShoppingSB.repository.ProductVariantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +20,48 @@ public class VariantService {
     private ProductVariantRepository variantRepo;
 
     private final Map<Long, Integer> reservedStockMap = new HashMap<>();
+
+    @Transactional
+    public List<StockUpdateResponse> reserveStockBatch(List<StockUpdateRequest> requests) {
+        List<StockUpdateResponse> responses = new ArrayList<>();
+
+        // First pass: check all stock availability
+        for (StockUpdateRequest req : requests) {
+            ProductVariantEntity variant = variantRepo.findById(req.getVariantId())
+                    .orElseThrow(() -> new RuntimeException("Variant not found: " + req.getVariantId()));
+
+            System.out.printf("Checking stock for variantId %d: requested %d, available %d%n",
+                    req.getVariantId(), req.getQuantity(), variant.getStock());
+
+            if (variant.getStock() < req.getQuantity()) {
+                System.out.printf("❌ Insufficient stock for variantId %d: requested %d, available %d%n",
+                        req.getVariantId(), req.getQuantity(), variant.getStock());
+                throw new RuntimeException("Insufficient stock for variant " + req.getVariantId());
+            }
+        }
+
+        // Second pass: update all stocks (since all are available)
+        for (StockUpdateRequest req : requests) {
+            ProductVariantEntity variant = variantRepo.findById(req.getVariantId()).get();
+
+            System.out.printf("Reserving stock for variantId %d: current stock %d, reserving %d%n",
+                    req.getVariantId(), variant.getStock(), req.getQuantity());
+
+            variant.setStock(variant.getStock() - req.getQuantity());
+            variantRepo.save(variant);
+            reservedStockMap.put(req.getVariantId(), req.getQuantity());
+
+            StockUpdateResponse response = new StockUpdateResponse();
+            response.setSuccess(true);
+            response.setMessage("Reserved " + req.getQuantity() + " item(s). Remaining stock: " + variant.getStock());
+            response.setUpdatedStock(variant.getStock());
+            responses.add(response);
+        }
+
+        System.out.println("Stock reservation batch completed successfully.");
+
+        return responses;
+    }
 
     public StockUpdateResponse reserveStock(Long variantId, int quantity) {
         ProductVariantEntity variant = variantRepo.findById(variantId)
@@ -49,7 +92,6 @@ public class VariantService {
         response.setUpdatedStock(variant.getStock());
         return response;
     }
-
 
 
     public StockUpdateResponse rollbackStock(Long variantId, int quantity) {

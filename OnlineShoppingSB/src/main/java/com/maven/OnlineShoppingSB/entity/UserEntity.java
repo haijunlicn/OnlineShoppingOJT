@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -23,8 +24,9 @@ public class UserEntity {
     @Column(length = 100, nullable = false)
     private String name;
 
-    @Column(length = 20)
-    private String phone;
+    @Column(name = "profile", columnDefinition = "TEXT")
+    private String profile;
+
 
     @Column(length = 255, nullable = false)
     private String password;
@@ -51,6 +53,14 @@ public class UserEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CustomerGroupEntity> customerGroup;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductReview> productReviews = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductQuestionEntity> productQuestion = new ArrayList<>();
+
+    @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductAnswerEntity> productAnswer = new ArrayList<>();
     @Column(name = "last_login_date")
     private LocalDateTime lastLoginDate;
 

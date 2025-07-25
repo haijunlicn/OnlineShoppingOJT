@@ -1,0 +1,470 @@
+<div class="create-discount-container">
+  <!-- Clean Navigation Bar -->
+  <div class="navigation-bar">
+    <div class="nav-left">
+      <div>
+        <h1 class="nav-title">Create Discount Event</h1>
+        <p class="nav-subtitle">Configure flexible, rule-based discounts for your store</p>
+      </div>
+    </div>
+    <div class="nav-right">
+      <button type="button" class="btn btn-outline-secondary" (click)="resetForm()">
+        <i class="fas fa-times me-2"></i>Cancel
+      </button>
+      <button type="submit" form="discountForm" class="btn btn-primary-create"
+        [disabled]="!isCreateDiscountEnabled() || isSubmitting">
+        <span *ngIf="isSubmitting" class="loading-spinner me-2"></span>
+        <i *ngIf="!isSubmitting" class="fas fa-save me-2"></i>
+        {{ isSubmitting ? 'Creating...' : 'Create Discount' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="main-content-discount">
+    <form id="discountForm" [formGroup]="discountForm" (ngSubmit)="onSubmit()">
+
+      <!-- Basic Information Card -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">
+            <i class="fas fa-info-circle me-2"></i>Basic Information
+          </h3>
+          <p class="card-subtitle">Essential details for your discount event</p>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="name" class="form-label">Discount Name *</label>
+              <input type="text" id="name" formControlName="name" class="form-control"
+                [class.error]="getFieldError('name')" placeholder="e.g., Black Friday Sale 2024"
+                (input)="onDiscountNameChange($event)">
+              <div class="error-message" *ngIf="getFieldError('name')">
+                {{ getFieldError('name') }}
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="startDate" class="form-label">Start Date *</label>
+              <input type="datetime-local" id="startDate" formControlName="startDate" class="form-control"
+                [class.error]="getFieldError('startDate')">
+              <div class="error-message" *ngIf="getFieldError('startDate')">
+                {{ getFieldError('startDate') }}
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="endDate" class="form-label">End Date *</label>
+              <input type="datetime-local" id="endDate" formControlName="endDate" class="form-control"
+                [class.error]="getFieldError('endDate')">
+              <div class="error-message" *ngIf="getFieldError('endDate')">
+                {{ getFieldError('endDate') }}
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <div class="status-toggle">
+                <div class="toggle-switch">
+                  <input type="checkbox" id="isActive" formControlName="isActive" class="toggle-input">
+                  <label for="isActive" class="toggle-slider"></label>
+                </div>
+                <span class="status-text" [class.active]="discountForm.get('isActive')?.value">
+                  {{ discountForm.get('isActive')?.value ? 'Active' : 'Inactive' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea id="description" formControlName="description" class="form-control" rows="3"
+              placeholder="Describe your discount event..."></textarea>
+            <div class="error-message" *ngIf="getFieldError('description')">
+              {{ getFieldError('description') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Discount Image</label>
+            <div class="upload-area" [class.has-image]="imagePreviewUrl" (click)="fileInput.click()">
+              <input type="file" #fileInput accept="image/*" (change)="onFileSelected($event)" style="display: none">
+
+              <div *ngIf="!imagePreviewUrl && !isUploadingImage" class="upload-placeholder">
+                <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i>
+                <h4>Upload Image</h4>
+                <p>Click to browse or drag and drop</p>
+                <p class="text-muted">PNG, JPG up to 5MB</p>
+              </div>
+
+              <div *ngIf="isUploadingImage" class="upload-placeholder">
+                <div class="loading-spinner mb-2"></div>
+                <p>Uploading... {{ uploadProgress }}%</p>
+              </div>
+
+              <div *ngIf="imagePreviewUrl && !isUploadingImage">
+                <img [src]="imagePreviewUrl" alt="Preview" class="preview-image mb-2">
+                <div class="d-flex gap-2">
+                  <button type="button" class="btn btn-sm btn-outline-secondary"
+                    (click)="$event.stopPropagation(); fileInput.click()">
+                    Change
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary"
+                    (click)="$event.stopPropagation(); removeImage()">
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Offers Section -->
+      <div class="card">
+        <div class="card-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h3 class="card-title">
+                <i class="fas fa-gift me-2"></i>Discount Offers ({{ discountMechanisms.length }})
+              </h3>
+              <p class="card-subtitle">Configure your discount mechanisms</p>
+            </div>
+            <button type="button" class="btn btn-primary-offer" (click)="addOfferType()">
+              <i class="fas fa-plus me-2"></i>Add Offer
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Empty State -->
+          <div *ngIf="discountMechanisms.length === 0" class="empty-state">
+            <i class="fas fa-gift"></i>
+            <h3>No offers configured</h3>
+            <p>Add your first discount offer to get started</p>
+            <button type="button" class="btn btn-primary-offer" (click)="addOfferType()">
+              + Add First Offer
+            </button>
+          </div>
+
+          <!-- Offers List -->
+          <div formArrayName="discountMechanisms">
+            <div *ngFor="let mechanism of discountMechanisms.controls; let i = index" class="offer-card"
+              [formGroupName]="i">
+
+              <div class="offer-header">
+                <div class="d-flex align-items-center gap-3">
+                  <span class="offer-badge">{{ i + 1 }}</span>
+                  <div>
+                    <h4 class="offer-title">Offer {{ i + 1 }}</h4>
+                    <small class="text-muted">{{ getOfferTypeLabel(i) }}</small>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" (click)="removeOfferType(i)">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+
+              <div class="offer-body">
+                <!-- Offer Type Selection -->
+                <div class="form-group mb-4">
+                  <label class="form-label">Offer Type</label>
+                  <div class="radio-group">
+                    <label class="radio-option"
+                      [class.selected]="getMechanismGroup(i).get('mechanismType')?.value === mechanismTypes[0]">
+                      <input type="radio" [value]="mechanismTypes[0]" formControlName="mechanismType">
+                      <i class="fas fa-percentage"></i>
+                      <span>Auto Discount</span>
+                    </label>
+                    <label class="radio-option"
+                      [class.selected]="getMechanismGroup(i).get('mechanismType')?.value === mechanismTypes[3]">
+                      <input type="radio" [value]="mechanismTypes[3]" formControlName="mechanismType">
+                      <i class="fas fa-ticket-alt"></i>
+                      <span>Coupon</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Coupon Code (if coupon selected) -->
+                <div class="form-group mb-4" *ngIf="isCouponMechanism(i)">
+                  <label class="form-label">Coupon Code *</label>
+                  <div class="d-flex gap-2">
+                    <input type="text" class="form-control" formControlName="couponcode" placeholder="Generated code"
+                      readonly>
+                    <button type="button" class="btn btn-outline-secondary" (click)="generateCouponCodeForMechanism(i)">
+                      <i class="fas fa-sync"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Discount Configuration -->
+                <div class="form-grid mb-4">
+                  <div class="form-group">
+                    <label class="form-label">Discount Type</label>
+                    <select class="form-select" formControlName="discountType">
+                      <option [value]="getDiscountTypeValue('PERCENTAGE')">Percentage (%)</option>
+                      <option [value]="getDiscountTypeValue('FIXED')">Fixed Amount (MMK)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Discount Value *</label>
+                    <input type="number" class="form-control" formControlName="value"
+                      [placeholder]="getMechanismGroup(i).get('discountType')?.value === getDiscountTypeValue('PERCENTAGE') ? 'Enter %' : 'Enter MMK'">
+                  </div>
+                  <div class="form-group" *ngIf="showMaxDiscountAmount(i)">
+                    <label class="form-label">Max Discount Amount</label>
+                    <input type="number" class="form-control" formControlName="maxDiscountAmount"
+                      placeholder="Enter max amount">
+                  </div>
+                </div>
+
+                <!-- Product Selection -->
+                <div class="form-group mb-4">
+                  <label class="form-label">Offered Products</label>
+                  <button type="button" class="btn btn-outline-secondary w-100" (click)="onAddDiscountProduct(i)"
+                    [disabled]="hasDiscountProducts(i)">
+                    <i class="fas fa-box me-2"></i>
+                    <span *ngIf="!hasDiscountProducts(i)">Select Products</span>
+                    <span *ngIf="hasDiscountProducts(i)">{{ getDiscountProductCount(i) }} products selected</span>
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary mt-2" *ngIf="hasDiscountProducts(i)"
+                    (click)="clearDiscountProducts(i)">
+                    <i class="fas fa-times me-1"></i>Clear
+                  </button>
+                </div>
+
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="usageLimit" class="form-label">Total Usage Limit *</label>
+                    <input type="number" id="usageLimit" formControlName="usageLimitTotal" class="form-control" min="1"
+                      placeholder="100">
+                    <div class="field-hint">Maximum number of times this offer can be used</div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="perUserLimit" class="form-label">Per Customer Limit *</label>
+                    <input type="number" id="perUserLimit" formControlName="usageLimitPerUser" class="form-control"
+                      min="1" placeholder="1">
+                    <div class="field-hint">How many times each customer can use this</div>
+                  </div>
+                </div>
+
+                <!-- Set Rules Toggle -->
+                <div class="form-group mb-3">
+                  <div class="rules-toggle-wrapper">
+                    <label class="rules-toggle-label">
+                      <input type="checkbox" class="rules-toggle-checkbox" [(ngModel)]="showConditionsForMechanism[i]"
+                        [ngModelOptions]="{standalone: true}">
+                      <span class="rules-toggle-text">
+                        <i class="fas fa-filter me-2"></i>Set Rules & Conditions
+                      </span>
+                    </label>
+                    <small class="text-muted d-block mt-1">
+                      Add specific conditions for when this discount should apply
+                    </small>
+                  </div>
+                </div>
+
+                <!-- Integrated Conditions (Only show when toggle is enabled) -->
+                <div class="conditions-section" *ngIf="showConditionsForMechanism[i]">
+                  <div class="conditions-header d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="conditions-title m-0">
+                      <i class="fas fa-cogs me-2"></i>Rules & Conditions
+                    </h4>
+                    <div class="d-flex align-items-center gap-2">
+                      <label class="form-label mb-0 me-2 text-nowrap small text-muted">Match:</label>
+                      <select class="form-select form-select-sm w-auto" formControlName="logicOperator">
+                        <option [value]="true">All Conditions</option>
+                        <option [value]="false">Any Condition</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Customer Groups -->
+                  <div class="form-group mb-4">
+                    <label class="form-label">Customer Groups</label>
+                    <button type="button" class="btn btn-outline-secondary w-100"
+                      (click)="openCustomerEligibilityModal(i)">
+                      <i class="fas fa-users me-2"></i>
+                      <span *ngIf="getSelectedCustomerGroups(i).length === 0">All Customers</span>
+                      <span *ngIf="getSelectedCustomerGroups(i).length > 0">{{ getSelectedCustomerGroups(i).length }}
+                        groups selected</span>
+                    </button>
+                  </div>
+
+                  <!-- Product Rules -->
+                  <div class="form-grid mb-4">
+                    <div class="form-group">
+                      <label class="form-label">Product Rule Type</label>
+                      <select class="form-select" [value]="getProductRuleType(i)"
+                        (change)="updateProductRuleType(i, $event)">
+                        <option value="">No product rule</option>
+                        <option value="product">Specific Products</option>
+                        <option value="brand">Specific Brand</option>
+                        <option value="category">Specific Category</option>
+                      </select>
+                    </div>
+                    <div class="form-group" *ngIf="getProductRuleType(i)">
+                      <label class="form-label">Select {{ getProductRuleType(i) | titlecase }}(s)</label>
+                      <button type="button" class="btn btn-outline-secondary w-100" (click)="openProductRuleModal(i)">
+                        <i class="fas fa-eye me-1"></i>
+                        <span *ngIf="getProductRuleValues(i).length === 0">Select {{ getProductRuleType(i) }}(s)</span>
+                        <span *ngIf="getProductRuleValues(i).length > 0">{{ getProductRuleValues(i).length }}
+                          selected</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Order Rules -->
+                  <div class="form-grid mb-4">
+                    <div class="form-group">
+                      <label class="form-label">Order Rule Type</label>
+                      <select class="form-select" [value]="getOrderRuleType(i)"
+                        (change)="updateOrderRuleType(i, $event)">
+                        <option value="">No order rule</option>
+                        <option value="item_count">Minimum Item Count</option>
+                        <option value="order_total">Minimum Order Total</option>
+                      </select>
+                    </div>
+                    <div class="form-group" *ngIf="getOrderRuleType(i)">
+                      <label class="form-label">Minimum Value</label>
+                      <input type="number" class="form-control" [value]="getOrderRuleValue(i)"
+                        (input)="updateOrderRuleValue(i, $event)"
+                        [placeholder]="getOrderRuleType(i) === 'item_count' ? 'Enter item count' : 'Enter amount (MMK)'">
+                    </div>
+                  </div>
+
+                  <!-- Condition Summary -->
+                  <div *ngIf="hasAnyConditions(i)" class="mt-3">
+                    <h5 class="text-muted mb-2">Active Conditions:</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                      <span *ngIf="getSelectedCustomerGroups(i).length > 0" class="badge bg-primary">
+                        Customer Groups: {{ getSelectedCustomerGroups(i).length }}
+                      </span>
+                      <span *ngIf="getProductRuleValues(i).length > 0" class="badge bg-success">
+                        {{ getProductRuleType(i) | titlecase }}: {{ getProductRuleValues(i).length }}
+                      </span>
+                      <span *ngIf="getOrderRuleValue(i)" class="badge bg-info">
+                        {{ getOrderRuleType(i) === 'item_count' ? 'Min Items' : 'Min Total' }}: {{ getOrderRuleValue(i)
+                        }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Error Messages -->
+      <div *ngIf="errors['general']" class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        {{ errors['general'] }}
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Customer Eligibility Modal -->
+<div *ngIf="showCustomerEligibilityModal" class="modal-overlay" (click)="closeCustomerEligibilityModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">
+        <i class="fas fa-users me-2"></i>Customer Eligibility
+      </h3>
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeCustomerEligibilityModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <!-- All Customers Option -->
+      <div class="form-group">
+        <label class="radio-option" [class.selected]="currentCustomerEligibility === 'all'">
+          <input type="radio" name="customerEligibility" value="all" [(ngModel)]="currentCustomerEligibility">
+          <div>
+            <strong>All Customers</strong>
+            <p class="text-muted mb-0">This discount will be available to all customers</p>
+          </div>
+        </label>
+      </div>
+
+      <!-- Specific Groups Option -->
+      <div class="form-group">
+        <label class="radio-option" [class.selected]="currentCustomerEligibility === 'specific'">
+          <input type="radio" name="customerEligibility" value="specific" [(ngModel)]="currentCustomerEligibility">
+          <div>
+            <strong>Specific Customer Groups</strong>
+            <p class="text-muted mb-0">Select which customer groups can use this discount</p>
+          </div>
+        </label>
+      </div>
+
+      <!-- Group Selection -->
+      <div *ngIf="currentCustomerEligibility === 'specific'">
+        <input type="text" class="search-input" placeholder="Search customer groups..."
+          [(ngModel)]="customerGroupSearchText" (input)="filterCustomerGroups()">
+
+        <div class="selection-list">
+          <div *ngFor="let group of filteredCustomerGroups" class="selection-item"
+            [class.selected]="isCustomerGroupSelected(group)" (click)="toggleCustomerGroup(group)">
+            <input type="checkbox" [checked]="isCustomerGroupSelected(group)" (click)="$event.stopPropagation()">
+            <span class="selection-name">{{ group.name }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeCustomerEligibilityModal()">
+        Cancel
+      </button>
+      <button type="button" class="btn btn-primary" (click)="confirmCustomerEligibilitySelection()">
+        Done
+        <span *ngIf="currentCustomerEligibility === 'specific' && selectedCustomerGroups.length > 0">
+          ({{ selectedCustomerGroups.length }} selected)
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Product Rule Modal -->
+<div *ngIf="showProductRuleModal" class="modal-overlay" (click)="closeProductRuleModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h4 class="modal-title">
+        <i class="fas fa-box me-2"></i>Select {{ currentProductRuleType | titlecase }}(s)
+      </h4>
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeProductRuleModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="text" class="search-input" [placeholder]="'Search ' + currentProductRuleType + 's...'"
+        [(ngModel)]="productRuleSearchText" (input)="filterProductRuleItems()">
+
+      <div class="selection-list">
+        <div *ngFor="let item of filteredProductRuleItems" class="selection-item"
+          [class.selected]="isProductRuleItemSelected(item)" (click)="toggleProductRuleItem(item)">
+          <input type="checkbox" [checked]="isProductRuleItemSelected(item)" (click)="$event.stopPropagation()">
+          <span class="selection-name">{{ item.name }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeProductRuleModal()">
+        Cancel
+      </button>
+      <button type="button" class="btn btn-primary" (click)="confirmProductRuleSelection()">
+        Done ({{ selectedProductRuleItems.length }} selected)
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Product Selection Component -->
+<ng-container *ngIf="showProductSelection">
+  <app-new-product-selection [context]="productSelectionContext" [selectionMode]="productSelectionMode"
+    [selectedProducts]="getSelectedProductsForCurrentContext()" (onBack)="onProductSelectionBack()"
+    (onProductsSelected)="onProductsSelected($event)">
+  </app-new-product-selection>
+</ng-container>

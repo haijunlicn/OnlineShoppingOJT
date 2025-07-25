@@ -66,14 +66,9 @@ import { AdminOrdersDetailComponent } from './adminOrderManagement/admin-orders-
 import { ProductDetailComponent } from './product_management/product-detail/product-detail.component';
 import { StockUpdateModalComponent } from './product_management/stock-update-modal/stock-update-modal.component';
 import { CreateDiscountComponent } from './discount_management/create-discount/create-discount.component';
-
 import { DiscountRulesComponent } from './discount_management/discount-rules/discount-rules.component';
-
 import { CreateDiscountGroupComponent } from './discount_management/create-discount-group/create-discount-group.component';
 import { ProductSelectionComponent } from './discount_management/product-selection/product-selection.component';
-
-
-
 import { SaleAnalysisComponent } from './policy-management/sale-analysis/sale-analysis.component';
 import { AdminAccountCreateComponent } from './roleAndPermission/admin-account-create/admin-account-create.component';
 import { RefundReasonFormComponent } from './policy-management/refund-reason-form/refund-reason.component';
@@ -98,8 +93,10 @@ import { CreateDeliveryMethodComponent } from './deliveryMethodManagement/create
 import { DeliveryMethodListComponent } from './deliveryMethodManagement/delivery-method-list/delivery-method-list.component';
 import { EditDeliveryMethodComponent } from './deliveryMethodManagement/edit-delivery-method/edit-delivery-method.component';
 import { DiscountListComponent } from './discount_management/discount-list/discount-list.component';
-import { QuestionComponent } from './QuesionManagement/question/question.component';
-
+import { NewCreateDiscountComponent } from './discount_management/new-create-discount/new-create-discount.component';
+import { NewDiscountRulesComponent } from './discount_management/new-discount-rules/new-discount-rules.component';
+import { NewProductSelectionComponent } from './discount_management/new-product-selection/new-product-selection.component';
+import { QuestionComponent } from './QuestionManagement/question/question.component';
 
 @NgModule({
   declarations: [
@@ -124,7 +121,6 @@ import { QuestionComponent } from './QuesionManagement/question/question.compone
     FaqListComponent,
     FaqCreateComponent,
     FaqUpdateComponent,
-  
     ProductBulkUploadComponent,
     RoleListComponent,
     RoleFormComponent,
@@ -149,8 +145,7 @@ import { QuestionComponent } from './QuesionManagement/question/question.compone
     CreateDiscountComponent,
     ProductSelectionComponent,
     DiscountRulesComponent,
-     CreateDiscountGroupComponent,
-  
+    CreateDiscountGroupComponent,
     SaleAnalysisComponent,
     AdminAccountCreateComponent,
     RefundReasonFormComponent,
@@ -159,7 +154,6 @@ import { QuestionComponent } from './QuesionManagement/question/question.compone
     RefundReasonListComponent,
     RefundRequestListComponent,
     RefundRequestDetailComponent,
-   
     PolicyUpdateComponent,
     ChartTestingComponent,
     AdminLayoutComponent,
@@ -175,8 +169,12 @@ import { QuestionComponent } from './QuesionManagement/question/question.compone
     CreateDeliveryMethodComponent,
     DeliveryMethodListComponent,
     EditDeliveryMethodComponent,
-   DiscountListComponent,
-   QuestionComponent
+    DiscountListComponent,
+    NewCreateDiscountComponent,
+    NewDiscountRulesComponent,
+    NewProductSelectionComponent,
+    QuestionComponent
+
   ],
   imports: [
     CommonModule,
@@ -201,7 +199,7 @@ import { QuestionComponent } from './QuesionManagement/question/question.compone
     FormsModule,
     NgxChartsModule,
     NgxMaskModule.forRoot(),
-    
-]
+
+  ]
 })
 export class AdminModule { }

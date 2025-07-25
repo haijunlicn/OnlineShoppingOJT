@@ -95,6 +95,21 @@ public class UserAddressService {
         return modelMapper.map(updated, UserAddressDto.class);
     }
 
+    public List<Object[]> getUserCountsByCity() {
+        return userAddressRepository.countUsersByCity();
+    }
+
+    public List<Object[]> getUserCountsByTownship(String city) {
+        return userAddressRepository.countUsersByTownship(city);
+    }
+
+    public List<Object[]> getUserCountsByCityWithOrderFilter(boolean orderedOnly) {
+        return userAddressRepository.countUsersByCityWithOrderFilter(orderedOnly);
+    }
+
+    public List<Object[]> getUserCountsByTownshipWithOrder(String city) {
+        return userAddressRepository.countUsersByTownshipWithOrder(city);
+    }
 }
 
 

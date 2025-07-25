@@ -72,7 +72,9 @@ public class AdminAccountService {
             dto.setId(user.getId());
             dto.setEmail(user.getEmail());
             dto.setName(user.getName());
-            dto.setPhone(user.getPhone());
+//            dto.setPhone(user.getPhone());
+            dto.setProfile(user.getProfile());
+            dto.setProfile(user.getProfile());
             dto.setRoleName(user.getRole().getName());
             dto.setIsVerified(user.getIsVerified());
             dto.setDelFg(user.getDelFg());
@@ -92,7 +94,9 @@ public class AdminAccountService {
                     dto.setId(user.getId());
                     dto.setEmail(user.getEmail());
                     dto.setName(user.getName());
-                    dto.setPhone(user.getPhone());
+//                    dto.setPhone(user.getPhone());
+
+                    dto.setProfile(user.getProfile());
                     dto.setRoleName(user.getRole().getName());
                     dto.setIsVerified(user.getIsVerified());
                     dto.setDelFg(user.getDelFg());
@@ -107,6 +111,14 @@ public class AdminAccountService {
                             .collect(Collectors.toList())
                             : new ArrayList<>();
                     dto.setGroupIds(groupIds);
+
+                    // Set city from latest address if available
+                    if (user.getAddresses() != null && !user.getAddresses().isEmpty()) {
+                        user.getAddresses().stream()
+                            .filter(addr -> addr.getCity() != null)
+                            .max(Comparator.comparing(addr -> addr.getCreatedDate() != null ? addr.getCreatedDate() : java.time.LocalDateTime.MIN))
+                            .ifPresent(addr -> dto.setCity(addr.getCity()));
+                    }
 
                     return dto;
                 })
