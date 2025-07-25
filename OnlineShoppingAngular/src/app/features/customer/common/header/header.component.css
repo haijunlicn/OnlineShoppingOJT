@@ -113,6 +113,23 @@
   width: 100%;
 }
 
+.nav-item.active, .mobile-nav-item.active {
+  color: var(--color-brown);
+  font-weight: 600;
+ 
+  position: relative;
+}
+
+.nav-item.active::after {
+  width: 100%;
+  background-color: var(--color-brown);
+}
+
+.mobile-nav-item.active {
+  border-left: 4px solid var(--color-brown);
+  background: rgba(216, 203, 187, 0.12);
+}
+
 /* Header Actions - Better Spacing */
 .header-actions {
   display: flex;

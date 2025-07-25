@@ -1,37 +1,233 @@
-<div class="container">
-  <h2>Vlog List</h2>
+<!-- Clean Navigation Bar -->
+<div class="navigation-bar mb-3">
+    <div class="nav-left">
+        <div class="nav-info">
+            <nav aria-label="breadcrumb" class="mb-1">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <i class="fas fa-home me-1"></i>
+                        <a href="/admin/dashboard" class="text-decoration-none">Dashboard</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <i class="fas fa-video me-1"></i>
+                        Blog Management
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Blog List</li>
+                </ol>
+            </nav>
+            <h1 class="nav-title">Blog List</h1>
+        </div>
+    </div>
+    <div class="nav-right">
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary btn-sm" (click)="refreshData()" [disabled]="loading">
+                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+            </button>
+            <button class="custom-create-blog-btn" (click)="goToCreateBlog()">
+            <i class="bi bi-plus-lg me-1"></i> Create Blog
+            </button>
+        </div>
+    </div>
+</div>
 
-  <div *ngIf="loading" class="loading-spinner">Loading...</div>
-  <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
+<!-- Main Content -->
+<div>
+    <!-- Error Message -->
 
-  <table class="vlog-table" *ngIf="vlogs.length > 0; else noVlogs">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Title</th>
-        <th>Content</th>
-        <th>Created Date</th>
-        <th>Updated Date</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let vlog of vlogs">
-        <td>{{ vlog.id }}</td>
-        <td>{{ vlog.title }}</td>
-        <td>{{ vlog.vlogContent }}</td>
-        <td>{{ vlog.createdDate | date: 'short' }}</td>
-        <td>{{ vlog.updatedDate | date: 'short' }}</td>
-        <td>
-          <button (click)="goToEdit(vlog.id)" class="button button-secondary">Edit</button>
-          <button (click)="deleteVlog(vlog.id)" class="button button-danger">Delete</button>
-          <button (click)="goToAddFile(vlog.id)" class="button button-success">Add File</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+    <!-- Filter Controls Card -->
+    <div class="filter-section mb-3">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-filter me-2"></i>Filters & Search
+                    </h6>
+                    <button type="button" class="btn btn-link btn-sm text-muted p-0" (click)="onReset()"
+                        *ngIf="filterParams.search.trim() || filterParams.dateFrom || filterParams.dateTo">
+                        <i class="fas fa-times me-1"></i>Clear All
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <!-- Search -->
+                    <div class="col-12 col-lg-4">
+                        <label for="searchInput" class="form-label">Search</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                            <input id="searchInput" type="text" class="form-control" [(ngModel)]="filterParams.search"
+                                (input)="onSearchChange()" placeholder="Search by title, content...">
+                        </div>
+                    </div>
+                    <!-- Date Range -->
+                    <div class="col-6 col-lg-2">
+                        <label for="dateFrom" class="form-label">From Date</label>
+                        <input id="dateFrom" type="date" class="form-control" [(ngModel)]="filterParams.dateFrom"
+                            (change)="onDateFromChange()">
+                    </div>
+                    <div class="col-6 col-lg-2">
+                        <label for="dateTo" class="form-label">To Date</label>
+                        <input id="dateTo" type="date" class="form-control" [(ngModel)]="filterParams.dateTo"
+                            (change)="onDateToChange()">
+                    </div>
+                    <!-- Items per page -->
+                    <div class="col-6 col-lg-2">
+                        <label for="itemsPerPage" class="form-label">Show</label>
+                        <select id="itemsPerPage" class="form-select" [(ngModel)]="itemsPerPage"
+                            (change)="onItemsPerPageChange()">
+                            <option *ngFor="let option of getItemsPerPageOptions()" [value]="option">{{ option }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-  <ng-template #noVlogs>
-    <p>No vlogs found.</p>
-  </ng-template>
+    <!-- Data Table Card -->
+    <div class="data-section">
+        <div class="card">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h6 class="card-title mb-1">
+                            <i class="fas fa-list me-2"></i>Blog List
+                        </h6>
+                        <small class="text-muted">
+                            Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
+                            {{ Math.min(currentPage * itemsPerPage, totalItems) }} of {{ totalItems }} entries
+                            <span *ngIf="filteredVlogs.length !== vlogs.length">
+                                (filtered from {{ vlogs.length }} total)
+                            </span>
+                        </small>
+                    </div>
+                    <div class="col-auto" *ngIf="!loading && totalPages > 1">
+                        <small class="text-muted">
+                            Page {{ currentPage }} of {{ totalPages }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <!-- Loading State -->
+                <div *ngIf="loading" class="loading-state">
+                    <div class="d-flex flex-column align-items-center justify-content-center py-5">
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="text-muted mb-0">Loading blogs...</p>
+                    </div>
+                </div>
+                <!-- Data Table -->
+                <div *ngIf="!loading" class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="sortable" (click)="sort('id')">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <span>Blog ID</span>
+                                        <i class="fas ms-1" [class]="getSortIcon('id')"></i>
+                                    </div>
+                                </th>
+                                <th class="sortable" (click)="sort('title')">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <span>Title</span>
+                                        <i class="fas ms-1" [class]="getSortIcon('title')"></i>
+                                    </div>
+                                </th>
+                                <th>Content</th>
+                                <th class="sortable" (click)="sort('createdDate')">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <span>Created Date</span>
+                                        <i class="fas ms-1" [class]="getSortIcon('createdDate')"></i>
+                                    </div>
+                                </th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let vlog of paginatedVlogs; trackBy: trackByVlogId" class="table-row-hover" [ngClass]="getRowClass(vlog)">
+                                <td>
+                                    <span class="fw-bold text-primary">#{{ vlog.id }}</span>
+                                </td>
+                                <td>
+                                    <span class="text-dark">{{ vlog.title }}</span>
+                                </td>
+                                <td>
+                                    <span class="text-muted">{{ vlog.vlogContent }}</span>
+                                </td>
+                                <td>
+                                    <div class="date-info">
+                                        <div class="text-dark">{{ vlog.createdDate | date:'MMM d, y' }}</div>
+                                        <small class="text-muted">{{ vlog.createdDate | date:'h:mm a' }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-outline-primary btn-sm" (click)="goToEdit(vlog.id)" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm" (click)="deleteVlog(vlog.id)" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Empty State -->
+                <div *ngIf="!loading && paginatedVlogs.length === 0" class="empty-state">
+                    <div class="text-center py-5">
+                        <div class="empty-icon mb-3">
+                            <i class="fas fa-inbox display-1 text-muted"></i>
+                        </div>
+                        <h5 class="text-muted mb-2">No blogs found</h5>
+                        <p class="text-muted mb-3">
+                            <span *ngIf="filterParams.search.trim() || filterParams.dateFrom || filterParams.dateTo">
+                                No blogs match your current filters. Try adjusting your search criteria.
+                            </span>
+                            <span *ngIf="!filterParams.search.trim() && !filterParams.dateFrom && !filterParams.dateTo">
+                                No blogs have been submitted yet.
+                            </span>
+                        </p>
+                        <button class="btn btn-outline-primary" (click)="onReset()"
+                            *ngIf="filterParams.search.trim() || filterParams.dateFrom || filterParams.dateTo">
+                            <i class="fas fa-times me-1"></i>Clear All Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- Pagination Footer -->
+            <div class="card-footer" *ngIf="!loading && totalPages > 0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="pagination-info">
+                        <small class="text-muted">
+                            Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
+                            {{ Math.min(currentPage * itemsPerPage, totalItems) }} of {{ totalItems }} entries
+                        </small>
+                    </div>
+                    <nav aria-label="Blog list pagination">
+                        <ul class="pagination pagination-sm mb-0 custom-pagination">
+                            <li class="page-item" [class.disabled]="currentPage === 1">
+                                <button class="page-link" (click)="goToPreviousPage()" [disabled]="currentPage === 1">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                            </li>
+                            <li *ngFor="let page of getPageNumbers()" class="page-item" [class.active]="page === currentPage">
+                                <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+                            </li>
+                            <li class="page-item" [class.disabled]="currentPage === totalPages">
+                                <button class="page-link" (click)="goToNextPage()" [disabled]="currentPage === totalPages">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

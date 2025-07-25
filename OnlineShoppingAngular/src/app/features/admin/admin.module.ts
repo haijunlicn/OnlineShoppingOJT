@@ -92,8 +92,6 @@ import { AdminNotificationDetailComponent } from './notificationManagement/admin
 import { AdminNotiTypesComponent } from './notificationManagement/admin-noti-types/admin-noti-types.component';
 import { AdminSentNotisComponent } from './notificationManagement/admin-sent-notis/admin-sent-notis.component';
 import { AuditLogComponent } from './policy-management/audit-log/audit-log.component';
-import { VlogFilesCreateComponent } from './vlog-management/vlogfilescreate/vlogfilescreate.component';
-import { VlogFilesListComponent } from './vlog-management/vlogfileslist/vlogfileslist.component';
 import { VlogCreateComponent } from './vlog-management/vlogcreate/vlogcreate.component';
 import { VlogListComponent } from './vlog-management/vloglist/vloglist.component';
 import { CreateDeliveryMethodComponent } from './deliveryMethodManagement/create-delivery-method/create-delivery-method.component';
@@ -174,9 +172,6 @@ import { QuestionComponent } from './QuesionManagement/question/question.compone
     AuditLogComponent,
     VlogListComponent,
     VlogCreateComponent,
-    VlogFilesListComponent,
-    VlogFilesCreateComponent,
-
     CreateDeliveryMethodComponent,
     DeliveryMethodListComponent,
     EditDeliveryMethodComponent,

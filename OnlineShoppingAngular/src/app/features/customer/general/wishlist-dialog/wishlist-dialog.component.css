@@ -71,12 +71,12 @@
 }
 
 .wishlist-input .mat-form-field-label {
-  color: #6b4c3b; /* brown color */
+  color: var(--color-primary); /* brown color */
   font-weight: 600;
 }
 
 .wishlist-input input.mat-input-element {
-  color: #6b4c3b;
+  color: var(--color-primary);
   font-weight: 500;
 }
 
@@ -117,9 +117,9 @@
 
 /* Milk colored button */
 .btn-milk {
-  background-color: #f9f6f0; /* milk color */
-  color: #6b4c3b; /* brown color */
-  border: 2px solid #6b4c3b;
+  background-color: var(--color-background); /* milk color */
+  color: var(--color-primary); /* brown color */
+  border: 2px solid var(--color-primary);
 }
 
 .btn-milk:hover:not(:disabled) {
@@ -129,13 +129,13 @@
 
 /* Brown colored button */
 .btn-brown {
-  background-color: #6b4c3b; /* brown color */
+  background-color: var(--color-primary); /* brown color */
   color: #f9f6f0; /* milk color */
-  border: 2px solid #6b4c3b;
+  border: 2px solid var(--color-primary);
 }
 
 .btn-brown:hover:not(:disabled) {
-  background-color: #5a3f31; /* slightly darker brown */
+  background-color: var(--color-primary); /* slightly darker brown */
   box-shadow: 0 4px 12px rgba(107, 76, 59, 0.5);
 }
 

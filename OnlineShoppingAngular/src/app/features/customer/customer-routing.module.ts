@@ -36,7 +36,6 @@ import { NotiSettingComponent } from './common/noti-setting/noti-setting.compone
 import { ProfileInfoSettingComponent } from './common/profile-info-setting/profile-info-setting.component';
 import { VlogComponent } from './policy/vlog/vlog.component';
 import { VlogListComponent } from './policy/vlog-list/vlog-list.component';
-import { VlogDetailComponent } from './policy/vlog-detail/vlog-detail.component';
 
 const routes: Routes = [
 
@@ -121,7 +120,6 @@ const routes: Routes = [
     canActivate: [AuthGuard, RefundEligibilityGuard]
   },
   { path: 'vlog-list' , component: VlogListComponent},
-    { path: 'vlog-detail/:id' , component: VlogDetailComponent},
 
   { path: 'vlog', component: VlogComponent},
   { path: 'notifications', component: NotificationListComponent, canActivate: [AuthGuard] },
@@ -142,7 +140,8 @@ const routes: Routes = [
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
+  
 
 })
 export class CustomerRoutingModule { }

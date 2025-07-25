@@ -5,21 +5,21 @@ export interface VlogDTO {
   createdDate?: string;
   updatedDate?: string;
   vlogFiles?: VlogFileDTO[]; // Associated files
-  vlog_content?: string
-  
+  vlog_content?: string;
+  vlogId: number
+  files?: VlogFileDTO[]
+
 }
 
 export interface VlogFileDTO {
   id?: number
-  vlogId: number
   fileType?: string 
   filePath: string 
   title?: string 
+  vlogId: number
   thumbnailPath?: string
-  duration?: string 
-  publishedDate?: string 
-    category?: string 
-
+  createdDate?: string;
+  uploadedBy?: string; // Added for admin badge demo
 }
 
 export interface VlogComment {

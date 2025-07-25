@@ -1,11 +1,5 @@
 <div class="container">
-  <h2>Create New Vlog</h2>
-
-  <div *ngIf="loading" class="loading-spinner">Loading...</div>
-  <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
-  <div *ngIf="successMessage" class="message success-message">{{ successMessage }}</div>
-
-  <form (ngSubmit)="createVlog()">
+  <form (ngSubmit)="onSubmit()">
     <div class="form-group">
       <label for="title">Title:</label>
       <input
@@ -14,24 +8,34 @@
         [(ngModel)]="newVlog.title"
         name="title"
         required
-        placeholder="Enter vlog title"
+        placeholder="Enter blog title"
       />
     </div>
-
     <div class="form-group">
       <label for="content">Content:</label>
-      <textarea
-        id="content"
+      <app-rich-text-editor 
         [(ngModel)]="newVlog.vlogContent"
         name="vlogContent"
-        required
-        placeholder="Enter vlog content"
-      ></textarea>
+        placeholder="Enter the detailed answer with formatting..."
+        required>
+      </app-rich-text-editor>
     </div>
-
+    <div class="form-group">
+      <label for="fileUpload">Upload Image/Video (Optional):</label>
+      <input type="file" id="fileUpload" (change)="onFilesSelected($event)" accept="image/*,video/*" multiple />
+    </div>
+    <div class="preview" *ngIf="selectedFiles && selectedFiles.length">
+      <div *ngFor="let file of selectedFiles; let i = index">
+        <img *ngIf="isImageFile(file)" [src]="filePreviews[i]" class="image-preview" />
+        <video *ngIf="isVideoFile(file)" [src]="filePreviews[i]" controls class="video-preview"></video>
+      </div>
+    </div>
     <div class="button-group">
       <button type="submit" class="button button-primary" [disabled]="loading">Create</button>
       <button type="button" class="button button-secondary" (click)="cancel()">Cancel</button>
     </div>
+    <div *ngIf="loading" class="loading-spinner">Loading...</div>
+    <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
+    <div *ngIf="successMessage" class="message success-message">{{ successMessage.replace('Vlog', 'Blog').replace('vlog', 'blog') }}</div>
   </form>
 </div>

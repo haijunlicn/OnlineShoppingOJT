@@ -1,151 +1,46 @@
-<div class="vlog-container">
-  <!-- Main Content -->
-  <div class="main-content">
-    <!-- Left Panel - Vlog List (using VlogFileDTO) -->
-    <div class="vlog-list-panel">
-      <div class="panel-header">
-        <div class="header-content">
-          <h2 class="panel-title">
-            <i class="fas fa-video"></i>
-            All Vlogs
-          </h2>
-          <span class="vlog-count">{{ filteredVlogFiles.length }} videos</span>
-        </div>
-
-        <!-- Search Bar -->
-        <div class="search-container">
-          <div class.search-box>
-            <i class="fas fa-search search-icon"></i>
-            <input
-              type="text"
-              [(ngModel)]="searchTerm"
-              (ngModelChange)="applyFiltersAndSearch()"
-              placeholder="Search by title..."
-              class="search-input"
-            />
-          </div>
-        </div>
-
-        <!-- Category Filter -->
-        <div class="category-filter">
-          <div class="filter-tabs">
-            <button
-              *ngFor="let cat of categories"
-              [class.active]="selectedCategory === cat"
-              (click)="selectedCategory = cat; applyFiltersAndSearch()"
-              class="filter-tab"
-            >
-              {{ cat }}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Loading, Error, Empty States -->
-      <div *ngIf="isLoading" class="loading-state">
-        <i class="fas fa-spinner fa-spin"></i> Loading...
-      </div>
-      <div *ngIf="errorMessage" class="error-state">
-        <i class="fas fa-exclamation-triangle"></i> {{ errorMessage }}
-      </div>
-      <div *ngIf="!isLoading && filteredVlogFiles.length === 0" class="empty-state">
-        <i class="fas fa-video-slash"></i> No videos found.
-      </div>
-
-      <!-- Vlog List -->
-      <div *ngIf="!isLoading" class="vlog-list">
-        <div
-          *ngFor="let file of filteredVlogFiles"
-          class="vlog-item"
-          [class.selected]="selectedVlogFile?.id === file.id"
-          (click)="onVlogSelected(file)"
-        >
-          <div class="vlog-thumbnail">
-            <img [src]="file.thumbnailPath || '/assets/default-thumbnail.png'" [alt]="file.title" class="thumbnail-img" />
-            <div class="play-overlay"><i class="fas fa-play"></i></div>
-            <span *ngIf="file.duration" class="duration-badge">{{ file.duration }}</span>
-          </div>
-          <div class="vlog-info">
-            <h3 class="vlog-title">{{ file.title }}</h3>
-            <div class="vlog-meta">
-              <span class="publish-date">
-                <i class="fas fa-calendar"></i> {{ file.publishedDate | date:'mediumDate' }}
-              </span>
-              <span *ngIf="file.category" class="category-tag">{{ file.category }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Right Panel - Vlog Detail & Comments -->
+<app-header></app-header>
     <div class="vlog-detail-panel">
-      <!-- Video Player (using selectedVlogFile) -->
-      <div *ngIf="selectedVlogFile" class="video-section">
-        <div class="video-container">
-          <video [src]="selectedVlogFile.filePath" controls class="video-player"></video>
-        </div>
-        <div class="video-info">
-          <h1 class="video-title">{{ selectedVlogFile.title }}</h1>
-        </div>
-      </div>
-
-      <!-- Details & Comments Section (using currentVlog) -->
-      <div *ngIf="currentVlog">
-        <!-- Description -->
-        <div class="description-section">
-          <h3>Description</h3>
-          <p class="description-text">{{ currentVlog.vlogContent || 'No description available.' }}</p>
-        </div>
-        
-        <!-- Comments Section -->
-        <div class="comments-section">
-          <h3>Comments ({{ comments.length }})</h3>
-          <div class="comment-form">
-            <textarea
-              [(ngModel)]="commentText"
-              placeholder="Add a public comment..."
-              class="comment-input"
-              [disabled]="isPostingComment"
-            ></textarea>
-            <button
-              class="post-comment-btn"
-              (click)="postComment()"
-              [disabled]="isPostingComment || !commentText.trim()"
-            >
-              <span *ngIf="!isPostingComment">Post Comment</span>
-              <span *ngIf="isPostingComment"><i class="fas fa-spinner fa-spin"></i> Posting...</span>
-            </button>
-          </div>
-
-          <!-- Comments List -->
-          <div class="comments-list">
-            <div *ngIf="comments.length === 0" class="empty-state">
-              Be the first to comment.
+      <div class="vlog-main-layout">
+        <!-- Left: Featured/Main Vlog -->
+        <div class="featured-vlog-panel">
+          <ng-container *ngIf="selectedVlogFile; else noSelection">
+            <div class="featured-media-wrapper" *ngIf="currentVlogFiles.length > 0">
+              <button (click)="prevSlide()" class="slide-btn">&lt;</button>
+              <ng-container *ngIf="currentVlogFiles[currentSlideIndex] as file">
+                <img *ngIf="file.fileType && file.fileType.toLowerCase().includes('image')" [src]="file.filePath" class="featured-image" />
+                <video *ngIf="file.fileType && file.fileType.toLowerCase().includes('video')" [src]="file.filePath" controls class="featured-video"></video>
+              </ng-container>
+              <button (click)="nextSlide()" class="slide-btn">&gt;</button>
             </div>
-            <div *ngFor="let comment of comments" class="comment-item">
-              <div class="comment-avatar">{{ comment.avatarInitial }}</div>
-              <div class="comment-content">
-                <div class="comment-header">
-                  <span class="comment-author">{{ comment.author }}</span>
-                  <span class="comment-date">{{ comment.commentDate | date:'short' }}</span>
+            <div class="vlog-content-section" *ngIf="getCurrentVlog() as vlog">
+              <div class="vlog-detail-block">
+                <div class="vlog-title" title="{{ vlog.title }}">{{ vlog.title }}</div>
+                <div class="vlog-content">
+                  {{ vlog.vlogContent | slice:0:80 }}<span *ngIf="(vlog.vlogContent?.length || 0) > 80">...</span>
                 </div>
-                <p class="comment-text">{{ comment.text }}</p>
+                <div class="vlog-date">{{ vlog.createdDate | date: 'mediumDate' }}</div>
               </div>
             </div>
-          </div>
+            <app-vlog-comment [vlog]="selectedVlogFile"></app-vlog-comment>
+          </ng-container>
+          <ng-template #noSelection>
+            <div class="empty-featured">
+              <i class="fas fa-hand-point-left"></i>
+              <h3>Select a Blog</h3>
+              <p>Choose a video from the list to view its details here.</p>
+            </div>
+          </ng-template>
         </div>
-      </div>
-      
-      <!-- Loading state for details -->
-      <div *ngIf="selectedVlogFile && !currentVlog && !errorMessage" class="loading-state">
-        <i class="fas fa-spinner fa-spin"></i> Loading details...
-      </div>
 
-      <!-- Default empty state -->
-      <div *ngIf="!selectedVlogFile && !isLoading" class="no-selection-state">
-          <i class="fas fa-hand-pointer"></i> Select a vlog to watch.
+        <!-- Right: Sidebar Trending Vlogs -->
+        <aside class="sidebar-trending">
+          <app-vlog-list
+          [vlogs]="filteredVlogFiles"
+          [currentVlogId]="selectedVlogFile?.vlogId"
+          [parentVlogs]="allVlogs"
+          (vlogSelected)="onVlogSelected($event)"
+        ></app-vlog-list>
+          
+        </aside>
       </div>
     </div>
-  </div>
-</div>

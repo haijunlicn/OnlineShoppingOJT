@@ -118,6 +118,16 @@ textarea {
   border: 1px solid #ccc;
 }
 
+.video-preview {
+  width: 220px;
+  height: 120px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #000;
+  display: block;
+  margin-bottom: 10px;
+}
+
 /* List Styles */
 .vlog-list,
 .vlog-file-list {

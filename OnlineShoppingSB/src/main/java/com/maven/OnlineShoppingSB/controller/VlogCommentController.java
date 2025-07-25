@@ -4,6 +4,7 @@ import com.maven.OnlineShoppingSB.dto.VlogCommentDTO;
 import com.maven.OnlineShoppingSB.service.VlogCommentService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.cassandra.CassandraProperties.Request;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

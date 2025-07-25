@@ -94,7 +94,7 @@ public class AuditAspect {
     private String getCurrentUsername() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof CustomUserDetails userDetails) {
-            return userDetails.getUser().getUsername();
+            return userDetails.getUser().getName();
         }
         return "UNKNOWN";
     }

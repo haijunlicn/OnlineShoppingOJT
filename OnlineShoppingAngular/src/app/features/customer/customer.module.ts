@@ -51,14 +51,15 @@ import { NotificationListComponent } from './notification/notification-list/noti
 import { LocationSettingComponent } from './common/location-setting/location-setting.component';
 import { ProfileInfoSettingComponent } from './common/profile-info-setting/profile-info-setting.component';
 import { NotiSettingComponent } from './common/noti-setting/noti-setting.component';
-import { VlogComponent } from './policy/vlog/vlog.component';
-import { VlogListComponent } from './policy/vlog-list/vlog-list.component';
-import { VlogDetailComponent } from './policy/vlog-detail/vlog-detail.component';
 
 import { DiscountDisplayComponent } from './product_display/discount-display/discount-display.component';
 import { StickyDiscountProgressComponent } from './product_display/sticky-discount-progress/sticky-discount-progress.component';
 import { DiscountConditionDisplayComponent } from './product_display/discount-condition-display/discount-condition-display.component';
 import { ProductqandaComponent } from './product_display/productqanda/productqanda.component';
+import { VlogListComponent } from './policy/vlog-list/vlog-list.component';
+import { VlogComponent } from './policy/vlog/vlog.component';
+import { VlogCommentComponent } from './policy/vlog-comment/vlog-comment.component';
+
 
 @NgModule({
   declarations: [
@@ -103,13 +104,13 @@ import { ProductqandaComponent } from './product_display/productqanda/productqan
     LocationSettingComponent,
     ProfileInfoSettingComponent,
     NotiSettingComponent,
-    VlogComponent,
-    VlogListComponent,
-    VlogDetailComponent,
     DiscountDisplayComponent,
     StickyDiscountProgressComponent,
     DiscountConditionDisplayComponent,
-    ProductqandaComponent
+    ProductqandaComponent,
+    VlogListComponent,
+    VlogComponent,
+    VlogCommentComponent
   ],
   imports: [
     CommonModule,
@@ -126,6 +127,7 @@ import { ProductqandaComponent } from './product_display/productqanda/productqan
     MatButtonModule,
     FormsModule,
     HttpClientModule,
+ 
   ]
 })
 export class CustomerModule { }

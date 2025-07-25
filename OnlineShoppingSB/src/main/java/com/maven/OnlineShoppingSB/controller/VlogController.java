@@ -17,9 +17,9 @@ public class VlogController {
     private VlogService vlogService;
 
     @PostMapping("/create")
-    public ResponseEntity<String> createVlog(@RequestBody VlogDTO dto) {
-        vlogService.createVlog(dto);
-        return ResponseEntity.ok("Vlog created successfully!");
+    public ResponseEntity<VlogDTO> createVlog(@RequestBody VlogDTO dto) {
+        VlogDTO created = vlogService.createVlog(dto);
+        return ResponseEntity.ok(created);
     }
 
     @GetMapping("/list")
