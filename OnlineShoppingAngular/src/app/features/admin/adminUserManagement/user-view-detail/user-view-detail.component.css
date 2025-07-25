@@ -1,0 +1,160 @@
+/* User Info Card - Small, Compact, Horizontal */
+.user-info-card {
+  background: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border: none;
+  display: flex;
+  align-items: center;
+  padding: 1.25rem 2rem;
+  min-height: 90px;
+  margin-bottom: 1.5rem;
+}
+.user-avatar {
+  width: 56px;
+  height: 56px;
+  font-size: 2rem;
+  background: #6c757d;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-right: 1.5rem;
+  flex-shrink: 0;
+}
+.user-name {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+.user-email, .user-city {
+  font-size: 1rem;
+  margin-bottom: 0.1rem;
+  display: flex;
+  align-items: center;
+}
+.user-info-card .badge {
+  font-size: 1rem;
+  padding: 0.45em 1.2em;
+  border-radius: 1.2em;
+  font-weight: 500;
+}
+
+/* Remove border from card globally for this context */
+.card {
+  border: none;
+}
+
+/* Tab Switch */
+.nav-tabs {
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+  border-radius: 0.5rem 0.5rem 0 0;
+  padding-left: 1rem;
+}
+.nav-tabs .nav-link {
+  color: #374151;
+  font-weight: 500;
+  border: none;
+  border-radius: 0.5rem 0.5rem 0 0;
+  margin-right: 0.5rem;
+  background: none;
+}
+.nav-tabs .nav-link.active {
+  background: #fff;
+  color: #2563eb;
+  border-bottom: 2px solid #2563eb;
+}
+
+/* Filter Bar */
+.filter-bar {
+  background: #f9fafb;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 1rem;
+}
+
+/* Table */
+.table {
+  background: #fff;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+}
+.table thead {
+  background: #f3f4f6;
+  color: #374151;
+}
+.table th, .table td {
+  vertical-align: middle;
+  padding: 0.75rem 1rem;
+}
+
+/* Badges */
+.badge {
+  font-size: 0.95em;
+  padding: 0.4em 0.8em;
+  border-radius: 0.5rem;
+  font-weight: 500;
+}
+.badge.bg-primary {
+  background: #2563eb;
+  color: #fff;
+}
+.badge.bg-info {
+  background: #0ea5e9;
+  color: #fff;
+}
+.badge.bg-success {
+  background: #22c55e;
+  color: #fff;
+}
+.badge.bg-warning {
+  background: #f59e42;
+  color: #fff;
+}
+.badge.bg-danger {
+  background: #ef4444;
+  color: #fff;
+}
+
+/* Buttons */
+.btn-outline-primary {
+  color: #2563eb;
+  border-color: #2563eb;
+}
+.btn-outline-primary:hover {
+  background: #2563eb;
+  color: #fff;
+}
+.btn-outline-info {
+  color: #0ea5e9;
+  border-color: #0ea5e9;
+}
+.btn-outline-info:hover {
+  background: #0ea5e9;
+  color: #fff;
+}
+
+/* Loading/Empty State */
+.text-center.py-5 {
+  color: #6b7280;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .user-info-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem 0.5rem;
+  }
+  .user-avatar {
+    margin-right: 0;
+    margin-bottom: 1rem;
+  }
+  .d-flex.flex-row.align-items-center.gap-2.ms-auto {
+    margin-left: 0;
+    margin-top: 1rem;
+  }
+}

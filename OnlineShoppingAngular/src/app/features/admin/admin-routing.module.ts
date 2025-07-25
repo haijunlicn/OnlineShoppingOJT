@@ -64,6 +64,8 @@ import { CreateDiscountComponent } from './discount_management/create-discount/c
 import { DiscountListComponent } from './discount_management/discount-list/discount-list.component';
 import { NewCreateDiscountComponent } from './discount_management/new-create-discount/new-create-discount.component';
 import { QuestionComponent } from './QuestionManagement/question/question.component';
+import { UserDetailListComponent } from './adminUserManagement/user-detail-list/user-detail-list.component';
+import { UserViewDetailComponent } from './adminUserManagement/user-view-detail/user-view-detail.component';
 
 const routes: Routes = [
   {
@@ -152,6 +154,8 @@ const routes: Routes = [
       { path: 'vlogfilescreate/:vlogId', component: VlogFilesCreateComponent },
       { path: 'vloglist', component: VlogListComponent },
       { path: 'vlogcreate', component: VlogCreateComponent },
+      {path:'userList',component:UserDetailListComponent},
+      {path:'user-view-detail/:id', component:UserViewDetailComponent}
 
     ]
   }

@@ -41,4 +41,8 @@ export class AdminAccountService {
     return this.http.get<any[]>(`http://localhost:8080/locations/township-user-counts-with-order?city=${encodeURIComponent(city)}`);
   }
 
+  getUserById(userId: number): Observable<User> {
+    return this.http.get<User>(`/api/admin/users/${userId}`);
+  }
+
 }
