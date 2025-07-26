@@ -585,7 +585,7 @@ export class ProductCreateComponent implements OnInit {
 
       const productImages: ProductImageDTO[] = this.imagePool.map((img) => ({
         imgPath: img.uploadedUrl!,
-        imageUrl: img.uploadedUrl!, 
+        imageUrl: img.uploadedUrl!,
         displayOrder: img.displayOrder,
         mainImageStatus: img.isMain,
         altText: img.altText,
@@ -600,17 +600,17 @@ export class ProductCreateComponent implements OnInit {
           brandId: formValue.brandId,
           categoryId: formValue.categoryId,
           basePrice: formValue.basePrice,
-          
-          category: {
-      id: formValue.categoryId,
-      name: '' 
-    },
 
-    brand: {
-      id: formValue.brandId,
-      name: formValue.brandName || '', 
-  logo: formValue.brandLogo || 'default-logo.png', 
-    },
+          category: {
+            id: formValue.categoryId,
+            name: ''
+          },
+
+          brand: {
+            id: formValue.brandId,
+            name: formValue.brandName || '',
+            logo: formValue.brandLogo || 'default-logo.png',
+          },
         },
         options: formValue.options,
         variants: formValue.variants.map((variant: any, index: number) => {
@@ -664,6 +664,10 @@ export class ProductCreateComponent implements OnInit {
 
   private cleanupPreviewUrls(): void {
     this.imagePool.forEach((img) => URL.revokeObjectURL(img.previewUrl))
+  }
+
+  backToList(): void {
+    this.router.navigate(['/admin/productList']);
   }
 
   resetForm(): void {
@@ -886,7 +890,7 @@ export class ProductCreateComponent implements OnInit {
     const variant = this.productVariants[i]
     return this.productFormService.getSkuForVariant(productName, variant)
   }
-  
+
   markFormGroupTouched(): void {
     this.formValidation.markFormGroupTouched(this.productForm);
   }

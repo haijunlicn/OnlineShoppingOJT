@@ -231,34 +231,42 @@ export class CartComponent implements OnInit {
       return
     }
 
-    // Check conditions
-    if (
-      matchingCoupon.conditionGroups &&
-      matchingCoupon.conditionGroups.length > 0
-    ) {
-      const conditionsMet = evaluateCartConditions(
-        matchingCoupon.conditionGroups,
-        this.cart,
-        this.shipping,
-      );
-      if (!conditionsMet) {
-        this.couponMessage =
-          "This coupon cannot be applied to your current cart.";
-        this.couponSuccess = false;
-        return;
+    // Check usage limit asynchronously
+    this.discountDisplayService.canUserUseMechanism(matchingCoupon.mechanismId!).subscribe(response => {
+      if (!response.canUse) {
+        if (response.status === 'EXCEEDED_TOTAL_LIMIT') {
+          this.couponMessage = 'This coupon has reached its total usage limit.'
+        } else if (response.status === 'EXCEEDED_PER_USER_LIMIT') {
+          this.couponMessage = 'You have used this coupon too many times.'
+        } else {
+          this.couponMessage = 'This coupon is currently unavailable.'
+        }
+        this.couponSuccess = false
+        return
       }
-    }
 
-    // if (matchingCoupon.conditionGroups && matchingCoupon.conditionGroups.length > 0) {
-    //   const conditionsMet = evaluateCartConditions(matchingCoupon.conditionGroups, this.cart, this.shipping)
-    //   if (!conditionsMet) {
-    //     this.couponMessage = "This coupon cannot be applied to your current cart."
-    //     this.couponSuccess = false
-    //     return
-    //   }
-    // }
+      // Usage is allowed, now check conditions
+      if (
+        matchingCoupon.conditionGroups &&
+        matchingCoupon.conditionGroups.length > 0
+      ) {
+        const conditionsMet = evaluateCartConditions(
+          matchingCoupon.conditionGroups,
+          this.cart,
+          this.shipping,
+        )
+        if (!conditionsMet) {
+          this.couponMessage = "This coupon cannot be applied to your current cart."
+          this.couponSuccess = false
+          return
+        }
+      }
 
-    this.applyCouponDiscount(matchingCoupon)
+      // All checks passed, apply coupon
+      this.applyCouponDiscount(matchingCoupon)
+      this.couponMessage = "Coupon applied successfully!"
+      this.couponSuccess = true
+    })
   }
 
   private applyCouponDiscount(coupon: DiscountDisplayDTO): void {

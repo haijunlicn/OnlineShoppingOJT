@@ -12,6 +12,7 @@
   --color-danger: #dc3545;
   --color-warning: #ffc107;
   --color-info: #17a2b8;
+  --color-discount: #ff5722;
 }
 
 /* Main container */
@@ -440,7 +441,7 @@
   background-color: #f9fafb;
 }
 
-/* Bulk Update Section */
+/* Enhanced Bulk Update Section with Comment Box */
 .bulk-update-section {
   background: white;
   border: 1px solid var(--color-border);
@@ -519,6 +520,94 @@
 .error-message {
   color: var(--color-danger);
   font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Bulk Comment Section Styles */
+.bulk-comment-section {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(248, 250, 252, 0.5);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.bulk-comment-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+  transition: all 0.2s ease;
+}
+
+.bulk-comment-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(22, 48, 43, 0.1);
+}
+
+.bulk-comment-input.mandatory {
+  border-color: #dc3545;
+  background: rgba(220, 53, 69, 0.02);
+}
+
+.bulk-comment-input.mandatory:focus {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.1);
+}
+
+.bulk-comment-input.error {
+  border-color: #dc3545;
+  background: rgba(220, 53, 69, 0.05);
+}
+
+/* Form Styles */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-weight: 600;
+  color: var(--color-primary);
+  font-size: 0.875rem;
+}
+
+.form-label.required::after {
+  content: " *";
+  color: var(--color-danger);
+}
+
+.form-control {
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(22, 48, 43, 0.1);
+}
+
+.form-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.25rem;
+}
+
+.char-count {
+  font-size: 0.75rem;
+  color: var(--color-brown);
 }
 
 /* Orders Table */
@@ -987,6 +1076,15 @@
   .empty-state i {
     font-size: 3rem;
   }
+
+  .bulk-comment-section {
+    padding: 0.75rem;
+  }
+
+  .bulk-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1356,7 +1454,8 @@ input[type="checkbox"]:disabled {
   box-shadow: 0 2px 8px rgba(42, 50, 46, 0.08);
   transition: background 0.15s, box-shadow 0.15s;
 }
-.export-dropdown .btn:hover, .export-dropdown .btn:focus {
+.export-dropdown .btn:hover,
+.export-dropdown .btn:focus {
   background: var(--color-brown);
   color: #fff;
   box-shadow: 0 4px 12px rgba(42, 50, 46, 0.12);
@@ -1380,7 +1479,8 @@ input[type="checkbox"]:disabled {
   align-items: center;
   gap: 0.75rem;
 }
-.export-dropdown .dropdown-item:hover, .export-dropdown .dropdown-item:focus {
+.export-dropdown .dropdown-item:hover,
+.export-dropdown .dropdown-item:focus {
   background: var(--color-accent);
   color: var(--color-primary);
 }
@@ -1425,21 +1525,19 @@ input[type="checkbox"]:disabled {
   margin-bottom: 0.25rem;
 }
 .stat-card .stat-value {
-  font-size: 1.25rem;
+  font-size: 2rem;
+  font-weight: 700;
   color: var(--color-primary);
-  font-weight: 600;
 }
-
-/* Remove any large SVG backgrounds or misplaced graphics */
-.bg-gradient, .stat-card-emerald, .stat-content, .stat-trend, .icon-large {
-  background: none !important;
-  box-shadow: none !important;
-  border: none !important;
-  color: inherit !important;
-  font-size: inherit !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  width: auto !important;
-  height: auto !important;
-  display: initial !important;
+.stat-card.pending .stat-icon {
+  background: #fff3cd;
+  color: #856404;
+}
+.stat-card.processing .stat-icon {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+.stat-card.delivered .stat-icon {
+  background: #d4edda;
+  color: #155724;
 }

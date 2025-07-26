@@ -63,20 +63,33 @@ export class CartService {
 
   // Helper to get only CartItem[] (without discount info) for backward compatibility or UI uses
   getCartItemsOnly(): CartItemWithDiscounts[] {
-    const fullCart = this.getFullCart()
-    if (!fullCart) return []
+    const fullCart = this.getFullCart();
+    if (!fullCart || !fullCart.cartItems) return [];
 
     return fullCart.cartItems.map((item) => ({
       ...item,
-      originalPrice: item.originalPrice ?? item.price,
-      discountedPrice: item.discountedPrice ?? item.price,
+      originalPrice: item.originalPrice ?? item.price ?? 0,
+      discountedPrice: item.discountedPrice ?? item.price ?? 0,
       appliedDiscounts: item.appliedDiscounts ?? [],
       discountBreakdown: item.discountBreakdown ?? [],
-    }))
+    }));
   }
 
-  // ---------- Cart operations working on full cart ----------
+  // getCartItemsOnly(): CartItemWithDiscounts[] {
+  //   const fullCart = this.getFullCart()
+  //   if (!fullCart) return []
 
+  //   return fullCart.cartItems.map((item) => ({
+  //     ...item,
+  //     originalPrice: item.originalPrice ?? item.price,
+  //     discountedPrice: item.discountedPrice ?? item.price,
+  //     appliedDiscounts: item.appliedDiscounts ?? [],
+  //     discountBreakdown: item.discountBreakdown ?? [],
+  //   }))
+  // }
+
+  // ---------- Cart operations working on full cart ----------
+  
   addToCart(product: {
     id: number
     name: string
@@ -100,8 +113,15 @@ export class CartService {
       }
     }
 
+    // Ensure cartItems is always an array
+    if (!fullCart.cartItems) {
+      fullCart.cartItems = []
+    }
+
     const cart = fullCart.cartItems
-    const index = cart.findIndex((item) => item.productId === product.id && item.variantId === product.variantId)
+    const index = cart.findIndex(
+      (item) => item.productId === product.id && item.variantId === product.variantId
+    )
 
     if (index !== -1) {
       if (cart[index].quantity < product.stock) {
@@ -134,6 +154,64 @@ export class CartService {
 
     this.setFullCart(fullCart)
   }
+
+  // addToCart(product: {
+  //   id: number
+  //   name: string
+  //   variantId: number
+  //   variantSku: string
+  //   stock: number
+  //   price: number
+  //   image?: string
+  //   brandId: number
+  //   categoryId: number
+  // }): void {
+  //   if (!this.storageKey) return // Do nothing for guest
+
+  //   let fullCart = this.getFullCart()
+  //   if (!fullCart) {
+  //     fullCart = {
+  //       cartItems: [],
+  //       cartTotal: 0,
+  //       appliedCoupon: null,
+  //       autoDiscountSavings: 0,
+  //     }
+  //   }
+
+  //   const cart = fullCart.cartItems
+  //   const index = cart.findIndex((item) => item.productId === product.id && item.variantId === product.variantId)
+
+  //   if (index !== -1) {
+  //     if (cart[index].quantity < product.stock) {
+  //       cart[index].quantity += 1
+  //     } else {
+  //       alert(`${product.name} (Variant ID ${product.variantId}) is out of stock`)
+  //       return
+  //     }
+  //   } else {
+  //     const newItem: CartItemWithDiscounts = {
+  //       productId: product.id,
+  //       productName: product.name,
+  //       variantId: product.variantId,
+  //       variantSku: product.variantSku,
+  //       stock: product.stock,
+  //       price: product.price,
+  //       imgPath: product.image || undefined,
+  //       quantity: 1,
+  //       brandId: Number(product.brandId),
+  //       categoryId: Number(product.categoryId),
+
+  //       // Discount fields init
+  //       originalPrice: product.price,
+  //       discountedPrice: product.price,
+  //       appliedDiscounts: [],
+  //       discountBreakdown: [],
+  //     }
+  //     cart.push(newItem)
+  //   }
+
+  //   this.setFullCart(fullCart)
+  // }
 
   updateQuantity(productId: number, variantId: number, change: number): void {
     const fullCart = this.getFullCart()
@@ -181,19 +259,36 @@ export class CartService {
   }
 
   getVariantQuantity(productId: number, variantId: number): number {
-    const fullCart = this.getFullCart()
-    if (!fullCart) return 0
+    const fullCart = this.getFullCart();
+    if (!fullCart || !fullCart.cartItems) return 0;
 
-    const item = fullCart.cartItems.find((i) => i.productId === productId && i.variantId === variantId)
-    return item ? item.quantity : 0
+    const item = fullCart.cartItems.find(
+      (i) => i.productId === productId && i.variantId === variantId
+    );
+
+    return item ? (item.quantity ?? 0) : 0;
   }
+
+  // getVariantQuantity(productId: number, variantId: number): number {
+  //   const fullCart = this.getFullCart()
+  //   if (!fullCart) return 0
+
+  //   const item = fullCart.cartItems.find((i) => i.productId === productId && i.variantId === variantId)
+  //   return item ? item.quantity : 0
+  // }
 
   // Count total items
   private calcCount(): number {
     const fullCart = this.getFullCart()
-    if (!fullCart) return 0
-    return fullCart.cartItems.reduce((sum, i) => sum + i.quantity, 0)
+    if (!fullCart || !fullCart.cartItems) return 0;
+    return fullCart.cartItems.reduce((sum, i) => sum + (i.quantity ?? 0), 0);
   }
+
+  // private calcCount(): number {
+  //   const fullCart = this.getFullCart()
+  //   if (!fullCart) return 0
+  //   return fullCart.cartItems.reduce((sum, i) => sum + i.quantity, 0)
+  // }
 
   private emitCount(): void {
     this.cartCountSubject.next(this.calcCount())

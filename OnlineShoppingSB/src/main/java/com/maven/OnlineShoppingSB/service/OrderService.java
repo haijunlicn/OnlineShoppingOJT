@@ -51,6 +51,8 @@ public class OrderService {
     @Autowired
     private NotificationService notificationService;
     @Autowired
+    private DiscountDisplayService discountDisplayService;
+    @Autowired
     private RefundItemRepository refundItemRepository;
     @Autowired
     private RefundRequestRepository refundRequestRepository;
@@ -133,6 +135,10 @@ public class OrderService {
                     discount.setDiscountAmount(BigDecimal.valueOf(discountDto.getDiscountAmount()));
                     discount.setCouponCode(discountDto.getCouponCode());
                     discount.setDescription(discountDto.getDescription());
+                    // ✅ Record usage if coupon-type (or any you want to track)
+                    if (discountDto.getMechanismType() == MechanismType.Coupon) {
+                        discountDisplayService.recordUsage(discountDto.getDiscountMechanismId(), dto.getUserId());
+                    }
                     return discount;
                 }).collect(Collectors.toList());
 

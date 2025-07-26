@@ -1,10 +1,13 @@
 package com.maven.OnlineShoppingSB.controller;
 
+import com.maven.OnlineShoppingSB.config.CustomUserDetails;
 import com.maven.OnlineShoppingSB.dto.*;
 import com.maven.OnlineShoppingSB.service.DiscountDisplayService;
 import com.maven.OnlineShoppingSB.service.DiscountService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,9 +28,6 @@ public class DiscountDisplayController {
             @RequestParam(required = false) Long userId) {
 
         Map<Long, List<DiscountDisplayDTO>> hints = discountDisplayService.getProductDiscountHints(userId);
-
-        // System.out.println("hint logs : " + hints);
-
         return ResponseEntity.ok(hints);
     }
 
@@ -42,6 +42,21 @@ public class DiscountDisplayController {
     @GetMapping("/public/discount/{id}")
     public DiscountEventDTO getDiscountById(@PathVariable Long id, @RequestParam(required = false) Long userId) {
         return discountDisplayService.getDiscountById(id, userId);
+    }
+
+    @GetMapping("/can-user-use-mechanism/{mechanismId}")
+    public ResponseEntity<Map<String, Object>> canUserUseDiscount(
+            @PathVariable Long mechanismId,
+            @AuthenticationPrincipal CustomUserDetails principal
+    ) {
+        Long userId = principal.getUser().getId();
+        DiscountUsageDTO.DiscountUsageStatus status = discountDisplayService.canUseMechanismWithReason(mechanismId, userId);
+
+        boolean canUse = status == DiscountUsageDTO.DiscountUsageStatus.AVAILABLE;
+        return ResponseEntity.ok(Map.of(
+                "canUse", canUse,
+                "status", status.name()
+        ));
     }
 
 }
