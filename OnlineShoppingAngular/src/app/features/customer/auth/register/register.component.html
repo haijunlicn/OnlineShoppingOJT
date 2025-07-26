@@ -145,7 +145,7 @@
           </label>
         </div>
         <div class="error-message"
-             *ngIf="(registerForm.get('acceptTerms')?.touched || isSubmitted) && registerForm.get('acceptTerms')?.invalid">
+             *ngIf="isSubmitted && !registerForm.get('acceptTerms')?.value">
           You must accept the terms to continue.
         </div>
 
@@ -154,7 +154,7 @@
           <button
             type="submit"
             class="btn primary-btn"
-            [disabled]="isLoading || !registerForm.valid || !registerForm.get('acceptTerms')?.value">
+            [disabled]="isLoading">
             <span *ngIf="!isLoading">Register</span>
             <span *ngIf="isLoading" class="d-flex align-items-center justify-content-center">
               <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>

@@ -97,6 +97,7 @@ import { NewCreateDiscountComponent } from './discount_management/new-create-dis
 import { NewDiscountRulesComponent } from './discount_management/new-discount-rules/new-discount-rules.component';
 import { NewProductSelectionComponent } from './discount_management/new-product-selection/new-product-selection.component';
 import { QuestionComponent } from './QuestionManagement/question/question.component';
+import { AdminAccountListComponent } from './roleAndPermission/admin-account-list/admin-account-list.component';
 
 @NgModule({
   declarations: [
@@ -173,7 +174,8 @@ import { QuestionComponent } from './QuestionManagement/question/question.compon
     NewCreateDiscountComponent,
     NewDiscountRulesComponent,
     NewProductSelectionComponent,
-    QuestionComponent
+    QuestionComponent,
+    AdminAccountListComponent
 
   ],
   imports: [

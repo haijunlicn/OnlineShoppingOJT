@@ -53,21 +53,30 @@ export class AdminAccountCreateComponent implements OnInit {
     this.isSubmitting = true;
 
     this.accountService.createAccount(this.accountForm.value).subscribe({
-      next: () => {
-        this.alert.toast('Admin account created!', 'success');
-        this.router.navigate(['/admin/admin-list']);
+      next: (response) => {
+        this.alert.toast('Admin account created successfully!', 'success');
+        this.router.navigate(['/admin/account/list']);
       },
       error: err => {
         console.error('Raw error:', err);
-        const message = err.error?.message || err.error || 'Unknown error';
-        this.alert.error('Failed to create account: ' + message);
+        let message = 'Failed to create account';
+        
+        if (err.status === 200 && err.error) {
+          // Server returned success but with text response
+          message = err.error;
+        } else if (err.error?.message) {
+          message = err.error.message;
+        } else if (err.message) {
+          message = err.message;
+        }
+        
+        this.alert.error(message);
         this.isSubmitting = false;
       }
-
     });
   }
 
   goBack(): void {
-    this.router.navigate(['/admin/admin-list'])
+    this.router.navigate(['/admin/account/list'])
   }
 }

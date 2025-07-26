@@ -120,9 +120,9 @@ const routes: Routes = [
     component: RefundRequestFormComponent,
     canActivate: [AuthGuard, RefundEligibilityGuard]
   },
-  { path: 'vlog-list', component: VlogListComponent },
+  { path: 'blog-list', component: VlogListComponent },
 
-  { path: 'vlog', component: VlogComponent },
+  { path: 'blog', component: VlogComponent },
   { path: 'notifications', component: NotificationListComponent, canActivate: [AuthGuard] },
   { path: 'account/settings/location', component: LocationSettingComponent, canActivate: [AuthGuard] },
   { path: 'account/settings/notifications', component: NotiSettingComponent, canActivate: [AuthGuard] },

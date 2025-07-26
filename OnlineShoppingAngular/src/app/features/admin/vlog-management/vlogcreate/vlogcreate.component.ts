@@ -84,7 +84,7 @@ export class VlogCreateComponent {
 
       this.successMessage = 'Blog and files created successfully!';
       this.loading = false;
-      this.router.navigate(['/admin/vloglist']);
+      this.router.navigate(['/admin/bloglist']);
     } catch (error: any) {
       if (error && error.error && error.error.message) {
         this.errorMessage = error.error.message;
@@ -120,7 +120,7 @@ export class VlogCreateComponent {
   }
 
   cancel(): void {
-    this.router.navigate(['/admin/vloglist']);
+    this.router.navigate(['/admin/bloglist']);
   }
 
   isImageFile(file: File): boolean {

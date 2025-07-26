@@ -156,7 +156,7 @@
           box-shadow: var(--color-shadow);
 
           &:hover {
-            background: var(--color-accent);
+            background: var(--color-primary);
             color: white;
             transform: translateY(-50%) scale(1.1);
           }
@@ -195,7 +195,7 @@
         }
 
         &::-webkit-scrollbar-thumb {
-          background: var(--color-primary);
+          background: #1a7f37;
           border-radius: 2px;
         }
 
@@ -211,11 +211,11 @@
 
           &.active {
             border-color: var(--color-primary);
-            box-shadow: 0 0 0 2px var(--color-accent);
+            box-shadow: 0 0 0 2px var(--color-primary);
           }
 
           &:hover {
-            border-color: var(--color-accent);
+            border-color: var(--color-primary);
             transform: translateY(-2px);
           }
 
@@ -305,7 +305,7 @@
             }
 
             .savings-badge {
-              background: var(--color-accent);
+              background: #198754;
               color: white;
               padding: 0.125rem 0.5rem;
               border-radius: 12px;
@@ -367,8 +367,8 @@
               border-color: var(--color-primary);
 
               &:hover {
-                background-color: var(--color-accent);
-                border-color: var(--color-accent);
+                background-color: #075631;
+                border-color: var(--color-primary);
               }
             }
 
@@ -407,8 +407,8 @@
             color: var(--color-brown);
 
             &:hover {
-              background-color: var(--color-accent);
-              border-color: var(--color-accent);
+              background-color: var(--color-primary);
+              border-color: var(--color-primary);
               color: white;
             }
           }
@@ -430,8 +430,8 @@
           border-color: var(--color-primary);
 
           &:hover {
-            background-color: var(--color-accent);
-            border-color: var(--color-accent);
+            background-color: #014a28;
+            border-color: var(--color-primary);
           }
         }
 
@@ -445,8 +445,8 @@
           border-color: var(--color-border);
 
           &:hover {
-            background-color: var(--color-accent);
-            border-color: var(--color-accent);
+            background-color: var(--color-primary);
+            border-color: var(--color-primary);
             color: white;
           }
         }
@@ -538,7 +538,7 @@
               position: absolute;
               top: 0;
               left: 0;
-              background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+              background: var(--color-primary);
               color: white;
               padding: 0.3rem 0.8rem;
               font-size: 0.6rem;
@@ -649,7 +649,7 @@
               }
 
               .view-detail-btn {
-                background: var(--color-accent);
+                background: var(--color-primary);
                 color: white;
                 border: none;
                 padding: 0.5rem 1rem;
@@ -661,7 +661,7 @@
                 margin-top: auto;
 
                 &:hover {
-                  background: var(--color-highlight);
+                  background: var(--color-primary);
                   transform: translateY(-1px);
                 }
               }
@@ -690,7 +690,7 @@
           transition: all 0.3s ease;
 
           &.active {
-            background: var(--color-accent);
+            background: var(--color-primary);
             transform: scale(1.2);
           }
 
@@ -720,7 +720,7 @@
         color: var(--color-brown);
 
         &:hover {
-          background: var(--color-accent);
+          background: var(--color-primary);
           color: white;
           transform: translateY(-50%) scale(1.1);
         }
@@ -743,7 +743,7 @@
 
   .mobile-discount-container {
     background: white;
-    border-radius: 12px;
+    border-radius: 10px;
     box-shadow: var(--color-shadow);
     padding: 1.5rem;
     border: 1px solid var(--color-border);
@@ -837,7 +837,7 @@
     box-shadow: var(--color-shadow);
 
     &:hover {
-      background: var(--color-accent);
+      background: var(--color-primary);
       color: white;
       transform: translateY(-50%) scale(1.1);
     }
@@ -1248,7 +1248,7 @@
 }
 
 .bar-fill {
-  background: #ffc107;
+  background: var(--color-primary);
   height: 8px;
   border-radius: 4px;
   position: absolute;
@@ -1445,9 +1445,9 @@
     z-index: 2;
   }
   .badge-available-discount {
-    background-color: #fff8e1;
-    color: #b7791f;
-    border: 1px dashed #e0a800;
+    background-color: var(--color-background);
+    color: var(--color-primary);
+    border: 1px dashed var(--color-primary);
     font-size: 0.7rem;
     font-weight: 600;
     padding: 3px 7px;
@@ -1463,8 +1463,8 @@
     max-width: 100%;
   }
   .badge-available-discount:hover {
-    background-color: #fff3cd;
-    border-color: #ffc107;
+    background-color: var(--color-background);
+    border-color: var(--color-primary);
     transform: scale(1.05);
   }
 
@@ -1545,7 +1545,7 @@
     cursor: pointer;
   }
   .product-name:hover {
-    color: #ff9800 !important;
+    color: var(--color-primary) !important;
   }
 
   /* ===== PRICE SECTION ===== */
@@ -1600,8 +1600,8 @@
     justify-content: center;
   }
   .btn-action:hover:not(:disabled) {
-    background: #ff9800 !important;
-    border-color: #ff9800 !important;
+    background: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
     color: var(--color-primary, #198754) !important;
     transform: translateY(-1px);
   }

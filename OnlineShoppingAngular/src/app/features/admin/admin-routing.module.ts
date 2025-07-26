@@ -62,6 +62,7 @@ import { CreateDiscountComponent } from './discount_management/create-discount/c
 import { DiscountListComponent } from './discount_management/discount-list/discount-list.component';
 import { NewCreateDiscountComponent } from './discount_management/new-create-discount/new-create-discount.component';
 import { QuestionComponent } from './QuestionManagement/question/question.component';
+import { AdminAccountListComponent } from './roleAndPermission/admin-account-list/admin-account-list.component';
 
 const routes: Routes = [
   {
@@ -117,6 +118,7 @@ const routes: Routes = [
       { path: 'product/:id', component: ProductDetailComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['PRODUCT_READ'], ['SUPERADMIN_PERMISSION']] } },
       { path: 'product/edit/:id', component: ProductEditComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['PRODUCT_UPDATE'], ['SUPERADMIN_PERMISSION']] } },
       { path: 'account/create', component: AdminAccountCreateComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['ADMIN_USER_MANAGE'], ['SUPERADMIN_PERMISSION']] } },
+      { path: 'account/list', component: AdminAccountListComponent , canActivate:[PermissionGuard], data:{permissionGroups:[['ADMIN_USER_MANAGE'], ['SUPERADMIN_PERMISSION']] } },
       { path: 'storelocation', component: StoreAddressComponent },
       { path: 'AdminOrder', component: AdminOrdersControlComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
       { path: 'orderDetailAdmin/:id', component: AdminOrdersDetailComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
@@ -146,8 +148,8 @@ const routes: Routes = [
       {
         path: 'sale-analysis', component: SaleAnalysisComponent, canActivate: [AdminAuthGuard]
       },
-      { path: 'vloglist', component: VlogListComponent },
-      { path: 'vlogcreate', component: VlogCreateComponent },
+      { path: 'bloglist', component: VlogListComponent },
+      { path: 'blogcreate', component: VlogCreateComponent },
 
     ]
   }
