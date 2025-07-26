@@ -1,20 +1,21 @@
 
 
-import { Component,  OnInit } from "@angular/core"
+import { Component, OnInit } from "@angular/core"
 import {
-   FormBuilder,
-   FormGroup,
+  FormBuilder,
+  FormGroup,
   Validators,
-   AbstractControl,
-   ValidationErrors,
+  AbstractControl,
+  ValidationErrors,
 } from "@angular/forms"
-import  { AuthService } from "../../../../core/services/auth.service"
-import  { Router } from "@angular/router"
-import  { LoginModalService } from "../../../../core/services/LoginModalService"
-import  { RegisterModalService } from "../../../../core/services/RegisterModalService"
-import  { ForgotPasswordModalService } from "../../../../core/services/ForgotPasswordModalService"
+import { AuthService } from "../../../../core/services/auth.service"
+import { Router } from "@angular/router"
+import { LoginModalService } from "../../../../core/services/LoginModalService"
+import { RegisterModalService } from "../../../../core/services/RegisterModalService"
+import { ForgotPasswordModalService } from "../../../../core/services/ForgotPasswordModalService"
 import Swal from 'sweetalert2';
 import { AlertService } from "../../../../core/services/alert.service"
+import { EmailValidationService } from "@app/core/services/email-validation.service"
 
 @Component({
   selector: "app-register",
@@ -38,20 +39,21 @@ export class RegisterComponent implements OnInit {
     private registerModalService: RegisterModalService,
     private forgotModalService: ForgotPasswordModalService,
     private router: Router,
-    private sweetalt : AlertService,
-  ) {}
+    private sweetalt: AlertService,
+    private emailValidationService: EmailValidationService
+  ) { }
 
   ngOnInit(): void {
-    
+
     this.registerForm = this.fb.group({
-  name: ['', Validators.required],
-  email: ['', [Validators.required, Validators.email]],
-  password: ['', Validators.required],
-  confirmPassword: ['', Validators.required],
-  acceptTerms: [false, Validators.requiredTrue]
-}, {
-  validators: this.passwordMatchValidator
-});
+      name: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', Validators.required],
+      confirmPassword: ['', Validators.required],
+      acceptTerms: [false, Validators.requiredTrue]
+    }, {
+      validators: this.passwordMatchValidator
+    });
 
     this.registerForm.get("password")?.valueChanges.subscribe((password) => {
       this.updatePasswordStrength(password)
@@ -98,73 +100,88 @@ export class RegisterComponent implements OnInit {
   }
 
   onSubmit(): void {
-    this.isSubmitted = true
+    this.isSubmitted = true;
 
     if (this.registerForm.invalid) {
-      return
+      return;
     }
 
-    this.isLoading = true
-    const { name, email, password } = this.registerForm.value
-    const userData = { name, email, password }
+    this.isLoading = true;
+    const { name, email, password } = this.registerForm.value;
+    const userData = { name, email, password };
+
+    this.emailValidationService.validateEmail(email).subscribe({
+      next: res => {
+        if (!res.valid) {
+          this.sweetalt.error("Email is invalid or undeliverable.");
+          this.isLoading = false;
+          return;
+        }
+
+        // Proceed with registration if email valid
+        this.authService.register(userData).subscribe({
+          next: response => {
+            if (response?.message === "Email sent successfully.") {
+              const id = response.userId;
+              this.sweetalt.success(response.message);
+              this.router.navigate(["/customer/auth/verify", id]);
+            } else {
+              this.sweetalt.error(response.message || "Registration failed");
+            }
+            this.isLoading = false;
+          },
+          error: err => {
+            this.sweetalt.error(err.error?.message || "Something went wrong!");
+            this.isLoading = false;
+          }
+        });
+      },
+      error: err => {
+        this.sweetalt.error("Email validation service unavailable. Please try later.");
+        this.isLoading = false;
+      }
+    });
+
+  }
+
+  // onSubmit(): void {
+  //   this.isSubmitted = true
+
+  //   if (this.registerForm.invalid) {
+  //     return
+  //   }
+
+  //   this.isLoading = true
+  //   const { name, email, password } = this.registerForm.value
+  //   const userData = { name, email, password }
 
   //   this.authService.register(userData).subscribe({
   //     next: (response: any) => {
-  //       console.log("hi response of register")
-  //       if (typeof response === "string" && response.startsWith("Email sent successfully. User ID:")) {
-  //         const id = response.split("User ID: ")[1].trim()
-  //      this.sweetalt.success("check your email for varification!")
-  //         this.router.navigate(["/customer/auth/verify", id])
+  //       console.log("hi response of register");
+
+  //       if (response?.message === "Email sent successfully.") {
+  //         const id = response.userId;
+  //         this.sweetalt.success(response.message);
+  //         this.router.navigate(["/customer/auth/verify", id]);
   //       } else {
-  //         console.log("Registration failed:", response)
-  //         this.sweetalt.error("Registration failed")
+  //         console.log("Registration failed:", response);
+  //         this.sweetalt.error(response.message || "Registration failed");
   //         this.isLoading = false;
   //       }
   //     },
   //     error: (err) => {
-       
-  //       if (err.status === 500 || err.status===409) {
-  //         // this.toastr.error("This email is already registered.")
-  //       this.sweetalt.error("email already exist!")
-  //         this.isLoading = false;
-  //         console.log(err)
-  //       } else {
-  //         console.log(err)
-  //         this.sweetalt.error("something went wrong!Try again")
-  //         this.isLoading = false;
-  //       }
+  //       const errorMessage = err.error?.message || err.error || "Something went wrong! Try again";
+
+  //       this.sweetalt.error(errorMessage);
+  //       console.log(err);
+  //       this.isLoading = false;
   //     },
   //     complete: () => {
-  //       this.isLoading = false
+  //       this.isLoading = false;
   //     },
-  //   })
-  this.authService.register(userData).subscribe({
-  next: (response: any) => {
-    console.log("hi response of register");
+  //   });
 
-    if (response?.message === "Email sent successfully.") {
-      const id = response.userId;
-      this.sweetalt.success(response.message);
-      this.router.navigate(["/customer/auth/verify", id]);
-    } else {
-      console.log("Registration failed:", response);
-      this.sweetalt.error(response.message || "Registration failed");
-      this.isLoading = false;
-    }
-  },
-  error: (err) => {
-    const errorMessage = err.error?.message || err.error || "Something went wrong! Try again";
-
-    this.sweetalt.error(errorMessage);
-    console.log(err);
-    this.isLoading = false;
-  },
-  complete: () => {
-    this.isLoading = false;
-  },
-});
-
-   }
+  // }
 
   closeModal(): void {
     this.registerModalService.hide()

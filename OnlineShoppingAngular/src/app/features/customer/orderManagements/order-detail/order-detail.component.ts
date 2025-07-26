@@ -527,28 +527,142 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     return ""
   }
 
-  // getRefundsForItem(itemId: number) {
-  //   if (!this.order?.refunds) return []
-  //   // Filter refunds that contain this item id
-  //   return this.order.refunds.filter((refund) =>
-  //       refund.items.some((refundItem) => refundItem.quantity > 0
-  //     ))
-  // }
-
   getRefundsForItem(itemId: number) {
     return this.order?.refunds?.filter(refund =>
       refund.items?.some(refundItem => refundItem.orderItemId === itemId)
     ) || [];
   }
 
-  // getRefundsForItem(itemId: number) {
-  //   if (!this.order?.refunds) return [];
+  // Discount-related helper methods
 
-  //   return this.order.refunds.filter(refund =>
-  //     refund.items.some(refundItem =>
-  //       refundItem.id === itemId && refundItem.quantity > 0
-  //     )
-  //   );
+  // hasItemDiscounts(item: any): boolean {
+  //   return item.appliedDiscounts && item.appliedDiscounts.length > 0
   // }
+
+  hasItemDiscounts(item: any): boolean {
+    if (!item.appliedDiscounts || item.appliedDiscounts.length === 0) return false;
+
+    return item.appliedDiscounts.some((discount: any) =>
+      !(discount.mechanismType === 'Coupon' && discount.discountType === 'FIXED')
+    );
+  }
+
+  getItemAutoDiscounts(item: any): any[] {
+    if (!item.appliedDiscounts) return []
+    return item.appliedDiscounts.filter((discount: any) => discount.mechanismType === "Discount")
+  }
+
+  getItemCouponDiscounts(item: any): any[] {
+    if (!item.appliedDiscounts) return [];
+
+    return item.appliedDiscounts.filter((discount: any) =>
+      discount.mechanismType === 'Coupon' && discount.discountType === 'PERCENTAGE'
+    );
+  }
+
+  getItemOriginalTotal(item: any): number {
+    if (!item.appliedDiscounts || item.appliedDiscounts.length === 0) {
+      return this.calculateItemTotal(item)
+    }
+
+    // Calculate original price by adding back all discounts,
+    // excluding coupon -> fixed type
+    const currentTotal = this.calculateItemTotal(item)
+    const totalDiscounts = item.appliedDiscounts.reduce((sum: number, discount: any) => {
+      const isCouponFixed = discount.mechanismType === "Coupon" && discount.discountType === "FIXED"
+      if (isCouponFixed) return sum
+      return sum + discount.discountAmount * item.quantity
+    }, 0)
+
+    return currentTotal + totalDiscounts
+  }
+
+  hasAnyDiscounts(): boolean {
+    if (!this.order?.items) return false
+
+    return this.order.items.some((item: any) => item.appliedDiscounts && item.appliedDiscounts.length > 0)
+  }
+
+  getOriginalSubtotal(): number {
+    if (!this.order?.items) return 0
+
+    return this.order.items.reduce((total: number, item: any) => {
+      return total + this.getItemOriginalTotal(item)
+    }, 0)
+  }
+
+  getDiscountedSubtotal(): number {
+    if (!this.order?.items) return 0
+
+    let subtotal = this.order.items.reduce((total: number, item: any) => {
+      return total + this.calculateItemTotal(item)
+    }, 0)
+
+    // Find the fixed coupon (if any) and subtract it
+    const fixedCoupon = this.order.items
+      .flatMap((item: any) => item.appliedDiscounts || [])
+      .find((discount: any) => discount.mechanismType === "Coupon" && discount.discountType === "FIXED")
+
+    if (fixedCoupon) {
+      subtotal -= fixedCoupon.discountAmount
+    }
+
+    return subtotal
+  }
+
+  getAutoDiscountSavings(): number {
+    if (!this.order?.items) return 0
+
+    return this.order.items.reduce((total: number, item: any) => {
+      if (!item.appliedDiscounts) return total
+
+      const autoDiscounts = item.appliedDiscounts.filter((discount: any) => discount.mechanismType === "Discount")
+
+      return (
+        total +
+        autoDiscounts.reduce((sum: number, discount: any) => {
+          return sum + discount.discountAmount * item.quantity
+        }, 0)
+      )
+    }, 0)
+  }
+
+  getCouponDiscountSavings(): number {
+    if (!this.order?.items) return 0
+
+    return this.order.items.reduce((total: number, item: any) => {
+      if (!item.appliedDiscounts) return total
+
+      const couponDiscounts = item.appliedDiscounts.filter((discount: any) => discount.mechanismType === "Coupon")
+
+      const itemSavings = couponDiscounts.reduce((sum: number, discount: any) => {
+        const isPercentage = discount.discountType === "PERCENTAGE"
+        const discountTotal = isPercentage ? discount.discountAmount * item.quantity : discount.discountAmount
+
+        return sum + discountTotal
+      }, 0)
+
+      return total + itemSavings
+    }, 0)
+  }
+
+  getCouponCode(): string {
+    if (!this.order?.items) return ""
+    for (const item of this.order.items) {
+      if (item.appliedDiscounts) {
+        const couponDiscount = item.appliedDiscounts.find(
+          (discount) => discount.mechanismType === "Coupon" && discount.couponCode,
+        )
+        if (couponDiscount) {
+          return couponDiscount.couponCode || ""
+        }
+      }
+    }
+    return ""
+  }
+
+  getTotalSavings(): number {
+    return this.getAutoDiscountSavings() + this.getCouponDiscountSavings()
+  }
 
 }

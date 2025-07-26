@@ -32,11 +32,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
         String method = request.getMethod();
 
-        // ✅ GET method အားလုံးကို JWT token မစစ်ပဲ လွတ်ခွင့်ပြု
-//        if (method.equalsIgnoreCase("GET")) {
-//            chain.doFilter(request, response);
-//            return;
-//        }
         if (path.startsWith("/ws-notifications")) {
             chain.doFilter(request, response);
             return;
@@ -55,18 +50,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 "/auth/verify-otp",
                 "/auth/resend",
                 "/auth/forgot-password",
-                "/auth/reset-password"
+                "/auth/reset-password",
+                "/auth/validateEmailWithAPI"
         );
 
         if (publicAuthEndpoints.contains(path)) {
             chain.doFilter(request, response);
             return;
         }
-
-//        if (path.startsWith("/auth/")) {
-//            chain.doFilter(request, response);
-//            return;
-//        }
 
         // ✅ အခြား POST, PUT, DELETE request တွေ JWT token စစ်မယ်
         final String authHeader = request.getHeader("Authorization");
@@ -102,7 +93,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
         }
-
 
         chain.doFilter(request, response);
     }

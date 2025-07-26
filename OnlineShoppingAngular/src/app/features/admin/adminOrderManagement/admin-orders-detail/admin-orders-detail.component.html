@@ -117,7 +117,7 @@
       </div>
     </div>
 
-    <!-- Compact Status Update Card -->
+    <!-- Enhanced Status Update Card with Comment Box -->
     <div *ngIf="isPaymentPaid()" class="action-card status-update compact">
       <div class="compact-action-header">
         <div class="compact-action-icon">
@@ -129,18 +129,49 @@
       </div>
       <div class="compact-status-form">
         <div class="status-form-row">
-          <select [(ngModel)]="selectedStatus" [disabled]="updatingStatus" class="compact-status-select">
+          <select [(ngModel)]="selectedStatus" [disabled]="updatingStatus" class="compact-status-select" (change)="onStatusSelectionChange()">
+            <option value="">Select new status</option>
             <option *ngFor="let status of getAllowedTransitions()" [ngValue]="status"
               [ngStyle]="status === ORDER_STATUSES.ORDER_CANCELLED ? {'color': 'var(--color-danger)', 'font-weight': 'bold'} : {}">
               {{ ORDER_STATUS_LABELS[status] || status }}
             </option>
           </select>
           <button class="compact-btn-update" (click)="confirmStatusUpdate()"
-            [disabled]="updatingStatus || !selectedStatus">
+            [disabled]="updatingStatus || !selectedStatus || (selectedStatus === ORDER_STATUSES.ORDER_CANCELLED && !statusComment.trim())">
             <i class="fas fa-arrow-right"></i>
             <span>Update</span>
           </button>
         </div>
+        
+        <!-- Comment Box for Status Updates -->
+        <div class="status-comment-section">
+          <div class="form-group">
+            <label for="statusComment" class="form-label" 
+              [class.required]="selectedStatus === ORDER_STATUSES.ORDER_CANCELLED">
+              Comment {{ selectedStatus === ORDER_STATUSES.ORDER_CANCELLED ? '(Required for cancellation)' : '(Optional)' }}
+            </label>
+            <textarea 
+              id="statusComment" 
+              [(ngModel)]="statusComment" 
+              class="form-control status-comment-input"
+              [class.mandatory]="selectedStatus === ORDER_STATUSES.ORDER_CANCELLED"
+              [class.error]="selectedStatus === ORDER_STATUSES.ORDER_CANCELLED && !statusComment.trim() && statusCommentTouched"
+              rows="3" 
+              maxlength="500"
+              placeholder="{{ selectedStatus === ORDER_STATUSES.ORDER_CANCELLED ? 'Please provide a reason for cancellation...' : 'Add a comment about this status change...' }}"
+              (blur)="statusCommentTouched = true">
+            </textarea>
+            <div class="form-footer">
+              <span class="char-count">{{ statusComment.length }}/500</span>
+            </div>
+            <div *ngIf="selectedStatus === ORDER_STATUSES.ORDER_CANCELLED && !statusComment.trim() && statusCommentTouched" 
+              class="error-message">
+              <i class="fas fa-exclamation-circle"></i>
+              Comment is required when cancelling an order.
+            </div>
+          </div>
+        </div>
+
         <div *ngIf="updatingStatus" class="compact-action-status updating">
           <i class="fas fa-spinner fa-spin"></i>
           <span>Updating...</span>
@@ -225,7 +256,7 @@
         </div>
       </div>
 
-      <!-- Order Items with Discount Information -->
+      <!-- Order Items with Enhanced Discount Information -->
       <div class="section-card">
         <div class="section-header">
           <h3>{{ order.orderType === 'REPLACEMENT' ? 'Replacement' : 'Order' }} Items</h3>
@@ -244,11 +275,20 @@
                 <span class="item-qty">Quantity: {{ item.quantity }}</span>
               </div>
               
-              <!-- Item-level Discount Information -->
+              <!-- Enhanced Item-level Discount Information -->
               <div *ngIf="hasItemDiscounts(item) && order.orderType !== 'REPLACEMENT'" class="item-discounts">
+                <div class="discount-header">
+                  <i class="fas fa-tags discount-icon"></i>
+                  <span class="discount-title">Discounts Applied:</span>
+                </div>
                 <div *ngFor="let discount of getItemAutoDiscounts(item)" class="discount-badge auto-discount">
-                  <i class="fas fa-tag"></i>
-                  <span>{{ discount.description }}</span>
+                  <i class="fas fa-percentage"></i>
+                  <span class="discount-text">{{ discount.description }}</span>
+                  <span class="discount-amount">-{{ formatCurrency(discount.discountAmount * item.quantity) }}</span>
+                </div>
+                <div *ngFor="let discount of getItemCouponDiscounts(item)" class="discount-badge coupon-discount">
+                  <i class="fas fa-ticket-alt"></i>
+                  <span class="discount-text">{{ discount.description }}</span>
                   <span class="discount-amount">-{{ formatCurrency(discount.discountAmount * item.quantity) }}</span>
                 </div>
               </div>
@@ -263,13 +303,8 @@
               
               <!-- Final Price -->
               <div class="final-price">
-                <span class="price-label">{{ hasItemDiscounts(item) ? 'Discounted:' : 'Price:' }}</span>
+                <span class="price-label">{{ hasItemDiscounts(item) ? 'Final Price:' : 'Price:' }}</span>
                 <span class="price-value">{{ formatCurrency(calculateItemTotal(item)) }}</span>
-              </div>
-              
-              <!-- Item Savings -->
-              <div *ngIf="getItemTotalSavings(item) > 0" class="item-savings">
-                <span class="savings-text">You saved {{ formatCurrency(getItemTotalSavings(item)) }}</span>
               </div>
             </div>
           </div>
@@ -297,7 +332,7 @@
             <!-- Auto Discount Savings (item-level) -->
             <div *ngIf="getAutoDiscountSavings() > 0" class="summary-row discount-savings">
               <span class="discount-label">
-                <i class="fas fa-tag"></i>
+                <i class="fas fa-tags discount-icon"></i>
                 Auto Discounts Applied
               </span>
               <span class="discount-amount">-{{ formatCurrency(getAutoDiscountSavings()) }}</span>
@@ -306,7 +341,7 @@
             <!-- Coupon Discount (order-level) -->
             <div *ngIf="getCouponDiscountSavings() > 0" class="summary-row discount-savings">
               <span class="discount-label">
-                <i class="fas fa-ticket-alt"></i>
+                <i class="fas fa-ticket-alt discount-icon"></i>
                 Coupon: {{ getCouponCode() }}
               </span>
               <span class="discount-amount">-{{ formatCurrency(getCouponDiscountSavings()) }}</span>
@@ -330,7 +365,7 @@
             <div *ngIf="getTotalSavings() > 0" class="summary-row total-savings">
               <span class="savings-highlight">
                 <i class="fas fa-piggy-bank"></i>
-                Total Savings
+                Total Discounted Amount
               </span>
               <span class="savings-amount">{{ formatCurrency(getTotalSavings()) }}</span>
             </div>
@@ -440,7 +475,6 @@
     </div>
   </div>
 </div>
-
 
 <!-- Modern Rejection Reason Modal -->
 <div class="modern-modal-overlay" [class.show]="showRejectionReasonModal" *ngIf="showRejectionReasonModal">

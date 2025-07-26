@@ -65,6 +65,7 @@ export class AdminOrdersControlComponent implements OnInit, OnDestroy {
   selectedOrderIds: number[] = []
   bulkStatus: ORDER_STATUS | "" = ""
   bulkNote = ""
+  bulkCommentTouched = false
   bulkStatusLoading = false
   bulkStatusError: string | null = null
 
@@ -126,55 +127,28 @@ export class AdminOrdersControlComponent implements OnInit, OnDestroy {
       icon: "bi bi-credit-card-fill",
     },
   }
-  // DB -> UI mapping
-  dbToUiStatus: any = {
-    PENDING: 'pending',
-    ORDER_CONFIRMED: 'order_confirmed',
-    PACKED: 'packed',
-    OUT_FOR_DELIVERY: 'out_for_delivery',
-    DELIVERED: 'delivered',
-    CANCELLED: 'cancelled'
-  };
-
-  // allowedTransitions: Record<Order['status'], Order['status'][]> = {
-  //   pending: ['order_confirmed', 'cancelled'],
-  //   order_confirmed: ['packed', 'cancelled'],
-  //   packed: ['out_for_delivery'],
-  //   out_for_delivery: ['delivered'],
-  //   delivered: [],
-  //   cancelled: []
-  // };
-
-  // statusList: Order['status'][] = [
-  //   'pending',
-  //   'order_confirmed',
-  //   'packed',
-  //   'out_for_delivery',
-  //   'delivered',
-  //   'cancelled'
-  // ];
 
   // Export columns definition
   orderExportColumns = [
-    { header: 'Order ID', field: 'id', width: 20 },
-    { header: 'Tracking Number', field: 'trackingNumber', width: 50 },
-    { header: 'Customer', field: 'customer', width: 40 },
-    { header: 'Date', field: 'date', width: 35 },
-    { header: 'Status', field: 'status', width: 45 },
-    { header: 'Payment Method', field: 'paymentMethod', width: 50 }
-  ];
+    { header: "Order ID", field: "id", width: 20 },
+    { header: "Tracking Number", field: "trackingNumber", width: 50 },
+    { header: "Customer", field: "customer", width: 40 },
+    { header: "Date", field: "date", width: 35 },
+    { header: "Status", field: "status", width: 45 },
+    { header: "Payment Method", field: "paymentMethod", width: 50 },
+  ]
 
   constructor(
-    private orderService: OrderService, 
-    private router: Router, 
-    private location: Location, 
-    private authService: AuthService, 
+    private orderService: OrderService,
+    private router: Router,
+    private location: Location,
+    private authService: AuthService,
     private snackBar: MatSnackBar,
     private pdfExportService: PdfExportService,
     private excelExportService: ExcelExportService,
     private alertService: AlertService,
   ) {
-        // Setup search debouncing
+    // Setup search debouncing
     this.searchSubject.pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$)).subscribe(() => {
       this.applyFilters()
     })
@@ -563,6 +537,12 @@ export class AdminOrdersControlComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Handle bulk status change
+  onBulkStatusChange(): void {
+    this.bulkNote = ""
+    this.bulkCommentTouched = false
+  }
+
   // Get count of selected orders that have paid status (eligible for status updates)
   getSelectedPaidCount(): number {
     return this.orders.filter((o) => this.selectedOrderIds.includes(o.id) && o.paymentStatus === PAYMENT_STATUS.PAID)
@@ -572,6 +552,13 @@ export class AdminOrdersControlComponent implements OnInit, OnDestroy {
   // Bulk status update - only for paid orders
   confirmBulkStatusUpdate(): void {
     if (!this.bulkStatus || this.selectedOrderIds.length === 0 || !this.adminId) return
+
+    // Check if comment is required for cancellation
+    if (this.bulkStatus === ORDER_STATUS.ORDER_CANCELLED && !this.bulkNote.trim()) {
+      this.bulkCommentTouched = true
+      this.alertService.toast("Comment is required when cancelling orders.", "error")
+      return
+    }
 
     // Get only paid orders from selection
     const eligibleOrders = this.orders.filter(
@@ -601,10 +588,14 @@ export class AdminOrdersControlComponent implements OnInit, OnDestroy {
       return
     }
 
-    // Confirm bulk update
+    // Show confirmation dialog with comment if provided
+    const confirmText = this.bulkNote.trim()
+      ? `Update ${eligibleOrders.length} orders to "${this.getOrderStatusLabel(this.bulkStatus as ORDER_STATUS)}" with comment: "${this.bulkNote.trim()}"?`
+      : `Update ${eligibleOrders.length} orders to "${this.getOrderStatusLabel(this.bulkStatus as ORDER_STATUS)}"?`
+
     Swal.fire({
       title: "Confirm Bulk Status Update",
-      text: `Update ${eligibleOrders.length} orders to "${this.getOrderStatusLabel(this.bulkStatus as ORDER_STATUS)}"?`,
+      text: confirmText,
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "Yes, Update",
@@ -620,18 +611,17 @@ export class AdminOrdersControlComponent implements OnInit, OnDestroy {
     this.bulkStatusLoading = true
     this.bulkStatusError = null
 
+    // Use the comment from the form if provided
+    const finalNote = this.bulkNote.trim() || "Bulk status update by admin"
+
     this.orderService
-      .bulkUpdateOrderStatus(
-        orderIds,
-        this.bulkStatus as ORDER_STATUS,
-        this.bulkNote || "Bulk status update by admin",
-        this.adminId!,
-      )
+      .bulkUpdateOrderStatus(orderIds, this.bulkStatus as ORDER_STATUS, finalNote, this.adminId!)
       .subscribe({
         next: () => {
           this.bulkStatusLoading = false
           this.bulkStatus = ""
           this.bulkNote = ""
+          this.bulkCommentTouched = false
           this.selectedOrderIds = []
           this.loadOrders() // Refresh the orders list
           this.alertService.toast(`Successfully updated ${orderIds.length} orders`, "success")
@@ -679,7 +669,7 @@ export class AdminOrdersControlComponent implements OnInit, OnDestroy {
   }
 
   onImageError(event: any): void {
-   // event.target.src = "assets/img/default-product.jpg"
+    // event.target.src = "assets/img/default-product.jpg"
   }
 
   trackByOrderId(index: number, order: Order): number {
@@ -709,41 +699,43 @@ export class AdminOrdersControlComponent implements OnInit, OnDestroy {
   }
 
   getExportData() {
-    return this.filteredOrders.map(order => ({
+    return this.filteredOrders.map((order) => ({
       id: order.id,
       trackingNumber: order.trackingNumber,
-      customer: order.customer || 'N/A',
+      customer: order.customer || "N/A",
       date: order.date,
       status: this.getOrderStatusLabel(order.orderStatus),
-      paymentMethod: order.paymentMethod || 'N/A',
-    }));
+      paymentMethod: order.paymentMethod || "N/A",
+    }))
   }
 
   // Export PDF function
   exportOrdersToPdf() {
-    const filename = this.filteredOrders.length === this.orders.length
-      ? 'OrderList_All.pdf'
-      : `OrderList_Filtered_${this.filteredOrders.length}.pdf`;
+    const filename =
+      this.filteredOrders.length === this.orders.length
+        ? "OrderList_All.pdf"
+        : `OrderList_Filtered_${this.filteredOrders.length}.pdf`
     this.pdfExportService.exportTableToPdf(
       this.getExportData(),
       this.orderExportColumns,
       filename,
-      'Order List Report',
-      'order' // Pass the type as 'order' for correct footer
-    );
+      "Order List Report",
+      "order", // Pass the type as 'order' for correct footer
+    )
   }
 
   // Export Excel function
   async exportOrdersToExcel() {
-    const filename = this.filteredOrders.length === this.orders.length
-      ? 'OrderList_All.xlsx'
-      : `OrderList_Filtered_${this.filteredOrders.length}.xlsx`;
+    const filename =
+      this.filteredOrders.length === this.orders.length
+        ? "OrderList_All.xlsx"
+        : `OrderList_Filtered_${this.filteredOrders.length}.xlsx`
     await this.excelExportService.exportToExcel(
       this.getExportData(),
       this.orderExportColumns,
       filename,
-      'Orders',
-      'Order List Report'
-    );
+      "Orders",
+      "Order List Report",
+    )
   }
 }

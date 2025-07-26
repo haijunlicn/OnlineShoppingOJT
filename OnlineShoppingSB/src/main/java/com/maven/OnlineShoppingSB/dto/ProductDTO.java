@@ -25,17 +25,6 @@ public class ProductDTO {
     private CategoryDTO category;
     private List<ProductVariantDTO> productVariants;
 
-//    public static ProductDTO fromEntity(ProductEntity entity) {
-//        if (entity == null) return null;
-//
-//        ProductDTO dto = new ProductDTO();
-//        dto.setId(entity.getId());
-//        dto.setName(entity.getName());
-//        dto.setBrandId(entity.getBrand() != null ? entity.getBrand().getId() : null);
-//        dto.setCategoryId(entity.getCategory() != null ? entity.getCategory().getId() : null);
-//        return dto;
-//    }
-
     // Overload with 1 param for Function<T, R> compatibility
     public static ProductDTO fromEntity(ProductEntity entity) {
         return fromEntity(entity, false, false);

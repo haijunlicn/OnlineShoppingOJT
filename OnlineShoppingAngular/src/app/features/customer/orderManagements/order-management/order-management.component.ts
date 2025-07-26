@@ -249,53 +249,6 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     }
   }
 
-  // private generateOrderItemsWithDiscounts(): OrderItemRequestDTO[] {
-  //   return this.orderItems.map((item) => {
-  //     const appliedDiscounts: OrderItemDiscountMechanismDTO[] = []
-
-  //     // Add auto discounts (simplified)
-  //     if (item.appliedDiscounts?.length) {
-  //       item.appliedDiscounts.forEach((discount) => {
-  //         const discountAmount = this.calculateItemDiscount(item, discount)
-  //         if (discountAmount > 0) {
-  //           appliedDiscounts.push({
-  //             discountMechanismId: discount.id,
-  //             mechanismType: MechanismType.DISCOUNT,
-  //             discountType: discount.discountType as DiscountType,
-  //             discountAmount,
-  //             description: `Auto: ${discount.shortLabel || discount.name}`,
-  //           })
-  //         }
-  //       })
-  //     }
-
-  //     // Add coupon discount (simplified)
-  //     const couponDiscount = this.getCouponDiscountForItem(item.productId, item.variantId)
-  //     if (couponDiscount > 0 && this.appliedCoupon) {
-  //       appliedDiscounts.push({
-  //         discountMechanismId: this.appliedCoupon.discount.id,
-  //         mechanismType: MechanismType.Coupon,
-  //         discountType: this.appliedCoupon.discount.discountType as DiscountType,
-  //         discountAmount: couponDiscount,
-  //         couponCode: this.appliedCoupon.discount.couponcode!,
-  //         description: `Coupon: ${this.appliedCoupon.discount.shortLabel || this.appliedCoupon.discount.name}`,
-  //       })
-  //     }
-
-  //     return {
-  //       variantId: item.variantId,
-  //       productId: item.productId,
-  //       quantity: item.quantity,
-  //       price: item.discountedPrice,
-  //       originalPrice: item.originalPrice,
-  //       productName: item.productName,
-  //       variantSku: item.variantSku,
-  //       imgPath: item.imgPath ?? "",
-  //       appliedDiscounts: appliedDiscounts.length ? appliedDiscounts : undefined,
-  //     }
-  //   })
-  // }
-
   private generateOrderItemsWithDiscounts(): OrderItemRequestDTO[] {
     return this.orderItems.map((item) => {
       const appliedDiscounts: OrderItemDiscountMechanismDTO[] = [];
@@ -309,7 +262,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
           const discountAmount = this.calculatePerItemDiscount(item, discount);
           if (discountAmount > 0) {
             appliedDiscounts.push({
-              discountMechanismId: discount.id,
+              discountMechanismId: discount.mechanismId!,
               mechanismType: MechanismType.DISCOUNT,
               discountType: discount.discountType as DiscountType,
               discountAmount,
@@ -325,7 +278,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
 
       if (couponDiscount > 0 && coupon) {
         appliedDiscounts.push({
-          discountMechanismId: coupon.id,
+          discountMechanismId: coupon.mechanismId!,
           mechanismType: MechanismType.Coupon,
           discountType: coupon.discountType as DiscountType,
           discountAmount: couponDiscount,
