@@ -34,7 +34,7 @@ public class DiscountEntity {
     @Column(nullable = true)
     private String currentRedemptionCount;
 
-    
+
     @Column(nullable = true)
     private String imgUrl;
 
@@ -48,7 +48,7 @@ public class DiscountEntity {
     @Column(nullable = true)
     private Integer usageLimit;
 
-    
+
     @Column(nullable = true)
     private Integer perUserLimit;
     private Boolean delFg;

@@ -19,7 +19,6 @@
       </button>
     </div>
   </div>
-
   <div class="main-content-discount">
     <form id="discountForm" [formGroup]="discountForm" (ngSubmit)="onSubmit()">
 
@@ -229,6 +228,22 @@
                     (click)="clearDiscountProducts(i)">
                     <i class="fas fa-times me-1"></i>Clear
                   </button>
+
+                  <!-- Selected Product Names with Remove (cross) -->
+                  <div *ngIf="hasDiscountProducts(i)" class="mt-2 d-flex flex-wrap gap-2">
+                    <ng-container *ngFor="let product of getSelectedProductObjects(i); let pi = index">
+                      <span class="badge bg-light text-dark d-flex align-items-center">
+                        {{ product.name }}
+                        <button
+                          type="button"
+                          class="btn btn-link btn-sm p-0 ms-1"
+                          *ngIf="typeof product.id === 'number'"
+                          (click)="removeSingleProduct(i, product.id)">
+                          <i class="fas fa-times"></i>
+                        </button>
+                      </span>
+                    </ng-container>
+                  </div>
                 </div>
 
                 <div class="form-grid">
@@ -285,9 +300,24 @@
                       (click)="openCustomerEligibilityModal(i)">
                       <i class="fas fa-users me-2"></i>
                       <span *ngIf="getSelectedCustomerGroups(i).length === 0">All Customers</span>
-                      <span *ngIf="getSelectedCustomerGroups(i).length > 0">{{ getSelectedCustomerGroups(i).length }}
-                        groups selected</span>
+                      <span *ngIf="getSelectedCustomerGroups(i).length > 0">
+                        {{ getSelectedCustomerGroups(i).length }} groups selected
+                      </span>
                     </button>
+                    <!-- Show selected group names as badges with remove (cross) button -->
+                    <div class="mt-2 d-flex flex-wrap gap-2" *ngIf="getSelectedCustomerGroups(i).length > 0">
+                      <ng-container *ngFor="let group of getSelectedCustomerGroups(i)">
+                        <span class="badge bg-light text-dark d-flex align-items-center">
+                          {{ group.name }}
+                          <button
+                            type="button"
+                            class="btn btn-link btn-sm p-0 ms-1"
+                            (click)="removeSingleGroup(i, group.id)">
+                            <i class="fas fa-times"></i>
+                          </button>
+                        </span>
+                      </ng-container>
+                    </div>
                   </div>
 
                   <!-- Product Rules -->
@@ -310,6 +340,20 @@
                         <span *ngIf="getProductRuleValues(i).length > 0">{{ getProductRuleValues(i).length }}
                           selected</span>
                       </button>
+                      <!-- Show selected items as badges with remove (cross) button -->
+                      <div class="mt-2 d-flex flex-wrap gap-2" *ngIf="getProductRuleValues(i).length > 0">
+                        <ng-container *ngFor="let item of getProductRuleValues(i)">
+                          <span class="badge bg-light text-dark d-flex align-items-center">
+                            {{ item.name }}
+                            <button
+                              type="button"
+                              class="btn btn-link btn-sm p-0 ms-1"
+                              (click)="removeSingleProductRule(i, item.id)">
+                              <i class="fas fa-times"></i>
+                            </button>
+                          </span>
+                        </ng-container>
+                      </div>
                     </div>
                   </div>
 
@@ -427,8 +471,27 @@
   </div>
 </div>
 
-<!-- Product Rule Modal -->
-<div *ngIf="showProductRuleModal" class="modal-overlay" (click)="closeProductRuleModal()">
+<!-- Product Selection Component for Offered Products -->
+<ng-container *ngIf="showProductSelection && productSelectionContext === 'discount_product'">
+  <app-new-product-selection [context]="productSelectionContext" [selectionMode]="productSelectionMode"
+    [selectedProducts]="getSelectedProductsForCurrentContext()" (onBack)="onProductSelectionBack()"
+    (onProductsSelected)="onProductsSelected($event)">
+  </app-new-product-selection>
+</ng-container>
+
+<!-- Product Rule Modal for Product Rule Type (conditions) -->
+<ng-container *ngIf="showProductSelection && productSelectionContext === 'condition_builder' && currentProductRuleType === 'product'">
+  <app-new-product-selection
+    [context]="'condition_builder'"
+    [selectionMode]="'multiple'"
+    [selectedProducts]="selectedProductRuleItems"
+    (onBack)="onProductSelectionBack()"
+    (onProductsSelected)="onProductRuleProductsSelected($event)">
+  </app-new-product-selection>
+</ng-container>
+
+<!-- Brand/Category Selection Modal -->
+<div *ngIf="showProductRuleModal && (currentProductRuleType === 'brand' || currentProductRuleType === 'category')" class="modal-overlay" (click)="closeProductRuleModal()">
   <div class="modal-container" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h4 class="modal-title">
@@ -461,10 +524,3 @@
   </div>
 </div>
 
-<!-- Product Selection Component -->
-<ng-container *ngIf="showProductSelection">
-  <app-new-product-selection [context]="productSelectionContext" [selectionMode]="productSelectionMode"
-    [selectedProducts]="getSelectedProductsForCurrentContext()" (onBack)="onProductSelectionBack()"
-    (onProductsSelected)="onProductsSelected($event)">
-  </app-new-product-selection>
-</ng-container>

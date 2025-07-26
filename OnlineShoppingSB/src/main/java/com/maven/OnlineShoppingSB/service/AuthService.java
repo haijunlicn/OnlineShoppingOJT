@@ -228,7 +228,12 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         user.setName(userDto.getName());
-        user.setProfile(userDto.getProfile());
+        // If profile is empty string or null, set to null in DB
+        if (userDto.getProfile() == null || userDto.getProfile().trim().isEmpty()) {
+            user.setProfile(null);
+        } else {
+            user.setProfile(userDto.getProfile());
+        }
         // ... update other fields as needed
 
         userRepo.save(user);

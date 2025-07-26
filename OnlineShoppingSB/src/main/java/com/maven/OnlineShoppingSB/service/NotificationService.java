@@ -16,10 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,8 +37,16 @@ public class NotificationService {
     private SimpMessagingTemplate messagingTemplate;
     @Autowired
     private JsonService jsonService;
+    @Autowired
+    private WishlistRepository wishlistRepository;
+
+    @Autowired
+    private NotificationTypeRepository notiTypeRepository;
+
+
 
     public NotificationEntity createNotificationAndDeliver(String typeName, Map<String, Object> metadata, List<Long> targetUserIds) {
+        System.out.println("MayNoti============================================="+targetUserIds);
         NotificationTypeEntity type = notificationTypeRepository.findByName(typeName)
                 .orElseThrow(() -> new IllegalArgumentException("NotificationType not found: " + typeName));
 
@@ -372,4 +377,37 @@ public class NotificationService {
         return dto;
     }
 
+    public void notifyWishlistUsersOnStockUpdate(Long productId) {
+        // 1. Find all wishlists that contain this product (efficient query)
+        List<WishlistEntity> wishlists = wishlistRepository.findAll()
+                .stream()
+                .filter(w -> w.getProduct() != null && w.getProduct().getId().equals(productId))
+                .collect(Collectors.toList());
+
+        // 2. Collect all unique userIds from wishlistTitle
+      List<Long> userIds = wishlists.stream()
+    .map(w -> {
+        WishlistTitleEntity title = w.getWishlistTitle();
+        return (title != null && title.getUser() != null) ? title.getUser().getId() : null;
+    })
+    .filter(Objects::nonNull)
+    .collect(Collectors.toList()); // ← ဒီလိုပြောင်းပါ
+
+        if (userIds.isEmpty()) return;
+
+        // 3. Prepare notification metadata (add more info if needed)
+        Map<String, Object> metadata = Map.of(
+                "productId", productId,
+                    "productNameLink","customer/product/"+productId
+                // e.g. "productName", "variantName" can be added if needed
+        );
+
+        // 4. Use sendNamedNotification (already handles NotificationEntity, UserNotificationEntity, delivery)
+        System.out.println("HIHIHIHIHHHHHHHHHHHHHHHHHH______________________________________________"+userIds);
+        sendNamedNotification(
+                "STOCK_UPDATE_FOR_WISHLISTEDUSER", // notification type name (must exist in DB)
+                metadata,
+                userIds
+        );
+    }
 }

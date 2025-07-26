@@ -82,6 +82,7 @@ export class NotificationService {
   loadInAppNotificationsForUser(userId: number): void {
     this.http.get<UserNotificationDTO[]>(`${this.baseUrl}/in-app/${userId}`).subscribe(
       (data) => {
+        console.log('Loaded in-app notifications:', data); 
         this.notificationsSubject.next(data);
       },
       (error) => {
@@ -183,5 +184,11 @@ export class NotificationService {
 
    getCustomNotifications(): Observable<Notification[]> {
     return this.http.get<Notification[]>(`${this.baseUrl}/list/custom`);
+  }
+
+  // Notify wishlist users when stock is updated for a product
+  notifyWishlistUsersOnStockUpdate(productId: number): Observable<any> {
+    console.log("HIHIHIHMay")
+    return this.http.post(`${this.baseUrl}/stock-update-for-wishlist/${productId}`, {});
   }
 }

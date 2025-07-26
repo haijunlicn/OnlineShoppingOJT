@@ -90,14 +90,7 @@ public class DiscountController {
         return discount;
     }
 
-    // UPDATE: Update a discount and all its mechanisms
-    @PutMapping("/updateDiscount/{id}")
-    public DiscountES_A updateDiscount(@PathVariable Integer id, @RequestBody DiscountES_A dto) {
-        logger.info("[updateDiscount] Incoming mechanisms: {}", dto.getDiscountMechanisms() != null ? dto.getDiscountMechanisms().stream().map(m -> m.getId()).toList() : "null");
-        DiscountES_A updated = discountService.updateDiscount(id, dto);
-        logger.info("[updateDiscount] After update, discount {} has {} mechanisms: {}", id, updated.getDiscountMechanisms() != null ? updated.getDiscountMechanisms().size() : 0, updated.getDiscountMechanisms() != null ? updated.getDiscountMechanisms().stream().map(m -> m.getId()).toList() : "null");
-        return updated;
-    }
+
 
     @DeleteMapping("/deleteDisount/{id}")
     public void deleteDiscount(@PathVariable Integer id) {
@@ -112,6 +105,23 @@ public class DiscountController {
         Map<String, Object> resp = new HashMap<>();
         resp.put("success", true);
         return ResponseEntity.ok(resp); // JSON object format
+    }
+
+    @PutMapping("/updateDiscount/{id}")
+    public ResponseEntity<?> updateDiscount(@PathVariable Integer id, @RequestBody DiscountES_A dto) {
+
+            dto.setId(id);
+
+            // sysout for debugging
+            System.out.println("==== [UPDATE DISCOUNT] ====");
+            System.out.println("ID: " + id);
+            System.out.println("Discount Name: " + dto.getName());
+            System.out.println("Discount Mechanisms: " + dto.getDiscountMechanisms());
+            System.out.println("Full DTO: " + dto);
+
+            discountService.updateDiscount(dto);
+            return ResponseEntity.ok("success");
+
     }
 
     @PostMapping("/groups/{groupId}/conditions")
@@ -131,6 +141,7 @@ public class DiscountController {
     // Delete a condition group by id (and cascade delete its conditions)
     @DeleteMapping("/conditionGroups/{conditionGroupId}")
     public ResponseEntity<?> deleteConditionGroup(@PathVariable Integer conditionGroupId) {
+
         discountService.deleteConditionGroup(conditionGroupId);
         return ResponseEntity.ok("Deleted");
     }

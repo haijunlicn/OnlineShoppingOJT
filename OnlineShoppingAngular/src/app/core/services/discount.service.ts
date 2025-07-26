@@ -62,18 +62,19 @@ export class DiscountService {
     return this.http.get<DiscountEA_A>(`${this.apiUrl}/selectdiscountbyId/${id}`);
   }
 
-  // // UPDATE: Update a discount and all its mechanisms
-  updateDiscount(id: number, discount: DiscountEA_A): Observable<DiscountEA_A> {
-    // Sends the full discount object, including mechanisms array, to the backend
-    return this.http.put<DiscountEA_A>(`${this.apiUrl}/updateDiscount/${id}`, discount);
+  updateDiscount(id: number, discount: DiscountEA_A): Observable<any> {
+    console.log("payload",discount)
+    return this.http.put(`${this.apiUrl}/updateDiscount/${id}`, discount);
   }
 
+  
   // DELETE
   deleteDiscount(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/deleteDisount/${id}`);
   }
 
   updateDiscountStatus(id: number, payload: { isActive: boolean }) {
+  
     return this.http.patch(`${this.apiUrl}/updateDiscountStatus/${id}`, payload);
   }
 

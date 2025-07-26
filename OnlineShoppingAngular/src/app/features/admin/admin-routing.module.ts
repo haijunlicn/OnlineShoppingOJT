@@ -143,7 +143,7 @@ const routes: Routes = [
       { path: 'notificationTypes', component: AdminNotiTypesComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
       { path: 'sentNotifications', component: AdminSentNotisComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
       { path: 'createGroup', component: CreateDiscountGroupComponent },
-      { path: 'createDiscount', component: CreateDiscountComponent },
+      { path: 'createDiscount', component: NewCreateDiscountComponent },
       { path: 'discountList', component: DiscountListComponent },
       {
         path: 'sale-analysis', component: SaleAnalysisComponent, canActivate: [AdminAuthGuard]
