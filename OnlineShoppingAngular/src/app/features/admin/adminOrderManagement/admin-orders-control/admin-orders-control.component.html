@@ -1,4 +1,3 @@
-
 <div class="min-h-screen bg-gradient">
   <!-- Clean Navigation Bar -->
   <div class="navigation-bar mb-3">
@@ -47,300 +46,334 @@
     </div>
   </div>
 
-  <!-- Main Content -->
-  <div>
-    <!-- Error Message -->
-    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
-      <i class="fas fa-exclamation-triangle me-2"></i>{{ errorMessage }}
-      <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
-    </div>
+  <div class="container">
 
-    <!-- Filter Controls Card -->
-    <div class="filter-section mb-3">
-      <div class="card">
-        <div class="card-header">
-          <div class="d-flex align-items-center justify-content-between">
-            <h6 class="card-title mb-0">
-              <i class="fas fa-filter me-2"></i>Filters & Search
-            </h6>
-            <button type="button" class="btn btn-link btn-sm text-muted p-0" (click)="onReset()"
-              *ngIf="filterParams.status || filterParams.city || filterParams.dateFrom || filterParams.dateTo || filterParams.search.trim()">
-              <i class="fas fa-times me-1"></i>Clear All
-            </button>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="row g-3">
-            <!-- Search -->
-            <div class="col-12 col-lg-4">
-              <label for="searchInput" class="form-label">Search</label>
-              <div class="input-group">
-                <span class="input-group-text">
-                  <i class="fas fa-search text-muted"></i>
-                </span>
-                <input id="searchInput" type="text" class="form-control" [(ngModel)]="filterParams.search"
-                  (input)="onSearchChange()" placeholder="OrderID, tracking No., city...">
-              </div>
-            </div>
-
-            <!-- Status Filter -->
-            <div class="col-6 col-lg-2">
-              <label for="statusFilter" class="form-label">Status</label>
-              <select id="statusFilter" class="form-select" [(ngModel)]="filterParams.status"
-                (change)="onStatusChange()">
-                <option value="">All Status ({{ getFilteredOrdersCount('') }})</option>
-                <option value="ORDER_PENDING">Pending ({{ getFilteredOrdersCount('ORDER_PENDING') }})</option>
-                <option value="ORDER_CONFIRMED">Confirmed ({{ getFilteredOrdersCount('ORDER_CONFIRMED') }})</option>
-                <option value="PACKED">Packed ({{ getFilteredOrdersCount('PACKED') }})</option>
-                <option value="SHIPPED">Shipped ({{ getFilteredOrdersCount('SHIPPED') }})</option>
-                <option value="OUT_FOR_DELIVERY">Out for Delivery ({{ getFilteredOrdersCount('OUT_FOR_DELIVERY') }})</option>
-                <option value="DELIVERED">Delivered ({{ getFilteredOrdersCount('DELIVERED') }})</option>
-                <option value="ORDER_CANCELLED">Cancelled ({{ getFilteredOrdersCount('ORDER_CANCELLED') }})</option>
-              </select>
-            </div>
-
-            <!-- City Filter -->
-            <div class="col-6 col-lg-2">
-              <label for="cityFilter" class="form-label">City</label>
-              <select id="cityFilter" class="form-select" [(ngModel)]="filterParams.city"
-                (change)="onCityChange()">
-                <option value="">All Cities</option>
-                <option *ngFor="let city of getUniqueCities()" [value]="city">{{ city }}</option>
-              </select>
-            </div>
-
-            <!-- Date Range -->
-            <div class="col-6 col-lg-2">
-              <label for="dateFrom" class="form-label">From Date</label>
-              <input id="dateFrom" type="date" class="form-control" [(ngModel)]="filterParams.dateFrom"
-                (change)="onDateFromChange()">
-            </div>
-            <div class="col-6 col-lg-2">
-              <label for="dateTo" class="form-label">To Date</label>
-              <input id="dateTo" type="date" class="form-control" [(ngModel)]="filterParams.dateTo"
-                (change)="onDateToChange()">
-            </div>
-
-            <!-- Items per page -->
-            <div class="col-6 col-lg-2">
-              <label for="itemsPerPage" class="form-label">Show</label>
-              <select id="itemsPerPage" class="form-select" [(ngModel)]="itemsPerPage"
-                (change)="onItemsPerPageChange()">
-                <option *ngFor="let option of getItemsPerPageOptions()" [value]="option">{{ option }}</option>
-              </select>
-            </div>
-          </div>
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2 class="fw-bold mb-1">Order Management</h2>
+        <p class="text-muted mb-0">Manage and track all customer orders</p>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-secondary btn-sm" (click)="refreshData()" [disabled]="isLoading">
+          <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+        </button>
+        <div class="dropdown export-dropdown ms-2">
+          <button class="btn btn-primary dropdown-toggle d-flex align-items-center gap-2" type="button"
+            id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-download"></i>
+            Export
+          </button>
+          <ul class="dropdown-menu shadow" aria-labelledby="exportDropdown">
+            <li>
+              <a class="dropdown-item d-flex align-items-center gap-2" href="#"
+                (click)="$event.preventDefault(); exportOrdersToPdf();">
+                <i class="bi bi-file-earmark-pdf text-danger"></i> Export as PDF
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center gap-2" href="#"
+                (click)="$event.preventDefault(); exportOrdersToExcel();">
+                <i class="bi bi-file-earmark-excel text-success"></i> Export as Excel
+              </a>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
 
-    <!-- Bulk Update Section -->
-    <div *ngIf="selectedOrderIds.length > 0" class="bulk-update-section mb-3">
-      <div class="card">
-        <div class="card-body bulk-update-content">
-          <div class="bulk-info">
-            <span class="selected-count">{{ selectedOrderIds.length }} orders selected</span>
-            <span class="warning-text">(Only paid orders will be updated)</span>
+    <!-- Filter/Search Controls -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <div class="row g-2 align-items-end">
+          <!-- Search -->
+          <div class="col-12 col-md-3">
+            <label for="searchInput" class="form-label">Search</label>
+            <input id="searchInput" type="text" class="form-control" [(ngModel)]="filterParams.search"
+              (input)="onSearchChange()" placeholder="OrderID, tracking No., city...">
           </div>
-          <div class="bulk-controls" *ngIf="getSelectedPaidCount() > 0">
-            <select [(ngModel)]="bulkStatus" class="bulk-select form-select">
-              <option value="">Select new status</option>
-              <option value="ORDER_CONFIRMED">Order Confirmed</option>
-              <option value="PACKED">Packed</option>
-              <option value="SHIPPED">Shipped</option>
-              <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
-              <option value="DELIVERED">Delivered</option>
-              <option value="ORDER_CANCELLED">Cancel Orders</option>
+
+          <!-- Status Filter -->
+          <div class="col-6 col-md-2">
+            <label for="statusFilter" class="form-label">Status</label>
+            <select id="statusFilter" class="form-select" [(ngModel)]="filterParams.status" (change)="onStatusChange()">
+              <option value="">All Status ({{ getFilteredOrdersCount('') }})</option>
+              <option value="ORDER_PENDING">Pending ({{ getFilteredOrdersCount('ORDER_PENDING') }})</option>
+              <option value="ORDER_CONFIRMED">Confirmed ({{ getFilteredOrdersCount('ORDER_CONFIRMED') }})</option>
+              <option value="PACKED">Packed ({{ getFilteredOrdersCount('PACKED') }})</option>
+              <option value="SHIPPED">Shipped ({{ getFilteredOrdersCount('SHIPPED') }})</option>
+              <option value="OUT_FOR_DELIVERY">Out for Delivery ({{ getFilteredOrdersCount('OUT_FOR_DELIVERY') }})
+              </option>
+              <option value="DELIVERED">Delivered ({{ getFilteredOrdersCount('DELIVERED') }})</option>
+              <option value="ORDER_CANCELLED">Cancelled ({{ getFilteredOrdersCount('ORDER_CANCELLED') }})</option>
             </select>
-            <input [(ngModel)]="bulkNote" placeholder="Note (optional)" class="bulk-note-input form-control"
-              [required]="bulkStatus === 'ORDER_CANCELLED'" />
-            <button (click)="confirmBulkStatusUpdate()"
-              [disabled]="!bulkStatus || bulkStatusLoading || (bulkStatus === 'ORDER_CANCELLED' && !bulkNote.trim())"
-              class="bulk-update-btn btn btn-primary">
-              <span *ngIf="!bulkStatusLoading">Update Status</span>
-              <span *ngIf="bulkStatusLoading">
-                <span class="spinner-border spinner-border-sm me-1"></span>Updating...
-              </span>
+          </div>
+
+          <!-- City Filter -->
+          <div class="col-6 col-md-2">
+            <label for="cityFilter" class="form-label">City</label>
+            <select id="cityFilter" class="form-select" [(ngModel)]="filterParams.city" (change)="onCityChange()">
+              <option value="">All Cities</option>
+              <option *ngFor="let city of getUniqueCities()" [value]="city">{{ city }}</option>
+            </select>
+          </div>
+
+          <!-- Date Range -->
+          <div class="col-6 col-md-2">
+            <label for="dateFrom" class="form-label">From Date</label>
+            <input id="dateFrom" type="date" class="form-control" [(ngModel)]="filterParams.dateFrom"
+              (change)="onDateFromChange()">
+          </div>
+          <div class="col-6 col-md-2">
+            <label for="dateTo" class="form-label">To Date</label>
+            <input id="dateTo" type="date" class="form-control" [(ngModel)]="filterParams.dateTo"
+              (change)="onDateToChange()">
+          </div>
+
+          <!-- Reset Button -->
+          <div class="col-12 col-md-1">
+            <button type="button" class="btn btn-outline-secondary w-100" (click)="onReset()">
+              <i class="bi bi-x-circle me-1"></i>Reset
             </button>
           </div>
-          <div *ngIf="bulkStatusError" class="error-message alert alert-danger mb-0">{{ bulkStatusError }}</div>
         </div>
       </div>
     </div>
 
-    <!-- Data Table Card -->
-    <div class="data-section">
-      <div class="card">
-        <div class="card-header">
-          <div class="row align-items-center">
-            <div class="col">
-              <h6 class="card-title mb-1">
-                <i class="fas fa-list me-2"></i>Orders
-              </h6>
-              <small class="text-muted">
-                Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
-                {{ Math.min(currentPage * itemsPerPage, totalItems) }} of {{ totalItems }} entries
-                <span *ngIf="filteredOrders.length !== orders.length">
-                  (filtered from {{ orders.length }} total)
-                </span>
-              </small>
-            </div>
-            <div class="col-auto" *ngIf="!isLoading && totalPages > 1">
-              <small class="text-muted">
-                Page {{ currentPage }} of {{ totalPages }}
-              </small>
-            </div>
+    <!-- Enhanced Bulk Update Section with Comment Box -->
+    <div *ngIf="selectedOrderIds.length > 0" class="card shadow-sm mb-4">
+      <div class="card-body">
+        <div class="d-flex flex-column gap-3">
+          <div class="d-flex align-items-center gap-2">
+            <span class="fw-semibold text-primary">{{ selectedOrderIds.length }} orders selected</span>
+            <span class="text-muted small">(Only paid orders will be updated)</span>
           </div>
-        </div>
-        <div class="card-body p-0">
-          <!-- Loading State -->
-          <div *ngIf="isLoading" class="loading-state">
-            <div class="d-flex flex-column align-items-center justify-content-center py-5">
-              <div class="spinner-border text-primary mb-3" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-              <p class="text-muted mb-0">Loading orders...</p>
-            </div>
-          </div>
-          <!-- Data Table -->
-          <div *ngIf="!isLoading" class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th style="width: 50px;">
-                    <input type="checkbox" [checked]="isAllSelected()" (change)="toggleSelectAll($event)"
-                      [disabled]="getSelectableOrdersOnCurrentPage().length === 0" />
-                  </th>
-                  <th class="sortable" (click)="sort('id')">
-                    <div class="d-flex align-items-center justify-content-between">
-                      <span>Order Details</span>
-                      <i class="fas ms-1" [class]="getSortIcon('id')"></i>
-                    </div>
-                  </th>
-                  <th>Items</th>
-                  <th class="sortable" (click)="sort('createdAt')">
-                    <div class="d-flex align-items-center justify-content-between">
-                      <span>Date</span>
-                      <i class="fas ms-1" [class]="getSortIcon('createdAt')"></i>
-                    </div>
-                  </th>
-                  <th class="sortable" (click)="sort('city')">
-                    <div class="d-flex align-items-center justify-content-between">
-                      <span>City</span>
-                      <i class="fas ms-1" [class]="getSortIcon('city')"></i>
-                    </div>
-                  </th>
-                  <th class="sortable" (click)="sort('orderStatus')">
-                    <div class="d-flex align-items-center justify-content-between">
-                      <span>Status</span>
-                      <i class="fas ms-1" [class]="getSortIcon('orderStatus')"></i>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let order of paginatedOrders; trackBy: trackByOrderId"
-                  class="table-row-hover" (click)="viewOrder(order)"
-                  [class.table-secondary]="!isOrderSelectable(order)">
-                  <td (click)="$event.stopPropagation()">
-                    <input type="checkbox" [checked]="isSelected(order)"
-                      (change)="toggleSelectOrder(order, $event)"
-                      [disabled]="!isOrderSelectable(order)" />
-                  </td>
-                  <!-- Order Details -->
-                  <td>
-                    <div>
-                      <span class="fw-bold text-primary">#{{ order.trackingNumber }}</span>
-                      <br>
-                      <small class="text-muted">Order ID: {{ order.id }}</small>
-                    </div>
-                  </td>
-                  <!-- Items -->
-                  <td>
-                    <span class="badge bg-light text-dark border">
-                      <i class="bi bi-box-seam me-1"></i>
-                      {{ getTotalItems(order) }} item{{ getTotalItems(order) !== 1 ? 's' : '' }}
-                    </span>
-                  </td>
-                  <!-- Date -->
-                  <td>
-                    <div class="date-info">
-                      <div class="text-dark">
-                        <i class="bi bi-calendar-event me-1"></i>{{ order.date }}
-                      </div>
-                      <small class="text-muted">
-                        <i class="bi bi-clock me-1"></i>{{ order.time }}
-                      </small>
-                    </div>
-                  </td>
-                  <!-- City -->
-                  <td>
-                    <span class="text-dark" [title]="order.city">
-                      {{ order.city }}
-                    </span>
-                  </td>
-                  <!-- Status -->
-                  <td>
-                    <span [class]="getOrderStatusClass(order.orderStatus)">
-                      <i [class]="getOrderStatusIcon(order.orderStatus)" class="me-1"></i>
-                      {{ getOrderStatusLabel(order.orderStatus) }}
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <!-- Empty State -->
-          <div *ngIf="!isLoading && paginatedOrders.length === 0" class="empty-state">
-            <div class="text-center py-5">
-              <div class="empty-icon mb-3">
-                <i class="bi bi-inbox display-1 text-muted"></i>
-              </div>
-              <h5 class="text-muted mb-2">No orders found</h5>
-              <p class="text-muted mb-3">
-                <span *ngIf="filterParams.status || filterParams.city || filterParams.dateFrom || filterParams.dateTo || filterParams.search.trim()">
-                  <i class="bi bi-funnel"></i> No orders match your current filters. Try adjusting your search criteria.
+          <div class="d-flex flex-column gap-3" *ngIf="getSelectedPaidCount() > 0">
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+              <select [(ngModel)]="bulkStatus" class="form-select" style="width: auto;" (change)="onBulkStatusChange()">
+                <option value="">Select new status</option>
+                <option value="ORDER_CONFIRMED">Order Confirmed</option>
+                <option value="PACKED">Packed</option>
+                <option value="SHIPPED">Shipped</option>
+                <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
+                <option value="DELIVERED">Delivered</option>
+                <option value="ORDER_CANCELLED" style="color: #dc3545; font-weight: bold;">Cancel Orders</option>
+              </select>
+
+              <button (click)="confirmBulkStatusUpdate()"
+                [disabled]="!bulkStatus || bulkStatusLoading || (bulkStatus === 'ORDER_CANCELLED' && !bulkNote.trim())"
+                class="btn btn-primary">
+                <span *ngIf="!bulkStatusLoading">Update Status</span>
+                <span *ngIf="bulkStatusLoading">
+                  <span class="spinner-border spinner-border-sm me-1"></span>Updating...
                 </span>
-                <span *ngIf="!filterParams.status && !filterParams.city && !filterParams.dateFrom && !filterParams.dateTo && !filterParams.search.trim()">
-                  <i class="bi bi-emoji-frown"></i> No orders have been placed yet.
-                </span>
-              </p>
-              <button class="btn btn-outline-primary" (click)="onReset()"
-                *ngIf="filterParams.status || filterParams.city || filterParams.dateFrom || filterParams.dateTo || filterParams.search.trim()">
-                <i class="bi bi-x-circle me-1"></i>Clear All Filters
               </button>
             </div>
-          </div>
-        </div>
-        <!-- Pagination Footer -->
-        <div class="card-footer" *ngIf="!isLoading && totalPages > 0">
-          <div class="d-flex justify-content-between align-items-center">
-            <div class="pagination-info">
-              <small class="text-muted">
-                Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
-                {{ Math.min(currentPage * itemsPerPage, totalItems) }} of {{ totalItems }} entries
-              </small>
+
+            <!-- Enhanced Comment Box for Bulk Updates -->
+            <div class="bulk-comment-section" *ngIf="bulkStatus">
+              <div class="form-group">
+                <label for="bulkNote" class="form-label" [class.required]="bulkStatus === 'ORDER_CANCELLED'">
+                  Comment {{ bulkStatus === 'ORDER_CANCELLED' ? '(Required for cancellation)' : '(Optional)' }}
+                </label>
+                <textarea id="bulkNote" [(ngModel)]="bulkNote" class="form-control bulk-comment-input"
+                  [class.mandatory]="bulkStatus === 'ORDER_CANCELLED'"
+                  [class.error]="bulkStatus === 'ORDER_CANCELLED' && !bulkNote.trim() && bulkCommentTouched" rows="3"
+                  maxlength="500"
+                  placeholder="{{ bulkStatus === 'ORDER_CANCELLED' ? 'Please provide a reason for cancellation...' : 'Add a comment about this status change...' }}"
+                  (blur)="bulkCommentTouched = true">
+                    </textarea>
+                <div class="form-footer">
+                  <span class="char-count">{{ bulkNote.length }}/500</span>
+                </div>
+                <div *ngIf="bulkStatus === 'ORDER_CANCELLED' && !bulkNote.trim() && bulkCommentTouched"
+                  class="error-message">
+                  <i class="fas fa-exclamation-circle"></i>
+                  Comment is required when cancelling orders.
+                </div>
+              </div>
             </div>
-            <nav aria-label="Orders pagination">
-              <ul class="pagination pagination-sm mb-0 custom-pagination">
-                <li class="page-item" [class.disabled]="currentPage === 1">
-                  <button class="page-link" (click)="goToPreviousPage()" [disabled]="currentPage === 1">
-                    <i class="fas fa-chevron-left"></i>
-                  </button>
-                </li>
-                <li *ngFor="let page of getPageNumbers()" class="page-item" [class.active]="page === currentPage">
-                  <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
-                </li>
-                <li class="page-item" [class.disabled]="currentPage === totalPages">
-                  <button class="page-link" (click)="goToNextPage()" [disabled]="currentPage === totalPages">
-                    <i class="fas fa-chevron-right"></i>
-                  </button>
-                </li>
-              </ul>
-            </nav>
           </div>
+
+          <div *ngIf="bulkStatusError" class="alert alert-danger mb-0">{{ bulkStatusError }}</div>
         </div>
       </div>
     </div>
+
+    <!-- Orders Table -->
+    <div class="card shadow-sm">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+          <h5 class="mb-0">Orders</h5>
+          <small class="text-muted">{{ filteredOrders.length }} of {{ orders.length }} orders</small>
+        </div>
+        <div class="d-flex align-items-center gap-2" *ngIf="!isLoading">
+          <small class="text-muted">
+            Page {{ currentPage }} of {{ totalPages }}
+          </small>
+        </div>
+      </div>
+
+      <div class="card-body p-0">
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center py-5">
+          <div class="spinner-border text-primary me-3" role="status"></div>
+          <span class="text-muted">Loading orders...</span>
+        </div>
+
+        <!-- Table -->
+        <div *ngIf="!isLoading" class="table-responsive">
+          <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 50px;">
+                  <input type="checkbox" [checked]="isAllSelected()" (change)="toggleSelectAll($event)"
+                    [disabled]="getSelectableOrdersOnCurrentPage().length === 0" />
+                </th>
+                <th class="sortable" (click)="sort('id')">
+                  <div class="d-flex align-items-center">
+                    Order Details
+                    <i class="bi ms-1" [class]="getSortIcon('id')"></i>
+                  </div>
+                </th>
+                <th>Items</th>
+                <th class="sortable" (click)="sort('createdAt')">
+                  <div class="d-flex align-items-center">
+                    Date
+                    <i class="bi ms-1" [class]="getSortIcon('createdAt')"></i>
+                  </div>
+                </th>
+                <th class="sortable" (click)="sort('city')">
+                  <div class="d-flex align-items-center">
+                    City
+                    <i class="bi ms-1" [class]="getSortIcon('city')"></i>
+                  </div>
+                </th>
+                <th class="sortable" (click)="sort('orderStatus')">
+                  <div class="d-flex align-items-center">
+                    Status
+                    <i class="bi ms-1" [class]="getSortIcon('orderStatus')"></i>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of paginatedOrders; trackBy: trackByOrderId" class="table-row-hover"
+                (click)="viewOrder(order)" [class.table-secondary]="!isOrderSelectable(order)">
+                <td (click)="$event.stopPropagation()">
+                  <input type="checkbox" [checked]="isSelected(order)" (change)="toggleSelectOrder(order, $event)"
+                    [disabled]="!isOrderSelectable(order)" />
+                </td>
+
+                <!-- Order Details -->
+                <td>
+                  <div>
+                    <span class="fw-semibold text-primary">#{{ order.trackingNumber }}</span>
+                    <br>
+                    <small class="text-muted">Order ID: {{ order.id }}</small>
+                  </div>
+                </td>
+
+                <!-- Items -->
+                <td>
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <div class="d-flex" style="gap: 2px;">
+                      <div *ngFor="let item of order.items.slice(0, 3)" class="position-relative">
+                        <img [src]="item.variant?.imgPath || item.product?.imgPath || 'assets/img/default-product.jpg'"
+                          [alt]="item.product?.name" (error)="onImageError($event)" class="rounded border"
+                          style="width: 24px; height: 24px; object-fit: cover;">
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary"
+                          style="font-size: 0.6rem; padding: 2px 4px;">
+                          {{ item.quantity }}
+                        </span>
+                      </div>
+                      <div *ngIf="order.items.length > 3"
+                        class="d-flex align-items-center justify-content-center bg-light border rounded text-muted"
+                        style="width: 24px; height: 24px; font-size: 0.7rem;">
+                        +{{ order.items.length - 3 }}
+                      </div>
+                    </div>
+                  </div>
+                  <small class="text-muted">{{ getTotalItems(order) }} items</small>
+                </td>
+
+                <!-- Date -->
+                <td>
+                  <div>
+                    <span class="text-dark">{{ order.date }}</span>
+                    <br>
+                    <small class="text-muted">{{ order.time }}</small>
+                  </div>
+                </td>
+
+                <!-- City -->
+                <td>
+                  <span class="text-dark" [title]="order.city">
+                    {{ order.city }}
+                  </span>
+                </td>
+
+                <!-- Status -->
+                <td>
+                  <span [class]="getOrderStatusClass(order.orderStatus)">
+                    <i [class]="getOrderStatusIcon(order.orderStatus)" class="me-1"></i>
+                    {{ getOrderStatusLabel(order.orderStatus) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!isLoading && paginatedOrders.length === 0" class="text-center py-5">
+          <div class="empty-state">
+            <i class="bi bi-inbox display-1 text-muted mb-3"></i>
+            <h5 class="text-muted">No orders found</h5>
+            <p class="text-muted mb-3">
+              <span
+                *ngIf="filterParams.status || filterParams.city || filterParams.dateFrom || filterParams.dateTo || filterParams.search.trim()">
+                No orders match your current filters. Try adjusting your search criteria.
+              </span>
+              <span
+                *ngIf="!filterParams.status && !filterParams.city && !filterParams.dateFrom && !filterParams.dateTo && !filterParams.search.trim()">
+                No orders have been placed yet.
+              </span>
+            </p>
+            <button class="btn btn-outline-primary" (click)="onReset()"
+              *ngIf="filterParams.status || filterParams.city || filterParams.dateFrom || filterParams.dateTo || filterParams.search.trim()">
+              <i class="bi bi-arrow-clockwise me-1"></i>Clear All Filters
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="card-footer custom-pagination-footer">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="text-muted small">
+            Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
+            {{ Math.min(currentPage * itemsPerPage, totalItems) }} of {{ totalItems }} entries
+          </div>
+          <nav aria-label="Policy pagination">
+            <ul class="pagination pagination-sm mb-0">
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <button class="page-link" (click)="goToPreviousPage()" [disabled]="currentPage === 1">
+                  <i class="bi bi-chevron-left"></i>
+                </button>
+              </li>
+              <li *ngFor="let page of getPageNumbers()" class="page-item" [class.active]="page === currentPage">
+                <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+              </li>
+              <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <button class="page-link" (click)="goToNextPage()" [disabled]="currentPage === totalPages">
+                  <i class="bi bi-chevron-right"></i>
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+
+    </div>
   </div>
-</div>

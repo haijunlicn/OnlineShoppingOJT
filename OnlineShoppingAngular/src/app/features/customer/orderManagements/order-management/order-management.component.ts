@@ -249,53 +249,6 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     }
   }
 
-  // private generateOrderItemsWithDiscounts(): OrderItemRequestDTO[] {
-  //   return this.orderItems.map((item) => {
-  //     const appliedDiscounts: OrderItemDiscountMechanismDTO[] = []
-
-  //     // Add auto discounts (simplified)
-  //     if (item.appliedDiscounts?.length) {
-  //       item.appliedDiscounts.forEach((discount) => {
-  //         const discountAmount = this.calculateItemDiscount(item, discount)
-  //         if (discountAmount > 0) {
-  //           appliedDiscounts.push({
-  //             discountMechanismId: discount.id,
-  //             mechanismType: MechanismType.DISCOUNT,
-  //             discountType: discount.discountType as DiscountType,
-  //             discountAmount,
-  //             description: `Auto: ${discount.shortLabel || discount.name}`,
-  //           })
-  //         }
-  //       })
-  //     }
-
-  //     // Add coupon discount (simplified)
-  //     const couponDiscount = this.getCouponDiscountForItem(item.productId, item.variantId)
-  //     if (couponDiscount > 0 && this.appliedCoupon) {
-  //       appliedDiscounts.push({
-  //         discountMechanismId: this.appliedCoupon.discount.id,
-  //         mechanismType: MechanismType.Coupon,
-  //         discountType: this.appliedCoupon.discount.discountType as DiscountType,
-  //         discountAmount: couponDiscount,
-  //         couponCode: this.appliedCoupon.discount.couponcode!,
-  //         description: `Coupon: ${this.appliedCoupon.discount.shortLabel || this.appliedCoupon.discount.name}`,
-  //       })
-  //     }
-
-  //     return {
-  //       variantId: item.variantId,
-  //       productId: item.productId,
-  //       quantity: item.quantity,
-  //       price: item.discountedPrice,
-  //       originalPrice: item.originalPrice,
-  //       productName: item.productName,
-  //       variantSku: item.variantSku,
-  //       imgPath: item.imgPath ?? "",
-  //       appliedDiscounts: appliedDiscounts.length ? appliedDiscounts : undefined,
-  //     }
-  //   })
-  // }
-
   private generateOrderItemsWithDiscounts(): OrderItemRequestDTO[] {
     return this.orderItems.map((item) => {
       const appliedDiscounts: OrderItemDiscountMechanismDTO[] = [];
@@ -309,7 +262,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
           const discountAmount = this.calculatePerItemDiscount(item, discount);
           if (discountAmount > 0) {
             appliedDiscounts.push({
-              discountMechanismId: discount.id,
+              discountMechanismId: discount.mechanismId!,
               mechanismType: MechanismType.DISCOUNT,
               discountType: discount.discountType as DiscountType,
               discountAmount,
@@ -325,7 +278,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
 
       if (couponDiscount > 0 && coupon) {
         appliedDiscounts.push({
-          discountMechanismId: coupon.id,
+          discountMechanismId: coupon.mechanismId!,
           mechanismType: MechanismType.Coupon,
           discountType: coupon.discountType as DiscountType,
           discountAmount: couponDiscount,
@@ -835,7 +788,14 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
     const distance = R * c
     const method = this.selectedDeliveryMethod
-    const shippingFee = method.baseFee + method.feePerKm * distance
+    
+    // Check if customer's city matches store's city
+    const isSameCity = this.isSameCity(address, this.storeLocation)
+    
+    // Use appropriate fee per km based on city match
+    const feePerKm = isSameCity ? method.feePerKm : (method.feePerKmOutCity || method.feePerKm)
+    
+    const shippingFee = method.baseFee + feePerKm * distance
     return Math.round(shippingFee / 100) * 100
   }
 
@@ -868,9 +828,19 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     if (this.selectedAddress && this.storeLocation && this.selectedDeliveryMethod) {
       const distance = this.getDistanceFromStore(this.selectedAddress)
       const method = this.selectedDeliveryMethod
-      const shippingFee = method.baseFee + method.feePerKm * distance
+      
+      // Check if customer's city matches store's city
+      const isSameCity = this.isSameCity(this.selectedAddress, this.storeLocation)
+      
+      // Use appropriate fee per km based on city match
+      const feePerKm = isSameCity ? method.feePerKm : (method.feePerKmOutCity || method.feePerKm)
+      
+      const shippingFee = method.baseFee + feePerKm * distance
       this.shippingFee = Math.round(shippingFee / 100) * 100
       this.totalAmount = this.discountedSubtotal + this.shippingFee
+      
+      console.log(`Shipping fee calculation: Base Fee (${method.baseFee}) + Fee Per Km (${feePerKm}) × Distance (${distance}) = ${this.shippingFee}`)
+      console.log(`City match: ${isSameCity ? 'Same city' : 'Different city'}`)
     } else {
       console.warn("Missing data to calculate shipping fee:", {
         selectedAddress: this.selectedAddress,
@@ -880,6 +850,19 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
       this.shippingFee = 0
       this.totalAmount = this.discountedSubtotal
     }
+  }
+
+  // Helper method to check if customer's city matches store's city
+  isSameCity(customerAddress: LocationDto, storeLocation: StoreLocationDto): boolean {
+    if (!customerAddress.city || !storeLocation.city) {
+      return false
+    }
+    
+    // Normalize city names for comparison (case-insensitive, trim whitespace)
+    const customerCity = customerAddress.city.toLowerCase().trim()
+    const storeCity = storeLocation.city.toLowerCase().trim()
+    
+    return customerCity === storeCity
   }
 
   trackByAddressId(index: number, address: LocationDto): number | undefined {

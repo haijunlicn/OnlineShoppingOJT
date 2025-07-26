@@ -45,16 +45,73 @@
           </div>
         </div>
         <div class="mb-3">
-          <label class="form-label">Fee Per Km</label>
+          <label class="form-label">Fee Per Km (In City)</label>
           <input type="number" class="form-control" [(ngModel)]="method.feePerKm" name="feePerKm" required min="0" #feePerKm="ngModel">
           <div *ngIf="feePerKm.invalid && (feePerKm.dirty || feePerKm.touched)" class="text-danger">
-            Fee Per Km is required and must be 0 or greater.
+            Fee Per Km (In City) is required and must be 0 or greater.
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Fee Per Km (Out of City)</label>
+          <input type="number" class="form-control" [(ngModel)]="method.feePerKmOutCity" name="feePerKmOutCity" required min="0" #feePerKmOutCity="ngModel">
+          <div *ngIf="feePerKmOutCity.invalid && (feePerKmOutCity.dirty || feePerKmOutCity.touched)" class="text-danger">
+            Fee Per Km (Out of City) is required and must be 0 or greater.
           </div>
         </div>
         <div class="mb-3">
           <label class="form-label">Icon</label>
           <input type="file" class="form-control" (change)="onIconSelected($event)">
           <img *ngIf="iconPreview" [src]="iconPreview" alt="icon preview" style="width:60px;height:60px;object-fit:contain;margin-top:8px;">
+        </div>
+
+        <!-- Preview Section -->
+        <div class="alert alert-info mt-4" *ngIf="method.minDistance != null && method.maxDistance != null && method.baseFee != null && method.feePerKm != null && method.feePerKmOutCity != null">
+          <strong>Preview:</strong><br>
+          <span>
+            This delivery method can be used for distances from <b>{{ method.minDistance }}</b> km to <b>{{ method.maxDistance }}</b> km.
+          </span><br>
+          <span>
+            Fee calculation (In City): <b>{{ method.baseFee }}</b> MMK + (<b>{{ method.feePerKm }}</b> MMK × distance)
+          </span><br>
+          <span>
+            Fee calculation (Out of City): <b>{{ method.baseFee }}</b> MMK + (<b>{{ method.feePerKmOutCity }}</b> MMK × distance)
+          </span>
+        </div>
+
+        <!-- Sample distance input for admin to try -->
+        <div class="mb-3">
+          <label class="form-label">Calculate delivery fee for a sample distance (km)</label>
+          <div class="row">
+            <div class="col-md-6">
+              <input
+                type="number"
+                class="form-control"
+                [(ngModel)]="sampleDistance"
+                [ngModelOptions]="{standalone: true}"
+                min="0"
+                [attr.max]="method.maxDistance != null ? method.maxDistance : null"
+                placeholder="e.g. 10"
+              >
+            </div>
+            <div class="col-md-3">
+              <select 
+                class="form-select" 
+                [(ngModel)]="feeCalculationType"
+                [ngModelOptions]="{standalone: true}"
+              >
+                <option value="inCity">In City</option>
+                <option value="outCity">Out of City</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-outline-primary w-100" type="button" (click)="calculateSampleFee()">
+                Calculate
+              </button>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="calculatedSampleFee !== null" class="alert alert-info py-2 px-3 mt-2">
+          For <b>{{ sampleDistance }}</b> km ({{ feeCalculationType === 'inCity' ? 'In City' : 'Out of City' }}), the delivery fee = <b>{{ calculatedSampleFee }}</b> MMK
         </div>
         <button type="submit" class="btn btn-primary" [disabled]="isLoading || deliveryForm.invalid">
           <span *ngIf="isLoading" class="spinner-border spinner-border-sm"></span>

@@ -10,6 +10,7 @@ import com.maven.OnlineShoppingSB.config.CustomUserDetails;
 import com.maven.OnlineShoppingSB.dto.*;
 import com.maven.OnlineShoppingSB.entity.UserEntity;
 import com.maven.OnlineShoppingSB.service.CustomUserDetailsService;
+import com.maven.OnlineShoppingSB.service.EmailValidationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,12 +56,14 @@ public class authController {
     private JwtService jwtService;
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
+    @Autowired
+    private EmailValidationService emailValidationService;
+
     private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@RequestBody UserEntity user) {
-
 
 
         String result = userService.registerUser(user);
@@ -73,7 +76,7 @@ public class authController {
             response.put("userId", id);
             return ResponseEntity.ok(response);
 
-        } else if ("email already exists".equals(result)) {
+        } else if ("Email already exists".equals(result)) {
             response.put("message", "Email already exists");
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
 
@@ -269,7 +272,7 @@ public class authController {
             userDTO.setId(user.getId());
             userDTO.setEmail(user.getEmail());
             userDTO.setName(user.getName());
-           // userDTO.setPhone(user.getPhone());
+            // userDTO.setPhone(user.getPhone());
             userDTO.setProfile(user.getProfile());
             userDTO.setIsVerified(user.getIsVerified());
             userDTO.setDelFg(user.getDelFg());
@@ -299,35 +302,6 @@ public class authController {
         return ResponseEntity.ok(userDTO);
     }
 
-
-//    @GetMapping("/me")
-//    public ResponseEntity<?> getCurrentUser(@RequestParam String email, @RequestParam Integer roleType) {
-//        UserEntity user = userRepo.findByEmailAndRoleType(email, roleType)
-//                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-//
-//        userDTO userDTO = new userDTO();
-//        userDTO.setId(user.getId());
-//        userDTO.setEmail(user.getEmail());
-//        userDTO.setName(user.getName());
-//        userDTO.setPhone(user.getPhone());
-//        userDTO.setIsVerified(user.getIsVerified());
-//        userDTO.setDelFg(user.getDelFg());
-//        userDTO.setCreatedDate(user.getCreatedDate());
-//        userDTO.setUpdatedDate(user.getUpdatedDate());
-//        userDTO.setRoleName(user.getRole() != null ? user.getRole().getName() : null);
-//
-//        // 🟩 NEW: Set permissions from role
-//        if (user.getRole() != null && user.getRole().getPermissions() != null) {
-//            List<String> permissionNames = user.getRole().getPermissions()
-//                    .stream()
-//                    .map(p -> p.getCode())
-//                    .toList();
-//            userDTO.setPermissions(permissionNames); // ensure this field exists in userDTO
-//        }
-//
-//        return ResponseEntity.ok(userDTO);
-//    }
-
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@RequestBody Map<String, String> body) {
         System.out.println("I'm forget Password");
@@ -342,37 +316,44 @@ public class authController {
         return ResponseEntity.ok("Password reset successful.");
     }
 
-@PutMapping("/update/{id}")
-public UserResponseDTO updateProfile(@PathVariable Long id, @RequestBody UserResponseDTO userDto) {
-    return userService.updateProfile(id, userDto);
-}
-
-
-
-@PostMapping("/check-password")
-public ResponseEntity<?> checkCurrentPassword(@RequestBody Map<String, Object> payload) {
-    try {
-        Long userId = Long.valueOf(payload.get("userId").toString());
-        String currentPassword = payload.get("currentPassword").toString();
-
-        boolean isValid = userService.checkCurrentPassword(userId, currentPassword);
-        return ResponseEntity.ok(isValid);
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("success", false, "message", e.getMessage()));
+    @PutMapping("/update/{id}")
+    public UserResponseDTO updateProfile(@PathVariable Long id, @RequestBody UserResponseDTO userDto) {
+        return userService.updateProfile(id, userDto);
     }
-}
-@PostMapping("/change-password")
-public ResponseEntity<?> changePassword(@RequestBody Map<String, Object> payload) {
-    try {
-        Long userId = Long.valueOf(payload.get("userId").toString());
-        String newPassword = payload.get("newPassword").toString();
 
-        UserResponseDTO updatedUser = userService.changePassword(userId, newPassword);
-        return ResponseEntity.ok(updatedUser);
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("success", false, "message", e.getMessage()));
+
+    @PostMapping("/check-password")
+    public ResponseEntity<?> checkCurrentPassword(@RequestBody Map<String, Object> payload) {
+        try {
+            Long userId = Long.valueOf(payload.get("userId").toString());
+            String currentPassword = payload.get("currentPassword").toString();
+
+            boolean isValid = userService.checkCurrentPassword(userId, currentPassword);
+            return ResponseEntity.ok(isValid);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", e.getMessage()));
+        }
     }
-}
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, Object> payload) {
+        try {
+            Long userId = Long.valueOf(payload.get("userId").toString());
+            String newPassword = payload.get("newPassword").toString();
+
+            UserResponseDTO updatedUser = userService.changePassword(userId, newPassword);
+            return ResponseEntity.ok(updatedUser);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/validateEmailWithAPI")
+    public ResponseEntity<?> validateEmail(@RequestParam String email) {
+        boolean isValid = emailValidationService.isValidEmail(email);
+        return ResponseEntity.ok(Map.of("valid", isValid));
+    }
+
 }

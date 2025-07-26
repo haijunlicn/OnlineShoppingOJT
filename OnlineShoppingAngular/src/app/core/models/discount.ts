@@ -196,6 +196,7 @@ export interface DiscountDisplayDTO {
   offeredProductIds?: number[];
   usageLimitTotal?: number;
   usageLimitPerUser?: number;
+  mechanismId?: number;
 }
 
 export interface DiscountEventDTO {

@@ -105,4 +105,10 @@ export class DiscountDisplayService {
     };
   }
 
+  canUserUseMechanism(mechanismId: number): Observable<{ canUse: boolean; status: string }> {
+    return this.http.get<{ canUse: boolean; status: string }>(
+      `${this.baseUrl}/can-user-use-mechanism/${mechanismId}`
+    );
+  }
+
 }

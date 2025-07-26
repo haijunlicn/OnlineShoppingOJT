@@ -1,13 +1,18 @@
 <app-header></app-header>
 
 <main class="main-content">
-  <div>
+  <!-- Loading State -->
+  <div class="hero-loading" *ngIf="isLoadingDiscounts">
+    <div class="loading-spinner"></div>
+    <p>Loading offers...</p>
+  </div>
 
-    <!-- Loading State -->
-    <div class="hero-loading" *ngIf="isLoadingDiscounts">
-      <div class="loading-spinner"></div>
-      <p>Loading offers...</p>
-    </div>
+  <!-- Discount Hero Carousel -->
+  <!-- <app-discount-hero-carousel
+    *ngIf="!isLoadingDiscounts && discounts.length > 0"
+    [discounts]="discounts"
+    (viewDetails)="onDiscountViewDetails($event)">
+  </app-discount-hero-carousel> -->
 
     <!-- Replace Hero Section only if discounts exist -->
     <app-discount-hero-carousel *ngIf="!isLoadingDiscounts && discounts.length > 0" [discounts]="discounts"
@@ -28,59 +33,49 @@
           <span>Shop Now</span>
           <div class="btn-shine"></div>
         </button>
-      </div>
-    </section>
+      <!-- </form> -->
+      <button class="hero-btn" (click)="onShopNow()">
+        <span>Explore Collection</span>
+        <div class="btn-shine"></div>
+      </button>
+    </div>
+  </section>
 
-    <!-- Featured Categories -->
-    <section class="categories-section">
-      <h2 class="section-title">Shop by Category</h2>
-      <div class="category-carousel-wrapper">
-        <button class="scroll-btn left" (click)="scrollLeft()">‹</button>
-
-        <div class="category-carousel" #carousel>
-          <div class="category-card" *ngFor="let category of categories">
-            <img [src]="category.image" [alt]="category.name" class="category-image" />
+  <!-- Top Sellers Section -->
+  <section class="top-sellers-section">
+    <h2 class="section-title">Our Best Sellers</h2>
+    <div *ngIf="isLoadingTop" class="hero-loading">
+      <div class="loading-spinner"></div>
+      <p>Loading best sellers...</p>
+    </div>
+    <div *ngIf="!isLoadingTop">
+      <div class="top-categories">
+        <h3>Top Categories</h3>
+        <div class="top-category-grid">
+          <div class="category-card rect-card" *ngFor="let cat of topCategories">
+            <img [src]="cat.imgPath || 'assets/images/categories/default.jpg'" [alt]="cat.name" class="category-image-rect" />
             <div class="category-info">
-              <h3>{{ category.name }}</h3>
-              <a [routerLink]="category.link" class="category-link">Shop Now</a>
+              <h4>{{ cat.name }}</h4>
+              <a [routerLink]="['/customer/productList']" [queryParams]="{ category: cat.name }" class="category-link">Shop Now</a>
             </div>
           </div>
         </div>
-
-        <button class="scroll-btn right" (click)="scrollRight()">›</button>
       </div>
-    </section>
-
-    <!-- Promotional Banners -->
-    <section class="promo-section">
-      <div class="promo-grid">
-        <div class="promo-banner promo-sale">
-          <div>
-            <h3>Summer Sale</h3>
-            <p>Up to 50% off selected items</p>
-            <a href="#" class="promo-btn">Shop Sale</a>
-          </div>
-        </div>
-        <div class="promo-banner promo-new">
-          <div>
-            <h3>New Arrivals</h3>
-            <p>Fresh styles just landed</p>
-            <a href="#" class="promo-btn">Explore</a>
+      <div class="top-products">
+        <h3>Featured Products</h3>
+        <div class="top-product-grid">
+          <div class="product-card rect-card" *ngFor="let prod of topProducts">
+            <img [src]="getMainProductImage(prod.product)" [alt]="prod.product.name" class="product-image-rect" />
+            <div class="product-info">
+              <h4>{{ prod.product.name }}</h4>
+              <div class="product-price">{{ prod.product.basePrice | currency:'MMK':'symbol' }}</div>
+              <div class="product-btns">
+                <a [routerLink]="['/customer/product', prod.id]" class="category-link">View Details</a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </section>
-
-    <!-- Newsletter Signup -->
-    <section class="newsletter-section">
-      <div class="newsletter-content">
-        <h2>Stay Updated</h2>
-        <p>Subscribe to our newsletter for exclusive offers and updates</p>
-        <form class="newsletter-form" (submit)="$event.preventDefault(); onSubscribe(newsletterEmail.value)">
-          <input #newsletterEmail type="email" placeholder="Enter your email" required>
-          <button type="submit">Subscribe</button>
-        </form>
-      </div>
-    </section>
-  </div>
+    </div>
+  </section>
 </main>

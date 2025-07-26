@@ -16,7 +16,7 @@ export interface TimelineItem extends TimelineStep {
 }
 
 @Component({
-  selector: "app-admin-order-detail",
+  selector: "app-admin-orders-detail",
   standalone: false,
   templateUrl: "./admin-orders-detail.component.html",
   styleUrl: "./admin-orders-detail.component.css",
@@ -32,6 +32,10 @@ export class AdminOrdersDetailComponent implements OnInit, OnDestroy {
   paymentError = ""
   private subscriptions: Subscription[] = []
   selectedStatus: ORDER_STATUS | null = null
+
+  // Status comment properties
+  statusComment = ""
+  statusCommentTouched = false
 
   rejectionForm!: FormGroup
   rejectionReasons: RejectionReasonDTO[] = []
@@ -108,29 +112,47 @@ export class AdminOrdersDetailComponent implements OnInit, OnDestroy {
     return STATUS_TRANSITIONS[this.order.currentOrderStatus as ORDER_STATUS] || []
   }
 
+  // Handle status selection change
+  onStatusSelectionChange(): void {
+    this.statusComment = ""
+    this.statusCommentTouched = false
+  }
+
   updateOrderStatus(newStatus: ORDER_STATUS, note = "Status updated by admin", updatedBy = 1): void {
     if (!this.order) return
 
     this.updatingStatus = true
     this.updateStatusError = ""
 
-    this.orderService.bulkUpdateOrderStatus([this.order.id], newStatus, note, updatedBy).subscribe({
+    // Use the comment from the form if provided
+    const finalNote = this.statusComment.trim() || note
+
+    this.orderService.bulkUpdateOrderStatus([this.order.id], newStatus, finalNote, updatedBy).subscribe({
       next: () => {
-        this.updatingStatus = false;
-        this.loadOrderDetails();
-        this.alertService.toast('Order status updated successfully!', 'success');
+        this.updatingStatus = false
+        this.statusComment = ""
+        this.statusCommentTouched = false
+        this.loadOrderDetails()
+        this.alertService.toast("Order status updated successfully!", "success")
       },
       error: (err) => {
-        this.updatingStatus = false;
-        this.updateStatusError = 'Failed to update order status.';
-        this.alertService.toast('Failed to update order status. Please try again.', 'error');
+        this.updatingStatus = false
+        this.updateStatusError = "Failed to update order status."
+        this.alertService.toast("Failed to update order status. Please try again.", "error")
       },
-    });
+    })
   }
 
   // Confirm and update status with validation
   confirmStatusUpdate(): void {
     if (!this.order || !this.selectedStatus) return
+
+    // Check if comment is required for cancellation
+    if (this.selectedStatus === ORDER_STATUS.ORDER_CANCELLED && !this.statusComment.trim()) {
+      this.statusCommentTouched = true
+      this.alertService.toast("Comment is required when cancelling an order.", "error")
+      return
+    }
 
     const currentStatusCode = this.order.currentOrderStatus as ORDER_STATUS
     const allowedTransitions = STATUS_TRANSITIONS[currentStatusCode] || []
@@ -150,9 +172,13 @@ export class AdminOrdersDetailComponent implements OnInit, OnDestroy {
     }
 
     // Show confirmation dialog
+    const confirmText = this.statusComment.trim()
+      ? `Change order status from "${ORDER_STATUS_LABELS[currentStatusCode]}" to "${ORDER_STATUS_LABELS[this.selectedStatus]}" with comment: "${this.statusComment.trim()}"?`
+      : `Change order status from "${ORDER_STATUS_LABELS[currentStatusCode]}" to "${ORDER_STATUS_LABELS[this.selectedStatus]}"?`
+
     Swal.fire({
       title: "Confirm Status Update",
-      text: `Change order status from "${ORDER_STATUS_LABELS[currentStatusCode]}" to "${ORDER_STATUS_LABELS[this.selectedStatus]}"?`,
+      text: confirmText,
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "Yes, Update",
@@ -346,17 +372,17 @@ export class AdminOrdersDetailComponent implements OnInit, OnDestroy {
 
         this.orderService.updatePaymentStatus(this.order!.id, PAYMENT_STATUS.PAID).subscribe({
           next: (updatedOrder) => {
-            this.order = updatedOrder;
-            this.updatingPayment = false;
-            this.updateSelectedStatus();
-            this.alertService.toast('Payment approved successfully!', 'success');
+            this.order = updatedOrder
+            this.updatingPayment = false
+            this.updateSelectedStatus()
+            this.alertService.toast("Payment approved successfully!", "success")
           },
           error: (err) => {
-            this.paymentError = err.error?.message || 'Failed to approve payment';
-            this.updatingPayment = false;
-            this.alertService.toast('Failed to approve payment. Please try again.', 'error');
+            this.paymentError = err.error?.message || "Failed to approve payment"
+            this.updatingPayment = false
+            this.alertService.toast("Failed to approve payment. Please try again.", "error")
           },
-        });
+        })
       }
     })
   }
@@ -368,44 +394,44 @@ export class AdminOrdersDetailComponent implements OnInit, OnDestroy {
 
   // Confirm rejection with reason
   confirmRejection(): void {
-    const reasonId = this.rejectionForm.get('reasonId')?.value;
-    const customReason = this.rejectionForm.get('customReasonText')?.value;
+    const reasonId = this.rejectionForm.get("reasonId")?.value
+    const customReason = this.rejectionForm.get("customReasonText")?.value
 
-    console.log('Selected reasonId:', reasonId);
-    console.log('Entered customReason:', customReason);
-    console.log('Should show custom reason field?', this.shouldShowCustomReasonField());
+    console.log("Selected reasonId:", reasonId)
+    console.log("Entered customReason:", customReason)
+    console.log("Should show custom reason field?", this.shouldShowCustomReasonField())
 
     if (!reasonId || (this.shouldShowCustomReasonField() && !customReason?.trim())) {
-      console.warn('Validation failed. reasonId or customReason is missing.');
-      this.rejectionForm.markAllAsTouched();
-      return;
+      console.warn("Validation failed. reasonId or customReason is missing.")
+      this.rejectionForm.markAllAsTouched()
+      return
     }
 
     const rejectionRequest = {
       reasonId,
-      customReason
-    };
+      customReason,
+    }
 
-    console.log('Submitting rejection request:', rejectionRequest);
+    console.log("Submitting rejection request:", rejectionRequest)
 
-    this.updatingPayment = true;
-    this.closeRejectionReasonModal();
+    this.updatingPayment = true
+    this.closeRejectionReasonModal()
 
     this.orderService.updatePaymentStatus(this.order!.id, PAYMENT_STATUS.FAILED, rejectionRequest).subscribe({
       next: (updatedOrder) => {
-        console.log('Payment rejected successfully. Updated order:', updatedOrder);
-        this.order = updatedOrder;
-        this.updatingPayment = false;
-        this.updateSelectedStatus();
-        this.alertService.toast('Payment rejected successfully!', 'success');
+        console.log("Payment rejected successfully. Updated order:", updatedOrder)
+        this.order = updatedOrder
+        this.updatingPayment = false
+        this.updateSelectedStatus()
+        this.alertService.toast("Payment rejected successfully!", "success")
       },
       error: (err) => {
-        console.error('Error rejecting payment:', err);
-        this.paymentError = err.error?.message || 'Failed to reject payment';
-        this.updatingPayment = false;
-        this.alertService.toast('Failed to reject payment. Please try again.', 'error');
+        console.error("Error rejecting payment:", err)
+        this.paymentError = err.error?.message || "Failed to reject payment"
+        this.updatingPayment = false
+        this.alertService.toast("Failed to reject payment. Please try again.", "error")
       },
-    });
+    })
   }
 
   // Initialize rejection form
@@ -498,26 +524,13 @@ export class AdminOrdersDetailComponent implements OnInit, OnDestroy {
         timelineStep.code === ORDER_STATUS.ORDER_CANCELLED ||
         timelineStep.code === ORDER_STATUS.PAYMENT_REJECTED
       ) {
-        stepClass = "cancelled";
-        connectorClass = "cancelled";
+        stepClass = "cancelled"
+        connectorClass = "cancelled"
       } else if (isFinal) {
-        stepClass = "final";
+        stepClass = "final"
       } else if (isCurrent) {
-        stepClass = "current";
+        stepClass = "current"
       }
-
-      // if (isCurrent) {
-      //   stepClass = "current"
-      // } else if (
-      //   isFailure ||
-      //   timelineStep.code === ORDER_STATUS.ORDER_CANCELLED ||
-      //   timelineStep.code === ORDER_STATUS.PAYMENT_REJECTED
-      // ) {
-      //   stepClass = "cancelled"
-      //   connectorClass = "cancelled"
-      // } else if (isFinal) {
-      //   stepClass = "final"
-      // }
 
       steps.push({
         label: timelineStep.label,
@@ -604,8 +617,8 @@ export class AdminOrdersDetailComponent implements OnInit, OnDestroy {
   copyTrackingNumber(): void {
     if (this.order?.trackingNumber) {
       navigator.clipboard.writeText(this.order.trackingNumber).then(() => {
-        this.alertService.toast('Tracking number copied to clipboard', 'success');
-      });
+        this.alertService.toast("Tracking number copied to clipboard", "success")
+      })
     }
   }
 
@@ -626,117 +639,124 @@ export class AdminOrdersDetailComponent implements OnInit, OnDestroy {
 
   // Discount-related helper methods
   hasItemDiscounts(item: any): boolean {
-    return item.appliedDiscounts && item.appliedDiscounts.length > 0;
+    return item.appliedDiscounts && item.appliedDiscounts.length > 0
   }
 
   getItemAutoDiscounts(item: any): any[] {
-    if (!item.appliedDiscounts) return [];
-    return item.appliedDiscounts.filter((discount: any) =>
-      discount.mechanismType === 'Discount'
-    );
+    if (!item.appliedDiscounts) return []
+    return item.appliedDiscounts.filter((discount: any) => discount.mechanismType === "Discount")
   }
 
   getItemCouponDiscounts(item: any): any[] {
     if (!item.appliedDiscounts) return [];
+
     return item.appliedDiscounts.filter((discount: any) =>
-      discount.mechanismType === 'Coupon'
+      discount.mechanismType === 'Coupon' && discount.discountType === 'PERCENTAGE'
     );
   }
 
   getItemOriginalTotal(item: any): number {
     if (!item.appliedDiscounts || item.appliedDiscounts.length === 0) {
-      return this.calculateItemTotal(item);
+      return this.calculateItemTotal(item)
     }
 
-    // Calculate original price by adding back all discounts
-    const currentTotal = this.calculateItemTotal(item);
+    // Calculate original price by adding back all discounts,
+    // excluding coupon -> fixed type
+    const currentTotal = this.calculateItemTotal(item)
     const totalDiscounts = item.appliedDiscounts.reduce((sum: number, discount: any) => {
-      return sum + (discount.discountAmount * item.quantity);
-    }, 0);
+      const isCouponFixed = discount.mechanismType === "Coupon" && discount.discountType === "FIXED"
+      if (isCouponFixed) return sum
+      return sum + discount.discountAmount * item.quantity
+    }, 0)
 
-    return currentTotal + totalDiscounts;
-  }
-
-  getItemTotalSavings(item: any): number {
-    if (!item.appliedDiscounts) return 0;
-
-    return item.appliedDiscounts.reduce((sum: number, discount: any) => {
-      return sum + (discount.discountAmount * item.quantity);
-    }, 0);
+    return currentTotal + totalDiscounts
   }
 
   hasAnyDiscounts(): boolean {
-    if (!this.order?.items) return false;
+    if (!this.order?.items) return false
 
-    return this.order.items.some((item: any) =>
-      item.appliedDiscounts && item.appliedDiscounts.length > 0
-    );
+    return this.order.items.some((item: any) => item.appliedDiscounts && item.appliedDiscounts.length > 0)
   }
 
   getOriginalSubtotal(): number {
-    if (!this.order?.items) return 0;
+    if (!this.order?.items) return 0
 
     return this.order.items.reduce((total: number, item: any) => {
-      return total + this.getItemOriginalTotal(item);
-    }, 0);
+      return total + this.getItemOriginalTotal(item)
+    }, 0)
   }
 
   getDiscountedSubtotal(): number {
-    if (!this.order?.items) return 0;
+    if (!this.order?.items) return 0
 
-    return this.order.items.reduce((total: number, item: any) => {
-      return total + this.calculateItemTotal(item);
-    }, 0);
+    let subtotal = this.order.items.reduce((total: number, item: any) => {
+      return total + this.calculateItemTotal(item)
+    }, 0)
+
+    // Find the fixed coupon (if any) and subtract it
+    const fixedCoupon = this.order.items
+      .flatMap((item: any) => item.appliedDiscounts || [])
+      .find((discount: any) => discount.mechanismType === "Coupon" && discount.discountType === "FIXED")
+
+    if (fixedCoupon) {
+      subtotal -= fixedCoupon.discountAmount
+    }
+
+    return subtotal
   }
 
   getAutoDiscountSavings(): number {
-    if (!this.order?.items) return 0;
+    if (!this.order?.items) return 0
 
     return this.order.items.reduce((total: number, item: any) => {
-      if (!item.appliedDiscounts) return total;
+      if (!item.appliedDiscounts) return total
 
-      const autoDiscounts = item.appliedDiscounts.filter((discount: any) =>
-        discount.mechanismType === 'Discount'
-      );
+      const autoDiscounts = item.appliedDiscounts.filter((discount: any) => discount.mechanismType === "Discount")
 
-      return total + autoDiscounts.reduce((sum: number, discount: any) => {
-        return sum + (discount.discountAmount * item.quantity);
-      }, 0);
-    }, 0);
+      return (
+        total +
+        autoDiscounts.reduce((sum: number, discount: any) => {
+          return sum + discount.discountAmount * item.quantity
+        }, 0)
+      )
+    }, 0)
   }
 
   getCouponDiscountSavings(): number {
-    if (!this.order?.items) return 0;
+    if (!this.order?.items) return 0
 
     return this.order.items.reduce((total: number, item: any) => {
-      if (!item.appliedDiscounts) return total;
+      if (!item.appliedDiscounts) return total
 
-      const couponDiscounts = item.appliedDiscounts.filter((discount: any) =>
-        discount.mechanismType === 'Coupon'
-      );
+      const couponDiscounts = item.appliedDiscounts.filter((discount: any) => discount.mechanismType === "Coupon")
 
-      return total + couponDiscounts.reduce((sum: number, discount: any) => {
-        return sum + (discount.discountAmount * item.quantity);
-      }, 0);
-    }, 0);
+      const itemSavings = couponDiscounts.reduce((sum: number, discount: any) => {
+        const isPercentage = discount.discountType === "PERCENTAGE"
+        const discountTotal = isPercentage ? discount.discountAmount * item.quantity : discount.discountAmount
+
+        return sum + discountTotal
+      }, 0)
+
+      return total + itemSavings
+    }, 0)
   }
 
   getCouponCode(): string {
-    if (!this.order?.items) return '';
+    if (!this.order?.items) return ""
     for (const item of this.order.items) {
       if (item.appliedDiscounts) {
         const couponDiscount = item.appliedDiscounts.find(
-          (discount) => discount.mechanismType === 'Coupon' && discount.couponCode
-        );
+          (discount) => discount.mechanismType === "Coupon" && discount.couponCode,
+        )
         if (couponDiscount) {
-          return couponDiscount.couponCode || '';
+          return couponDiscount.couponCode || ""
         }
       }
     }
-    return '';
+    return ""
   }
 
   getTotalSavings(): number {
-    return this.getAutoDiscountSavings() + this.getCouponDiscountSavings();
+    return this.getAutoDiscountSavings() + this.getCouponDiscountSavings()
   }
 }

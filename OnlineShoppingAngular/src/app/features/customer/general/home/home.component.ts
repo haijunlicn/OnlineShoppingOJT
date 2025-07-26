@@ -1,130 +1,85 @@
-
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { LoginModalService } from '../../../../core/services/LoginModalService';
-import { RegisterModalService } from '../../../../core/services/RegisterModalService';
-import { ForgotPasswordModalService } from '../../../../core/services/ForgotPasswordModalService';
+import { Component, OnInit } from '@angular/core';
 import { CategoryService } from '@app/core/services/category.service';
 import { CategoryDTO } from '@app/core/models/category-dto';
 import { AuthService } from '@app/core/services/auth.service';
 import { DiscountDisplayService } from '@app/core/services/discount-display.service';
 import { DiscountEventDTO } from '@app/core/models/discount';
 import { Router } from '@angular/router';
-
-interface Category {
-  name: string
-  image: string
-  link: string
-}
-
-interface Product {
-  name: string
-  image: string
-  price: number
-  rating: number
-}
-
-interface Testimonial {
-  name: string
-  avatar: string
-  quote: string
-  rating: number
-}
+import { HttpClient } from '@angular/common/http';
+import { ProductDTO, ProductListItemDTO } from '@app/core/models/product.model';
 
 @Component({
   selector: "app-home",
-  standalone: false,
+  standalone:false,
   templateUrl: "./home.component.html",
   styleUrls: ["./home.component.css"],
 })
 export class HomeComponent implements OnInit {
-  categories: { name: string; image: string; link: string }[] = []
+  discounts: DiscountEventDTO[] = [];
+  isLoadingDiscounts = true;
 
-  @ViewChild("carousel", { static: false }) carouselRef!: ElementRef
-
-  discounts: DiscountEventDTO[] = []
-  isLoadingDiscounts = true
+  topCategories: CategoryDTO[] = [];
+  topProducts: ProductListItemDTO[] = [];
+  isLoadingTop = true;
 
   constructor(
     private categoryService: CategoryService,
-    private loginModalService: LoginModalService,
-    private registerModalService: RegisterModalService,
-    private forgotModalService: ForgotPasswordModalService,
     private authService: AuthService,
     private discountDisplayService: DiscountDisplayService,
-    private router: Router
-  ) { }
+    private router: Router,
+    private http: HttpClient
+  ) {}
 
   ngOnInit(): void {
-    this.loadDiscounts()
-    this.loadCategories()
+    this.loadDiscounts();
+    this.loadTopHomeData();
   }
 
   loadDiscounts(): void {
-    this.isLoadingDiscounts = true
+    this.isLoadingDiscounts = true;
     this.discountDisplayService.getAllPublicActiveDiscounts().subscribe({
       next: (data) => {
-        this.discounts = data
-        this.isLoadingDiscounts = false
-        console.log("discount datas home page : ", this.discounts)
+        this.discounts = data;
+        this.isLoadingDiscounts = false;
       },
-      error: (error) => {
-        console.error("Failed to load discounts:", error)
-        this.discounts = []
-        this.isLoadingDiscounts = false
+      error: () => {
+        this.discounts = [];
+        this.isLoadingDiscounts = false;
       },
-    })
+    });
   }
 
-  loadCategories(): void {
-    this.categoryService.getAllPublicCategories().subscribe((data: CategoryDTO[]) => {
-      this.categories = data.map((dto) => ({
-        name: dto.name || "",
-        image: dto.imgPath || "assets/images/categories/default.jpg",
-        link: `/customer/productList?category=${encodeURIComponent(dto.name || "")}`,
-      }))
-    })
+  loadTopHomeData(): void {
+    this.isLoadingTop = true;
+    this.http.get<any>('http://localhost:8080/api/analytics/top-home').subscribe({
+      next: (data) => {
+        this.topCategories = data.topCategories || [];
+        this.topProducts = data.topProducts || [];
+        this.isLoadingTop = false;
+      },
+      error: () => {
+        this.topCategories = [];
+        this.topProducts = [];
+        this.isLoadingTop = false;
+      }
+    });
   }
 
   onDiscountViewDetails(discount: DiscountEventDTO): void {
-    // console.log('View discount details:', discount);
     if (discount?.id != null) {
       this.router.navigate(['/customer/discount', discount.id]);
     }
-  }
-
-  scrollLeft(): void {
-    const carousel = this.carouselRef.nativeElement as HTMLElement
-    const cardWidth = carousel.querySelector(".category-card")?.clientWidth || 300
-    carousel.scrollBy({ left: -cardWidth * 4, behavior: "smooth" })
-  }
-
-  scrollRight(): void {
-    const carousel = this.carouselRef.nativeElement as HTMLElement
-    const cardWidth = carousel.querySelector(".category-card")?.clientWidth || 300
-    carousel.scrollBy({ left: cardWidth * 4, behavior: "smooth" })
-  }
-
-  get loginVisible$() {
-    return this.loginModalService.loginVisible$
-  }
-
-  get registerVisible$() {
-    return this.registerModalService.registerVisible$
-  }
-
-  get forgotVisible$() {
-    return this.forgotModalService.forgotVisible$
   }
 
   onShopNow() {
     this.router.navigate(['/customer/productList']);
   }
 
-  onAddToCart(product: Product) {
+  onAddToCart(product: ProductDTO) {
     console.log("Add to Cart:", product.name)
   }
 
-  onWishlist(product: Product) {
+  onWishlist(product: ProductDTO) {
     console.log("Wishlist:", product.name)
   }
 
@@ -137,11 +92,20 @@ export class HomeComponent implements OnInit {
   }
 
   onSearch(query: string) {
-    console.log("Homepage search:", query)
+    // Implement search navigation or logic here
+    console.log("Homepage search:", query);
   }
 
-  onSubscribe(email: string) {
-    console.log("Newsletter subscribe:", email)
+  getMainProductImage(product: any): string {
+    if (product.productImages && product.productImages.length > 0) {
+      const mainImage = product.productImages.find((img: any) => img.mainImageStatus);
+      if (mainImage) {
+        return mainImage.imgPath;
+      } else if (product.productImages[0]) {
+        return product.productImages[0].imgPath;
+      }
+    }
+    return "assets/images/placeholder.jpg";
   }
   
 }

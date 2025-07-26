@@ -63,6 +63,8 @@ import { DiscountListComponent } from './discount_management/discount-list/disco
 import { NewCreateDiscountComponent } from './discount_management/new-create-discount/new-create-discount.component';
 import { QuestionComponent } from './QuestionManagement/question/question.component';
 import { AdminAccountListComponent } from './roleAndPermission/admin-account-list/admin-account-list.component';
+import { UserDetailListComponent } from './adminUserManagement/user-detail-list/user-detail-list.component';
+import { UserViewDetailComponent } from './adminUserManagement/user-view-detail/user-view-detail.component';
 
 const routes: Routes = [
   {
@@ -150,6 +152,10 @@ const routes: Routes = [
       },
       { path: 'bloglist', component: VlogListComponent },
       { path: 'blogcreate', component: VlogCreateComponent },
+      { path: 'vloglist', component: VlogListComponent },
+      { path: 'vlogcreate', component: VlogCreateComponent },
+      {path:'userList',component:UserDetailListComponent},
+      {path:'user-view-detail/:id', component:UserViewDetailComponent}
 
     ]
   }

@@ -62,7 +62,7 @@ import { CategoryOptionsDialogComponent } from './attribute_management/category-
 import { PriceDisplayInputComponent } from './product_management/price-display-input/price-display-input.component';
 import { StoreAddressComponent } from './storeManagement/store-address/store-address.component';
 import { AdminOrdersControlComponent } from './adminOrderManagement/admin-orders-control/admin-orders-control.component';
-import { AdminOrdersDetailComponent } from './adminOrderManagement/admin-orders-detail/admin-orders-detail.component';
+
 import { ProductDetailComponent } from './product_management/product-detail/product-detail.component';
 import { StockUpdateModalComponent } from './product_management/stock-update-modal/stock-update-modal.component';
 import { CreateDiscountComponent } from './discount_management/create-discount/create-discount.component';
@@ -98,6 +98,8 @@ import { NewDiscountRulesComponent } from './discount_management/new-discount-ru
 import { NewProductSelectionComponent } from './discount_management/new-product-selection/new-product-selection.component';
 import { QuestionComponent } from './QuestionManagement/question/question.component';
 import { AdminAccountListComponent } from './roleAndPermission/admin-account-list/admin-account-list.component';
+import { UserViewDetailComponent } from './adminUserManagement/user-view-detail/user-view-detail.component';
+import { AdminOrdersDetailComponent } from './adminOrderManagement/admin-orders-detail/admin-orders-detail.component';
 
 @NgModule({
   declarations: [
@@ -175,7 +177,8 @@ import { AdminAccountListComponent } from './roleAndPermission/admin-account-lis
     NewDiscountRulesComponent,
     NewProductSelectionComponent,
     QuestionComponent,
-    AdminAccountListComponent
+    AdminAccountListComponent,
+    UserViewDetailComponent
 
   ],
   imports: [

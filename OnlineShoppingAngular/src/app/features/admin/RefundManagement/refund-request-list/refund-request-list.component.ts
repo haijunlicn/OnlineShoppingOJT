@@ -393,6 +393,15 @@ export class RefundRequestListComponent implements OnInit, OnDestroy {
 
   Math = Math
 
+  getTotalItems(request: RefundRequestDTO): number {
+    if (!request.items || !Array.isArray(request.items)) return 0;
+    return request.items.reduce((total: number, item: any) => total + (item.quantity || 1), 0);
+  }
+
+  onImageError(event: any): void {
+    event.target.src = "assets/img/default-product.jpg";
+  }
+
   exportRefundsToPdf() {
     const filename = this.filteredRequests.length === this.refundRequests.length
       ? 'RefundRequestList_All.pdf'
