@@ -36,6 +36,7 @@ public class DiscountDisplayDTO {
     private List<Long> offeredProductIds;
     private Integer usageLimitTotal;
     private Integer usageLimitPerUser;
+    private Integer mechanismId;
 
     @Getter
     @Setter

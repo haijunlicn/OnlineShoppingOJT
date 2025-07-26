@@ -24,6 +24,13 @@
                         <p class="page-subtitle">Manage your product inventory and details</p>
                     </div>
                     <div class="header-actions">
+                        <button *ngIf="canCreateProduct" class="btn btn-success" routerLink="/admin/productCreate">
+                            <i class="bi bi-plus-circle"></i>
+                            Add Product
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" (click)="refreshData()" [disabled]="isLoading">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                        </button>
                         <button class="btn btn-outline-primary btn-filter" (click)="toggleFilters()">
                             <i class="bi bi-funnel"></i>
                             {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
@@ -48,11 +55,6 @@
                                 </li>
                             </ul>
                         </div>
-                        <button *ngIf="canCreateProduct" class="btn btn-success" routerLink="/admin/productCreate">
-                            <i class="bi bi-plus-circle"></i>
-                            Add Product
-                        </button>
-
                         <button *ngIf="canBulkUploadProducts" class="btn btn-sm nav-btn custom-upload-btn"
                             (click)="bulkUpload()">
                             <i class="fas fa-upload me-1"></i>Bulk Upload
@@ -62,34 +64,6 @@
             </div>
         </div>
     </div>
-
-  <div class="nav-right">
-    <div class="d-flex flex-wrap align-items-center gap-2">
-      <button class="btn btn-outline-secondary btn-sm" (click)="refreshData()" [disabled]="isLoading">
-        <i class="bi bi-arrow-clockwise me-1"></i>Refresh
-      </button>
-      <button class="btn btn-outline-danger btn-sm" (click)="exportProfessionalPdf()" [disabled]="isExportingLayoutPdf">
-        <i class="bi bi-file-earmark-pdf me-1"></i>Export PDF
-        <span *ngIf="isExportingLayoutPdf" class="ms-2">
-          <i class="pi pi-spin pi-spinner"></i>
-        </span>
-      </button>
-      <button class="btn btn-outline-success btn-sm" (click)="exportToExcel()" [disabled]="isExportingExcel">
-        <i class="bi bi-file-earmark-excel me-1"></i>Export Excel
-        <span *ngIf="isExportingExcel" class="ms-2">
-          <i class="pi pi-spin pi-spinner"></i>
-        </span>
-      </button>
-      <button *ngIf="canCreateProduct" class="btn btn-primary" routerLink="/admin/productCreate">
-        <i class="bi bi-plus-circle"></i>
-        Add Product
-      </button>
-      <button *ngIf="canBulkUploadProducts" class="btn btn-primary" (click)="bulkUpload()">
-        <i class="fas fa-upload me-1"></i>Bulk Upload
-      </button>
-    </div>
-  </div>
-</div>
 
 <!-- Main Content -->
 <div class="container-fluid">

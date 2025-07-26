@@ -44,4 +44,6 @@ public class userDTO {
     private Long roleId;
 
     private List<Long> groupIds;
+    // Add city for user address
+    private String city;
 }

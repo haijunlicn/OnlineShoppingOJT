@@ -76,8 +76,8 @@ export class ExcelExportService {
       worksheet.mergeCells('A2:' + this.getColumnLetter(columns.length) + '2');
 
       // Add borders to data
-      const dataRange = worksheet.getCell(4, 1).address + ':' + 
-                       worksheet.getCell(data.length + 3, columns.length).address;
+      const dataRange = worksheet.getCell(4, 1).address + ':' +
+        worksheet.getCell(data.length + 3, columns.length).address;
       worksheet.getCell(dataRange).border = {
         top: { style: 'thin' },
         left: { style: 'thin' },
@@ -87,10 +87,10 @@ export class ExcelExportService {
 
       // Generate and download file
       const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], { 
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       });
-      
+
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -123,7 +123,7 @@ export class ExcelExportService {
 
       sheets.forEach(sheetConfig => {
         const worksheet = workbook.addWorksheet(sheetConfig.name);
-        
+
         // Add headers
         const headerRow = worksheet.addRow(sheetConfig.columns.map(col => col.header));
         headerRow.font = { bold: true };
@@ -154,10 +154,10 @@ export class ExcelExportService {
 
       // Generate and download file
       const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], { 
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       });
-      
+
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;

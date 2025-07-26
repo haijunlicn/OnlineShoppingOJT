@@ -215,4 +215,5 @@ export class ProductFormService {
     return this.getSkuBase(productName, variantOptionValues);
   }
 
+  
 }

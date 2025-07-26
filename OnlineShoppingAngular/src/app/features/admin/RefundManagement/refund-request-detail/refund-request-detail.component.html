@@ -17,7 +17,7 @@
             </div>
           </div>
           <div class="nav-right">
-            <!-- ✅ Moved Button -->
+            <!-- Status History Button -->
             <button class="btn btn-outline-info btn-sm nav-btn" (click)="openStatusHistoryModal()"
               title="View Full Status History">
               <i class="bi bi-clock-history me-1"></i>Status History
@@ -26,12 +26,24 @@
               title="Refresh">
               <i class="bi bi-arrow-clockwise me-1"></i>Refresh
             </button>
-            <button class="btn btn-outline-danger btn-sm nav-btn" (click)="exportDetailToPdf()" title="Export PDF">
-              <i class="bi bi-file-earmark-pdf me-1"></i>Export PDF
-            </button>
-            <button class="btn btn-outline-success btn-sm nav-btn" (click)="exportDetailToExcel()" title="Export Excel">
-              <i class="bi bi-file-earmark-excel me-1"></i>Export Excel
-            </button>
+            <!-- Export Dropdown Button -->
+            <div class="btn-group nav-btn">
+              <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-download me-1"></i>Export
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                  <a class="dropdown-item" href="#" (click)="$event.preventDefault(); exportDetailToPdf()">
+                    <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Export PDF
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="#" (click)="$event.preventDefault(); exportDetailToExcel()">
+                    <i class="bi bi-file-earmark-excel me-2 text-success"></i>Export Excel
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -94,6 +106,7 @@
                     </div>
                     <div class="item-status">
                       <span [class]="getItemStatusBadgeClass(item.status || '')">
+                        <i [ngClass]="getItemStatusIcon(item.status || '')" class="me-1"></i>
                         {{ getItemStatusDisplayText(item.status || '') }}
                       </span>
                       <div *ngIf="item.updatedAt" class="status-date">
@@ -461,6 +474,7 @@
         </div>
         <div class="status-transition">
           <span class="current-status" [class]="getItemStatusBadgeClass(selectedItemForStatusUpdate.status || '')">
+            <i [ngClass]="getItemStatusIcon(selectedItemForStatusUpdate.status || '')" class="me-1"></i>
             {{ getItemStatusDisplayText(selectedItemForStatusUpdate.status || '') }}
           </span>
           <i class="bi bi-arrow-right mx-2"></i>
@@ -580,6 +594,7 @@
           <div class="timeline-content">
             <div class="timeline-header">
               <span class="status-badge" [class]="getItemStatusBadgeClass(historyItem.status)">
+                <i [ngClass]="getItemStatusIcon(historyItem.status)" class="me-1"></i>
                 {{ getItemStatusDisplayText(historyItem.status) }}
               </span>
               <span class="timeline-date">
@@ -660,6 +675,7 @@
           <div class="timeline-content">
             <div class="timeline-header">
               <span class="status-badge" [class]="getItemStatusBadgeClass(historyItem.status)">
+                <i [ngClass]="getItemStatusIcon(historyItem.status)" class="me-1"></i>
                 {{ getItemStatusDisplayText(historyItem.status) }}
               </span>
               <span class="timeline-date">

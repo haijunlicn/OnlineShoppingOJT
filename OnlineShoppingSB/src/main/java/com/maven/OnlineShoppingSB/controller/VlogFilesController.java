@@ -1,15 +1,12 @@
 package com.maven.OnlineShoppingSB.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.maven.OnlineShoppingSB.dto.VlogFilesDTO;
 import com.maven.OnlineShoppingSB.service.VlogFilesService;
 
-import java.io.IOException; 
 import java.util.List;
 
 
@@ -21,21 +18,10 @@ public class VlogFilesController {
     @Autowired
     private VlogFilesService vlogFileService;
 
-    @PostMapping("/upload")
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
-        try {
-            String url = vlogFileService.uploadVlogFile(file);
-            return ResponseEntity.ok(url);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Upload failed: " + e.getMessage());
-        }
-    }
 
-
-    @PostMapping("/create/{vlogId}")
-    public ResponseEntity<VlogFilesDTO> createVlogFile(@PathVariable Long vlogId, @RequestBody VlogFilesDTO dto) {
-        VlogFilesDTO created = vlogFileService.createVlogFile(vlogId, dto);
+    @PostMapping("/create")
+    public ResponseEntity<VlogFilesDTO> createVlogFile(@RequestBody VlogFilesDTO dto) {
+        VlogFilesDTO created = vlogFileService.createVlogFile(dto.getVlogId(), dto);
         return ResponseEntity.ok(created);
     }
 

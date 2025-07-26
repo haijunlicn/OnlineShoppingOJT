@@ -20,6 +20,7 @@ public class DeliveryMethodEntity {
     private Double maxDistance; // in km (inclusive)
     private Integer baseFee; // MMK
     private Integer feePerKm; // MMK per km
+    private Integer feePerKmOutCity; // MMK per km for out of city
     @Column(name = "icon", length = 100)
     private String icon; // URL or path to the image
     @Column(name = "type")

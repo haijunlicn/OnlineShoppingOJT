@@ -1,0 +1,263 @@
+<app-header></app-header>
+
+<main class="main-content">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-container">
+        <div class="loading-spinner">
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+        </div>
+        <p class="loading-text">Loading discount details...</p>
+    </div>
+
+    <!-- Discount Detail Content -->
+    <div class="discount-detail-container" *ngIf="!isLoading && discount">
+
+        <!-- Breadcrumb Navigation -->
+        <nav class="breadcrumb-nav" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a routerLink="/customer/home">
+                        Home
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    {{ discount.name }}
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="discount-hero">
+            <div class="hero-content">
+                <!-- Back Button -->
+                <button class="back-btn" (click)="goBack()" aria-label="Go back">
+                    <i class="pi pi-arrow-left"></i>
+                </button>
+
+                <!-- Hero Image -->
+                <div class="hero-image-container">
+                    <img [src]="discount.imgUrl || '/placeholder.svg?height=400&width=800'" [alt]="discount.name"
+                        class="hero-image" />
+                    <div class="hero-overlay"></div>
+                </div>
+
+                <!-- Hero Info -->
+                <div class="hero-info">
+                    <!-- Event Badge -->
+                    <div class="event-badge">
+                        <i class="pi pi-tag"></i>
+                        <span>{{ discount.type === 'AUTO' ? 'SPECIAL OFFER' : 'EXCLUSIVE DEAL' }}</span>
+                    </div>
+
+                    <!-- Title -->
+                    <h1 class="hero-title">{{ discount.name }}</h1>
+
+                    <!-- Description -->
+                    <p class="hero-description" *ngIf="discount.description">
+                        {{ discount.description }}
+                    </p>
+
+                    <!-- Timer -->
+                    <div class="countdown-timer" *ngIf="discount?.endDate">
+                        <i class="pi pi-clock"></i>
+                        <span class="timer-label">Ends in:</span>
+                        <countdown [config]="{
+                            leftTime: remainingSeconds,
+                            format: countdownFormat,
+                            notify: [1]
+                            }" (event)="onCountdownEvent($event)"></countdown>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="hero-actions">
+                        <button class="btn btn-primary hero-btn" (click)="onShopNow()">
+                            <i class="pi pi-shopping-cart"></i>
+                            Shop Now
+                        </button>
+                        <button class="btn btn-outline hero-btn" (click)="shareDiscount()">
+                            <i class="pi pi-share-alt"></i>
+                            Share Deal
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Discount Mechanisms -->
+        <section class="discount-mechanisms" id="mechanism-section">
+            <div class="container">
+                <div class="mechanism-item" *ngFor="let mechanism of discount.mechanisms; let i = index">
+
+                    <!-- Compact Mechanism Header -->
+                    <div class="mechanism-header-compact">
+                        <div class="mechanism-row">
+                            <div class="mechanism-basic-info">
+                                <div class="mechanism-type-compact">
+                                    <i class="pi"
+                                        [ngClass]="mechanism.mechanismType === 'Coupon' ? 'pi-tag' : 'pi-percentage'"></i>
+                                    <h3>{{ getMechanismTypeLabel(mechanism.mechanismType) }}</h3>
+                                </div>
+                                <div class="mechanism-meta">
+                                    <span class="discount-value">
+                                        <i class="pi pi-tag me-1"></i>
+                                        {{ getDiscountText(mechanism) }}
+                                    </span>
+                                    <span class="product-count" *ngIf="mechanism.offeredProducts.length > 0">
+                                        {{ mechanism.offeredProducts.length }} Products
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="mechanism-actions" *ngIf="mechanism.couponCode">
+                                <div class="coupon-code-compact">
+                                    <span class="coupon-label">Code:</span>
+                                    <span class="coupon-value">{{ mechanism.couponCode }}</span>
+                                    <button class="copy-btn-compact" (click)="copyCode(mechanism.couponCode)"
+                                        title="Copy code">
+                                        <i class="pi pi-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button class="view-detail-btn" (click)="showDiscountDetail(mechanism)">
+                                View Conditions
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Products Section -->
+                    <div class="products-section-compact">
+                        <!-- All Products Case -->
+                        <div class="all-products-notice"
+                            *ngIf="!mechanism.offeredProducts || mechanism.offeredProducts.length === 0">
+                            <div class="all-products-content">
+                                <div class="all-products-icon">
+                                    <i class="pi pi-globe"></i>
+                                </div>
+                                <div class="all-products-info">
+                                    <h4>Applies to All Products</h4>
+                                    <p>This discount is automatically applied to your entire cart or all eligible
+                                        products in the store.</p>
+                                    <div class="all-products-actions">
+                                        <button class="btn btn-primary" routerLink="/customer/productList">
+                                            <i class="pi pi-shopping-cart"></i>
+                                            Browse All Products
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Specific Products Grid -->
+                        <div class="specific-products"
+                            *ngIf="mechanism.offeredProducts && mechanism.offeredProducts.length > 0">
+                            <div class="products-header-compact">
+                                <h4>
+                                    <i class="pi pi-box"></i>
+                                    Eligible Products
+                                    <span class="count-badge">{{ mechanism.offeredProducts.length }}</span>
+                                </h4>
+                            </div>
+
+                            <div class="products-grid">
+                                <div class="product-card-container" *ngFor="let product of mechanism.offeredProducts">
+                                    <!-- Keep existing product card structure -->
+                                    <div class="card h-100 product-card">
+                                        <!-- Product Image Container -->
+                                        <div class="position-relative product-img-wrapper">
+                                            <!-- Discount Badge -->
+                                            <div class="position-absolute top-0 start-0 p-2 z-1"
+                                                *ngIf="mechanism.mechanismType === 'Discount'">
+                                                <span class="badge discount-applied-badge">
+                                                    <i class="pi pi-tag me-1"></i>
+                                                    {{ getDiscountText(mechanism) }}
+                                                </span>
+                                            </div>
+
+                                            <!-- Wishlist Button -->
+                                            <button
+                                                class="btn btn-sm position-absolute top-0 end-0 p-1 m-2 wishlist-btn z-1"
+                                                title="Add to wishlist" (click)="$event.stopPropagation()">
+                                                <i class="pi pi-heart"></i>
+                                            </button>
+
+                                            <!-- Product Image -->
+                                            <img [src]="getMainProductImage(product)" class="card-img-top product-image"
+                                                (click)="goToDetail(product)" [alt]="product.name" />
+                                        </div>
+
+                                        <!-- Product Info -->
+                                        <div class="card-body product-info" (click)="goToDetail(product)">
+                                            <!-- Brand & Category Row -->
+                                            <div
+                                                class="d-flex justify-content-between align-items-center mb-2 brand-category-row">
+                                                <small class="brand-text">{{ product.brand?.name || 'Brand' }}</small>
+                                                <small class="category-text">{{ product.category?.name || 'Category'
+                                                    }}</small>
+                                            </div>
+
+                                            <!-- Product Name -->
+                                            <h6 class="product-name mb-3" [title]="product.name">
+                                                {{ product.name }}
+                                            </h6>
+
+                                            <!-- Price Section -->
+                                            <div class="price-section mb-3">
+                                                <div class="price-display">
+                                                    <span class="current-price">MMK {{ product.basePrice | number
+                                                        }}</span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Bottom Action Row -->
+                                            <div class="d-flex justify-content-between align-items-center mt-auto">
+                                                <!-- Stock Status -->
+                                                <span class="stock-badge"
+                                                    [ngClass]="{'stock-in': hasStock(product), 'stock-out': !hasStock(product)}">
+                                                    {{ hasStock(product) ? 'In Stock' : 'Out of Stock' }}
+                                                </span>
+
+                                                <!-- Action Button -->
+                                                <button class="btn btn-action btn-sm" [disabled]="!hasStock(product)"
+                                                    (click)="viewProduct(product); $event.stopPropagation()">
+                                                    <i class="pi pi-eye me-1"></i>
+                                                    View
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Related Discounts -->
+        <section class="related-discounts" *ngIf="false">
+            <div class="container">
+                <h2 class="section-title">
+                    <i class="pi pi-tags"></i>
+                    More Great Deals
+                </h2>
+                <!-- Add related discounts here -->
+            </div>
+        </section>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="!isLoading && !discount" class="error-state">
+        <div class="error-content">
+            <i class="pi pi-exclamation-triangle error-icon"></i>
+            <h2>Discount Not Found</h2>
+            <p>The discount you're looking for doesn't exist or has expired.</p>
+            <button class="btn btn-primary" routerLink="/customer/discounts">
+                <i class="pi pi-arrow-left"></i>
+                Back to Discounts
+            </button>
+        </div>
+    </div>
+</main>

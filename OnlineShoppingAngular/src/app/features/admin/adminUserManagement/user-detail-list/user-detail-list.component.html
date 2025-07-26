@@ -1,0 +1,156 @@
+<!-- Clean Navigation Bar with Report Actions (matching refund-request-list) -->
+<div class="navigation-bar mb-3">
+  <div class="nav-left">
+    <div class="nav-info">
+      <nav aria-label="breadcrumb" class="mb-1">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <i class="fas fa-home me-1"></i>
+            <a href="/admin/dashboard" class="text-decoration-none">Dashboard</a>
+          </li>
+          <li class="breadcrumb-item">
+            <i class="fas fa-users me-1"></i>
+            User Management
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">Customer List</li> 
+        </ol>
+      </nav>
+      <h1 class="nav-title">Customer List</h1>
+    </div>
+  </div>
+  <div class="nav-right">
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-outline-secondary btn-sm" (click)="refreshData()" [disabled]="isLoading">
+        <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+      </button>
+      <div class="dropdown" style="display:inline-block;">
+        <button class="btn btn-outline dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <span class="btn-icon">📥</span>
+          Export
+        </button>
+        <ul class="dropdown-menu">
+          <li>
+            <a class="dropdown-item" href="#" (click)="$event.preventDefault(); exportUsersToPdf();">
+              <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Export PDF
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" href="#" (click)="$event.preventDefault(); exportUsersToExcel();">
+              <i class="bi bi-file-earmark-excel me-2 text-success"></i>Export Excel
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div>
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="fas fa-exclamation-triangle me-2"></i>{{ errorMessage }}
+    <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+  </div>
+
+  <!-- Data Table Card -->
+  <div class="data-section">
+    <div class="card">
+      <div class="card-header">
+        <div class="row align-items-center">
+          <div class="col">
+            <h6 class="card-title mb-1">
+              <i class="fas fa-list me-2"></i>Customer List
+            </h6>
+            <small class="text-muted">
+              Showing {{ users.length }} users
+            </small>
+          </div>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <!-- Filter Bar -->
+        <div class="p-3 pb-0 d-flex flex-row flex-wrap align-items-center gap-3 filter-bar">
+          <input type="text" class="form-control form-control-sm w-auto" placeholder="Filter by name..." [(ngModel)]="filterName" (ngModelChange)="onFilterChange()">
+          <input type="text" class="form-control form-control-sm w-auto" placeholder="Filter by email..." [(ngModel)]="filterEmail" (ngModelChange)="onFilterChange()">
+          <input type="text" class="form-control form-control-sm w-auto" placeholder="Filter by city..." [(ngModel)]="filterCity" (ngModelChange)="onFilterChange()">
+          <button class="btn btn-outline-secondary btn-sm ms-auto" type="button" (click)="clearFilters()">
+            <i class="fas fa-times me-1"></i> Clear Filters
+          </button>
+        </div>
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="loading-state">
+          <div class="d-flex flex-column align-items-center justify-content-center py-5">
+            <div class="spinner-border text-primary mb-3" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="text-muted mb-0">Loading users...</p>
+          </div>
+        </div>
+        <!-- Data Table -->
+        <div *ngIf="!isLoading" class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>City</th>
+                <th>Order Count</th>
+                <th>Refund Count</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of filteredUsers">
+                <td>
+                  <span class="fw-bold text-primary">
+                    <i class="bi bi-person me-1"></i>{{ user.name }}
+                  </span>
+                </td>
+                <td>
+                  <span class="text-dark">
+                    <i class="bi bi-envelope me-1"></i>{{ user.email }}
+                  </span>
+                </td>
+                <td>
+                  <span class="text-muted">
+                    <i class="bi bi-geo-alt me-1"></i>{{ user.city || '—' }}
+                  </span>
+                </td>
+                <td>
+                  <span [ngClass]="user.orderCount > 0 ? 'badge bg-success' : 'badge bg-secondary'">
+                    <i class="bi bi-bag-check me-1"></i>
+                    {{ getOrderCountDisplay(user) }}
+                  </span>
+                </td>
+                <td>
+                  <span [ngClass]="user.refundCount > 0 ? 'badge bg-warning text-dark' : 'badge bg-secondary'">
+                    <i class="bi bi-arrow-repeat me-1"></i>
+                    {{ getRefundCountDisplay(user) }}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn btn-outline-primary btn-sm" [routerLink]="['/admin/user-view-detail', user.id]" title="View Details">
+                    <i class="bi bi-eye"></i> View Details
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Empty State -->
+        <div *ngIf="!isLoading && users.length === 0" class="empty-state">
+          <div class="text-center py-5">
+            <div class="empty-icon mb-3">
+              <i class="bi bi-inbox display-1 text-muted"></i>
+            </div>
+            <h5 class="text-muted mb-2">No users found</h5>
+            <p class="text-muted mb-3">
+              <i class="bi bi-emoji-frown"></i> No users have been registered yet.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

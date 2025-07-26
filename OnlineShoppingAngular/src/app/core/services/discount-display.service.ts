@@ -31,6 +31,10 @@ export class DiscountDisplayService {
     );
   }
 
+  getDiscountById(id: number): Observable<DiscountEventDTO> {
+    return this.http.get<DiscountEventDTO>(`${this.baseUrl}/public/discount/${id}`);
+  }
+
   getProductDiscountHints(): Observable<Record<number, DiscountDisplayDTO[]>> {
     const userId = this.authService.isLoggedIn()
       ? this.authService.getCurrentUser()?.id
@@ -99,6 +103,12 @@ export class DiscountDisplayService {
       discountedPrice: Math.max(discountedPrice, 0),
       breakdown,
     };
+  }
+
+  canUserUseMechanism(mechanismId: number): Observable<{ canUse: boolean; status: string }> {
+    return this.http.get<{ canUse: boolean; status: string }>(
+      `${this.baseUrl}/can-user-use-mechanism/${mechanismId}`
+    );
   }
 
 }

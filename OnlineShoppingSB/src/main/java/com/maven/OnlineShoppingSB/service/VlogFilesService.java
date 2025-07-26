@@ -8,12 +8,8 @@ import com.maven.OnlineShoppingSB.repository.VlogRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +22,8 @@ public class VlogFilesService {
     private VlogRepository vlogRepository;
 
     public VlogFilesDTO createVlogFile(Long vlogId, VlogFilesDTO dto) {
+        System.out.println("[DEBUG] createVlogFile called with vlogId: " + vlogId + ", dto: " + dto);
+        System.out.println("[DEBUG] dto.getFilePath(): " + dto.getFilePath());
         VlogEntity vlog = vlogRepository.findById(vlogId)
             .orElseThrow(() -> new RuntimeException("Vlog not found with id: " + vlogId));
 
@@ -35,6 +33,8 @@ public class VlogFilesService {
         entity.setVlog(vlog);
 
         VlogFilesEntity saved = vlogFileRepository.save(entity);
+        System.out.println("[DEBUG] entity.getFilePath() after save: " + saved.getFilePath());
+        System.out.println("[DEBUG] Saved VlogFilesEntity: " + saved);
         return convertToDto(saved);
     }
 
@@ -81,34 +81,18 @@ public class VlogFilesService {
         return convertToDto(updated);
     }
 
-    public void deleteVlogFile(Long id) {
-        VlogFilesEntity entity = vlogFileRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("VlogFile not found with id: " + id));
-        vlogFileRepository.delete(entity);
-    }
 
     private VlogFilesDTO convertToDto(VlogFilesEntity entity) {
         VlogFilesDTO dto = new VlogFilesDTO();
         dto.setId(entity.getId());
         dto.setFilePath(entity.getFilePath());
         dto.setFileType(entity.getFileType());
+        dto.setVlogId(entity.getVlog().getId());
         return dto;
     }
-    public String uploadVlogFile(MultipartFile file) throws IOException {
-        if (file.isEmpty()) {
-            throw new RuntimeException("File is empty");
-        }
-
-        String uploadDir = "uploads/vlogs/";
-        String originalFilename = file.getOriginalFilename();
-        String fileExtension = originalFilename.substring(originalFilename.lastIndexOf('.'));
-        String fileName = UUID.randomUUID().toString() + fileExtension;
-
-        File dest = new File(uploadDir + fileName);
-        dest.getParentFile().mkdirs(); // Create folders if not exist
-        file.transferTo(dest);
-
-        return "http://localhost:8080/" + uploadDir + fileName;
+    public void deleteVlogFile(Long id) {
+        VlogFilesEntity entity = vlogFileRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("VlogFile not found with id: " + id));
+        vlogFileRepository.delete(entity);
     }
-
 }

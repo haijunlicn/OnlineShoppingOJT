@@ -51,6 +51,8 @@ public class OrderService {
     @Autowired
     private NotificationService notificationService;
     @Autowired
+    private DiscountDisplayService discountDisplayService;
+    @Autowired
     private RefundItemRepository refundItemRepository;
     @Autowired
     private RefundRequestRepository refundRequestRepository;
@@ -122,6 +124,27 @@ public class OrderService {
             item.setQuantity(itemDto.getQuantity());
             item.setPrice(BigDecimal.valueOf(itemDto.getPrice()));
             item.setOrder(order);
+
+            if (itemDto.getAppliedDiscounts() != null) {
+                List<OrderItemDiscountMechanismEntity> discountEntities = itemDto.getAppliedDiscounts().stream().map(discountDto -> {
+                    OrderItemDiscountMechanismEntity discount = new OrderItemDiscountMechanismEntity();
+                    discount.setOrderItem(item);
+                    discount.setDiscountMechanismId(discountDto.getDiscountMechanismId());
+                    discount.setMechanismType(discountDto.getMechanismType());
+                    discount.setDiscountType(discountDto.getDiscountType());
+                    discount.setDiscountAmount(BigDecimal.valueOf(discountDto.getDiscountAmount()));
+                    discount.setCouponCode(discountDto.getCouponCode());
+                    discount.setDescription(discountDto.getDescription());
+                    // ✅ Record usage if coupon-type (or any you want to track)
+                    if (discountDto.getMechanismType() == MechanismType.Coupon) {
+                        discountDisplayService.recordUsage(discountDto.getDiscountMechanismId(), dto.getUserId());
+                    }
+                    return discount;
+                }).collect(Collectors.toList());
+
+                item.setAppliedDiscounts(discountEntities);
+            }
+
             return item;
         }).collect(Collectors.toList());
         order.setItems(items);
@@ -138,8 +161,13 @@ public class OrderService {
         history.setNote("Order placed and awaiting payment verification."); // Optional
         history.setUpdatedBy(dto.getUserId()); // Assuming user placed the order
         order.setStatusHistoryList(List.of(history));
-
-        return orderRepository.save(order);
+        OrderEntity savedOrder = orderRepository.save(order);
+        notificationService.notifyOrderPending(
+                user.getId(),
+                savedOrder.getId(),
+                BigDecimal.valueOf(savedOrder.getTotalAmount())
+        );
+        return savedOrder;
     }
 
     // Get all orders for a user
@@ -191,7 +219,7 @@ public class OrderService {
         userDto.setId(order.getUser().getId());
         userDto.setName(order.getUser().getName());
         userDto.setEmail(order.getUser().getEmail());
-       // userDto.setPhone(order.getUser().getPhone());
+        // userDto.setPhone(order.getUser().getPhone());
         userDto.setProfile(order.getUser().getProfile());
         dto.setUser(userDto);
 
@@ -258,6 +286,19 @@ public class OrderService {
 
             productDto.setCreatedDate(item.getVariant().getProduct().getCreatedDate());
             itemDto.setProduct(productDto);
+
+            itemDto.setAppliedDiscounts(
+                    item.getAppliedDiscounts().stream().map(discount -> {
+                        OrderItemRequestDTO.OrderItemDiscountMechanismDTO d = new OrderItemRequestDTO.OrderItemDiscountMechanismDTO();
+                        d.setDiscountMechanismId(discount.getDiscountMechanismId());
+                        d.setMechanismType(discount.getMechanismType());
+                        d.setDiscountType(discount.getDiscountType());
+                        d.setDiscountAmount(discount.getDiscountAmount().doubleValue());
+                        d.setCouponCode(discount.getCouponCode());
+                        d.setDescription(discount.getDescription());
+                        return d;
+                    }).collect(Collectors.toList())
+            );
 
             return itemDto;
         }).collect(Collectors.toList());
@@ -370,20 +411,6 @@ public class OrderService {
         }
         Long adminUserId = adminUser != null ? adminUser.getId() : null;
 
-        // Publish audit event BEFORE making changes (optional, can also do after)
-//        PaymentStatusUpdateAuditDto auditDto = new PaymentStatusUpdateAuditDto(orderId, newStatus, adminUserId, rejectionDetails);
-//        AuditEventDTO auditEvent = new AuditEventDTO(
-//                "UPDATE_PAYMENT_STATUS",
-//                "Order",
-//                orderId,
-//                auditDto.toAuditMap(),
-//                adminUserId,
-//                adminUser != null ? adminUser.getRole().getName() : "UNKNOWN",
-//                request.getRemoteAddr(),
-//                request.getHeader("User-Agent")
-//        );
-//        publisher.publishEvent(auditEvent);
-
         if (status == PaymentStatus.FAILED) {
             // --- Validation ---
             if (adminUser == null) throw new IllegalArgumentException("Admin user is required for payment rejection");
@@ -442,7 +469,9 @@ public class OrderService {
                 reasonText = reasonEntity.getLabel();
             }
             metadata.put("reason", reasonText);
-            notificationService.sendNamedNotification("PAYMENT_CANCELLED", metadata, List.of(userId));
+            notificationService.notify("PAYMENT_CANCELLED", metadata, List.of(userId));
+
+            // notificationService.sendNamedNotification("PAYMENT_CANCELLED", metadata, List.of(userId));
 
             OrderStatusHistoryEntity history = new OrderStatusHistoryEntity();
             history.setOrder(order);
@@ -472,7 +501,8 @@ public class OrderService {
             Long userId = order.getUser().getId();
             Map<String, Object> metadata = new HashMap<>();
             metadata.put("orderId", order.getId());
-            notificationService.sendNamedNotification("ORDER_CONFIRMED", metadata, List.of(userId));
+            notificationService.notify("ORDER_CONFIRMED", metadata, List.of(userId));
+            //  notificationService.sendNamedNotification("ORDER_CONFIRMED", metadata, List.of(userId));
 
             OrderStatusHistoryEntity history = new OrderStatusHistoryEntity();
             history.setOrder(order);
@@ -498,152 +528,6 @@ public class OrderService {
         return convertToOrderDetailDto(order);
     }
 
-//    @Audit(action = "UPDATE_PAYMENT_STATUS", entityType = "Order")
-//    @Transactional
-//    public OrderDetailDto updatePaymentStatus(
-//            Long orderId,
-//            String newStatus,
-//            UserEntity adminUser, // Optional for PAID, required for FAILED
-//            PaymentRejectionReasonDTO.PaymentRejectionRequestDTO rejectionRequest // Optional, required for FAILED
-//    ) {
-//        OrderEntity order = orderRepository.findById(orderId)
-//                .orElseThrow(() -> new RuntimeException("Order not found"));
-//
-//        PaymentStatus status;
-//        try {
-//            status = PaymentStatus.valueOf(newStatus.toUpperCase());
-//        } catch (IllegalArgumentException e) {
-//            throw new IllegalArgumentException("Invalid payment status: " + newStatus);
-//        }
-//
-//        if (status == PaymentStatus.FAILED) {
-//            // --- Validation ---
-//            if (adminUser == null) throw new IllegalArgumentException("Admin user is required for payment rejection");
-//
-//            // Notify user about cancellation due to payment failure
-//            Long userId = order.getUser().getId();
-//            notificationService.notifyOrderStatusUpdate(userId, order.getId(), "ORDER_CANCELLED");
-//
-//
-//            if (order.getPaymentStatus() != PaymentStatus.PENDING) {
-//                throw new IllegalStateException("Only pending payments can be rejected.");
-//            }
-//
-//            if (rejectionRequest == null) {
-//                throw new IllegalArgumentException("Rejection reason is required.");
-//            }
-//
-//            PaymentRejectionReasonEntity reasonEntity = null;
-//
-//            System.out.println("reason id : " + rejectionRequest.getReasonId());
-//
-//            if (rejectionRequest.getReasonId() != null) {
-//                reasonEntity = paymentRejectionReasonRepository.findById(rejectionRequest.getReasonId())
-//                        .orElseThrow(() -> new IllegalArgumentException("Rejection reason not found"));
-//            }
-//
-//            // If no reasonId and no custom reason => reject
-//            if (reasonEntity == null && (rejectionRequest.getCustomReason() == null || rejectionRequest.getCustomReason().isBlank())) {
-//                throw new IllegalArgumentException("Custom rejection reason is required if no predefined reason is selected.");
-//            }
-//
-//            // If reasonEntity is present AND it requires custom text, then validate customReason
-//            if (reasonEntity != null && reasonEntity.getAllowCustomText() &&
-//                    (rejectionRequest.getCustomReason() == null || rejectionRequest.getCustomReason().isBlank())) {
-//                throw new IllegalArgumentException("Custom reason is required for the selected rejection reason.");
-//            }
-//
-//            // --- Save Rejection Reason ---
-//            PaymentRejectionLogEntity rejectionLog = new PaymentRejectionLogEntity();
-//            rejectionLog.setOrder(order);
-//
-//            if (rejectionRequest.getReasonId() != null) {
-//                PaymentRejectionReasonEntity reason = paymentRejectionReasonRepository.findById(rejectionRequest.getReasonId())
-//                        .orElseThrow(() -> new IllegalArgumentException("Rejection reason not found"));
-//                rejectionLog.setReason(reason);
-//            }
-//
-//            rejectionLog.setCustomReason(rejectionRequest.getCustomReason());
-//            rejectionLog.setRejectedBy(adminUser);
-//            rejectionLog.setRejectedAt(LocalDateTime.now());
-//            paymentRejectionLogRepository.save(rejectionLog);
-//
-//            // --- Status Change to ORDER_CANCELLED ---
-//            OrderStatusTypeEntity cancelledStatus = orderStatusTypeRepository.findByCode("ORDER_CANCELLED")
-//                    .orElseThrow(() -> new RuntimeException("Status 'ORDER_CANCELLED' not found"));
-//
-//            order.setCurrentStatus(cancelledStatus);
-//
-//            // === SEND PAYMENT_CANCELLED NOTIFICATION HERE ===
-//            Map<String, Object> metadata = new HashMap<>();
-//            metadata.put("orderId", order.getId());
-//            String reasonText = rejectionRequest.getCustomReason();
-//            if ((reasonText == null || reasonText.isBlank()) && reasonEntity != null) {
-//                reasonText = reasonEntity.getLabel();
-//            }
-//            metadata.put("reason", reasonText);
-//            notificationService.sendNamedNotification("PAYMENT_CANCELLED", metadata, List.of(userId));
-//            // === END NOTIFICATION ===
-//
-//            OrderStatusHistoryEntity history = new OrderStatusHistoryEntity();
-//            history.setOrder(order);
-//            history.setStatus(cancelledStatus);
-//            history.setNote("Payment rejected by admin: " +
-//                    (rejectionRequest.getCustomReason() != null ? rejectionRequest.getCustomReason() : "Reason #" + rejectionRequest.getReasonId()));
-//            history.setCreatedAt(LocalDateTime.now());
-//            history.setUpdatedBy(adminUser.getId());
-//            orderStatusHistoryRepository.save(history);
-//
-//            // roll back stock
-//            for (OrderItemEntity item : order.getItems()) {
-//                ProductVariantEntity variant = item.getVariant();
-//                if (variant != null) {
-//                    int currentStock = variant.getStock();
-//                    variant.setStock(currentStock + item.getQuantity());
-//                    variantRepository.save(variant);
-//                }
-//            }
-//        }
-//
-//        if (status == PaymentStatus.PAID) {
-//            OrderStatusTypeEntity confirmedStatus = orderStatusTypeRepository.findByCode("ORDER_CONFIRMED")
-//                    .orElseThrow(() -> new RuntimeException("ORDER_CONFIRMED status not found"));
-//
-//            order.setCurrentStatus(confirmedStatus);
-//
-//            // === SEND ORDER_CONFIRMED NOTIFICATION HERE ===
-//            Long userId = order.getUser().getId();
-//            Map<String, Object> metadata = new HashMap<>();
-//            metadata.put("orderId", order.getId());
-//            notificationService.sendNamedNotification("ORDER_CONFIRMED", metadata, List.of(userId));
-//            // === END NOTIFICATION ===
-//
-//            OrderStatusHistoryEntity history = new OrderStatusHistoryEntity();
-//            history.setOrder(order);
-//            history.setStatus(confirmedStatus);
-//            history.setNote("Payment approved, status set to ORDER_CONFIRMED");
-//            history.setCreatedAt(LocalDateTime.now());
-//            history.setUpdatedBy(adminUser != null ? adminUser.getId() : 1L); // fallback
-//            orderStatusHistoryRepository.save(history);
-//
-//            // check stock and notify
-//            for (OrderItemEntity item : order.getItems()) {
-//                ProductVariantEntity variant = item.getVariant();
-//                if (variant != null) {
-//                    notificationService.checkAndNotifyLowStock(variant);
-//                    notificationService.checkAndNotifyOutOfStock(variant);
-//                }
-//            }
-//        }
-//
-//        // Update and save
-//        order.setPaymentStatus(status);
-//        order.setUpdatedDate(LocalDateTime.now());
-//        orderRepository.save(order);
-//
-//        return convertToOrderDetailDto(order);
-//    }
-
     // New method to fetch all orders for admin
     public List<OrderEntity> getAllOrders() {
         return orderRepository.findByDeletedFalseOrderByCreatedDateDesc();
@@ -657,4 +541,21 @@ public class OrderService {
         return refundItemRepository.sumReturnedQuantityByOrderItemId(orderItemId, excluded);
     }
 
+    /**
+     * Returns a list of user stats (order count and total spent) for all users.
+     */
+    public List<UserStatsDTO> getAllUserStats() {
+        List<UserEntity> users = userRepository.findAll();
+        List<UserStatsDTO> stats = new ArrayList<>();
+        for (UserEntity user : users) {
+            UserStatsDTO dto = new UserStatsDTO();
+            dto.setUserId(user.getId());
+            Long orderCount = orderRepository.countCompletedOrdersByUser(user.getId());
+            dto.setOrderCount(orderCount != null ? orderCount : 0L);
+            BigDecimal totalSpent = orderRepository.sumTotalPaidByUser(user.getId());
+            dto.setTotalSpent(totalSpent != null ? totalSpent.doubleValue() : 0.0);
+            stats.add(dto);
+        }
+        return stats;
+    }
 }

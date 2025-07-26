@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CartService } from '../../../../core/services/cart.service';
 import { AppliedCoupon, CartItem, CartItemWithDiscounts } from '../../../../core/models/cart.model';
-import { DiscountDisplayDTO } from '@app/core/models/discount';
+import { DiscountDisplayDTO, DiscountType } from '@app/core/models/discount';
 import { DiscountDisplayService } from '@app/core/services/discount-display.service';
 import { evaluateCartConditions } from '@app/core/services/discountChecker';
 import { AuthService } from '@app/core/services/auth.service';
@@ -135,10 +135,6 @@ export class CartComponent implements OnInit {
 
       // Filter to only discounts that affect this specific product
       const applicableHints = eligibleHints.filter((hint) => hint.offeredProductIds?.includes(item.productId))
-
-      console.log("item.sku : ", item.variantSku);
-      console.log("item.price : ", item.price);
-      console.log("item.ogPrice : ", item.originalPrice);
       const result = this.discountDisplayService.calculateDiscountedPrice(item.price, applicableHints)
 
       return {
@@ -235,17 +231,42 @@ export class CartComponent implements OnInit {
       return
     }
 
-    // Check conditions
-    if (matchingCoupon.conditionGroups && matchingCoupon.conditionGroups.length > 0) {
-      const conditionsMet = evaluateCartConditions(matchingCoupon.conditionGroups, this.cart, this.shipping)
-      if (!conditionsMet) {
-        this.couponMessage = "This coupon cannot be applied to your current cart."
+    // Check usage limit asynchronously
+    this.discountDisplayService.canUserUseMechanism(matchingCoupon.mechanismId!).subscribe(response => {
+      if (!response.canUse) {
+        if (response.status === 'EXCEEDED_TOTAL_LIMIT') {
+          this.couponMessage = 'This coupon has reached its total usage limit.'
+        } else if (response.status === 'EXCEEDED_PER_USER_LIMIT') {
+          this.couponMessage = 'You have used this coupon too many times.'
+        } else {
+          this.couponMessage = 'This coupon is currently unavailable.'
+        }
         this.couponSuccess = false
         return
       }
-    }
 
-    this.applyCouponDiscount(matchingCoupon)
+      // Usage is allowed, now check conditions
+      if (
+        matchingCoupon.conditionGroups &&
+        matchingCoupon.conditionGroups.length > 0
+      ) {
+        const conditionsMet = evaluateCartConditions(
+          matchingCoupon.conditionGroups,
+          this.cart,
+          this.shipping,
+        )
+        if (!conditionsMet) {
+          this.couponMessage = "This coupon cannot be applied to your current cart."
+          this.couponSuccess = false
+          return
+        }
+      }
+
+      // All checks passed, apply coupon
+      this.applyCouponDiscount(matchingCoupon)
+      this.couponMessage = "Coupon applied successfully!"
+      this.couponSuccess = true
+    })
   }
 
   private applyCouponDiscount(coupon: DiscountDisplayDTO): void {
@@ -313,6 +334,19 @@ export class CartComponent implements OnInit {
     return itemDiscount?.discountAmount || 0
   }
 
+  getCouponPercentageDiscountForItem(productId: number, variantId: number): number {
+    if (!this.appliedCoupon) return 0
+
+    // Skip if coupon is FIXED (only apply if it's PERCENTAGE)
+    if (this.appliedCoupon.discount.discountType !== 'PERCENTAGE') return 0
+
+    const itemDiscount = this.appliedCoupon.appliedToItems.find(
+      (item) => item.productId === productId && item.variantId === variantId
+    )
+
+    return itemDiscount?.discountAmount || 0
+  }
+
   private calculateAppliedCoupon(
     coupon: DiscountDisplayDTO,
     useOriginalPrice: boolean
@@ -359,6 +393,21 @@ export class CartComponent implements OnInit {
     const couponDiscount = this.getCouponDiscountForItem(item.productId, item.variantId)
     return Math.max(0, discountedTotal - couponDiscount)
   }
+
+  getItemFinalTotalWithoutFlatCoupon(item: CartItemWithDiscounts): number {
+    const discountedTotal = item.discountedPrice * item.quantity;
+    const coupon = this.appliedCoupon?.discount;
+    let couponAmount = this.getCouponDiscountForItem(item.productId, item.variantId);
+    if (coupon?.discountType === DiscountType.FIXED) {
+      couponAmount = 0;
+    }
+    return Math.max(0, discountedTotal - couponAmount);
+  }
+
+  getItemFinalTotalWithoutCoupon(item: CartItemWithDiscounts): number {
+    return Math.max(0, item.discountedPrice * item.quantity)
+  }
+
 
   getItemOriginalTotal(item: CartItemWithDiscounts): number {
     return item.originalPrice * item.quantity

@@ -1,0 +1,136 @@
+<!-- User Info Card - Thin, Modern Horizontal Design -->
+<div class="user-info-card-thin card mb-4 d-flex flex-row align-items-center px-3 py-2" style="border-radius:0.5rem; border:1px solid #e5e7eb; box-shadow:none; min-height:56px;">
+  <div class="user-avatar-thin bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width:40px;height:40px;font-size:1.25rem;">
+    <i class="fas fa-user"></i>
+  </div>
+  <div class="flex-grow-1 d-flex flex-column justify-content-center" style="min-width:0;">
+    <div class="user-name fw-semibold text-truncate" style="font-size:1rem;">{{ user ? user.name : '' }}</div>
+    <div class="user-email text-muted text-truncate" style="font-size:0.95rem;"><i class="fas fa-envelope me-1"></i>{{ user ? user.email : '' }}</div>
+    <div class="user-address text-muted mt-1 text-truncate" *ngIf="orders.length > 0" style="font-size:0.92rem;">
+      <i class="fas fa-home me-1"></i>
+      {{ orders[0].shippingAddress.address }}<span *ngIf="orders[0].shippingAddress.township">, {{ orders[0].shippingAddress.township }}</span>,
+      {{ orders[0].shippingAddress.city }},{{ orders[0].shippingAddress.country }}
+      <span *ngIf="orders[0].shippingAddress.phoneNumber">, {{ orders[0].shippingAddress.phoneNumber }}</span>
+    </div>
+    <div class="user-address text-muted mt-1 text-truncate" *ngIf="orders.length === 0" style="font-size:0.92rem;">
+      <i class="fas fa-home me-1"></i>No address available
+    </div>
+  </div>
+  <div class="d-flex flex-column align-items-end gap-1 ms-3">
+    <span class="badge bg-primary px-2 py-1" style="font-size:0.95rem;">Orders: {{ orders.length }}</span>
+    <span class="badge bg-info px-2 py-1" style="font-size:0.95rem;">Refunds: {{ refunds.length }}</span>
+  </div>
+</div>
+
+<!-- Tab Switch -->
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item">
+    <a class="nav-link" [class.active]="activeTab === 'orders'" (click)="activeTab = 'orders'">
+      <i class="fas fa-shopping-cart me-1"></i> Orders
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" [class.active]="activeTab === 'refunds'" (click)="activeTab = 'refunds'">
+      <i class="fas fa-undo-alt me-1"></i> Refunds
+    </a>
+  </li>
+</ul>
+
+<!-- Filter Controls (Horizontal Row, Redesigned) -->
+<div class="card mb-3 p-3 filter-bar d-flex flex-row flex-wrap align-items-center gap-3 justify-content-between">
+  <div class="d-flex flex-row gap-2 align-items-center">
+    <label class="me-2 mb-0">Order Status:</label>
+    <select class="form-select form-select-sm w-auto" [(ngModel)]="orderFilter.status" (ngModelChange)="onOrderFilterChange()">
+      <option value="">All</option>
+      <option *ngFor="let s of orderStatuses" [value]="s">{{ s }}</option>
+    </select>
+  </div>
+  <div class="d-flex flex-row gap-2 align-items-center">
+    <label class="me-2 mb-0">Date From:</label>
+    <input type="date" class="form-control form-control-sm w-auto" [(ngModel)]="orderFilter.dateFrom" (ngModelChange)="onOrderFilterChange()">
+  </div>
+  <div class="ms-auto">
+    <button class="btn btn-outline-secondary btn-sm" type="button" (click)="clearOrderFilters()">
+      <i class="fas fa-times me-1"></i> Clear Filters
+    </button>
+  </div>
+</div>
+
+<!-- Orders Horizontal Card List -->
+<div *ngIf="activeTab === 'orders'">
+  <div *ngIf="isLoading" class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x"></i></div>
+  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+  <div *ngIf="!isLoading && !errorMessage">
+    <div *ngIf="filteredOrders.length === 0" class="text-center text-muted py-5">
+      <i class="fas fa-box-open fa-2x mb-2"></i><br>
+      No orders found for this user.
+    </div>
+    <div *ngIf="filteredOrders.length > 0" class="order-card-list d-flex flex-column gap-3">
+      <div *ngFor="let order of filteredOrders" class="order-card card p-3 d-flex flex-row align-items-center gap-4 flex-wrap">
+        <div class="order-tracking flex-shrink-0">
+          <div class="fw-bold text-primary mb-1">{{ order.trackingNumber }}</div>
+          <div class="text-muted small">{{ order.createdDate | date:'mediumDate' }}</div>
+          <span class="badge" [ngClass]="getOrderStatusClass(order.currentOrderStatus)">{{ order.currentOrderStatus }}</span>
+        </div>
+        <div class="order-products flex-grow-1 d-flex align-items-center gap-2">
+          <ng-container *ngFor="let item of order.items.slice(0,3)">
+            <img [src]="item.product.imgPath || (item.variant ? item.variant.imgPath : '')" alt="{{ item.product.name }}" class="order-product-thumb rounded border" style="width:40px;height:40px;object-fit:cover;">
+          </ng-container>
+          <span *ngIf="order.items.length > 3" class="badge bg-secondary">+{{ order.items.length - 3 }}</span>
+          <span class="ms-2 text-muted small">{{ getOrderProductSummary(order) }}</span>
+        </div>
+        <div class="order-total fw-bold text-end" style="min-width:120px;">{{ order.totalAmount | currency:'MMK':'symbol':'1.0-0' }}</div>
+        <div class="order-action flex-shrink-0">
+          <a [routerLink]="['/admin/orderDetailAdmin', order.id]" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-eye"></i> View Detail
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Refunds Table (unchanged) -->
+<div *ngIf="activeTab === 'refunds'">
+  <div *ngIf="isLoading" class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x"></i></div>
+  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+  <div *ngIf="!isLoading && !errorMessage">
+    <div *ngIf="filteredRefunds.length === 0" class="text-center text-muted py-5">
+      <i class="fas fa-undo-alt fa-2x mb-2"></i><br>
+      No refunds found for this user.
+    </div>
+    <div *ngIf="filteredRefunds.length > 0" class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Refund ID</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Products</th>
+            <th>Amount</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let refund of filteredRefunds">
+            <td>{{ refund.id }}</td>
+            <td>{{ refund.createdAt | date:'mediumDate' }}</td>
+            <td><span class="badge" [ngClass]="getRefundStatusClass(refund.status || '')">{{ refund.status }}</span></td>
+            <td>{{ getRefundProductSummary(refund) }}</td>
+            <td>
+              <ng-container *ngIf="refund.items && refund.items.length > 0 && getRefundTotal(refund) > 0; else noAmount">
+                {{ getRefundTotal(refund) | currency:'MMK':'symbol':'1.0-0' }}
+              </ng-container>
+              <ng-template #noAmount>-</ng-template>
+            </td>
+            <td>
+              <a [routerLink]="['/admin/refundRequestDetail', refund.id]" class="btn btn-sm btn-outline-info">
+                <i class="fas fa-eye"></i> View Detail
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

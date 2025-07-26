@@ -99,11 +99,6 @@ export class NotificationService {
     return this.http.put<void>(`${this.baseUrl}/mark-all-read`, {});
   }
 
-  // addNotification(notification: UserNotificationDTO) {
-  //   const current = this.notificationsSubject.value;
-  //   this.notificationsSubject.next([notification, ...current]);
-  // }
-
   addNotification(notification: UserNotificationDTO) {
     const current = this.notificationsSubject.value;
     this.notificationsSubject.next([notification, ...current]);
@@ -182,7 +177,7 @@ export class NotificationService {
     return this.http.post(`${this.baseUrl}/custom`, payload);
   }
 
-   getCustomNotifications(): Observable<Notification[]> {
+  getCustomNotifications(): Observable<Notification[]> {
     return this.http.get<Notification[]>(`${this.baseUrl}/list/custom`);
   }
 

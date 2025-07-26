@@ -19,4 +19,7 @@ export interface User {
   permissions?: string[];
   avatar?: string;
   roleType?: number;
+  orderCount?: number;
+  totalSpent?: number;
+  city?: string;
 }

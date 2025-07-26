@@ -62,7 +62,7 @@ import { CategoryOptionsDialogComponent } from './attribute_management/category-
 import { PriceDisplayInputComponent } from './product_management/price-display-input/price-display-input.component';
 import { StoreAddressComponent } from './storeManagement/store-address/store-address.component';
 import { AdminOrdersControlComponent } from './adminOrderManagement/admin-orders-control/admin-orders-control.component';
-import { AdminOrdersDetailComponent } from './adminOrderManagement/admin-orders-detail/admin-orders-detail.component';
+
 import { ProductDetailComponent } from './product_management/product-detail/product-detail.component';
 import { StockUpdateModalComponent } from './product_management/stock-update-modal/stock-update-modal.component';
 import { CreateDiscountComponent } from './discount_management/create-discount/create-discount.component';
@@ -87,8 +87,6 @@ import { AdminNotificationDetailComponent } from './notificationManagement/admin
 import { AdminNotiTypesComponent } from './notificationManagement/admin-noti-types/admin-noti-types.component';
 import { AdminSentNotisComponent } from './notificationManagement/admin-sent-notis/admin-sent-notis.component';
 import { AuditLogComponent } from './policy-management/audit-log/audit-log.component';
-import { VlogFilesCreateComponent } from './vlog-management/vlogfilescreate/vlogfilescreate.component';
-import { VlogFilesListComponent } from './vlog-management/vlogfileslist/vlogfileslist.component';
 import { VlogCreateComponent } from './vlog-management/vlogcreate/vlogcreate.component';
 import { VlogListComponent } from './vlog-management/vloglist/vloglist.component';
 import { CreateDeliveryMethodComponent } from './deliveryMethodManagement/create-delivery-method/create-delivery-method.component';
@@ -100,6 +98,9 @@ import { NewDiscountRulesComponent } from './discount_management/new-discount-ru
 import { NewProductSelectionComponent } from './discount_management/new-product-selection/new-product-selection.component';
 import { QuestionComponent } from './QuestionManagement/question/question.component';
 import { NewEditDiscountComponent } from './discount_management/new-edit-discount/new-edit-discount.component';
+import { AdminAccountListComponent } from './roleAndPermission/admin-account-list/admin-account-list.component';
+import { UserViewDetailComponent } from './adminUserManagement/user-view-detail/user-view-detail.component';
+import { AdminOrdersDetailComponent } from './adminOrderManagement/admin-orders-detail/admin-orders-detail.component';
 
 @NgModule({
   declarations: [
@@ -169,8 +170,6 @@ import { NewEditDiscountComponent } from './discount_management/new-edit-discoun
     AuditLogComponent,
     VlogListComponent,
     VlogCreateComponent,
-    VlogFilesListComponent,
-    VlogFilesCreateComponent,
     CreateDeliveryMethodComponent,
     DeliveryMethodListComponent,
     EditDeliveryMethodComponent,
@@ -179,7 +178,9 @@ import { NewEditDiscountComponent } from './discount_management/new-edit-discoun
     NewDiscountRulesComponent,
     NewProductSelectionComponent,
     QuestionComponent,
-    NewEditDiscountComponent
+    NewEditDiscountComponent,
+    AdminAccountListComponent,
+    UserViewDetailComponent
 
   ],
   imports: [

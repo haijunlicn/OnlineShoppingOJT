@@ -56,13 +56,28 @@
         <div class="header-left">
           <div class="header-title-section">
             <h1>
-              {{ order.orderType === 'REPLACEMENT' ? 'Replacement' : 'Order' }} #{{ order.id }}
+              {{ order.orderType === 'REPLACEMENT' ? 'Replacement' : 'Order Detail' }}
+              <span class="order-status-badge" [ngClass]="getOrderStatusClass(order.currentOrderStatus)">
+                <i [class]="getStatusIcon(order.currentOrderStatus)"></i>
+                {{ getStatusMessage(order.currentOrderStatus, order.orderType) }}
+              </span>
             </h1>
             <div class="header-meta">
-              <span class="order-date">{{ formatDate(order.createdDate) }}</span>
-              <span class="order-customer">Customer: {{ order.user.name }}</span>
+              <span class="order-date">
+                <i class="fas fa-calendar-alt"></i>
+                {{ formatDate(order.createdDate) }}
+              </span>
+              <span class="order-customer">
+                <i class="fas fa-user"></i>
+                {{ order.user.name }}
+              </span>
               <span *ngIf="order.orderType === 'REPLACEMENT'" class="order-type">
-                <i class="fas fa-exchange-alt"></i> Replacement Order
+                <i class="fas fa-exchange-alt"></i>
+                Replacement Order
+              </span>
+              <span *ngIf="order.trackingNumber" class="order-tracking">
+                <i class="fas fa-truck"></i>
+                {{ order.trackingNumber }}
               </span>
             </div>
           </div>
@@ -70,7 +85,9 @@
 
         <div class="header-right">
           <div class="header-actions">
-            <button *ngIf="order.orderType !== 'REPLACEMENT'" class="btn-action primary" (click)="downloadInvoice()">
+            <button *ngIf="order.orderType !== 'REPLACEMENT'" class="btn-action primary" (click)="downloadInvoice()"
+              [disabled]="order.currentOrderStatus === 'ORDER_PENDING'"
+              [title]="order.currentOrderStatus === 'ORDER_PENDING' ? 'Cannot download invoice while order is pending.' : ''">
               <i class="fas fa-download"></i>
               <span>Download Invoice</span>
             </button>
@@ -142,7 +159,7 @@
                   <div class="shipment-value">
                     {{ order.deliveryMethod.name }}
                     <div *ngIf="order.orderType !== 'REPLACEMENT'" class="delivery-fee">
-                      {{ formatCurrency(order.deliveryMethod.baseFee) }}
+                      {{ formatCurrency(order.shippingFee) }}
                     </div>
                   </div>
                 </div>
@@ -151,18 +168,20 @@
           </div>
         </div>
 
-        <!-- Order Items -->
+        <!-- Order Items with Enhanced Discount and Refund Info -->
         <div class="section-card">
           <div class="section-header">
             <h3>{{ order.orderType === 'REPLACEMENT' ? 'Replacement' : 'Order' }} Items</h3>
             <div class="item-count">{{ getTotalItems() }} items</div>
           </div>
+
           <div class="items-content">
             <div *ngFor="let item of order.items" class="item-row">
               <div class="item-image">
                 <img [src]="item.variant.imgPath || 'assets/img/default-product.jpg'" [alt]="item.product.name"
                   (error)="onImageError($event)" />
               </div>
+
               <div class="item-details">
                 <div class="item-name">{{ item.product.name }}</div>
                 <div class="item-meta">
@@ -170,16 +189,31 @@
                   <span class="item-qty">Quantity: {{ item.quantity }}</span>
                 </div>
 
-                <!-- Compact Refund Details -->
+                <!-- Show Discount Info (same as admin) -->
+                <div *ngIf="hasItemDiscounts(item) && order.orderType !== 'REPLACEMENT'" class="item-discounts">
+                  <div class="discount-header">
+                    <i class="fas fa-tags discount-icon"></i>
+                    <span class="discount-title">Discounts Applied:</span>
+                  </div>
+                  <div *ngFor="let discount of getItemAutoDiscounts(item)" class="discount-badge auto-discount">
+                    <i class="fas fa-percentage"></i>
+                    <span class="discount-text">{{ discount.description }}</span>
+                    <span class="discount-amount">-{{ formatCurrency(discount.discountAmount * item.quantity) }}</span>
+                  </div>
+                  <div *ngFor="let discount of getItemCouponDiscounts(item)" class="discount-badge coupon-discount">
+                    <i class="fas fa-ticket-alt"></i>
+                    <span class="discount-text">{{ discount.description }}</span>
+                    <span class="discount-amount">-{{ formatCurrency(discount.discountAmount * item.quantity) }}</span>
+                  </div>
+                </div>
 
+                <!-- Refund Info -->
                 <div class="refund-details-section" *ngIf="getRefundsForItem(item.id).length > 0">
                   <div class="refund-header">
                     <i class="fas fa-undo refund-icon"></i>
                     <h4>Refund Details</h4>
                   </div>
-
                   <div *ngFor="let refund of getRefundsForItem(item.id); let last = last" class="refund-item">
-                    <!-- Find the specific refundItem matching this item -->
                     <ng-container *ngFor="let refundItem of refund.items">
                       <ng-container *ngIf="refundItem.orderItemId === item.id">
                         <div class="refund-grid">
@@ -187,7 +221,6 @@
                             <span class="refund-label">ID:</span>
                             <span class="refund-value">{{ refund.id }}</span>
                           </div>
-
                           <div class="refund-field">
                             <span class="refund-label">Status:</span>
                             <span class="refund-status-badge"
@@ -195,135 +228,130 @@
                               {{ refundItem.status || 'N/A' }}
                             </span>
                           </div>
-
                           <div class="refund-field">
                             <span class="refund-label">Action:</span>
                             <span class="refund-value">{{ refundItem.requestedAction || 'N/A' }}</span>
                           </div>
-
                           <div class="refund-field">
                             <span class="refund-label">Qty:</span>
                             <span class="refund-value">{{ refundItem.quantity }}</span>
                           </div>
-
                           <div class="refund-field full-width" *ngIf="refundItem.customReasonText">
                             <span class="refund-label"><i class="fas fa-comment-alt"></i> Reason:</span>
                             <span class="refund-value refund-comment">{{ refundItem.customReasonText }}</span>
                           </div>
-
                           <div class="refund-field full-width" *ngIf="refund.adminComment">
                             <span class="refund-label"><i class="fas fa-user-shield"></i> Admin:</span>
                             <span class="refund-value refund-comment">{{ refund.adminComment }}</span>
                           </div>
                         </div>
-
                         <div class="refund-divider" *ngIf="!last"></div>
                       </ng-container>
                     </ng-container>
                   </div>
                 </div>
-
-
-                <!-- <div class="refund-details-section" *ngIf="getRefundsForItem(item.id).length > 0">
-                  <div class="refund-header">
-                    <i class="fas fa-undo refund-icon"></i>
-                    <h4>Refund Details</h4>
-                  </div>
-
-                  <div *ngFor="let refund of getRefundsForItem(item.id); let last = last" class="refund-item">
-                    <div class="refund-grid">
-                      <div class="refund-field">
-                        <span class="refund-label">ID:</span>
-                        <span class="refund-value">{{ refund.id }}</span>
-                      </div>
-
-                      <div class="refund-field">
-                        <span class="refund-label">Status:</span>
-                        <span class="refund-status-badge"
-                          [ngClass]="'status-' + (refund.items[0].status?.toLowerCase() || 'unknown')">
-                          {{ refund.items[0].status || 'N/A' }}
-                        </span>
-                      </div>
-
-                      <div class="refund-field">
-                        <span class="refund-label">Action:</span>
-                        <span class="refund-value">{{ refund.items[0].requestedAction || 'N/A' }}</span>
-                      </div>
-
-                      <div class="refund-field">
-                        <span class="refund-label">Qty:</span>
-                        <span class="refund-value">{{ refund.items[0].quantity }}</span>
-                      </div>
-
-                      <div class="refund-field full-width" *ngIf="refund.items[0].customReasonText">
-                        <span class="refund-label">
-                          <i class="fas fa-comment-alt"></i>
-                          Reason:
-                        </span>
-                        <span class="refund-value refund-comment">{{ refund.items[0].customReasonText }}</span>
-                      </div>
-
-                      <div class="refund-field full-width" *ngIf="refund.adminComment">
-                        <span class="refund-label">
-                          <i class="fas fa-user-shield"></i>
-                          Admin:
-                        </span>
-                        <span class="refund-value refund-comment">{{ refund.adminComment }}</span>
-                      </div>
-                    </div>
-
-                    <div class="refund-divider" *ngIf="!last"></div>
-                  </div>
-                </div> -->
-
               </div>
-              <div *ngIf="order.orderType !== 'REPLACEMENT'" class="item-price">
-                {{ formatCurrency(item.totalPrice) }}
+
+              <!-- Pricing Section -->
+              <div *ngIf="order.orderType !== 'REPLACEMENT'" class="item-pricing">
+                <div *ngIf="hasItemDiscounts(item)" class="original-price">
+                  <span class="price-label">Original:</span>
+                  <span class="price-value crossed-out">{{ formatCurrency(getItemOriginalTotal(item)) }}</span>
+                </div>
+                <div class="final-price">
+                  <span class="price-label">{{ hasItemDiscounts(item) ? 'Final Price:' : 'Price:' }}</span>
+                  <span class="price-value">{{ formatCurrency(calculateItemTotal(item)) }}</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Order Summary - Hidden for Replacement Orders -->
+        <!-- Order Summary -->
         <div *ngIf="order.orderType !== 'REPLACEMENT'" class="section-card">
           <div class="section-header">
             <h3>Order Summary</h3>
             <div class="payment-status">
               <span class="status-badge" [ngClass]="getOrderStatusClass(order.currentOrderStatus)">
-                {{ order.currentOrderStatus }}
+                <i [class]="getStatusIcon(order.currentOrderStatus)"></i>
+                <span class="status-text">{{ getStatusMessage(order.currentOrderStatus, order.orderType) }}</span>
               </span>
             </div>
           </div>
+
           <div class="summary-content">
             <div class="summary-breakdown">
-              <div class="summary-row">
-                <span>Subtotal ({{ getTotalItems() }} items)</span>
-                <span>{{ formatCurrency(getSubtotal()) }}</span>
+              <!-- Original Subtotal -->
+              <div *ngIf="hasAnyDiscounts()" class="summary-row original-subtotal">
+                <span>Original Subtotal ({{ getTotalItems() }} items)</span>
+                <span class="crossed-out">{{ formatCurrency(getOriginalSubtotal()) }}</span>
               </div>
+
+              <!-- Auto Discounts -->
+              <div *ngIf="getAutoDiscountSavings() > 0" class="summary-row discount-savings">
+                <span class="discount-label">
+                  <i class="fas fa-tags discount-icon"></i>
+                  Auto Discounts Applied
+                </span>
+                <span class="discount-amount">-{{ formatCurrency(getAutoDiscountSavings()) }}</span>
+              </div>
+
+              <!-- Coupon Discounts -->
+              <div *ngIf="getCouponDiscountSavings() > 0" class="summary-row discount-savings">
+                <span class="discount-label">
+                  <i class="fas fa-ticket-alt discount-icon"></i>
+                  Coupon: {{ getCouponCode() }}
+                </span>
+                <span class="discount-amount">-{{ formatCurrency(getCouponDiscountSavings()) }}</span>
+              </div>
+
+              <!-- Subtotal -->
+              <div class="summary-row">
+                <span>Subtotal{{ hasAnyDiscounts() ? ' (after discounts)' : '' }}</span>
+                <span>{{ formatCurrency(getDiscountedSubtotal()) }}</span>
+              </div>
+
+              <!-- Shipping Fee -->
               <div class="summary-row">
                 <span>Shipping Fee</span>
                 <span>{{ formatCurrency(order.shippingFee) }}</span>
               </div>
+
               <div class="summary-divider"></div>
+
+              <!-- Total Savings -->
+              <div *ngIf="getTotalSavings() > 0" class="summary-row total-savings">
+                <span class="savings-highlight">
+                  <i class="fas fa-piggy-bank"></i>
+                  Total Discounted Amount
+                </span>
+                <span class="savings-amount">{{ formatCurrency(getTotalSavings()) }}</span>
+              </div>
+
+              <!-- Final Total -->
               <div class="summary-total">
                 <span>Total Amount</span>
                 <span>{{ formatCurrency(order.totalAmount) }}</span>
               </div>
             </div>
 
+            <!-- Action Buttons -->
             <div class="summary-actions">
               <button class="btn-refund" (click)="goToRefundForm()" [disabled]="isRefundDisabled()"
                 [title]="getRefundButtonTooltip()">
                 <i class="fas fa-undo"></i>
                 <span>Refund & Return</span>
               </button>
-              <button class="btn-invoice" (click)="downloadInvoice()">
+              <button class="btn-invoice" (click)="downloadInvoice()"
+                [disabled]="order.currentOrderStatus === 'ORDER_PENDING'"
+                [title]="order.currentOrderStatus === 'ORDER_PENDING' ? 'Cannot download invoice while order is pending.' : ''">
                 <i class="fas fa-file-invoice"></i>
                 <span>Download Invoice</span>
               </button>
             </div>
           </div>
         </div>
+
       </div>
 
       <!-- Right Column -->
@@ -344,7 +372,6 @@
                 <div class="payment-type">{{ order.paymentMethod.type | titlecase }}</div>
               </div>
             </div>
-
             <div *ngIf="order.paymentProofPath" class="payment-proof">
               <div class="proof-label">Payment Proof</div>
               <img [src]="order.paymentProofPath" alt="Payment Proof" class="proof-image"
@@ -358,21 +385,19 @@
           <div class="info-header">
             <h3>{{ order.orderType === 'REPLACEMENT' ? 'Replacement' : 'Order' }} Timeline</h3>
             <span class="status-badge" [ngClass]="getOrderStatusClass(order.currentOrderStatus)">
-              {{ getStatusMessage(order.currentOrderStatus, order.orderType) }}
+              <i [class]="getStatusIcon(order.currentOrderStatus)"></i>
+              <span class="status-text">{{ getStatusMessage(order.currentOrderStatus, order.orderType) }}</span>
             </span>
           </div>
           <div class="vertical-timeline">
             <div *ngFor="let step of getUnifiedStatusSteps(); let i = index; let last = last" class="timeline-step"
               [ngClass]="step.class">
-
               <!-- Timeline connector line -->
               <div class="timeline-connector" *ngIf="!last" [ngClass]="step.connectorClass"></div>
-
               <!-- Step circle with icon -->
               <div class="timeline-circle">
                 <i [class]="step.icon"></i>
               </div>
-
               <!-- Step content -->
               <div class="timeline-content">
                 <div class="timeline-label">{{ step.label }}</div>
@@ -385,7 +410,19 @@
             </div>
           </div>
         </div>
+        <!-- End of Timeline -->
       </div>
+      <!-- End of Right Column -->
+    </div>
+    <!-- End of Content Grid -->
+  </div>
+  <!-- End of Order Details -->
+
+  <!-- Payment Proof Modal -->
+  <div *ngIf="showProofModal" class="modal-backdrop" (click)="closeProofModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeProofModal()">&times;</button>
+      <img [src]="proofImageUrl" alt="Payment Proof" class="modal-image" />
     </div>
   </div>
 </main>

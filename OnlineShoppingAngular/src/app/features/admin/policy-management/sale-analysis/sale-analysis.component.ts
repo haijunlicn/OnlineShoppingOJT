@@ -86,7 +86,8 @@ export class SaleAnalysisComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadData()
-    this.updateStats()
+    // Remove this line since updateStats() is now called in loadData()
+    // this.updateStats()
 
     // Monitor loading state
     this.salesDataService.loading$.pipe(takeUntil(this.destroy$)).subscribe((loading) => {
@@ -126,6 +127,10 @@ export class SaleAnalysisComponent implements OnInit, OnDestroy {
           this.totalCount = data.length;
           this.error = null;
           this.renderTime = performance.now() - startTime;
+          
+          // Update statistics with real data
+          this.updateStats();
+          
           this.cdr.detectChanges();
         },
         error: (err) => {
@@ -256,57 +261,143 @@ export class SaleAnalysisComponent implements OnInit, OnDestroy {
 
   // Update statistics
   private updateStats(): void {
-    const stats = this.getStatsForPeriod(this.timePeriod)
+    // Calculate real statistics from the actual data
+    const stats = this.calculateRealStats();
     this.statsCards = [
       {
         title: "Total Revenue",
-        value: this.formatCurrency(stats.totalRevenue.value),
-        change: stats.totalRevenue.change,
-        isPositive: stats.totalRevenue.isPositive,
-        period: stats.period,
+        value: this.formatCurrency(stats.totalRevenue),
+        change: stats.revenueChange,
+        isPositive: stats.revenueChange >= 0,
+        period: this.getTimePeriodLabel().toLowerCase(),
       },
       {
         title: "Total Orders",
-        value: this.formatNumber(stats.totalOrders.value),
-        change: stats.totalOrders.change,
-        isPositive: stats.totalOrders.isPositive,
-        period: stats.period,
+        value: this.formatNumber(stats.totalOrders),
+        change: stats.ordersChange,
+        isPositive: stats.ordersChange >= 0,
+        period: this.getTimePeriodLabel().toLowerCase(),
       },
       {
         title: "Average Order Value",
-        value: `$${stats.avgOrderValue.value}`,
-        change: stats.avgOrderValue.change,
-        isPositive: stats.avgOrderValue.isPositive,
-        period: stats.period,
+        value: this.formatCurrency(stats.avgOrderValue),
+        change: stats.avgOrderValueChange,
+        isPositive: stats.avgOrderValueChange >= 0,
+        period: this.getTimePeriodLabel().toLowerCase(),
       },
     ]
-
   }
 
-  private getStatsForPeriod(period: TimePeriod) {
-    switch (period) {
-      case "week":
-        return {
-          totalRevenue: { value: 156420, change: 12.5, isPositive: true },
-          totalOrders: { value: 1247, change: 8.2, isPositive: true },
-          avgOrderValue: { value: 125.45, change: 3.8, isPositive: true },
-          period: "last 7 days",
-        }
-      case "month":
-        return {
-          totalRevenue: { value: 2450000, change: 15.3, isPositive: true },
-          totalOrders: { value: 18500, change: 11.7, isPositive: true },
-          avgOrderValue: { value: 132.43, change: 5.2, isPositive: true },
-          period: "last 12 months",
-        }
-      case "year":
-        return {
-          totalRevenue: { value: 28500000, change: 22.8, isPositive: true },
-          totalOrders: { value: 215000, change: 18.5, isPositive: true },
-          avgOrderValue: { value: 132.56, change: 3.7, isPositive: true },
-          period: "last year",
-        }
+  // Calculate real statistics from chart data
+  private calculateRealStats(): {
+    totalRevenue: number;
+    totalOrders: number;
+    avgOrderValue: number;
+    revenueChange: number;
+    ordersChange: number;
+    avgOrderValueChange: number;
+  } {
+    if (!this.chartData || this.chartData.length === 0) {
+      return {
+        totalRevenue: 0,
+        totalOrders: 0,
+        avgOrderValue: 0,
+        revenueChange: 0,
+        ordersChange: 0,
+        avgOrderValueChange: 0
+      };
     }
+
+    // Calculate current period totals
+    let currentTotalRevenue = 0;
+    let currentTotalOrders = 0;
+
+    this.chartData.forEach(group => {
+      group.series.forEach(item => {
+        if (this.metric === "Total Revenue") {
+          currentTotalRevenue += item.value;
+        } else if (this.metric === "Total Orders") {
+          currentTotalOrders += item.value;
+        }
+      });
+    });
+
+    // For demonstration, we'll calculate change based on the first half vs second half of the data
+    // In a real scenario, you'd compare with previous period data
+    const totalDataPoints = this.chartData.reduce((sum, group) => sum + group.series.length, 0);
+    const midPoint = Math.floor(totalDataPoints / 2);
+
+    let firstHalfTotal = 0;
+    let secondHalfTotal = 0;
+    let dataPointCount = 0;
+
+    this.chartData.forEach(group => {
+      group.series.forEach(item => {
+        if (dataPointCount < midPoint) {
+          firstHalfTotal += item.value;
+        } else {
+          secondHalfTotal += item.value;
+        }
+        dataPointCount++;
+      });
+    });
+
+    // Calculate change percentage
+    const calculateChange = (current: number, previous: number): number => {
+      if (previous === 0) return current > 0 ? 100 : 0;
+      return ((current - previous) / previous) * 100;
+    };
+
+    const revenueChange = this.metric === "Total Revenue" 
+      ? calculateChange(secondHalfTotal, firstHalfTotal) 
+      : 0;
+    
+    const ordersChange = this.metric === "Total Orders" 
+      ? calculateChange(secondHalfTotal, firstHalfTotal) 
+      : 0;
+
+    // Calculate average order value
+    const avgOrderValue = currentTotalOrders > 0 ? currentTotalRevenue / currentTotalOrders : 0;
+    
+    // For average order value change, we'll use a simple calculation
+    const avgOrderValueChange = this.calculateAverageOrderValueChange();
+
+    return {
+      totalRevenue: currentTotalRevenue,
+      totalOrders: currentTotalOrders,
+      avgOrderValue: avgOrderValue,
+      revenueChange: revenueChange,
+      ordersChange: ordersChange,
+      avgOrderValueChange: avgOrderValueChange
+    };
+  }
+
+  // Calculate average order value change
+  private calculateAverageOrderValueChange(): number {
+    if (!this.chartData || this.chartData.length === 0) return 0;
+
+    // Get the last few data points to calculate trend
+    const allValues: number[] = [];
+    this.chartData.forEach(group => {
+      group.series.forEach(item => {
+        allValues.push(item.value);
+      });
+    });
+
+    if (allValues.length < 2) return 0;
+
+    // Calculate trend based on recent values
+    const recentValues = allValues.slice(-Math.min(5, allValues.length));
+    const olderValues = allValues.slice(0, Math.max(0, allValues.length - 5));
+
+    if (olderValues.length === 0) return 0;
+
+    const recentAvg = recentValues.reduce((sum, val) => sum + val, 0) / recentValues.length;
+    const olderAvg = olderValues.reduce((sum, val) => sum + val, 0) / olderValues.length;
+
+    if (olderAvg === 0) return recentAvg > 0 ? 100 : 0;
+
+    return ((recentAvg - olderAvg) / olderAvg) * 100;
   }
 
   // Utility methods

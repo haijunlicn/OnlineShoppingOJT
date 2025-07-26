@@ -8,14 +8,14 @@ import { VlogFileDTO } from '../models/vlog';
 })
 export class VlogFileService {
   
-  private baseUrl = 'http://localhost:8080/vlog-files';
+  private baseUrl = 'http://localhost:8080/vlog';
 
   constructor(private http: HttpClient) {}
 
-  // ✅ Create new vlog file
-  createVlogFile(vlogId: number, vlogFile: VlogFileDTO): Observable<VlogFileDTO> {
-    return this.http.post<VlogFileDTO>(`${this.baseUrl}/create/${vlogId}`, vlogFile);
-  }
+createVlogFile(dto: VlogFileDTO): Observable<VlogFileDTO> {
+  return this.http.post<VlogFileDTO>(`${this.baseUrl}/create`, dto);
+}
+
 
   // ✅ Get by ID
   getById(id: number): Observable<VlogFileDTO> {
@@ -38,11 +38,9 @@ export class VlogFileService {
   }
 
   // ✅ Get all files
-  getAllFiles(): Observable<VlogFileDTO[]> {
-    return this.http.get<VlogFileDTO[]>(this.baseUrl);
+  getFiles(): Observable<VlogFileDTO[]> {
+    return this.http.get<VlogFileDTO[]>('http://localhost:8080/vlog-files');
   }
-  
-
   
   uploadImage(file: File): Observable<string> {
     const formData = new FormData();

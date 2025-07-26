@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { VlogDetailComponent } from './vlog-detail.component';
+import { UserDetailListComponent } from './user-detail-list.component';
 
-describe('VlogDetailComponent', () => {
-  let component: VlogDetailComponent;
-  let fixture: ComponentFixture<VlogDetailComponent>;
+describe('UserDetailListComponent', () => {
+  let component: UserDetailListComponent;
+  let fixture: ComponentFixture<UserDetailListComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [VlogDetailComponent]
+      declarations: [UserDetailListComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(VlogDetailComponent);
+    fixture = TestBed.createComponent(UserDetailListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

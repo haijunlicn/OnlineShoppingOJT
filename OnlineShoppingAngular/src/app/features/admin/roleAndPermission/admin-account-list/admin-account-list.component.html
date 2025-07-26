@@ -1,0 +1,203 @@
+<!-- Navigation Bar -->
+<div class="navigation-bar mb-3">
+  <div class="nav-left">
+    <div class="nav-info">
+      <nav aria-label="breadcrumb" class="mb-1">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <i class="fas fa-home me-1"></i>
+            <a href="/admin/dashboard" class="text-decoration-none">Dashboard</a>
+          </li>
+          <li class="breadcrumb-item">
+            <i class="fas fa-user-shield me-1"></i>
+            Role & Permission
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">Admin Accounts</li>
+        </ol>
+      </nav>
+      <h1 class="nav-title">Admin Account Management</h1>
+    </div>
+  </div>
+  <div class="nav-right">
+    <button class="btn btn-primary" (click)="createNewAccount()">
+  <i class="fas fa-plus me-2"></i>Create New Admin
+</button>
+
+  </div>
+</div>
+
+<!-- Main Content -->
+<div>
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="fas fa-exclamation-triangle me-2"></i>{{ errorMessage }}
+    <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+  </div>
+
+  <!-- Filter/Search Card -->
+  <div class="filter-section mb-3">
+    <div class="card">
+      <div class="card-header">
+        <div class="d-flex align-items-center justify-content-between">
+          <h6 class="card-title mb-0">
+            <i class="fas fa-filter me-2"></i>Filters & Search
+          </h6>
+          <button type="button" class="btn btn-link btn-sm text-muted p-0" (click)="clearSearch()" *ngIf="searchTerm">
+            <i class="fas fa-times me-1"></i>Clear Search
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-12 col-lg-6">
+            <label for="searchInput" class="form-label">Search</label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="fas fa-search text-muted"></i>
+              </span>
+              <input id="searchInput" type="text" class="form-control" [(ngModel)]="searchTerm" (input)="onSearch()" placeholder="Search by name, email, or role...">
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <label for="itemsPerPage" class="form-label">Show</label>
+            <select id="itemsPerPage" class="form-select" [(ngModel)]="itemsPerPage" (change)="changePage(1)">
+              <option [value]="5">5</option>
+              <option [value]="10">10</option>
+              <option [value]="20">20</option>
+              <option [value]="50">50</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Table Card -->
+  <div class="data-section">
+    <div class="card">
+      <div class="card-header">
+        <div class="row align-items-center">
+          <div class="col">
+            <h6 class="card-title mb-1">
+              <i class="fas fa-users-cog me-2"></i>Admin Accounts
+            </h6>
+            <small class="text-muted">
+              Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to {{ Math.min(currentPage * itemsPerPage, totalItems) }} of {{ totalItems }} accounts
+              <span *ngIf="filteredAccounts.length !== adminAccounts.length">
+                (filtered from {{ adminAccounts.length }} total)
+              </span>
+            </small>
+          </div>
+          <div class="col-auto" *ngIf="!isLoading && totalPages > 1">
+            <small class="text-muted">
+              Page {{ currentPage }} of {{ totalPages }}
+            </small>
+          </div>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="loading-state">
+          <div class="d-flex flex-column align-items-center justify-content-center py-5">
+            <div class="spinner-border text-primary mb-3" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="text-muted mb-0">Loading admin accounts...</p>
+          </div>
+        </div>
+        <!-- Data Table -->
+        <div *ngIf="!isLoading" class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Created Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let account of paginatedAccounts; let i = index; trackBy: trackByAccountId" class="table-row-hover">
+                <td>{{ (currentPage - 1) * itemsPerPage + i + 1 }}</td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="avatar me-2">
+                      <i class="fas fa-user-circle fa-2x text-primary"></i>
+                    </div>
+                    <div>
+                      <strong>{{ account.name }}</strong>
+                    </div>
+                  </div>
+                </td>
+                <td>{{ account.email }}</td>
+                <td>
+                  <span class="badge bg-info">{{ getRoleDisplayName(account) }}</span>
+                </td>
+                <td>
+                  <span [class]="getStatusBadgeClass(account.isActive)">
+                    {{ getStatusText(account.isActive) }}
+                  </span>
+                </td>
+                <td>
+                  {{ getCreatedDate(account) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Empty State -->
+        <div *ngIf="!isLoading && paginatedAccounts.length === 0" class="empty-state">
+          <div class="text-center py-5">
+            <div class="empty-icon mb-3">
+              <i class="fas fa-users display-1 text-muted"></i>
+            </div>
+            <h5 class="text-muted mb-2">No admin accounts found</h5>
+            <p class="text-muted mb-3">
+              <span *ngIf="searchTerm">
+                <i class="fas fa-funnel"></i> No accounts match your current search. Try adjusting your search criteria.
+              </span>
+              <span *ngIf="!searchTerm">
+                <i class="fas fa-emoji-frown"></i> No admin accounts have been created yet.
+              </span>
+            </p>
+            <button class="btn btn-outline-primary" (click)="clearSearch()" *ngIf="searchTerm">
+              <i class="fas fa-x-circle me-1"></i>Clear Search
+            </button>
+            <button class="btn btn-primary" (click)="createNewAccount()" *ngIf="!searchTerm">
+              <i class="fas fa-plus me-2"></i>Create First Admin
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Pagination Footer -->
+      <div class="card-footer" *ngIf="!isLoading && totalPages > 0">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="pagination-info">
+            <small class="text-muted">
+              Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to {{ Math.min(currentPage * itemsPerPage, totalItems) }} of {{ totalItems }} accounts
+            </small>
+          </div>
+          <nav aria-label="Admin accounts pagination">
+            <ul class="pagination pagination-sm mb-0 custom-pagination">
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <button class="page-link" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+              </li>
+              <li *ngFor="let page of pages" class="page-item" [class.active]="page === currentPage">
+                <button class="page-link" (click)="changePage(page)">{{ page }}</button>
+              </li>
+              <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <button class="page-link" (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

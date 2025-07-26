@@ -14,7 +14,7 @@ export class VlogService {
 
   // Create new vlog
   createVlog(vlog: VlogDTO): Observable<VlogDTO> {
-    return this.http.post<VlogDTO>(`${this.baseUrl}/create`, vlog , { responseType: 'text' as 'json' });
+    return this.http.post<VlogDTO>(`${this.baseUrl}/create`, vlog);
   }
 
   // Get all vlogs
@@ -36,5 +36,5 @@ export class VlogService {
   deleteVlog(id: number): Observable<string> {
     return this.http.delete(`${this.baseUrl}/delete/${id}`, { responseType: 'text' });
   }
-  
+
 }

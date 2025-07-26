@@ -22,7 +22,7 @@ public class VlogEntity {
     @Column(length = 45)
     private String title;
 
-    @Column(name = "vlog_content", length = 45)
+    @Column(name = "vlog_content", columnDefinition = "TEXT")
     private String vlogContent;
 
     @Column(name = "created_date")
@@ -33,6 +33,10 @@ public class VlogEntity {
 
     @OneToMany(mappedBy = "vlog", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<VlogFilesEntity> vlogFiles;
+
+    // Add this field for storing multiple file URLs as a string
+    @Column(name = "file_paths", columnDefinition = "TEXT")
+    private String filePaths;
 
     @PrePersist
     protected void onCreate() {

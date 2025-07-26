@@ -44,6 +44,8 @@
     "jwt-decode": "^4.0.0",
     "leaflet": "^1.9.4",
     "leaflet-geosearch": "^4.2.0",
+    "lucide-angular": "^0.525.0",
+    "ngx-countdown": "^20.0.0",
     "ngx-mask": "^13.2.2",
     "ngx-slick-carousel": "^19.0.0",
     "ngx-toastr": "^19.0.0",

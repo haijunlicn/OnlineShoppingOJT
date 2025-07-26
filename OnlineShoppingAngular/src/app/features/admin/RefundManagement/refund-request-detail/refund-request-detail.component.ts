@@ -780,6 +780,29 @@ export class RefundRequestDetailComponent implements OnInit, OnDestroy {
     }
   }
 
+  getItemStatusIcon(status: string): string {
+    switch (status) {
+      case RefundItemStatus.REQUESTED:
+        return 'bi bi-pencil-square text-primary';
+      case RefundItemStatus.APPROVED:
+        return 'bi bi-check-circle text-success';
+      case RefundItemStatus.RETURN_PENDING:
+        return 'bi bi-hourglass-split text-warning';
+      case RefundItemStatus.RETURN_RECEIVED:
+        return 'bi bi-box-arrow-in-down text-info';
+      case RefundItemStatus.REFUNDED:
+        return 'bi bi-cash-coin text-success';
+      case RefundItemStatus.REPLACED:
+        return 'bi bi-arrow-repeat text-success';
+      case RefundItemStatus.REJECTED:
+        return 'bi bi-x-circle text-danger';
+      case RefundItemStatus.RETURN_REJECTED:
+        return 'bi bi-x-octagon text-danger';
+      default:
+        return 'bi bi-question-circle text-secondary';
+    }
+  }
+
   getItemStatusDisplayText(status: string): string {
     switch (status) {
       case RefundItemStatus.REQUESTED:

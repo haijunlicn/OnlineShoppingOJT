@@ -1,153 +1,164 @@
-import { Component, OnInit } from "@angular/core";
-import { VlogDTO, VlogFileDTO, VlogComment } from "@app/core/models/vlog";
-import { VlogService } from "@app/core/services/vlog.service";
+import { Component, Input, OnInit } from "@angular/core";
+import { VlogFileDTO, VlogDTO, VlogComment } from "@app/core/models/vlog";
 import { VlogFileService } from "@app/core/services/vlogfiles.service";
 import { VlogCommentService } from "@app/core/services/vlog-comment.service";
 import { AuthService } from "@app/core/services/auth.service";
+import { VlogService } from "@app/core/services/vlog.service";
 
 @Component({
   selector: "app-vlog",
-  standalone: false,
   templateUrl: "./vlog.component.html",
   styleUrls: ["./vlog.component.css"],
+  standalone: false,
 })
 export class VlogComponent implements OnInit {
-  // For Video List
   allVlogFiles: VlogFileDTO[] = [];
   filteredVlogFiles: VlogFileDTO[] = [];
+  selectedVlog: VlogDTO | null = null;
   selectedVlogFile: VlogFileDTO | null = null;
-  
-  // For Comments and Details (associated with the selected video file)
-  currentVlog: VlogDTO | null = null;
-  comments: VlogComment[] = [];
-  
-  // UI State
+  featuredVlog: VlogFileDTO | null = null;
   isLoading = true;
   errorMessage: string | null = null;
-  isPostingComment = false;
-  
-  // Filtering & Search
   searchTerm = "";
   selectedCategory = "All";
-  categories: string[] = ["All", "How-to", "Product Demo", "Travel", "Reviews"];
+  allVlogs: VlogDTO[] = [];
+  filteredVlogList: VlogDTO[] = [];
+  @Input() parentVlogs: VlogDTO[] = []
+  currentVlogFiles: VlogFileDTO[] = [];
+  currentSlideIndex = 0;
 
-  commentText = "";
 
   constructor(
-    private vlogService: VlogService,
     private vlogFileService: VlogFileService,
+    private vlogService:VlogService,
     private vlogCommentService: VlogCommentService,
     private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.getAllVlogFiles();
+    this.isLoading = true;
+    // Load all vlogs (VlogDTO[])
+    this.vlogService.getAllVlogs().subscribe({
+      next: (vlogs) => {
+        this.allVlogs = vlogs;
+        // After loading vlogs, load files
+        this.getAllVlogFiles();
+      },
+      error: (error) => {
+        console.error('❌ Error fetching vlogs:', error);
+        this.errorMessage = 'Failed to load vlogs. Please try again later.';
+        this.isLoading = false;
+      }
+    });
   }
-
-  // --- Data Loading ---
 
   getAllVlogFiles(): void {
     this.isLoading = true;
     this.errorMessage = null;
-    this.vlogFileService.getAllFiles().subscribe({
+
+    this.vlogFileService.getFiles().subscribe({
       next: (files) => {
-        this.allVlogFiles = files;
+        this.allVlogFiles = files.map((file) => ({
+          ...file,
+          title: file.title || `Vlog ${file.id || "Unknown"}`,
+        }));
+
+        // Debug: Log allVlogFiles
+        console.log('allVlogFiles:', this.allVlogFiles);
+
+        this.featuredVlog =
+          this.allVlogFiles.find((v) => v.id === 1) ||
+          this.allVlogFiles[0] ||
+          null;
+
         this.applyFiltersAndSearch();
-        this.isLoading = false;
-        
-        if (this.filteredVlogFiles.length > 0) {
+
+        if (this.featuredVlog) {
+          this.onVlogSelected(this.featuredVlog);
+        } else if (this.filteredVlogFiles.length > 0) {
           this.onVlogSelected(this.filteredVlogFiles[0]);
         }
+
+        this.isLoading = false;
+        // Debug logs
+        console.log('allVlogs:', this.allVlogs);
+        console.log('filteredVlogFiles:', this.filteredVlogFiles);
+        // Log mapping between VlogFileDTO.vlogId and VlogDTO.id
+        this.allVlogFiles.forEach(file => {
+          const match = this.allVlogs.find(v => v.id === file.vlogId);
+          console.log('file.vlogId:', file.vlogId, 'matched VlogDTO:', match);
+        });
       },
       error: (error) => {
-        console.error("Error fetching vlog files:", error);
+        console.error("❌ Error fetching vlog files:", error);
         this.errorMessage = "Failed to load vlogs. Please try again later.";
         this.isLoading = false;
       },
     });
   }
 
-  loadVlogDetails(vlogId: number): void {
-    this.vlogService.getById(vlogId).subscribe({
-        next: (vlogData) => {
-            this.currentVlog = vlogData;
-            this.loadComments(vlogData.id!);
-        },
-        error: (err) => {
-            console.error(`Failed to load vlog details for id ${vlogId}`, err);
-            this.errorMessage = "Could not load vlog details.";
-        }
-    });
+  applyFiltersAndSearch(): void {
+    let tempFiles = [...this.allVlogFiles];
+    console.log('searchTerm:', this.searchTerm);
+    if (this.searchTerm && this.searchTerm.trim()) {
+      const lowerSearch = this.searchTerm.toLowerCase();
+      tempFiles = tempFiles.filter(file =>
+        file.title?.toLowerCase().includes(lowerSearch)
+      );
+    }
+    this.filteredVlogFiles = tempFiles;
+    console.log('filteredVlogFiles:', this.filteredVlogFiles);
   }
-
-  loadComments(vlogId: number): void {
-    this.vlogCommentService.getCommentsByVlogId(vlogId).subscribe({
-      next: (comments) => {
-        this.comments = comments;
-      },
-      error: (err) => {
-        this.comments = [];
-        console.error("Failed to load comments:", err);
-      },
-    });
-  }
-
-  // --- User Actions ---
 
   onVlogSelected(vlogFile: VlogFileDTO): void {
     this.selectedVlogFile = vlogFile;
-    this.currentVlog = null; // Reset details while loading
-    this.comments = [];
-    
-    if (vlogFile.vlogId) {
-      this.loadVlogDetails(vlogFile.vlogId);
+    // Find all files for the same vlogId
+    this.currentVlogFiles = this.allVlogFiles.filter(f => f.vlogId === vlogFile.vlogId);
+    this.currentSlideIndex = 0;
+  }
+
+  nextSlide(): void {
+    if (this.currentVlogFiles.length > 0) {
+      this.currentSlideIndex = (this.currentSlideIndex + 1) % this.currentVlogFiles.length;
     }
   }
 
-  postComment(): void {
-    if (!this.currentVlog?.id || !this.commentText.trim()) return;
-
-    this.isPostingComment = true;
-    const currentUser = this.authService.getCurrentUser();
-
-    const newComment: VlogComment = {
-      author: currentUser?.name || "Anonymous",
-      text: this.commentText.trim(),
-      avatarInitial: currentUser?.name?.charAt(0).toUpperCase() || "A",
-      commentDate: new Date().toISOString(),
-      vlogId: this.currentVlog.id, // Use ID from the fetched VlogDTO
-      userId: currentUser?.id,
-    };
-
-    this.vlogCommentService.createComment(newComment).subscribe({
-      next: (createdComment) => {
-        this.comments.unshift(createdComment);
-        this.commentText = "";
-        this.isPostingComment = false;
-      },
-      error: (err) => {
-        console.error("Error posting comment:", err);
-        this.isPostingComment = false;
-      },
-    });
+  prevSlide(): void {
+    if (this.currentVlogFiles.length > 0) {
+      this.currentSlideIndex = (this.currentSlideIndex - 1 + this.currentVlogFiles.length) % this.currentVlogFiles.length;
+    }
   }
 
-  // --- Filtering & Searching ---
+  onSearchTermChange(newTerm: string): void {
+    this.searchTerm = newTerm;
+    this.applyFiltersAndSearch();
+  }
 
-  applyFiltersAndSearch(): void {
-    let tempFiles = [...this.allVlogFiles];
+  onCategoryChange(category: string): void {
+    this.selectedCategory = category;
+    this.applyFiltersAndSearch();
+  }
 
-    if (this.selectedCategory !== "All") {
-      tempFiles = tempFiles.filter(file => file.category === this.selectedCategory);
-    }
+  getFirstVideoFile(files: VlogFileDTO[]): VlogFileDTO | null {
+    if (!files) return null;
+    return files.find(f => f.fileType && (f.fileType.toLowerCase().includes('video') || f.fileType.toLowerCase().includes('mp4') || f.fileType.toLowerCase().includes('mov') || f.fileType.toLowerCase().includes('avi'))) || null;
+  }
 
-    if (this.searchTerm) {
-      const lowerCaseSearchTerm = this.searchTerm.toLowerCase();
-      tempFiles = tempFiles.filter(file =>
-        file.title?.toLowerCase().includes(lowerCaseSearchTerm)
-      );
-    }
-    
-    this.filteredVlogFiles = tempFiles;
+  getFirstImageFile(files: VlogFileDTO[]): VlogFileDTO | null {
+    if (!files) return null;
+    return files.find(f =>
+      f.fileType && (
+        f.fileType.toLowerCase().includes('image') ||
+        f.fileType.toLowerCase().includes('jpg') ||
+        f.fileType.toLowerCase().includes('jpeg') ||
+        f.fileType.toLowerCase().includes('png') ||
+        f.fileType.toLowerCase().includes('gif')
+      )
+    ) || null;
+  }
+    getCurrentVlog(): VlogDTO | undefined {
+    if (!this.selectedVlogFile || !this.allVlogs) return undefined;
+    // Try to match by vlogId first, fallback to id if needed
+    return this.allVlogs.find(v => v.id === this.selectedVlogFile?.vlogId || v.id === this.selectedVlogFile?.id);
   }
 }

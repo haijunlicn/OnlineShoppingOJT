@@ -4,6 +4,8 @@ import { Subscription } from 'rxjs';
 import { OrderService } from '../../../../core/services/order.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ORDER_STATUS, ORDER_STATUS_LABELS, OrderDetail, OrderItemDetail, PAYMENT_STATUS, StatusStep, TIMELINE_STEPS } from '@app/core/models/order.dto';
+import { StoreLocationService } from '../../../../core/services/store-location.service';
+import { PdfExportService } from '../../../../core/services/pdf-export.service';
 
 // Define all possible order statuses for user
 export type OrderStatus = "pending" | "order_confirmed" | "packed" | "out_for_delivery" | "delivered" | "cancelled"
@@ -23,11 +25,16 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   private subscriptions: Subscription[] = []
 
+  showProofModal = false;
+  proofImageUrl: string | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private orderService: OrderService,
     private authService: AuthService,
+    private storeLocationService: StoreLocationService,
+    private pdfExportService: PdfExportService,
   ) { }
 
   ngOnInit(): void {
@@ -198,9 +205,18 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     this.router.navigate(["/customer/orders"])
   }
 
-  downloadInvoice(): void {
-    // TODO: Implement invoice download functionality
-    console.log("Download invoice for order:", this.orderId)
+  async downloadInvoice(): Promise<void> {
+    if (!this.order) return;
+    try {
+      const store = await this.storeLocationService.getActive().toPromise();
+      this.pdfExportService.exportOrderInvoiceToPdf(
+        this.order,
+        store,
+        `Invoice_Order_${this.order.id}.pdf`
+      );
+    } catch (error) {
+      console.error('Failed to generate invoice PDF:', error);
+    }
   }
 
   trackOrder(): void {
@@ -284,8 +300,14 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
 
   viewPaymentProof(): void {
     if (this.order?.paymentProofPath) {
-      window.open(this.order.paymentProofPath, "_blank")
+      this.proofImageUrl = this.order.paymentProofPath;
+      this.showProofModal = true;
     }
+  }
+
+  closeProofModal(): void {
+    this.showProofModal = false;
+    this.proofImageUrl = null;
   }
 
   getUnifiedStatusSteps(): StatusStep[] {
@@ -505,28 +527,142 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     return ""
   }
 
-  // getRefundsForItem(itemId: number) {
-  //   if (!this.order?.refunds) return []
-  //   // Filter refunds that contain this item id
-  //   return this.order.refunds.filter((refund) =>
-  //       refund.items.some((refundItem) => refundItem.quantity > 0
-  //     ))
-  // }
-
   getRefundsForItem(itemId: number) {
     return this.order?.refunds?.filter(refund =>
       refund.items?.some(refundItem => refundItem.orderItemId === itemId)
     ) || [];
   }
 
-  // getRefundsForItem(itemId: number) {
-  //   if (!this.order?.refunds) return [];
+  // Discount-related helper methods
 
-  //   return this.order.refunds.filter(refund =>
-  //     refund.items.some(refundItem =>
-  //       refundItem.id === itemId && refundItem.quantity > 0
-  //     )
-  //   );
+  // hasItemDiscounts(item: any): boolean {
+  //   return item.appliedDiscounts && item.appliedDiscounts.length > 0
   // }
+
+  hasItemDiscounts(item: any): boolean {
+    if (!item.appliedDiscounts || item.appliedDiscounts.length === 0) return false;
+
+    return item.appliedDiscounts.some((discount: any) =>
+      !(discount.mechanismType === 'Coupon' && discount.discountType === 'FIXED')
+    );
+  }
+
+  getItemAutoDiscounts(item: any): any[] {
+    if (!item.appliedDiscounts) return []
+    return item.appliedDiscounts.filter((discount: any) => discount.mechanismType === "Discount")
+  }
+
+  getItemCouponDiscounts(item: any): any[] {
+    if (!item.appliedDiscounts) return [];
+
+    return item.appliedDiscounts.filter((discount: any) =>
+      discount.mechanismType === 'Coupon' && discount.discountType === 'PERCENTAGE'
+    );
+  }
+
+  getItemOriginalTotal(item: any): number {
+    if (!item.appliedDiscounts || item.appliedDiscounts.length === 0) {
+      return this.calculateItemTotal(item)
+    }
+
+    // Calculate original price by adding back all discounts,
+    // excluding coupon -> fixed type
+    const currentTotal = this.calculateItemTotal(item)
+    const totalDiscounts = item.appliedDiscounts.reduce((sum: number, discount: any) => {
+      const isCouponFixed = discount.mechanismType === "Coupon" && discount.discountType === "FIXED"
+      if (isCouponFixed) return sum
+      return sum + discount.discountAmount * item.quantity
+    }, 0)
+
+    return currentTotal + totalDiscounts
+  }
+
+  hasAnyDiscounts(): boolean {
+    if (!this.order?.items) return false
+
+    return this.order.items.some((item: any) => item.appliedDiscounts && item.appliedDiscounts.length > 0)
+  }
+
+  getOriginalSubtotal(): number {
+    if (!this.order?.items) return 0
+
+    return this.order.items.reduce((total: number, item: any) => {
+      return total + this.getItemOriginalTotal(item)
+    }, 0)
+  }
+
+  getDiscountedSubtotal(): number {
+    if (!this.order?.items) return 0
+
+    let subtotal = this.order.items.reduce((total: number, item: any) => {
+      return total + this.calculateItemTotal(item)
+    }, 0)
+
+    // Find the fixed coupon (if any) and subtract it
+    const fixedCoupon = this.order.items
+      .flatMap((item: any) => item.appliedDiscounts || [])
+      .find((discount: any) => discount.mechanismType === "Coupon" && discount.discountType === "FIXED")
+
+    if (fixedCoupon) {
+      subtotal -= fixedCoupon.discountAmount
+    }
+
+    return subtotal
+  }
+
+  getAutoDiscountSavings(): number {
+    if (!this.order?.items) return 0
+
+    return this.order.items.reduce((total: number, item: any) => {
+      if (!item.appliedDiscounts) return total
+
+      const autoDiscounts = item.appliedDiscounts.filter((discount: any) => discount.mechanismType === "Discount")
+
+      return (
+        total +
+        autoDiscounts.reduce((sum: number, discount: any) => {
+          return sum + discount.discountAmount * item.quantity
+        }, 0)
+      )
+    }, 0)
+  }
+
+  getCouponDiscountSavings(): number {
+    if (!this.order?.items) return 0
+
+    return this.order.items.reduce((total: number, item: any) => {
+      if (!item.appliedDiscounts) return total
+
+      const couponDiscounts = item.appliedDiscounts.filter((discount: any) => discount.mechanismType === "Coupon")
+
+      const itemSavings = couponDiscounts.reduce((sum: number, discount: any) => {
+        const isPercentage = discount.discountType === "PERCENTAGE"
+        const discountTotal = isPercentage ? discount.discountAmount * item.quantity : discount.discountAmount
+
+        return sum + discountTotal
+      }, 0)
+
+      return total + itemSavings
+    }, 0)
+  }
+
+  getCouponCode(): string {
+    if (!this.order?.items) return ""
+    for (const item of this.order.items) {
+      if (item.appliedDiscounts) {
+        const couponDiscount = item.appliedDiscounts.find(
+          (discount) => discount.mechanismType === "Coupon" && discount.couponCode,
+        )
+        if (couponDiscount) {
+          return couponDiscount.couponCode || ""
+        }
+      }
+    }
+    return ""
+  }
+
+  getTotalSavings(): number {
+    return this.getAutoDiscountSavings() + this.getCouponDiscountSavings()
+  }
 
 }

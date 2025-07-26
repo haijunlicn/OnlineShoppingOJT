@@ -14,8 +14,8 @@ import { VariantService, StockUpdateResponse } from '../../../../core/services/v
 import { DeliveryMethodService } from '../../../../core/services/delivery-method.service';
 import { DeliveryMethod } from '../../../../core/models/delivery-method.model';
 import Swal from 'sweetalert2';
-import { DiscountDisplayDTO } from '@app/core/models/discount';
-
+import { DiscountDisplayDTO, DiscountType, MechanismType, OrderDiscountMechanismDTO } from '@app/core/models/discount';
+import { OrderItemDiscountMechanismDTO, OrderItemRequestDTO } from '@app/core/models/order.dto';
 
 // Enhanced cart item interface with discount information
 interface CartItemWithDiscounts extends CartItem {
@@ -41,7 +41,7 @@ interface AppliedCoupon {
 export class OrderManagementComponent implements OnInit, OnDestroy {
   // Browser check
   isBrowser = false
-  L: any // Leaflet namespace
+  L: any
 
   // Location Management Properties
   addresses: LocationDto[] = []
@@ -81,8 +81,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
   selectedDeliveryMethod: DeliveryMethod | null = null
   allDeliveryMethods: DeliveryMethod[] = []
 
-  private subscriptions: Subscription[] = []
-  // private platformId: Object
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -96,7 +95,6 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     private deliveryMethodService: DeliveryMethodService,
     @Inject(PLATFORM_ID) private platformId: Object,
   ) {
-    this.platformId = platformId
     this.isBrowser = isPlatformBrowser(this.platformId)
 
     this.addressForm = this.formBuilder.group({
@@ -114,12 +112,10 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
-    // Initialize user ID first (like HeaderComponent)
     this.authService.initializeUserFromToken()
     const user = this.authService.getCurrentUser()
     this.currentUserId = user ? user.id : 0
 
-    // Fetch store location dynamically
     this.storeLocationService.getActive().subscribe({
       next: (store: StoreLocationDto) => {
         this.storeLocation = store
@@ -132,8 +128,11 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     })
   }
 
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((sub) => sub.unsubscribe())
+  }
+
   private initOrderManagement(): void {
-    // Remove duplicate user initialization since it's done in ngOnInit
     this.loadAddresses()
     this.loadCartData()
 
@@ -143,10 +142,6 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
         this.setupCustomMarkerIcon()
       })
     }
-  }
-
-  ngOnDestroy(): void {
-    this.subscriptions.forEach((sub) => sub.unsubscribe())
   }
 
   setupCustomMarkerIcon(): void {
@@ -165,19 +160,16 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     const savedState = this.cartService.getCartWithDiscounts()
 
     if (savedState && savedState.cartItems.length > 0) {
-      console.log('Loaded cart with discounts from CartService:', savedState)
+      console.log("Loaded cart with discounts from CartService:", savedState)
 
-      // assign data like before, then clear saved state if needed
       this.orderItems = savedState.cartItems
       this.discountedSubtotal = savedState.cartTotal
       this.appliedCoupon = savedState.appliedCoupon
       this.autoDiscountSavings = savedState.autoDiscountSavings
       this.totalAmount = this.discountedSubtotal
       this.calculateDiscountTotals()
-      
     } else {
       console.warn("No saved cart with discounts in CartService, fallback to basic cart")
-      // fallback code here...
       const currentCart = this.cartService.getCartItemsOnly()
       console.log("🔹 Current cart from CartService:", currentCart)
 
@@ -209,20 +201,8 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
         })
 
         this.calculateDiscountTotals()
-        console.log("🔸 Discount totals calculated (fallback):", {
-          originalSubtotal: this.originalSubtotal,
-          autoDiscountSavings: this.autoDiscountSavings,
-          couponSavings: this.couponSavings,
-          totalSavings: this.totalSavings,
-        })
-
         this.discountedSubtotal = this.calculateDiscountedSubtotal()
         this.totalAmount = this.discountedSubtotal
-
-        console.log("🔸 Final totals (fallback):", {
-          discountedSubtotal: this.discountedSubtotal,
-          totalAmount: this.totalAmount,
-        })
       } else {
         console.warn("⚠️ CartService returned empty cart")
         this.handleEmptyCart()
@@ -231,38 +211,23 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
   }
 
   private calculateDiscountTotals(): void {
-    this.originalSubtotal = this.orderItems.reduce((total, item) => total + item.originalPrice * item.quantity, 0);
+    this.originalSubtotal = this.orderItems.reduce((sum, item) => sum + item.originalPrice * item.quantity, 0)
 
-    // Auto-discounted subtotal (before coupon)
-    const autoDiscountedSubtotal = this.orderItems.reduce(
-      (total, item) => total + item.discountedPrice * item.quantity,
-      0
-    );
+    const discountedSubtotal = this.orderItems.reduce((sum, item) => sum + item.discountedPrice * item.quantity, 0)
 
-    this.autoDiscountSavings = this.originalSubtotal - autoDiscountedSubtotal;
-
-    // Coupon discount from all applicable items
-    this.couponSavings = this.orderItems.reduce((total, item) => {
-      return total + (this.getCouponDiscountForItem(item.productId, item.variantId) || 0);
-    }, 0);
-
-    // Final discounted subtotal after auto + coupon discounts
-    this.discountedSubtotal = autoDiscountedSubtotal - this.couponSavings;
-
-    this.totalSavings = this.autoDiscountSavings + this.couponSavings;
+    this.autoDiscountSavings = this.originalSubtotal - discountedSubtotal
+    this.couponSavings = this.appliedCoupon?.appliedAmount || 0
+    this.discountedSubtotal = discountedSubtotal - this.couponSavings
+    this.totalSavings = this.autoDiscountSavings + this.couponSavings
   }
 
   private calculateDiscountedSubtotal(): number {
     return this.orderItems.reduce((total, item) => {
-      const coupon = this.getCouponDiscountForItem(item.productId, item.variantId) || 0;
-      const baseDiscounted = item.discountedPrice * item.quantity;
-      return total + (baseDiscounted - coupon);
-    }, 0);
+      const coupon = this.getCouponDiscountForItem(item.productId, item.variantId) || 0
+      const baseDiscounted = item.discountedPrice * item.quantity
+      return total + (baseDiscounted - coupon)
+    }, 0)
   }
-
-  // private calculateDiscountedSubtotal(): number {
-  //   return this.orderItems.reduce((total, item) => total + item.discountedPrice * item.quantity, 0)
-  // }
 
   private handleEmptyCart(): void {
     Swal.fire("No items in cart. Please add items before proceeding to checkout.", "", "warning")
@@ -284,6 +249,185 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     }
   }
 
+  private generateOrderItemsWithDiscounts(): OrderItemRequestDTO[] {
+    return this.orderItems.map((item) => {
+      const appliedDiscounts: OrderItemDiscountMechanismDTO[] = [];
+
+      let finalDiscountedPrice = item.discountedPrice; // Start with discounted price from auto discounts
+      const quantity = item.quantity;
+
+      // Add auto discounts (already applied to item.discountedPrice)
+      if (item.appliedDiscounts?.length) {
+        item.appliedDiscounts.forEach((discount) => {
+          const discountAmount = this.calculatePerItemDiscount(item, discount);
+          if (discountAmount > 0) {
+            appliedDiscounts.push({
+              discountMechanismId: discount.mechanismId!,
+              mechanismType: MechanismType.DISCOUNT,
+              discountType: discount.discountType as DiscountType,
+              discountAmount,
+              description: `Auto: ${discount.shortLabel || discount.name}`,
+            });
+          }
+        });
+      }
+
+      // Add coupon discount
+      const couponDiscount = this.getCouponDiscountForItem(item.productId, item.variantId);
+      const coupon = this.appliedCoupon?.discount;
+
+      if (couponDiscount > 0 && coupon) {
+        appliedDiscounts.push({
+          discountMechanismId: coupon.mechanismId!,
+          mechanismType: MechanismType.Coupon,
+          discountType: coupon.discountType as DiscountType,
+          discountAmount: couponDiscount,
+          couponCode: coupon.couponcode || '',
+          description: `Coupon: ${coupon.shortLabel || coupon.name}`,
+        });
+
+        // 💡 Apply percentage coupon to discounted price (per-unit)
+        if (coupon.discountType === DiscountType.PERCENTAGE) {
+          const couponPerUnit = couponDiscount / quantity;
+          finalDiscountedPrice = Math.max(0, finalDiscountedPrice - couponPerUnit);
+        }
+      }
+
+      return {
+        variantId: item.variantId,
+        productId: item.productId,
+        quantity: item.quantity,
+        price: finalDiscountedPrice,
+        originalPrice: item.originalPrice,
+        productName: item.productName,
+        variantSku: item.variantSku,
+        imgPath: item.imgPath ?? '',
+        appliedDiscounts: appliedDiscounts.length ? appliedDiscounts : undefined,
+      };
+    });
+  }
+
+  private calculatePerItemDiscount(item: any, discount: any): number {
+    const discountValue = Number(discount.value || 0)
+    const maxDiscount = Number(discount.maxDiscountAmount || 0)
+
+    let discountAmount = 0
+
+    if (discount.discountType === DiscountType.PERCENTAGE) {
+      discountAmount = (item.originalPrice * discountValue) / 100
+    } else if (discount.discountType === DiscountType.FIXED) {
+      discountAmount = discountValue
+    }
+
+    // Apply max discount cap
+    if (maxDiscount > 0) {
+      discountAmount = Math.min(discountAmount, maxDiscount)
+    }
+
+    return Math.max(0, discountAmount)
+  }
+
+  getCouponDiscountForItem(productId: number, variantId: number): number {
+    if (!this.appliedCoupon) {
+      return 0
+    }
+
+    console.log("applied coupon : ", this.appliedCoupon);
+
+    const itemDiscount = this.appliedCoupon.appliedToItems.find((item) => {
+      const match = item.productId === productId && item.variantId === variantId
+      return match
+    })
+
+    if (itemDiscount) {
+      return itemDiscount.discountAmount
+    } else {
+      return 0
+    }
+  }
+
+  goToPaymentPage(): void {
+    if (!this.selectedAddress || this.orderItems.length === 0) {
+      Swal.fire("Please select a delivery address and ensure your cart is not empty.", "", "warning")
+      return
+    }
+
+    // Generate order items with attached discount mechanisms
+    const orderItemsWithDiscounts = this.generateOrderItemsWithDiscounts()
+
+    const payload = {
+      // orderItems: stockItems, // For stock management
+      orderItemsWithDiscounts: orderItemsWithDiscounts, // For order creation
+      selectedAddress: this.selectedAddress,
+      shippingFee: this.shippingFee,
+      totalAmount: this.totalAmount,
+      itemSubtotal: this.discountedSubtotal,
+      selectedDeliveryMethod: this.selectedDeliveryMethod,
+      originalSubtotal: this.originalSubtotal,
+      autoDiscountSavings: this.autoDiscountSavings,
+      appliedCoupon: this.appliedCoupon,
+      couponSavings: this.couponSavings,
+      totalSavings: this.totalSavings,
+      discountBreakdown: this.getDiscountBreakdown(),
+    }
+
+    console.log("Simplified payload with discount mechanisms attached to items:", payload)
+
+    // Reduce stock before navigating
+    this.variantService.recudeStock(orderItemsWithDiscounts).subscribe({
+      next: (responses: StockUpdateResponse[]) => {
+        const allSuccessful = responses.every((response) => response.success)
+        if (allSuccessful) {
+          this.router.navigate(["/customer/payment"], { state: payload }).then((navigated) => {
+            if (navigated) {
+              this.cartService.clearCart()
+            }
+          })
+        } else {
+          const failedItems = responses
+            .filter((response) => !response.success)
+            .map((response) => response.message)
+            .join("\n")
+          Swal.fire(`Stock update failed for some items:\n${failedItems}`, "", "error")
+        }
+      },
+      error: (error) => {
+        Swal.fire(`Stock update failed: ${error?.error || "Server error"}`, "", "error")
+      },
+    })
+  }
+
+  private getDiscountBreakdown(): any[] {
+    const breakdown: any[] = []
+
+    this.orderItems.forEach((item) => {
+      if (item.discountBreakdown && item.discountBreakdown.length > 0) {
+        item.discountBreakdown.forEach((discount) => {
+          const existingDiscount = breakdown.find((b) => b.label === discount.label)
+          if (existingDiscount) {
+            existingDiscount.amount += discount.amount * item.quantity
+          } else {
+            breakdown.push({
+              label: discount.label,
+              amount: discount.amount * item.quantity,
+              type: "auto",
+            })
+          }
+        })
+      }
+    })
+
+    if (this.appliedCoupon) {
+      breakdown.push({
+        label: this.appliedCoupon.discount.shortLabel || this.appliedCoupon.discount.name,
+        amount: this.appliedCoupon.appliedAmount,
+        type: "coupon",
+      })
+    }
+
+    return breakdown
+  }
+
   loadAddresses(): void {
     this.locationService.getUserLocations(this.currentUserId).subscribe({
       next: (data: LocationDto[]) => {
@@ -302,7 +446,6 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     })
   }
 
-  // Address Form Methods
   showAddForm(): void {
     this.showAddressForm = true
     this.isEditing = false
@@ -310,7 +453,6 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     this.addressForm.reset()
     this.currentLatLng = null
 
-    // Initialize map after modal is shown
     setTimeout(() => {
       if (this.isBrowser) {
         this.initMap()
@@ -325,7 +467,6 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     this.newAddress = { ...address }
     this.addressForm.patchValue(address)
 
-    // Initialize map and set marker
     setTimeout(() => {
       if (this.isBrowser) {
         this.initMap()
@@ -340,23 +481,18 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
   initMap(): void {
     if (!this.isBrowser || !this.L) return
 
-    // Remove existing map if any
     if (this.map) {
       this.map.remove()
     }
 
-    // Myanmar bounds
-    const myanmarBounds = this.L.latLngBounds(
-      this.L.latLng(9.5, 92.2), // Southwest
-      this.L.latLng(28.6, 101.2), // Northeast
-    )
+    const myanmarBounds = this.L.latLngBounds(this.L.latLng(9.5, 92.2), this.L.latLng(28.6, 101.2))
 
     this.map = this.L.map("address-map", {
       zoomControl: false,
       attributionControl: false,
       maxBounds: myanmarBounds,
       maxBoundsViscosity: 1.0,
-    }).setView([20, 96], 5) // Myanmar center
+    }).setView([20, 96], 5)
 
     this.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "© OpenStreetMap contributors",
@@ -369,19 +505,16 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
       this.reverseGeocodeLocation(e.latlng.lat, e.latlng.lng)
     })
 
-    // Prevent panning outside Myanmar
     this.map.on("drag", () => {
       this.map.panInsideBounds(myanmarBounds, { animate: false })
     })
 
-    // Fix map rendering
     setTimeout(() => this.map.invalidateSize(), 100)
   }
 
   addMarker(latlng: any): void {
     if (!this.isBrowser || !this.L) return
 
-    // Myanmar bounds
     const myanmarBounds = this.L.latLngBounds(this.L.latLng(9.5, 92.2), this.L.latLng(28.6, 101.2))
     if (!myanmarBounds.contains(latlng)) {
       Swal.fire("Please select a location within Myanmar.", "", "warning")
@@ -394,7 +527,6 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     this.marker = this.L.marker(latlng).addTo(this.map)
     this.currentLatLng = latlng
 
-    // Update form lat/lng without triggering valueChanges
     this.addressForm.patchValue(
       {
         lat: latlng.lat,
@@ -495,8 +627,6 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
       return
     }
 
-    console.log("current user Id : ", this.currentUserId)
-
     const location: LocationDto = {
       lat: this.currentLatLng.lat,
       lng: this.currentLatLng.lng,
@@ -567,18 +697,15 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     }
   }
 
-  // New method to toggle address list
   toggleAddressList(): void {
     this.showAddressList = !this.showAddressList
   }
 
-  // New method to select address and close dropdown
   selectAddressAndClose(address: LocationDto): void {
     this.selectAddress(address)
     this.showAddressList = false
   }
 
-  // Location Management Methods
   selectAddress(address: LocationDto): void {
     if (!address) return
     this.selectedAddress = { ...address }
@@ -589,26 +716,20 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     if (this.selectedAddress && this.storeLocation) {
       const distance = this.getDistanceFromStore(this.selectedAddress)
 
-      // Fetch all methods (not just available by distance)
       this.deliveryMethodService.getAll().subscribe((methods) => {
         this.allDeliveryMethods = methods
 
-        // Filter by distance
         let filtered = methods.filter((method) => {
-          // Default method (type === 1) is always included
           if (method.type === 1) return true
-          // If min/max are null, skip (unless default)
           if (method.minDistance == null || method.maxDistance == null) return false
           return distance >= method.minDistance && distance <= method.maxDistance
         })
 
-        // Ensure default is present (in case not already)
         const defaultMethod = methods.find((m) => m.type === 1)
         if (defaultMethod && !filtered.some((m) => m.id === defaultMethod.id)) {
           filtered.push(defaultMethod)
         }
 
-        // Optional: sort so default is first
         filtered = filtered.sort((a, b) => (b.type === 1 ? 1 : 0) - (a.type === 1 ? 1 : 0))
 
         this.deliveryMethods = filtered
@@ -623,110 +744,14 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     }
   }
 
-  goToPaymentPage(): void {
-    if (!this.selectedAddress || this.orderItems.length === 0) {
-      Swal.fire("Please select a delivery address and ensure your cart is not empty.", "", "warning")
-      return
-    }
-
-    // Call the stock removal service before navigating
-    const stockItems = this.orderItems.map((item) => ({
-      id: item.productId,
-      variantId: item.variantId,
-      name: item.productName,
-      quantity: item.quantity,
-      price: item.discountedPrice, // Use discounted price
-      total: item.discountedPrice * item.quantity,
-      variantSku: item.variantSku,
-      imgPath: item.imgPath,
-    }))
-
-    this.variantService.recudeStock(stockItems).subscribe({
-      next: (responses: StockUpdateResponse[]) => {
-        const allSuccessful = responses.every((response) => response.success)
-        if (allSuccessful) {
-          // All stock updates successful, proceed to payment with enhanced data
-          this.router
-            .navigate(["/customer/payment"], {
-              state: {
-                orderItems: stockItems,
-                selectedAddress: this.selectedAddress,
-                shippingFee: this.shippingFee,
-                totalAmount: this.totalAmount,
-                itemSubtotal: this.discountedSubtotal,
-                selectedDeliveryMethod: this.selectedDeliveryMethod,
-                // Enhanced discount information
-                originalSubtotal: this.originalSubtotal,
-                autoDiscountSavings: this.autoDiscountSavings,
-                appliedCoupon: this.appliedCoupon,
-                couponSavings: this.couponSavings,
-                totalSavings: this.totalSavings,
-                discountBreakdown: this.getDiscountBreakdown(),
-              },
-            })
-            .then((navigated) => {
-              if (navigated) {
-                this.cartService.clearCart()
-              }
-            })
-        } else {
-          // Some stock updates failed
-          const failedItems = responses
-            .filter((response) => !response.success)
-            .map((response) => response.message)
-            .join("\n")
-          Swal.fire(`Stock update failed for some items:\n${failedItems}`, "", "error")
-        }
-      },
-      error: (error) => {
-        Swal.fire(`Stock update failed: ${error?.error || "Server error"}`, "", "error")
-      },
-    })
-  }
-
-  // Helper method to get discount breakdown for payment page
-  private getDiscountBreakdown(): any[] {
-    const breakdown: any[] = []
-
-    // Add auto discount breakdown
-    this.orderItems.forEach((item) => {
-      if (item.discountBreakdown && item.discountBreakdown.length > 0) {
-        item.discountBreakdown.forEach((discount) => {
-          const existingDiscount = breakdown.find((b) => b.label === discount.label)
-          if (existingDiscount) {
-            existingDiscount.amount += discount.amount * item.quantity
-          } else {
-            breakdown.push({
-              label: discount.label,
-              amount: discount.amount * item.quantity,
-              type: "auto",
-            })
-          }
-        })
-      }
-    })
-
-    // Add coupon discount
-    if (this.appliedCoupon) {
-      breakdown.push({
-        label: this.appliedCoupon.discount.shortLabel || this.appliedCoupon.discount.name,
-        amount: this.appliedCoupon.appliedAmount,
-        type: "coupon",
-      })
-    }
-
-    return breakdown
-  }
-
   getEstimatedDeliveryTime(): string {
     if (!this.selectedAddress || !this.storeLocation) return ""
     const destLat = this.selectedAddress.lat
     const destLng = this.selectedAddress.lng
     const storeLat = this.storeLocation.lat
     const storeLng = this.storeLocation.lng
-    // Haversine formula
     const toRad = (v: number) => (v * Math.PI) / 180
-    const R = 6371 // Earth radius in km
+    const R = 6371
     const dLat = toRad(destLat - storeLat)
     const dLng = toRad(destLng - storeLng)
     const a =
@@ -753,9 +778,8 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     const destLng = address.lng
     const storeLat = this.storeLocation.lat
     const storeLng = this.storeLocation.lng
-    // Haversine formula
     const toRad = (v: number) => (v * Math.PI) / 180
-    const R = 6371 // Earth radius in km
+    const R = 6371
     const dLat = toRad(destLat - storeLat)
     const dLng = toRad(destLng - storeLng)
     const a =
@@ -764,7 +788,14 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
     const distance = R * c
     const method = this.selectedDeliveryMethod
-    const shippingFee = method.baseFee + method.feePerKm * distance
+    
+    // Check if customer's city matches store's city
+    const isSameCity = this.isSameCity(address, this.storeLocation)
+    
+    // Use appropriate fee per km based on city match
+    const feePerKm = isSameCity ? method.feePerKm : (method.feePerKmOutCity || method.feePerKm)
+    
+    const shippingFee = method.baseFee + feePerKm * distance
     return Math.round(shippingFee / 100) * 100
   }
 
@@ -776,9 +807,8 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     const destLng = address.lng
     const storeLat = this.storeLocation.lat
     const storeLng = this.storeLocation.lng
-    // Haversine formula
     const toRad = (v: number) => (v * Math.PI) / 180
-    const R = 6371 // Earth radius in km
+    const R = 6371
     const dLat = toRad(destLat - storeLat)
     const dLng = toRad(destLng - storeLng)
     const a =
@@ -786,7 +816,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
       Math.cos(toRad(storeLat)) * Math.cos(toRad(destLat)) * Math.sin(dLng / 2) * Math.sin(dLng / 2)
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
     const distance = R * c
-    return Math.round(distance * 10) / 10 // Round to 1 decimal place
+    return Math.round(distance * 10) / 10
   }
 
   goBackToCart(): void {
@@ -798,9 +828,19 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     if (this.selectedAddress && this.storeLocation && this.selectedDeliveryMethod) {
       const distance = this.getDistanceFromStore(this.selectedAddress)
       const method = this.selectedDeliveryMethod
-      const shippingFee = method.baseFee + method.feePerKm * distance
+      
+      // Check if customer's city matches store's city
+      const isSameCity = this.isSameCity(this.selectedAddress, this.storeLocation)
+      
+      // Use appropriate fee per km based on city match
+      const feePerKm = isSameCity ? method.feePerKm : (method.feePerKmOutCity || method.feePerKm)
+      
+      const shippingFee = method.baseFee + feePerKm * distance
       this.shippingFee = Math.round(shippingFee / 100) * 100
       this.totalAmount = this.discountedSubtotal + this.shippingFee
+      
+      console.log(`Shipping fee calculation: Base Fee (${method.baseFee}) + Fee Per Km (${feePerKm}) × Distance (${distance}) = ${this.shippingFee}`)
+      console.log(`City match: ${isSameCity ? 'Same city' : 'Different city'}`)
     } else {
       console.warn("Missing data to calculate shipping fee:", {
         selectedAddress: this.selectedAddress,
@@ -810,6 +850,19 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
       this.shippingFee = 0
       this.totalAmount = this.discountedSubtotal
     }
+  }
+
+  // Helper method to check if customer's city matches store's city
+  isSameCity(customerAddress: LocationDto, storeLocation: StoreLocationDto): boolean {
+    if (!customerAddress.city || !storeLocation.city) {
+      return false
+    }
+    
+    // Normalize city names for comparison (case-insensitive, trim whitespace)
+    const customerCity = customerAddress.city.toLowerCase().trim()
+    const storeCity = storeLocation.city.toLowerCase().trim()
+    
+    return customerCity === storeCity
   }
 
   trackByAddressId(index: number, address: LocationDto): number | undefined {
@@ -829,7 +882,6 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Helper methods for discount display
   hasDiscounts(): boolean {
     return this.totalSavings > 0
   }
@@ -845,7 +897,6 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
   getAppliedDiscountLabels(): string[] {
     const labels: string[] = []
 
-    // Get unique auto discount labels
     const autoLabels = new Set<string>()
     this.orderItems.forEach((item) => {
       if (item.discountBreakdown) {
@@ -857,7 +908,6 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
 
     labels.push(...Array.from(autoLabels))
 
-    // Add coupon label
     if (this.appliedCoupon) {
       labels.push(this.appliedCoupon.discount.shortLabel || this.appliedCoupon.discount.name || "Coupon")
     }
@@ -865,32 +915,13 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     return labels
   }
 
-
-  getCouponDiscountForItem(productId: number, variantId: number): number {
-    // Step 1: Check if any coupon is applied
-    if (!this.appliedCoupon) {
-      console.log("No coupon applied.")
-      return 0
-    }
-
-    // Step 2: Find the matching item inside appliedCoupon.appliedToItems
-    const itemDiscount = this.appliedCoupon.appliedToItems.find((item) => {
-      const match = item.productId === productId && item.variantId === variantId
-      return match
-    })
-
-    // Step 3: Return the discount amount if match found, else return 0
-    if (itemDiscount) {
-      return itemDiscount.discountAmount
-    } else {
-      return 0
-    }
-  }
-
   getFinalDiscountedPrice(item: any): number {
-    const couponAmount = this.getCouponDiscountForItem(item.productId, item.variantId) || 0;
-    const basePrice = item.discountedPrice * item.quantity;
-    return basePrice - couponAmount;
+    const couponAmount = this.getCouponDiscountForItem(item.productId, item.variantId) || 0
+    const basePrice = item.discountedPrice * item.quantity
+    return basePrice - couponAmount
   }
 
+  getFinalDiscountedPriceWithoutCoupon(item: any): number {
+    return item.discountedPrice * item.quantity
+  }
 }

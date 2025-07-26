@@ -1,0 +1,111 @@
+/* Container spacing */
+.container {
+    max-width: 1500px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* Card styles */
+.card {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+    border: none;
+}
+
+/* Card body padding */
+.card-body {
+    padding: 30px;
+}
+
+/* Form headings */
+h2 {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 0;
+    color: #333;
+}
+
+/* Form labels */
+.form-label {
+    font-weight: 500;
+    color: #444;
+}
+
+/* Inputs and selects */
+.form-control,
+.form-select {
+    height: 45px;
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Focused input effect */
+.form-control:focus,
+.form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.2);
+}
+
+/* Validation */
+.is-invalid {
+    border-color: #dc3545 !important;
+}
+.invalid-feedback {
+    font-size: 0.875rem;
+    color: #dc3545;
+}
+
+/* Submit button */
+.btn-primary {
+    min-width: 150px;
+    padding: 10px 20px;
+    font-weight: 500;
+}
+button.btn.btn-primary[type="submit"] {
+  background-color: var(--color-primary); /* Bootstrap primary color */
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1.5rem;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: background-color 0.3s ease, transform 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button.btn.btn-primary[type="submit"]:hover:not(:disabled) {
+  background-color: #163a01; /* Slightly darker on hover */
+  transform: scale(1.02);
+}
+
+button.btn.btn-primary[type="submit"]:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.spinner-border {
+  width: 1rem;
+  height: 1rem;
+}
+
+
+/* Back button */
+.btn-outline-secondary i {
+    vertical-align: middle;
+}
+
+/* Spinner positioning */
+.spinner-border {
+    vertical-align: middle;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+}

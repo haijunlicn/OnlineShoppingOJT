@@ -89,8 +89,11 @@ export class DiscountService {
     return this.http.get<DiscountConditionGroupEA_C[]>(`${this.apiUrl}/groups/${groupId}/conditions`);
   }
 
-  // Delete a condition group by id
-  deleteConditionGroup(conditionGroupId: number): Observable<string> {
-    return this.http.delete(`${this.apiUrl}/conditionGroups/${conditionGroupId}`, { responseType: 'text' });
-  }
+// Delete a condition group by id
+deleteConditionGroup(conditionGroupId: number): Observable<string> {
+  return this.http.delete(`${this.apiUrl}/conditionGroups/${conditionGroupId}`, { responseType: 'text' });
+}
+getGroupUserCounts(from: string, to: string) {
+  return this.http.get<any[]>(`http://localhost:8080/api/analytics/group-user-counts?from=${from}&to=${to}`);
+}
 }

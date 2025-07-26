@@ -194,6 +194,22 @@
                   </div>
                 </div>
 
+                <div class="form-grid" *ngIf="isCouponMechanism(i)">
+                  <div class="form-group">
+                    <label for="usageLimit" class="form-label">Total Usage Limit *</label>
+                    <input type="number" id="usageLimit" formControlName="usageLimitTotal" class="form-control" min="1"
+                      placeholder="100">
+                    <div class="field-hint">Maximum number of times this offer can be used</div>
+                  </div>
+
+                  <div class="form-group" *ngIf="isCouponMechanism(i)">
+                    <label for="perUserLimit" class="form-label">Per Customer Limit *</label>
+                    <input type="number" id="perUserLimit" formControlName="usageLimitPerUser" class="form-control"
+                      min="1" placeholder="1">
+                    <div class="field-hint">How many times each customer can use this</div>
+                  </div>
+                </div>
+
                 <!-- Discount Configuration -->
                 <div class="form-grid mb-4">
                   <div class="form-group">
@@ -243,22 +259,6 @@
                         </button>
                       </span>
                     </ng-container>
-                  </div>
-                </div>
-
-                <div class="form-grid">
-                  <div class="form-group">
-                    <label for="usageLimit" class="form-label">Total Usage Limit *</label>
-                    <input type="number" id="usageLimit" formControlName="usageLimitTotal" class="form-control" min="1"
-                      placeholder="100">
-                    <div class="field-hint">Maximum number of times this offer can be used</div>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="perUserLimit" class="form-label">Per Customer Limit *</label>
-                    <input type="number" id="perUserLimit" formControlName="usageLimitPerUser" class="form-control"
-                      min="1" placeholder="1">
-                    <div class="field-hint">How many times each customer can use this</div>
                   </div>
                 </div>
 

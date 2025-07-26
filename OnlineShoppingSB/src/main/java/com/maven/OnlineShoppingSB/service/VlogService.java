@@ -26,14 +26,18 @@ public class VlogService {
 
     @Transactional
     public VlogDTO createVlog(VlogDTO dto) {
+        System.out.println("[DEBUG] Received VlogDTO for createVlog: " + dto);
         VlogEntity vlogEntity = new VlogEntity();
         vlogEntity.setTitle(dto.getTitle());
         vlogEntity.setVlogContent(dto.getVlogContent());
+        vlogEntity.setFilePaths(dto.getFilePaths()); // <-- Save filePaths string
 
         VlogEntity savedVlog = vlogRepository.save(vlogEntity);
 
         if (dto.getVlogFiles() != null) {
+            System.out.println("[DEBUG] VlogFiles count: " + dto.getVlogFiles().size());
             List<VlogFilesEntity> files = dto.getVlogFiles().stream().map(fileDto -> {
+                System.out.println("[DEBUG] Processing VlogFilesDTO: " + fileDto);
                 VlogFilesEntity fileEntity = new VlogFilesEntity();
                 fileEntity.setFilePath(fileDto.getFilePath());
                 fileEntity.setFileType(fileDto.getFileType());
@@ -43,13 +47,15 @@ public class VlogService {
 
             vlogFileRepository.saveAll(files);
             savedVlog.setVlogFiles(files);
+        } else {
+            System.out.println("[DEBUG] No VlogFiles provided in VlogDTO");
         }
 
         return convertToDTO(savedVlog);
     }
 
     public List<VlogDTO> getAllVlogs() {
-        List<VlogEntity> vlogs = vlogRepository.findAll();
+        List<VlogEntity> vlogs = vlogRepository.findAllWithFiles();
         return vlogs.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
@@ -72,6 +78,7 @@ public class VlogService {
 
         existing.setTitle(dto.getTitle());
         existing.setVlogContent(dto.getVlogContent());
+        existing.setFilePaths(dto.getFilePaths()); // <-- Update filePaths string
 
         VlogEntity updated = vlogRepository.save(existing);
 
@@ -100,25 +107,26 @@ public class VlogService {
                 .orElseThrow(() -> new RuntimeException("Vlog not found with id: " + id));
         vlogRepository.delete(existing); 
     }
-
-    private VlogDTO convertToDTO(VlogEntity entity) {
+    private VlogDTO convertToDTO(VlogEntity vlog) {
         VlogDTO dto = new VlogDTO();
-        dto.setId(entity.getId());
-        dto.setTitle(entity.getTitle());
-        dto.setVlogContent(entity.getVlogContent());
-        dto.setCreatedDate(entity.getCreatedDate());
-        dto.setUpdatedDate(entity.getUpdatedDate());
+        dto.setId(vlog.getId());
+        dto.setTitle(vlog.getTitle());
+        dto.setVlogContent(vlog.getVlogContent());
+        dto.setCreatedDate(vlog.getCreatedDate());
+        dto.setUpdatedDate(vlog.getUpdatedDate());
+        dto.setFilePaths(vlog.getFilePaths()); // <-- Map filePaths string
 
-        if (entity.getVlogFiles() != null) {
-            List<VlogFilesDTO> files = entity.getVlogFiles().stream().map(file -> {
-                VlogFilesDTO fileDto = new VlogFilesDTO();
-                fileDto.setId(file.getId());
-                fileDto.setFilePath(file.getFilePath());
-                fileDto.setFileType(file.getFileType());
-                return fileDto;
+        if (vlog.getVlogFiles() != null) {
+            List<VlogFilesDTO> fileDTOs = vlog.getVlogFiles().stream().map(file -> {
+                VlogFilesDTO fileDTO = new VlogFilesDTO();
+                fileDTO.setId(file.getId());
+                fileDTO.setFilePath(file.getFilePath());
+                fileDTO.setFileType(file.getFileType());
+                return fileDTO;
             }).collect(Collectors.toList());
-            dto.setVlogFiles(files);
+            dto.setVlogFiles(fileDTOs);
         }
+
         return dto;
     }
 }

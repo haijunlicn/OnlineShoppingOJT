@@ -7,6 +7,7 @@ import { HeaderComponent } from './common/header/header.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RegisterComponent } from './auth/register/register.component';
 import { RouterModule } from '@angular/router';
+import { CountdownModule } from 'ngx-countdown';
 import { ForgetPasswordComponent } from './auth/forget-password/forget-password.component';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { VerifyComponent } from './auth/verify/verify.component';
@@ -48,15 +49,16 @@ import { LocationSettingComponent } from './common/location-setting/location-set
 import { ProfileInfoSettingComponent } from './common/profile-info-setting/profile-info-setting.component';
 import { NotiSettingComponent } from './common/noti-setting/noti-setting.component';
 
-
 import { VlogComponent } from './policy/vlog/vlog.component';
 import { VlogListComponent } from './policy/vlog-list/vlog-list.component';
-import { VlogDetailComponent } from './policy/vlog-detail/vlog-detail.component';
 import { DiscountDisplayComponent } from './product_display/discount-display/discount-display.component';
 import { StickyDiscountProgressComponent } from './product_display/sticky-discount-progress/sticky-discount-progress.component';
 import { DiscountConditionDisplayComponent } from './product_display/discount-condition-display/discount-condition-display.component';
 import { ProductqandaComponent } from './product_display/productqanda/productqanda.component';
+import { VlogCommentComponent } from './policy/vlog-comment/vlog-comment.component';
+
 import { DiscountHeroCarouselComponent } from './product_display/discount-hero-carousel/discount-hero-carousel.component';
+import { DiscountDetailComponent } from './product_display/discount-detail/discount-detail.component';
 
 @NgModule({
   declarations: [
@@ -103,15 +105,15 @@ import { DiscountHeroCarouselComponent } from './product_display/discount-hero-c
     NotiSettingComponent,
     ProductqandaComponent,
   
-  
+  VlogCommentComponent,
     VlogComponent,
     VlogListComponent,
-    VlogDetailComponent,
     DiscountDisplayComponent,
     StickyDiscountProgressComponent,
     DiscountConditionDisplayComponent,
     ProductqandaComponent,
-    DiscountHeroCarouselComponent
+    DiscountHeroCarouselComponent,
+    DiscountDetailComponent
   ],
   imports: [
     CommonModule,
@@ -128,6 +130,7 @@ import { DiscountHeroCarouselComponent } from './product_display/discount-hero-c
     MatButtonModule,
     FormsModule,
     HttpClientModule,
+    CountdownModule,
   ]
 })
 export class CustomerModule { }

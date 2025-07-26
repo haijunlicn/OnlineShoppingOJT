@@ -1,3 +1,4 @@
+import { DiscountType, MechanismType, OrderDiscountMechanismDTO } from "./discount";
 import { RefundRequestDTO } from "./refund.model";
 
 export interface OrderItemRequestDTO {
@@ -5,9 +6,18 @@ export interface OrderItemRequestDTO {
   productId: number;
   quantity: number;
   price: number;
-  // variantSku: string;
-  // productName: string;
   imgPath: string;
+  originalPrice?: number
+  appliedDiscounts?: OrderItemDiscountMechanismDTO[]
+}
+
+export interface OrderItemDiscountMechanismDTO {
+  discountMechanismId: number
+  mechanismType: MechanismType
+  discountType: DiscountType
+  discountAmount: number // Base amount per item
+  couponCode?: string
+  description: string
 }
 
 export interface OrderRequestDTO {
@@ -97,6 +107,7 @@ export interface OrderItemDetail {
     sku: string;
   };
   maxReturnQty?: number;
+  appliedDiscounts?: OrderItemDiscountMechanismDTO[];
 }
 
 export interface OrderStatusEntity {
@@ -199,8 +210,8 @@ export interface StatusStep {
 
 export const STATUS_TRANSITIONS: Record<ORDER_STATUS, ORDER_STATUS[]> = {
   [ORDER_STATUS.ORDER_PENDING]: [ORDER_STATUS.ORDER_CONFIRMED],
-  [ORDER_STATUS.ORDER_CONFIRMED]: [ORDER_STATUS.PACKED],
-  [ORDER_STATUS.PACKED]: [ORDER_STATUS.SHIPPED, ORDER_STATUS.OUT_FOR_DELIVERY],
+  [ORDER_STATUS.ORDER_CONFIRMED]: [ORDER_STATUS.PACKED, ORDER_STATUS.ORDER_CANCELLED],
+  [ORDER_STATUS.PACKED]: [ORDER_STATUS.SHIPPED, ORDER_STATUS.OUT_FOR_DELIVERY, ORDER_STATUS.ORDER_CANCELLED],
   [ORDER_STATUS.SHIPPED]: [ORDER_STATUS.OUT_FOR_DELIVERY, ORDER_STATUS.ORDER_CANCELLED],
   [ORDER_STATUS.OUT_FOR_DELIVERY]: [ORDER_STATUS.DELIVERED, ORDER_STATUS.ORDER_CANCELLED],
   [ORDER_STATUS.DELIVERED]: [],

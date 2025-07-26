@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { VlogfileslistComponent } from './vlogfileslist.component';
+import { VlogCommentComponent } from './vlog-comment.component';
 
-describe('VlogfileslistComponent', () => {
-  let component: VlogfileslistComponent;
-  let fixture: ComponentFixture<VlogfileslistComponent>;
+describe('VlogCommentComponent', () => {
+  let component: VlogCommentComponent;
+  let fixture: ComponentFixture<VlogCommentComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [VlogfileslistComponent]
+      declarations: [VlogCommentComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(VlogfileslistComponent);
+    fixture = TestBed.createComponent(VlogCommentComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

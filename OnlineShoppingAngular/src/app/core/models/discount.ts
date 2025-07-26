@@ -196,6 +196,7 @@ export interface DiscountDisplayDTO {
   offeredProductIds?: number[];
   usageLimitTotal?: number;
   usageLimitPerUser?: number;
+  mechanismId?: number;
 }
 
 export interface DiscountEventDTO {
@@ -214,10 +215,29 @@ export interface DiscountMechanismDTO {
   couponCode: string | null;
   value: number | null;
   discountType: 'PERCENTAGE' | 'FIXED';
-  mechanismType: 'DISCOUNT' | 'FREE_GIFT' | 'COUPON' | 'B2B';
+  mechanismType: MechanismType;
   maxDiscountAmount: number | null;
   usageLimitTotal: number | null;
   usageLimitPerUser: number | null;
   offeredProducts: ProductDTO[];
   conditionGroups: DiscountConditionGroupEA_C[];
+}
+
+export interface OrderDiscountMechanismDTO {
+  id?: number
+  mechanismType: MechanismType
+  discountType: DiscountType
+  couponCode?: string
+  totalAppliedAmount: number
+  discountMechanismId?: number
+  itemDiscounts: OrderItemDiscountDTO[]
+}
+
+export interface OrderItemDiscountDTO {
+  id?: number
+  orderItemId?: number
+  productId: number
+  variantId: number
+  discountAmount: number
+  description: string
 }

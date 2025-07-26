@@ -1,23 +1,28 @@
-<!-- Removed header and search bar as parent handles it -->
-<div class="vlog-grid-list">
-  <div
-    *ngFor="let vlog of vlogs"
-    class="vlog-card"
-    [class.selected]="vlog.id === selectedVlogId"
-    (click)="selectVlog(vlog)"
-  >
-    <div class="thumbnail-container">
-      <img [src]="getThumbnailUrl(vlog)" [alt]="vlog.title || 'Vlog Thumbnail'" class="thumbnail-image" />
-      <div class="play-overlay">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="currentColor" class="play-icon">
-          <polygon points="5 3 19 12 5 21 5 3"></polygon>
-        </svg>
+  <div class="vlog-grid-list">
+    <div
+      *ngFor="let parentVlog of parentVlogs"
+      class="vlog-card"
+      [class.selected]="parentVlog.id === currentVlogId"
+      [attr.aria-pressed]="parentVlog.id === currentVlogId"
+    >
+      <div class="thumbnail-container" *ngIf="getFilesForVlog(parentVlog.id!).length > 0">
+        <button (click)="prevSlide(parentVlog.id!, getFilesForVlog(parentVlog.id!)); $event.stopPropagation()" class="slide-btn">&lt;</button>
+        <ng-container *ngIf="getFilesForVlog(parentVlog.id!)[getCurrentSlideIndex(parentVlog.id!)] as file">
+          <img *ngIf="file.fileType && file.fileType.toLowerCase().includes('image')" [src]="file.filePath" class="thumbnail-image" (click)="selectVlog(file)" />
+          <video *ngIf="file.fileType && file.fileType.toLowerCase().includes('video')" [src]="file.filePath" class="thumbnail-image" muted (click)="selectVlog(file)"></video>
+        </ng-container>
+        <button (click)="nextSlide(parentVlog.id!, getFilesForVlog(parentVlog.id!)); $event.stopPropagation()" class="slide-btn">&gt;</button>
       </div>
-      <span *ngIf="vlog.duration" class="duration-tag">{{ vlog.duration }}</span>
-    </div>
-    <div class="vlog-info">
-      <h3 class="vlog-title">{{ vlog.title }}</h3>
-      <p *ngIf="vlog.title" class="vlog-description">{{ vlog.title }}</p>
+      <ng-container *ngIf="parentVlog">
+        <div class="vlog-content-section">
+          <div class="vlog-detail-block">
+            <div class="vlog-title" title="{{ parentVlog.title }}">{{ parentVlog.title }}</div>
+            <div class="vlog-content">
+              {{ parentVlog.vlogContent | slice:0:80 }}<span *ngIf="(parentVlog.vlogContent?.length || 0) > 80">...</span>
+            </div>
+            <div class="vlog-date">{{ parentVlog.createdDate | date: 'mediumDate' }}</div>
+          </div>
+        </div>
+      </ng-container>
     </div>
   </div>
-</div>

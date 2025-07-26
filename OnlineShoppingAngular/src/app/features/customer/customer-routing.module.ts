@@ -36,7 +36,7 @@ import { NotiSettingComponent } from './common/noti-setting/noti-setting.compone
 import { ProfileInfoSettingComponent } from './common/profile-info-setting/profile-info-setting.component';
 import { VlogComponent } from './policy/vlog/vlog.component';
 import { VlogListComponent } from './policy/vlog-list/vlog-list.component';
-import { VlogDetailComponent } from './policy/vlog-detail/vlog-detail.component';
+import { DiscountDetailComponent } from './product_display/discount-detail/discount-detail.component';
 
 const routes: Routes = [
 
@@ -120,29 +120,34 @@ const routes: Routes = [
     component: RefundRequestFormComponent,
     canActivate: [AuthGuard, RefundEligibilityGuard]
   },
-  { path: 'vlog-list' , component: VlogListComponent},
-    { path: 'vlog-detail/:id' , component: VlogDetailComponent},
+  { path: 'blog-list', component: VlogListComponent },
 
-  { path: 'vlog', component: VlogComponent},
+  { path: 'blog', component: VlogComponent },
   { path: 'notifications', component: NotificationListComponent, canActivate: [AuthGuard] },
   { path: 'account/settings/location', component: LocationSettingComponent, canActivate: [AuthGuard] },
   { path: 'account/settings/notifications', component: NotiSettingComponent, canActivate: [AuthGuard] },
   { path: 'account/settings/profile', component: ProfileInfoSettingComponent, canActivate: [AuthGuard] },
-      {
-         path: 'account-settings',
-         component: AccountSettingsComponent,
-         children: [
-           { path: '', redirectTo: 'profile', pathMatch: 'full' },
-           { path: 'location', component: LocationCardComponent },
-           { path: 'profile', component: ProfileInfoSettingComponent },
-          
-         ]
-       },
+  {
+    path: 'account-settings',
+    component: AccountSettingsComponent,
+    children: [
+      { path: '', redirectTo: 'profile', pathMatch: 'full' },
+      { path: 'location', component: LocationCardComponent },
+      { path: 'profile', component: ProfileInfoSettingComponent },
+
+    ]
+  },
+  {
+    path: 'discount/:id',
+    component: DiscountDetailComponent
+  }
+
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
+  
 
 })
 export class CustomerRoutingModule { }

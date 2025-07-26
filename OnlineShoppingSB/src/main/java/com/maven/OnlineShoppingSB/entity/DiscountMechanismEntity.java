@@ -42,7 +42,6 @@ public class DiscountMechanismEntity {
     @Column(nullable = true)
     private Integer usageLimitPerUser;
 
-
     @ManyToOne
     @JoinColumn(name = "discounts_id")
     private DiscountEntity discount;

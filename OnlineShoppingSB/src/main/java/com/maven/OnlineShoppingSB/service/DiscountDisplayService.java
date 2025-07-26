@@ -34,6 +34,10 @@ public class DiscountDisplayService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
+    private DiscountUsageRepository usageRepo;
+    @Autowired
+    private DiscountMechanismRepository mechanismRepo;
+    @Autowired
     private ProductRepository productRepository;
     @Autowired
     private CategoryRepository categoryRepository;
@@ -184,6 +188,7 @@ public class DiscountDisplayService {
                 dto.setStartDate(discount.getStartDate());
                 dto.setEndDate(discount.getEndDate());
                 dto.setOfferedProductIds(offeredProductIds);
+                dto.setMechanismId(mechanism.getId());
 
                 if (freeGiftDTOs != null) {
                     dto.setFreeGifts(freeGiftDTOs);
@@ -418,6 +423,72 @@ public class DiscountDisplayService {
         dto.setOfferedProducts(offeredProducts);
 
         return dto;
+    }
+
+    public DiscountEventDTO getDiscountById(Long discountId, Long userId) {
+        Optional<DiscountEntity> discountOpt = discountRepository.findById(discountId.intValue());
+
+        if (discountOpt.isEmpty()) {
+            throw new RuntimeException("Discount not found for id: " + discountId);
+        }
+
+        UserEntity user = null;
+        if (userId != null) {
+            user = userRepository.findById(userId).orElse(null);
+        }
+
+        return mapToDiscountEventDTO(discountOpt.get(), user);
+    }
+
+
+    // ✅ Check if a user can use the discount mechanism
+    public DiscountUsageDTO.DiscountUsageStatus canUseMechanismWithReason(Long mechanismId, Long userId) {
+        DiscountMechanismEntity mechanism = mechanismRepo.findById(mechanismId)
+                .orElseThrow(() -> new RuntimeException("Mechanism not found"));
+
+        Integer totalLimit = mechanism.getUsageLimitTotal();
+        Integer perUserLimit = mechanism.getUsageLimitPerUser();
+
+        // Check total usage
+        if (totalLimit != null) {
+            Integer totalUsed = usageRepo.findTotalUsage(mechanismId);
+            if (totalUsed != null && totalUsed >= totalLimit) {
+                return DiscountUsageDTO.DiscountUsageStatus.EXCEEDED_TOTAL_LIMIT;
+            }
+        }
+
+        // Check per-user usage
+        if (userId != null && perUserLimit != null) {
+            Optional<DiscountUsageEntity> usageOpt = usageRepo.findByDiscountMechanismIdAndUserId(mechanismId, userId);
+            if (usageOpt.isPresent() && usageOpt.get().getUsageCount() >= perUserLimit) {
+                return DiscountUsageDTO.DiscountUsageStatus.EXCEEDED_PER_USER_LIMIT;
+            }
+        }
+
+        return DiscountUsageDTO.DiscountUsageStatus.AVAILABLE;
+    }
+
+    // ✅ Record a usage after discount is applied
+    public void recordUsage(Long mechanismId, Long userId) {
+        DiscountMechanismEntity mechanism = mechanismRepo.findById(mechanismId)
+                .orElseThrow(() -> new RuntimeException("Mechanism not found"));
+
+        DiscountUsageEntity usage = usageRepo.findByDiscountMechanismIdAndUserId(mechanismId, userId)
+                .orElseGet(() -> {
+                    DiscountUsageEntity newUsage = new DiscountUsageEntity();
+                    newUsage.setDiscountMechanism(
+                            mechanismRepo.findById(mechanismId).orElseThrow(() -> new RuntimeException("Mechanism not found"))
+                    );
+                    newUsage.setUser(
+                            userId != null ? userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found")) : null
+                    );
+                    newUsage.setUsageCount(0);
+                    return newUsage;
+                });
+
+        usage.setUsageCount(usage.getUsageCount() + 1);
+        usage.setLastUsedAt(LocalDateTime.now());
+        usageRepo.save(usage);
     }
 
 }

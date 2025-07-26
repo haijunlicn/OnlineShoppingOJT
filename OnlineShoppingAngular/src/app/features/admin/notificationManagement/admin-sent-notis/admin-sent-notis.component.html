@@ -1,4 +1,4 @@
-<!-- Navigation Bar -->
+<!-- Clean Navigation Bar (Card Style) -->
 <div class="navigation-bar mb-3">
   <div class="nav-left">
     <div class="nav-info">
@@ -13,84 +13,217 @@
         </ol>
       </nav>
       <h1 class="nav-title">Sent Notifications</h1>
-      <p class="nav-subtitle">View sent system notifications.</p>
+    </div>
+  </div>
+  <div class="nav-right">
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-outline-secondary btn-sm nav-btn" (click)="loadNotifications()" [disabled]="isLoading">
+        <i class="fas fa-sync-alt me-1" [class.fa-spin]="isLoading"></i>Refresh
+      </button>
     </div>
   </div>
 </div>
 
-<!-- Error Message -->
-<div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
-  <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
-  <button type="button" class="btn-close" (click)="clearError()" aria-label="Close"></button>
-</div>
-
-<!-- Notifications Table -->
-<div class="card">
-  <div class="card-header">
-    <h6 class="card-title mb-1">
-      <i class="fas fa-paper-plane me-2"></i>Sent Notifications List
-    </h6>
-    <small class="text-muted">Showing {{ notifications.length }} entries</small>
+<!-- Main Content -->
+<div>
+  <!-- Error Message -->
+  <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+    <button type="button" class="btn-close" (click)="clearError()" aria-label="Close"></button>
   </div>
-  <div class="card-body p-0">
-    <div *ngIf="isLoading" class="loading-state py-5 text-center">
-      <div class="spinner-border text-primary" role="status"></div>
-      <p class="mt-2 text-muted">Loading notifications...</p>
-    </div>
 
-    <div *ngIf="!isLoading && notifications.length > 0" class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
-        <thead class="table-light">
-          <tr>
-            <th>ID</th>
-            <th>Title</th>
-            <th>Message Preview</th>
-            <th class="d-none d-lg-table-cell">Scheduled At</th>
-            <th>Metadata</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let noti of notifications; trackBy: trackByNotificationId">
-            <td><span class="fw-bold text-primary">#{{ noti.id }}</span></td>
-            <td>{{ noti.title || 'N/A' }}</td>
-            <td>{{ getMessagePreview(noti.message) }}</td>
-            <td class="d-none d-lg-table-cell">{{ noti.scheduledAt || 'N/A' }}</td>
-            <td>
-              <button class="btn btn-sm btn-outline-info"
-                      (click)="openMetadataModal(noti.metadata || null)">
-                View
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- No Data State -->
-    <div *ngIf="!isLoading && notifications.length === 0" class="text-center py-5">
-      <i class="fas fa-bell display-1 text-muted mb-3"></i>
-      <h5 class="text-muted">No notifications found</h5>
-      <p class="text-muted">No notifications have been sent yet.</p>
+  <!-- Filter Controls Card -->
+  <div class="filter-section mb-3">
+    <div class="card">
+      <div class="card-header">
+        <div class="d-flex align-items-center justify-content-between">
+          <h6 class="card-title mb-0">
+            <i class="fas fa-filter me-2"></i>Filters & Search
+          </h6>
+          <button type="button" class="btn btn-link btn-sm text-muted p-0" (click)="onReset()"
+            *ngIf="searchTerm && searchTerm.trim()">
+            <i class="fas fa-times me-1"></i>Clear All
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <!-- Search -->
+          <div class="col-12 col-lg-6">
+            <label for="searchInput" class="form-label">Search</label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="fas fa-search text-muted"></i>
+              </span>
+              <input id="searchInput" type="text" class="form-control" [(ngModel)]="searchTerm"
+                (input)="applyFilters()" placeholder="Search by title, message...">
+            </div>
+          </div>
+          <!-- Items per page -->
+          <div class="col-6 col-lg-2">
+            <label for="itemsPerPage" class="form-label">Show</label>
+            <select id="itemsPerPage" class="form-select" [(ngModel)]="itemsPerPage"
+              (change)="onItemsPerPageChange()">
+              <option *ngFor="let option of getItemsPerPageOptions()" [value]="option">{{ option }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- Modal -->
-<div class="modal-backdrop" *ngIf="showModal" (click)="closeModal()"></div>
-<div class="custom-modal" *ngIf="showModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h5 class="modal-title">Notification Metadata</h5>
-      <button type="button" class="btn-close" (click)="closeModal()"></button>
+  <!-- Data Table Card -->
+  <div class="data-section">
+    <div class="card">
+      <div class="card-header">
+        <div class="row align-items-center">
+          <div class="col">
+            <h6 class="card-title mb-1">
+              <i class="fas fa-paper-plane me-2"></i>Sent Notifications List
+            </h6>
+            <small class="text-muted">
+              Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
+              {{ Math.min(currentPage * itemsPerPage, totalItems) }} of {{ totalItems }} entries
+              <span *ngIf="filteredNotifications.length !== notifications.length">
+                (filtered from {{ notifications.length }} total)
+              </span>
+            </small>
+          </div>
+          <div class="col-auto" *ngIf="!isLoading && totalPages > 1">
+            <small class="text-muted">
+              Page {{ currentPage }} of {{ totalPages }}
+            </small>
+          </div>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="loading-state">
+          <div class="d-flex flex-column align-items-center justify-content-center py-5">
+            <div class="spinner-border text-primary mb-3" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="text-muted mb-0">Loading notifications...</p>
+          </div>
+        </div>
+        <!-- Data Table -->
+        <div *ngIf="!isLoading" class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="sortable" (click)="sort('id')">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <span>ID</span>
+                    <i class="fas ms-1" [class]="getSortIcon('id')"></i>
+                  </div>
+                </th>
+                <th class="sortable" (click)="sort('title')">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <span>Title</span>
+                    <i class="fas ms-1" [class]="getSortIcon('title')"></i>
+                  </div>
+                </th>
+                <th class="sortable" (click)="sort('message')">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <span>Message Preview</span>
+                    <i class="fas ms-1" [class]="getSortIcon('message')"></i>
+                  </div>
+                </th>
+                <th class="sortable d-none d-lg-table-cell" (click)="sort('scheduledAt')">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <span>Scheduled At</span>
+                    <i class="fas ms-1" [class]="getSortIcon('scheduledAt')"></i>
+                  </div>
+                </th>
+                <th>Metadata</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let noti of paginatedNotifications; trackBy: trackByNotificationId" class="table-row-hover">
+                <td><span class="fw-bold text-primary">#{{ noti.id }}</span></td>
+                <td>{{ noti.title || 'N/A' }}</td>
+                <td>{{ getMessagePreview(noti.message) }}</td>
+                <td class="d-none d-lg-table-cell">{{ noti.scheduledAt || 'N/A' }}</td>
+                <td>
+                  <button class="btn btn-sm btn-outline-info"
+                          (click)="openMetadataModal(noti.metadata || null)">
+                    View
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Empty State -->
+        <div *ngIf="!isLoading && paginatedNotifications.length === 0" class="empty-state">
+          <div class="text-center py-5">
+            <div class="empty-icon mb-3">
+              <i class="fas fa-bell display-1 text-muted"></i>
+            </div>
+            <h5 class="text-muted mb-2">No notifications found</h5>
+            <p class="text-muted mb-3">
+              <span *ngIf="searchTerm && searchTerm.trim()">
+                No notifications match your current search. Try adjusting your search criteria.
+              </span>
+              <span *ngIf="!searchTerm || !searchTerm.trim()">
+                No notifications have been sent yet.
+              </span>
+            </p>
+            <button class="btn btn-outline-primary" (click)="onReset()"
+              *ngIf="searchTerm && searchTerm.trim()">
+              <i class="fas fa-times me-1"></i>Clear All Filters
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Pagination Footer -->
+      <div class="card-footer" *ngIf="!isLoading && totalPages > 0">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="pagination-info">
+            <small class="text-muted">
+              Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
+              {{ Math.min(currentPage * itemsPerPage, totalItems) }} of {{ totalItems }} entries
+            </small>
+          </div>
+          <nav aria-label="Sent notifications pagination">
+            <ul class="pagination pagination-sm mb-0 custom-pagination">
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <button class="page-link" (click)="goToPreviousPage()" [disabled]="currentPage === 1">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+              </li>
+              <li *ngFor="let page of getPageNumbers()" class="page-item" [class.active]="page === currentPage">
+                <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+              </li>
+              <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <button class="page-link" (click)="goToNextPage()" [disabled]="currentPage === totalPages">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
     </div>
-    <div class="modal-body">
-      <pre *ngIf="selectedMetadata; else noMetadata">{{ selectedMetadata | json }}</pre>
-      <ng-template #noMetadata>
-        <p class="text-muted">No metadata available.</p>
-      </ng-template>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeModal()">Close</button>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-backdrop" *ngIf="showModal" (click)="closeModal()"></div>
+  <div class="custom-modal" *ngIf="showModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Notification Metadata</h5>
+        <button type="button" class="btn-close" (click)="closeModal()"></button>
+      </div>
+      <div class="modal-body">
+        <pre *ngIf="selectedMetadata; else noMetadata">{{ selectedMetadata | json }}</pre>
+        <ng-template #noMetadata>
+          <p class="text-muted">No metadata available.</p>
+        </ng-template>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeModal()">Close</button>
+      </div>
     </div>
   </div>
 </div>
