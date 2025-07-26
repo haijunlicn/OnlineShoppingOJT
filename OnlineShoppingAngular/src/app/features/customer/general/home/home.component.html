@@ -8,11 +8,11 @@
   </div>
 
   <!-- Discount Hero Carousel -->
-  <app-discount-hero-carousel
+  <!-- <app-discount-hero-carousel
     *ngIf="!isLoadingDiscounts && discounts.length > 0"
     [discounts]="discounts"
     (viewDetails)="onDiscountViewDetails($event)">
-  </app-discount-hero-carousel>
+  </app-discount-hero-carousel> -->
 
     <!-- Replace Hero Section only if discounts exist -->
     <app-discount-hero-carousel *ngIf="!isLoadingDiscounts && discounts.length > 0" [discounts]="discounts"

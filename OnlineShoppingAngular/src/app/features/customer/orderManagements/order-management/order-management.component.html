@@ -89,9 +89,23 @@
               class="form-input">
               <option *ngFor="let method of deliveryMethods" [ngValue]="method">
                 <i [ngClass]="getDeliveryIconClass(method.name)"></i>
-                {{ method.name }} (Base: {{ method.baseFee | number }} MMK, +{{ method.feePerKm | number }} MMK/km)
+                {{ method.name }} 
+                (Base: {{ method.baseFee | number }} MMK, 
+                In City: +{{ method.feePerKm | number }} MMK/km, 
+                Out City: +{{ method.feePerKmOutCity || method.feePerKm | number }} MMK/km)
               </option>
             </select>
+            
+            <!-- Show which rate is being applied -->
+            <div *ngIf="selectedDeliveryMethod && selectedAddress && storeLocation" class="fee-info">
+              <small class="text-muted">
+                <i class="fas fa-info-circle"></i>
+                {{ isSameCity(selectedAddress, storeLocation) ? 'Same city delivery' : 'Out of city delivery' }}: 
+                {{ isSameCity(selectedAddress, storeLocation) ? 
+                   (selectedDeliveryMethod.feePerKm | number) : 
+                   (selectedDeliveryMethod.feePerKmOutCity || selectedDeliveryMethod.feePerKm | number) }} MMK/km
+              </small>
+            </div>
           </div>
 
         </div>
@@ -221,6 +235,15 @@
               <div class="detail-row">
                 <i class="fas fa-route"></i>
                 <span>Distance: {{ getDistanceFromStore(selectedAddress) }} km from store</span>
+              </div>
+              <div class="detail-row" *ngIf="selectedDeliveryMethod && storeLocation">
+                <i class="fas fa-tag"></i>
+                <span>
+                  Rate: {{ isSameCity(selectedAddress, storeLocation) ? 'Same city' : 'Out of city' }} 
+                  ({{ isSameCity(selectedAddress, storeLocation) ? 
+                     (selectedDeliveryMethod.feePerKm | number) : 
+                     (selectedDeliveryMethod.feePerKmOutCity || selectedDeliveryMethod.feePerKm | number) }} MMK/km)
+                </span>
               </div>
               <div class="detail-row">
                 <i class="fas fa-clock"></i>

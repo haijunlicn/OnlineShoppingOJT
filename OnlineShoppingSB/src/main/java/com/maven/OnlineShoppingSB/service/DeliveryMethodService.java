@@ -54,6 +54,7 @@ public class DeliveryMethodService {
         entity.setMaxDistance(dto.getMaxDistance());
         entity.setBaseFee(dto.getBaseFee());
         entity.setFeePerKm(dto.getFeePerKm());
+        entity.setFeePerKmOutCity(dto.getFeePerKmOutCity());
         entity.setIcon(dto.getIcon());
         entity.setType(dto.getType());
         DeliveryMethodEntity saved = deliveryMethodRepository.save(entity);

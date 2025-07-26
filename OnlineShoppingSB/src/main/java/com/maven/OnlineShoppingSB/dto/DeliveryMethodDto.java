@@ -12,6 +12,7 @@ public class DeliveryMethodDto {
     private Double maxDistance;
     private Integer baseFee;
     private Integer feePerKm;
+    private Integer feePerKmOutCity;
     private String icon;
     private Integer type; // 1 = default, 0 or null = normal
 }

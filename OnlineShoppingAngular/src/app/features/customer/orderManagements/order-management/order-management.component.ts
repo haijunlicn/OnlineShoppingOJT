@@ -835,7 +835,14 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
     const distance = R * c
     const method = this.selectedDeliveryMethod
-    const shippingFee = method.baseFee + method.feePerKm * distance
+    
+    // Check if customer's city matches store's city
+    const isSameCity = this.isSameCity(address, this.storeLocation)
+    
+    // Use appropriate fee per km based on city match
+    const feePerKm = isSameCity ? method.feePerKm : (method.feePerKmOutCity || method.feePerKm)
+    
+    const shippingFee = method.baseFee + feePerKm * distance
     return Math.round(shippingFee / 100) * 100
   }
 
@@ -868,9 +875,19 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     if (this.selectedAddress && this.storeLocation && this.selectedDeliveryMethod) {
       const distance = this.getDistanceFromStore(this.selectedAddress)
       const method = this.selectedDeliveryMethod
-      const shippingFee = method.baseFee + method.feePerKm * distance
+      
+      // Check if customer's city matches store's city
+      const isSameCity = this.isSameCity(this.selectedAddress, this.storeLocation)
+      
+      // Use appropriate fee per km based on city match
+      const feePerKm = isSameCity ? method.feePerKm : (method.feePerKmOutCity || method.feePerKm)
+      
+      const shippingFee = method.baseFee + feePerKm * distance
       this.shippingFee = Math.round(shippingFee / 100) * 100
       this.totalAmount = this.discountedSubtotal + this.shippingFee
+      
+      console.log(`Shipping fee calculation: Base Fee (${method.baseFee}) + Fee Per Km (${feePerKm}) × Distance (${distance}) = ${this.shippingFee}`)
+      console.log(`City match: ${isSameCity ? 'Same city' : 'Different city'}`)
     } else {
       console.warn("Missing data to calculate shipping fee:", {
         selectedAddress: this.selectedAddress,
@@ -880,6 +897,19 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
       this.shippingFee = 0
       this.totalAmount = this.discountedSubtotal
     }
+  }
+
+  // Helper method to check if customer's city matches store's city
+  isSameCity(customerAddress: LocationDto, storeLocation: StoreLocationDto): boolean {
+    if (!customerAddress.city || !storeLocation.city) {
+      return false
+    }
+    
+    // Normalize city names for comparison (case-insensitive, trim whitespace)
+    const customerCity = customerAddress.city.toLowerCase().trim()
+    const storeCity = storeLocation.city.toLowerCase().trim()
+    
+    return customerCity === storeCity
   }
 
   trackByAddressId(index: number, address: LocationDto): number | undefined {
