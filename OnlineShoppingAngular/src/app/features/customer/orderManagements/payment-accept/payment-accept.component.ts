@@ -292,7 +292,7 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
     this.paymentAmount = this.totalAmount
     this.initializeOrderSummary(this.authService.getCurrentUser())
 
-    this.paymentMethodService.getAllPaymentMethods().subscribe({
+    this.paymentMethodService.getAllPublicPaymentMethods().subscribe({
       next: (methods: PaymentMethodDTO[]) => {
         this.qrPaymentMethods = (methods || []).filter((m) => Number(m.status) === 1 && m.type === "qr")
         this.creditCardMethods = (methods || []).filter((m) => Number(m.status) === 1 && m.type === "credit")

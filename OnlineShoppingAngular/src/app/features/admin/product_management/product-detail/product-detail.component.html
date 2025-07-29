@@ -38,13 +38,28 @@
             <button class="btn btn-primary btn-sm nav-btn" (click)="editProduct()" *ngIf="canEditProduct">
                 <i class="fas fa-edit me-1"></i>Edit Product
             </button>
-            <button class="btn btn-outline-danger btn-sm" (click)="softDeleteProduct()" *ngIf="canEditProduct">
-                <i class="fas fa-trash me-1"></i>Unpublish Product
+
+            <!-- Publish/Unpublish Button -->
+            <button class="btn btn-success btn-sm nav-btn" (click)="publishProduct()"
+                *ngIf="canEditProduct && !isProductPublished()">
+                <i class="fas fa-eye me-1"></i>Publish Product
+            </button>
+            <button class="btn btn-outline-danger btn-sm nav-btn" (click)="unpublishProduct()"
+                *ngIf="canEditProduct && isProductPublished()">
+                <i class="fas fa-eye-slash me-1"></i>Unpublish Product
             </button>
         </div>
     </div>
 
     <div class="container-fluid px-0">
+        <!-- Product Status Alert -->
+        <div class="alert mb-4" [ngClass]="getProductStatusClass()">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Product Status: {{ getProductStatus() }}</strong>
+            </div>
+        </div>
+
         <!-- Main Product Card -->
         <div class="card mb-4">
             <div class="card-body">
@@ -79,13 +94,17 @@
 
                             <!-- Product Tags -->
                             <div class="product-tags">
-                                <span class="product-tag">
+                                <span class="product-tag" [ngClass]="product.brand?.delFg === 0 ? 'tag-inactive' : ''">
                                     <i class="fas fa-tag"></i>
                                     {{ product.brand?.name || 'No Brand' }}
+                                    <span *ngIf="product.brand?.delFg === 0" class="ms-1 text-danger">(Inactive)</span>
                                 </span>
-                                <span class="product-tag">
+                                <span class="product-tag"
+                                    [ngClass]="product.category.delFg === 0 ? 'tag-inactive' : ''">
                                     <i class="fas fa-th-large"></i>
                                     {{ product.category.name }}
+                                    <span *ngIf="product.category.delFg === 0"
+                                        class="ms-1 text-danger">(Inactive)</span>
                                 </span>
                                 <button class="product-tag audit-log-btn"
                                     (click)="openAuditModal('Product', product.product.id!)">
@@ -159,7 +178,8 @@
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" [class.active]="activeTab === 'variants'"
                             (click)="setActiveTab('variants')" type="button">
-                            <i class="fas fa-list me-2"></i>Variants ({{ product.variants.length }})
+                            <i class="fas fa-list me-2"></i>Variants ({{ getActiveVariants().length }} Active, {{
+                            getInactiveVariants().length }} Inactive)
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
@@ -174,101 +194,215 @@
             <div class="card-body p-0">
                 <!-- Variants Tab -->
                 <div class="tab-content" *ngIf="activeTab === 'variants'">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th class="fw-bold">SKU</th>
-                                    <th class="fw-bold">Configuration</th>
-                                    <th class="fw-bold">Price</th>
-                                    <th class="fw-bold">Stock</th>
-                                    <th class="fw-bold">Status</th>
-                                    <th class="fw-bold">Image</th>
-                                    <th class="fw-bold">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr *ngFor="let variant of product.variants; trackBy: trackByVariantId">
-                                    <td>
-                                        <code class="sku-code">{{ variant.sku }}</code>
-                                    </td>
-                                    <td>
-                                        <div *ngIf="variant.options && variant.options.length > 0"
-                                            class="variant-options">
-                                            <span class="variant-option-badge" *ngFor="let option of variant.options">
-                                                {{ getOptionName(option.optionId) }}: {{ getOptionValue(option.optionId,
-                                                option.optionValueId) }}
+                    <!-- Active Variants Section -->
+                    <div *ngIf="getActiveVariants().length > 0">
+                        <div class="section-header">
+                            <h5 class="section-title mb-0">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Active Variants ({{ getActiveVariants().length }})
+                            </h5>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="fw-bold">SKU</th>
+                                        <th class="fw-bold">Configuration</th>
+                                        <th class="fw-bold">Price</th>
+                                        <th class="fw-bold">Stock</th>
+                                        <th class="fw-bold">Status</th>
+                                        <th class="fw-bold">Image</th>
+                                        <th class="fw-bold">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let variant of getActiveVariants(); trackBy: trackByVariantId">
+                                        <td>
+                                            <code class="sku-code">{{ variant.sku }}</code>
+                                        </td>
+                                        <td>
+                                            <div *ngIf="variant.options && variant.options.length > 0"
+                                                class="variant-options">
+                                                <span class="variant-option-badge"
+                                                    *ngFor="let option of variant.options">
+                                                    {{ getOptionName(option.optionId) }}: {{
+                                                    getOptionValue(option.optionId,
+                                                    option.optionValueId) }}
+                                                </span>
+                                            </div>
+                                            <span class="text-muted small"
+                                                *ngIf="!variant.options || variant.options.length === 0">
+                                                Default variant
                                             </span>
-                                        </div>
-                                        <span class="text-muted small"
-                                            *ngIf="!variant.options || variant.options.length === 0">
-                                            Default variant
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="price-info">
-                                            <div class="fw-bold">{{ variant.price | currency:'MMK ':'code':'1.0-0' }}
+                                        </td>
+                                        <td>
+                                            <div class="price-info">
+                                                <div class="fw-bold">{{ variant.price | currency:'MMK ':'code':'1.0-0'
+                                                    }}
+                                                </div>
+                                                <small class="price-diff"
+                                                    *ngIf="variant.price !== product.product.basePrice"
+                                                    [class]="variant.price > product.product.basePrice ? 'text-success' : 'text-danger'">
+                                                    {{ variant.price > product.product.basePrice ? '+' : '' }}{{
+                                                    (variant.price
+                                                    - product.product.basePrice) | currency:'MMK':'code':'1.0-0' }}
+                                                </small>
                                             </div>
-                                            <small class="price-diff"
-                                                *ngIf="variant.price !== product.product.basePrice"
-                                                [class]="variant.price > product.product.basePrice ? 'text-success' : 'text-danger'">
-                                                {{ variant.price > product.product.basePrice ? '+' : '' }}{{
-                                                (variant.price
-                                                - product.product.basePrice) | currency:'MMK':'code':'1.0-0' }}
-                                            </small>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="stock-number">{{ variant.stock }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="status-badge" [ngClass]="getVariantStockClass(variant.stock)">
-                                            <i [class]="getVariantStockIcon(variant.stock)"></i>
-                                            {{ getVariantStockStatus(variant.stock) }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="variant-image">
-                                            <img *ngIf="variant.imgPath" [src]="variant.imgPath" alt="Variant Image"
-                                                class="variant-img">
-                                            <div *ngIf="!variant.imgPath" class="variant-img-placeholder">
-                                                <i class="fas fa-image"></i>
+                                        </td>
+                                        <td>
+                                            <span class="stock-number">{{ variant.stock }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge" [ngClass]="getVariantStockClass(variant.stock)">
+                                                <i [class]="getVariantStockIcon(variant.stock)"></i>
+                                                {{ getVariantStockStatus(variant.stock) }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="variant-image">
+                                                <img *ngIf="variant.imgPath" [src]="variant.imgPath" alt="Variant Image"
+                                                    class="variant-img">
+                                                <div *ngIf="!variant.imgPath" class="variant-img-placeholder">
+                                                    <i class="fas fa-image"></i>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="table-action-buttons">
-                                            <div class="btn-group">
-                                                <button
-                                                    class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split"
-                                                    data-bs-toggle="dropdown" aria-expanded="false"
-                                                    title="More Actions">
-                                                    <span class="visually-hidden">More Actions</span>
+                                        </td>
+                                        <td>
+                                            <div class="table-action-buttons">
+                                                <div class="btn-group">
+                                                    <button
+                                                        class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split"
+                                                        data-bs-toggle="dropdown" aria-expanded="false"
+                                                        title="More Actions">
+                                                        <span class="visually-hidden">More Actions</span>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end">
+                                                        <li>
+                                                            <a class="dropdown-item"
+                                                                (click)="openAuditModal('ProductVariant', variant.id!)">
+                                                                <i class="fas fa-history"></i>View Audit Log
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <hr class="dropdown-divider">
+                                                        </li>
+                                                        <li>
+                                                            <a class="dropdown-item text-danger"
+                                                                (click)="deactivateVariant(variant.id!)"
+                                                                *ngIf="canEditProduct">
+                                                                <i class="fas fa-eye-slash"></i>Deactivate Variant
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Inactive Variants Section -->
+                    <div *ngIf="getInactiveVariants().length > 0" class="mt-4">
+                        <div class="section-header inactive-section">
+                            <h5 class="section-title mb-0">
+                                <i class="fas fa-times-circle text-danger me-2"></i>
+                                Inactive Variants ({{ getInactiveVariants().length }})
+                            </h5>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 inactive-table">
+                                <thead>
+                                    <tr>
+                                        <th class="fw-bold">SKU</th>
+                                        <th class="fw-bold">Configuration</th>
+                                        <th class="fw-bold">Price</th>
+                                        <th class="fw-bold">Stock</th>
+                                        <th class="fw-bold">Status</th>
+                                        <th class="fw-bold">Image</th>
+                                        <th class="fw-bold">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let variant of getInactiveVariants(); trackBy: trackByVariantId"
+                                        class="inactive-row">
+                                        <td>
+                                            <code class="sku-code inactive">{{ variant.sku }}</code>
+                                        </td>
+                                        <td>
+                                            <div *ngIf="variant.options && variant.options.length > 0"
+                                                class="variant-options">
+                                                <span class="variant-option-badge inactive"
+                                                    *ngFor="let option of variant.options">
+                                                    {{ getOptionName(option.optionId) }}: {{
+                                                    getOptionValue(option.optionId,
+                                                    option.optionValueId) }}
+                                                </span>
+                                            </div>
+                                            <span class="text-muted small"
+                                                *ngIf="!variant.options || variant.options.length === 0">
+                                                Default variant
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="price-info">
+                                                <div class="fw-bold text-muted">{{ variant.price | currency:'MMK'
+                                                    : 'code':'1.0-0' }}
+                                                </div>
+                                                <small class="price-diff text-muted"
+                                                    *ngIf="variant.price !== product.product.basePrice">
+                                                    {{ variant.price > product.product.basePrice ? '+' : '' }}{{
+                                                    (variant.price
+                                                    - product.product.basePrice) | currency:'MMK':'code':'1.0-0' }}
+                                                </small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="stock-number text-muted">{{ variant.stock }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge status-inactive">
+                                                <i class="fas fa-times-circle"></i>
+                                                Inactive
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="variant-image">
+                                                <img *ngIf="variant.imgPath" [src]="variant.imgPath" alt="Variant Image"
+                                                    class="variant-img inactive">
+                                                <div *ngIf="!variant.imgPath" class="variant-img-placeholder inactive">
+                                                    <i class="fas fa-image"></i>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="table-action-buttons d-flex align-items-center">
+                                                <button class="btn btn-success btn-sm"
+                                                    (click)="activateVariant(variant.id!)" *ngIf="canEditProduct">
+                                                    <i class="fas fa-eye me-1"></i>Activate
                                                 </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li>
-                                                        <a class="dropdown-item"
-                                                            (click)="openAuditModal('ProductVariant', variant.id!)">
-                                                            <i class="fas fa-history"></i>View Audit Log
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <hr class="dropdown-divider">
-                                                    </li>
-                                                    <li>
-                                                        <a class="dropdown-item text-danger"
-                                                            (click)="softDeleteVariant(variant.id!)"
-                                                            *ngIf="canEditProduct">
-                                                            <i class="fas fa-trash"></i>Delete Variant
-                                                        </a>
-                                                    </li>
-                                                </ul>
+
+                                                <!-- Audit log icon button -->
+                                                <button class="btn btn-outline-secondary btn-sm ms-1"
+                                                    (click)="openAuditModal('ProductVariant', variant.id!)"
+                                                    title="View Audit Log">
+                                                    <i class="fas fa-history"></i>
+                                                </button>
                                             </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- No Variants Message -->
+                    <div *ngIf="getActiveVariants().length === 0 && getInactiveVariants().length === 0"
+                        class="empty-state">
+                        <i class="fas fa-box-open"></i>
+                        <h5>No Variants Found</h5>
+                        <p>This product doesn't have any variants configured.</p>
                     </div>
                 </div>
 

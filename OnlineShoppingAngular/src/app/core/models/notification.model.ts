@@ -52,9 +52,10 @@ export interface CreateNotificationPayload {
   scheduledAt?: string | null;
 }
 export interface NotificationType {
-  id?: number;
+  id: number;
   name: string;
   titleTemplate: string;
+  messageTemplate?: string;
   adminOnly: boolean;
 }
 export interface Notification {

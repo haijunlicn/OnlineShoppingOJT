@@ -2,7 +2,7 @@
 
 <main class="main-content">
   <!-- Loading State -->
-  <div class="hero-loading" *ngIf="isLoadingDiscounts">
+  <div class="hero-loading" *ngIf="isLoadingDiscounts" >
     <div class="loading-spinner"></div>
     <p>Loading offers...</p>
   </div>
@@ -15,7 +15,7 @@
   </app-discount-hero-carousel> -->
 
     <!-- Replace Hero Section only if discounts exist -->
-    <app-discount-hero-carousel *ngIf="!isLoadingDiscounts && discounts.length > 0" [discounts]="discounts"
+    <app-discount-hero-carousel *ngIf="!isLoadingDiscounts && discounts.length > 0" [discounts]="discounts" 
       (viewDetails)="onDiscountViewDetails($event)" (shopNow)="onShopNow()">
     </app-discount-hero-carousel>
 
@@ -79,3 +79,7 @@
     </div>
   </section>
 </main>
+
+
+
+

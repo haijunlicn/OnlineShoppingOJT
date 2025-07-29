@@ -7,9 +7,12 @@ import { AccessControlService } from "@app/core/services/AccessControl.service"
 import { BrandService } from "@app/core/services/brand.service"
 import { CategoryService } from "@app/core/services/category.service"
 import { ProductService } from "@app/core/services/product.service"
+import { OrderService } from "@app/core/services/order.service"
 import { Table } from "primeng/table"
 import { PdfExportService } from '@app/core/services/pdf-export.service';
 import { ExcelExportService } from '@app/core/services/excel-export.service';
+import { OrderDetail } from "@app/core/models/order.dto"
+
 
 interface ExtendedProductListItemDTO extends ProductListItemDTO {
   status: string
@@ -31,6 +34,9 @@ export class ProductListComponent implements OnInit {
   paginatedProducts: ExtendedProductListItemDTO[] = []
   categories: CategoryDTO[] = []
   brands: BrandDTO[] = []
+  orders: OrderDetail[] = [] // Add orders array
+  productOrderCounts: Map<number, number> = new Map() // Product ID -> Order Count
+  variantOrderCounts: Map<number, number> = new Map() // Variant ID -> Order Count
 
   // Pagination properties (line 20 အရင်မှာ ထည့်ပါ)
   currentPage = 1
@@ -77,6 +83,7 @@ export class ProductListComponent implements OnInit {
     private productService: ProductService,
     private categoryService: CategoryService,
     private brandService: BrandService,
+    private orderService: OrderService,
     private accessControl: AccessControlService,
     private pdfExportService: PdfExportService,
     private excelExportService: ExcelExportService,
@@ -92,8 +99,9 @@ export class ProductListComponent implements OnInit {
     this.isLoading = true
     this.errorMessage = ""
 
-    Promise.all([this.loadProducts(), this.loadCategories(), this.loadBrands()])
+    Promise.all([this.loadProducts(), this.loadCategories(), this.loadBrands(), this.loadOrders()])
       .then(() => {
+        this.calculateOrderCounts() // Calculate order counts after loading all data
         this.applyFilters() // ဒါကို ထည့်ပါ
       })
       .catch((error) => {
@@ -105,7 +113,7 @@ export class ProductListComponent implements OnInit {
       })
   }
 
- 
+
   loadProducts(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.productService.getProductList().subscribe({
@@ -150,7 +158,7 @@ export class ProductListComponent implements OnInit {
     })
   }
 
-  
+
   loadBrands(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.brandService.getAllBrands().subscribe({
@@ -162,6 +170,41 @@ export class ProductListComponent implements OnInit {
           console.error("Error loading brands:", error)
           reject(error)
         },
+      })
+    })
+  }
+
+  loadOrders(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.orderService.getAllOrders().subscribe({
+        next: (orders: OrderDetail[]) => {
+          this.orders = orders
+          resolve()
+        },
+        error: (error) => {
+          console.error("Error loading orders:", error)
+          reject(error)
+        },
+      })
+    })
+  }
+
+  calculateOrderCounts(): void {
+    // Reset counts
+    this.productOrderCounts.clear()
+    this.variantOrderCounts.clear()
+
+    // Calculate product order counts
+    this.orders.forEach(order => {
+      order.items.forEach(item => {
+        const productId = item.product.id
+        const variantId = item.variant.id
+        
+        // Count product orders
+        this.productOrderCounts.set(productId, (this.productOrderCounts.get(productId) || 0) + 1)
+        
+        // Count variant orders
+        this.variantOrderCounts.set(variantId, (this.variantOrderCounts.get(variantId) || 0) + 1)
       })
     })
   }
@@ -323,14 +366,24 @@ export class ProductListComponent implements OnInit {
     }
 
     // Brand filter
-    if (this.filterParams.brand) {
+    if (this.filterParams.brand && this.filterParams.brand !== '') {
       filtered = filtered.filter((product) => product.brand?.id?.toString() === this.filterParams.brand)
     }
 
     // Category filter
-    if (this.filterParams.category) {
+    if (this.filterParams.category && this.filterParams.category !== '') {
       filtered = filtered.filter((product) => product.category?.id?.toString() === this.filterParams.category)
     }
+
+    // // Brand filter
+    // if (this.filterParams.brand) {
+    //   filtered = filtered.filter((product) => product.brand?.id?.toString() === this.filterParams.brand)
+    // }
+
+    // // Category filter
+    // if (this.filterParams.category) {
+    //   filtered = filtered.filter((product) => product.category?.id?.toString() === this.filterParams.category)
+    // }
 
     // Status filter
     if (this.filterParams.status) {
@@ -438,13 +491,13 @@ export class ProductListComponent implements OnInit {
     this.applyFilters()
   }
 
- 
+
   onPriceChange() {
     this.currentPage = 1
     this.applyFilters()
   }
 
-  
+
   toggleFilters() {
     this.showFilters = !this.showFilters
     if (!this.showFilters) {
@@ -452,9 +505,9 @@ export class ProductListComponent implements OnInit {
     }
   }
   exportSingleProductToPdf(product: any): void {
-  // PDF export logic goes here
-  console.log("Exporting to PDF:", product);
-}
+    // PDF export logic goes here
+    console.log("Exporting to PDF:", product);
+  }
 
   exportSingleProductToExcel(product: any): void {
     // Excel export logic goes here
@@ -482,7 +535,7 @@ export class ProductListComponent implements OnInit {
     return "ACTIVE"
   }
 
-  
+
   getTotalStock(product: ProductListItemDTO): number {
     return product.variants.reduce((total, variant) => total + variant.stock, 0)
   }
@@ -507,12 +560,12 @@ export class ProductListComponent implements OnInit {
     this.router.navigate(["/admin/product", productId])
   }
 
-  
+
   editProduct(productId: string): void {
     this.router.navigate(["/admin/product/edit", productId])
   }
 
- 
+
   deleteProduct(productId: string): void {
     const product = this.products.find((p) => p.id?.toString() === productId)
     if (product && confirm(`Are you sure you want to delete "${product.product.name}"?`)) {
@@ -531,7 +584,7 @@ export class ProductListComponent implements OnInit {
     return this.accessControl.hasAny("PRODUCT_CREATE", "SUPERADMIN_PERMISSION")
   }
 
- 
+
   get canBulkUploadProducts(): boolean {
     return this.accessControl.hasAny("PRODUCT_CREATE", "SUPERADMIN_PERMISSION")
   }
@@ -546,7 +599,7 @@ export class ProductListComponent implements OnInit {
     console.log("Export products")
   }
 
- 
+
   /**
    * Get filtered products count
    */
@@ -556,80 +609,184 @@ export class ProductListComponent implements OnInit {
 
   // 🔍 Helper method to get filtered data for export
   getExportData(): ProductListItemDTO[] {
-    // If filters are applied, use filteredValue; otherwise, use all products
-    return this.dt && this.dt.filteredValue ? this.dt.filteredValue : this.products;
+    // Check if any filters are applied
+    const hasFilters = this.filterParams.search.trim() || 
+                      this.filterParams.brand || 
+                      this.filterParams.category || 
+                      this.filterParams.status ||
+                      this.filterParams.priceMin !== null ||
+                      this.filterParams.priceMax !== null;
+    
+    // If filters are applied, use filteredProducts; otherwise, use all products
+    if (hasFilters) {
+      return this.filteredProducts;
+    } else {
+      return this.products;
+    }
   }
 
-  // 🎨 Professional Table PDF Export (Client-side) - Filtered Data
-  async exportProfessionalPdf() {
+  // 🔍 Computed property for export data count (for template use)
+  get exportDataCount(): number {
+    return this.getExportData().length;
+  }
+
+  // 🔍 Computed property to check if data is filtered
+  get isDataFiltered(): boolean {
+    return this.getExportData().length !== this.products.length;
+  }
+
+  // 🔍 Helper method to get complete data with all required fields
+  getCompleteExportData(): any[] {
+    const exportData = this.getExportData();
+    
+    return exportData.map(product => ({
+      id: product.id,
+      product: {
+        id: product.product.id || product.id,
+        name: product.product.name,
+        basePrice: product.product.basePrice || 0,
+        createdDate: product.product.createdDate || '',
+        productImages: product.product.productImages || [],
+        discountPrice: product.product.discountPrice,
+        originalPrice: product.product.originalPrice,
+        orderCount: this.productOrderCounts.get(product.product.id || product.id || 0) || 0
+      },
+      brand: {
+        id: product.brand?.id || '',
+        name: product.brand?.name || 'N/A'
+      },
+      category: {
+        id: product.category?.id || '',
+        name: product.category?.name || 'N/A'
+      },
+      variants: (product.variants || []).map(variant => ({
+        id: variant.id,
+        sku: variant.sku || 'N/A',
+        price: variant.price || 0,
+        stock: variant.stock || 0,
+        imgPath: variant.imgPath || 'N/A',
+        orderCount: this.variantOrderCounts.get(variant.id || 0) || 0,
+        options: (variant.options || []).map(option => ({
+          optionId: option.optionId,
+          optionValueId: option.optionValueId,
+          optionName: option.optionName || 'N/A',
+          valueName: option.valueName || 'N/A'
+        })),
+        priceHistory: variant.priceHistory || []
+      })),
+      options: product.options || [],
+      status: this.getStockStatus(product)
+    }));
+  }
+
+  // 🎨 Product Catalog Report PDF Export (Dark Theme Design)
+  async exportProductCatalogPdf() {
     this.isExportingLayoutPdf = true;
     try {
-      const columns = [
-        { header: 'Product Name', field: 'product.name', width: 60 },
-        { header: 'Brand', field: 'brand.name', width: 40 },
-        { header: 'Category', field: 'category.name', width: 40 },
-        { header: 'Price (MMK)', field: 'product.basePrice', width: 35 },
-        { header: 'Stock Status', field: 'status', width: 30 },
-        { header: 'Created Date', field: 'product.createdDate', width: 45 }
-      ];
+      const exportData = this.getCompleteExportData();
+      const isFiltered = exportData.length !== this.products.length;
+      const filename = isFiltered 
+        ? `ProductCatalog_Filtered_${exportData.length}_Products.pdf` 
+        : 'ProductCatalog_All_Products.pdf';
 
-      const exportData = this.getExportData();
-      const filename = exportData.length === this.products.length 
-        ? 'ProductList_All_Products.pdf' 
-        : `ProductList_Filtered_${exportData.length}_Products.pdf`;
+      // Get current filters
+      const filters: any = {};
+      if (this.filterParams.brand) {
+        const brand = this.brands.find(b => b.id?.toString() === this.filterParams.brand);
+        if (brand) filters['Brand'] = brand.name;
+      }
+      if (this.filterParams.category) {
+        const category = this.categories.find(c => c.id?.toString() === this.filterParams.category);
+        if (category) filters['Category'] = category.name;
+      }
+      if (this.filterParams.status) {
+        filters['Status'] = this.filterParams.status;
+      }
+      if (this.filterParams.search.trim()) {
+        filters['Search'] = this.filterParams.search;
+      }
+      if (this.filterParams.priceMin !== null) {
+        filters['Min Price'] = `${this.filterParams.priceMin} MMK`;
+      }
+      if (this.filterParams.priceMax !== null) {
+        filters['Max Price'] = `${this.filterParams.priceMax} MMK`;
+      }
 
-      this.pdfExportService.exportTableToPdf(
-        exportData, // Use filtered data instead of all products
-        columns,
+      await this.pdfExportService.exportProductCatalogReport(
+        exportData,
         filename,
-        'Product List Report',
-        'product' // Pass type as 'product' for correct footer
+        {
+          includeVariants: true,
+          includeImages: false,
+          filters: filters,
+          generatedBy: 'Admin User'
+        }
       );
     } catch (error: any) {
-      console.error('Error exporting professional PDF:', error);
-      alert('Error exporting professional PDF. Please try again.');
+      console.error('Error exporting product catalog PDF:', error);
+      alert('Error exporting product catalog PDF. Please try again.');
     } finally {
       this.isExportingLayoutPdf = false;
     }
   }
 
-  // 🅱️ Excel Export - Filtered Data
-  async exportToExcel() {
+
+  // 🅱️ Product Catalog Report Excel Export (Dark Theme Design)
+  async exportProductCatalogExcel() {
     this.isExportingExcel = true;
     try {
-      const columns = [
-        { header: 'Product Name', field: 'product.name', width: 25 },
-        { header: 'Brand', field: 'brand.name', width: 15 },
-        { header: 'Category', field: 'category.name', width: 15 },
-        { header: 'Price (MMK)', field: 'product.basePrice', width: 15 },
-        { header: 'Stock Status', field: 'status', width: 15 },
-        { header: 'Created Date', field: 'product.createdDate', width: 20 }
-      ];
+      const exportData = this.getCompleteExportData();
+      const isFiltered = exportData.length !== this.products.length;
+      const filename = isFiltered 
+        ? `ProductCatalog_Filtered_${exportData.length}_Products.xlsx` 
+        : 'ProductCatalog_All_Products.xlsx';
 
-      const exportData = this.getExportData();
-      const filename = exportData.length === this.products.length 
-        ? 'ProductList_All_Products.xlsx' 
-        : `ProductList_Filtered_${exportData.length}_Products.xlsx`;
+      // Get current filters
+      const filters: any = {};
+      if (this.filterParams.brand) {
+        const brand = this.brands.find(b => b.id?.toString() === this.filterParams.brand);
+        if (brand) filters['Brand'] = brand.name;
+      }
+      if (this.filterParams.category) {
+        const category = this.categories.find(c => c.id?.toString() === this.filterParams.category);
+        if (category) filters['Category'] = category.name;
+      }
+      if (this.filterParams.status) {
+        filters['Status'] = this.filterParams.status;
+      }
+      if (this.filterParams.search.trim()) {
+        filters['Search'] = this.filterParams.search;
+      }
+      if (this.filterParams.priceMin !== null) {
+        filters['Min Price'] = `${this.filterParams.priceMin} MMK`;
+      }
+      if (this.filterParams.priceMax !== null) {
+        filters['Max Price'] = `${this.filterParams.priceMax} MMK`;
+      }
 
-      await this.excelExportService.exportToExcel(
-        exportData, // Use filtered data instead of all products
-        columns,
+      await this.excelExportService.exportProductCatalogReport(
+        exportData,
         filename,
-        'Products'
+        {
+          includeVariants: true,
+          includeImages: false,
+          filters: filters,
+          generatedBy: 'Admin User'
+        }
       );
     } catch (error: any) {
-      console.error('Error exporting to Excel:', error);
-      alert('Error exporting to Excel. Please try again.');
+      console.error('Error exporting product catalog Excel:', error);
+      alert('Error exporting product catalog Excel. Please try again.');
     } finally {
       this.isExportingExcel = false;
     }
   }
-
-  exportTableToPdf() {
-    this.exportProfessionalPdf();
+  // New methods for catalog reports
+  exportCatalogToPdf() {
+    this.exportProductCatalogPdf();
   }
 
-  async exportTableToExcel() {
-    await this.exportToExcel();
+  async exportCatalogToExcel() {
+    await this.exportProductCatalogExcel();
   }
 }

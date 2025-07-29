@@ -20,6 +20,7 @@ export interface ProductVariantDTO {
   isActive?: boolean
   createdBy?: User
   createdDate?: string
+  delFg?: number;
 }
 
 // Product Option
@@ -45,7 +46,7 @@ export interface ProductDTO {
   originalPrice?: number;
   productVariants?: { stock: number }[];
   createdBy?: User;
-  delFg?: boolean;
+  delFg?: number;
 }
 
 // Brand DTO

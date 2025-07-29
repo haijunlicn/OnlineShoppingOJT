@@ -59,6 +59,9 @@ export class DiscountListComponent {
   mechanismProductSelectionProducts: ProductDTO[] = [];
   // Store basic info from the form when moving to mechanisms tab
   discountBasicInfo: any = {};
+  sortDirection: { [key: string]: 'asc' | 'desc' } = {};
+  showEditDiscount = false;
+  editDiscountData: DiscountEA_A | null = null;
 
   constructor(
     private discountService: DiscountService,
@@ -205,92 +208,15 @@ export class DiscountListComponent {
 
   // Open edit popup and bind data
   editDiscount(discount: DiscountEA_A): void {
-    console.log('Selected discount for edit:', discount);
-    console.log('Original discountMechanisms:', discount.discountMechanisms);
-    this.editingDiscountId = discount.id;
-    this.offerMechanism = discount.discountMechanisms && discount.discountMechanisms.length > 0 ? discount.discountMechanisms[0] : null;
-    this.selectedProducts = this.offerMechanism && this.offerMechanism.discountProducts
-      ? this.offerMechanism.discountProducts.map((p: any) => p.productId).filter((id: number | undefined): id is number => id !== undefined)
-      : [];
-    if (this.allProducts.length === 0) {
-      this.discountService.getAllProducts().subscribe(products => {
-        this.allProducts = products;
-        this.selectedProductDTOs = this.allProducts.filter(p => this.selectedProducts.includes(p.id!));
-        this.setEditFormValues(discount);
-        // Bind selectedProductNames for each mechanism
-        this.mechanisms = discount.discountMechanisms ? discount.discountMechanisms.map((mech: any) => {
-          let selectedProductNames: string[] = [];
-          if (mech.mechanismType === 'freeGift' && mech.freeGifts) {
-            selectedProductNames = mech.freeGifts
-              .map((gift: any) => {
-                const prod = this.allProducts.find(p => p.id === gift.productId);
-                return prod ? prod.name : null;
-              })
-              .filter((name: string | null) => !!name);
-          } else if ((mech.mechanismType === 'Discount' || mech.mechanismType === 'Coupon' || mech.mechanismType === 'B2B') && mech.discountProducts) {
-            selectedProductNames = mech.discountProducts
-              .map((dp: any) => {
-                const prod = this.allProducts.find(p => p.id === dp.productId);
-                return prod ? prod.name : null;
-              })
-              .filter((name: string | null) => !!name);
-          }
-          // Normalize discountConditionGroup[].discountCondition to always be array
-          const normalizedGroups = (mech.discountConditionGroup || []).map((group: any) => ({
-            ...group,
-            discountCondition: Array.isArray(group.discountCondition)
-              ? group.discountCondition
-              : group.discountCondition ? [group.discountCondition] : []
-          }));
-          return {
-            ...mech,
-            selectedProductNames,
-            discountConditionGroup: normalizedGroups
-          };
-        }) : [];
-        console.log('Mechanisms after mapping (products loaded):', this.mechanisms);
-        this.activeTab = 'info';
-        this.accordionOpenIndex = null;
-        this.showEditPopup = true;
-      });
-    } else {
-      this.selectedProductDTOs = this.allProducts.filter(p => this.selectedProducts.includes(p.id!));
-      this.setEditFormValues(discount);
-      // Bind selectedProductNames for each mechanism
-      this.mechanisms = discount.discountMechanisms ? discount.discountMechanisms.map((mech: any) => {
-        let selectedProductNames: string[] = [];
-        if (mech.mechanismType === 'freeGift' && mech.freeGifts) {
-          selectedProductNames = mech.freeGifts
-            .map((gift: any) => {
-              const prod = this.allProducts.find(p => p.id === gift.productId);
-              return prod ? prod.name : null;
-            })
-            .filter((name: string | null) => !!name);
-        } else if ((mech.mechanismType === 'Discount' || mech.mechanismType === 'Coupon' || mech.mechanismType === 'B2B') && mech.discountProducts) {
-          selectedProductNames = mech.discountProducts
-            .map((dp: any) => {
-              const prod = this.allProducts.find(p => p.id === dp.productId);
-              return prod ? prod.name : null;
-            })
-            .filter((name: string | null) => !!name);
-        }
-        // Normalize discountConditionGroup[].discountCondition to always be array
-        const normalizedGroups = (mech.discountConditionGroup || []).map((group: any) => ({
-          ...group,
-          discountCondition: Array.isArray(group.discountCondition)
-            ? group.discountCondition
-            : group.discountCondition ? [group.discountCondition] : []
-        }));
-        return {
-          ...mech,
-          selectedProductNames,
-          discountConditionGroup: normalizedGroups
-        };
-      }) : [];
-      console.log('Mechanisms after mapping (products cached):', this.mechanisms);
-      this.activeTab = 'info';
-      this.accordionOpenIndex = null;
-      this.showEditPopup = true;
+    this.editDiscountData = discount;
+    this.showEditDiscount = true;
+  }
+
+  onEditDiscountClose(updated?: boolean) {
+    this.showEditDiscount = false;
+    this.editDiscountData = null;
+    if (updated) {
+      this.loadDiscounts(); // reload list if updated
     }
   }
 
@@ -438,33 +364,8 @@ export class DiscountListComponent {
     }
     this.activeTab = tab;
   }
-
   // Save logic
-  saveEditDiscount(): void {
-    if (!this.editingDiscountId) return;
-    // Combine basic info and mechanisms array
-    console.log('Mechanisms to be saved:', this.mechanisms);
-    const payload: any = {
-      ...this.discountBasicInfo,
-      id: this.editingDiscountId,
-      startDate: new Date(this.discountBasicInfo.startDate).toISOString(),
-      endDate: new Date(this.discountBasicInfo.endDate).toISOString(),
-      discountMechanisms: this.mechanisms // Send all mechanisms with latest edits
-    };
-    this.discountService.updateDiscount(this.editingDiscountId, payload).subscribe({
-      next: (updated: DiscountEA_A) => {
-        const idx = this.discounts.findIndex(d => d.id === updated.id);
-        if (idx > -1) this.discounts[idx] = updated;
-        this.applyFilters();
-        this.calculateStats();
-        this.closeEditPopup();
-      },
-      error: (err: any) => {
-        alert('Failed to update discount!');
-      }
-    });
-  }
-
+ 
   viewDiscountDetails(discount: DiscountEA_A): void {
     this.router.navigate(["/admin/discount-details", discount.id])
   }
@@ -647,5 +548,51 @@ export class DiscountListComponent {
   }
   decrementQuantity(mech: any): void {
     mech.quantity = Math.max(1, (mech.quantity || 1) - 1);
+  }
+
+  // --- Added for template compatibility ---
+  trackByDiscountId(index: number, discount: DiscountEA_A): number {
+    return discount.id;
+  }
+
+  getUsagePercentage(discount: DiscountEA_A): number {
+    if (!discount.usageLimit || discount.usageLimit === 0) return 0;
+    const current = discount.currentRedemptionCount || 0;
+    return Math.min((current / discount.usageLimit) * 100, 100);
+  }
+
+  sortBy(column: string): void {
+    // Toggle sort direction
+    if (!this.sortDirection[column] || this.sortDirection[column] === 'desc') {
+      this.sortDirection[column] = 'asc';
+    } else {
+      this.sortDirection[column] = 'desc';
+    }
+    const direction = this.sortDirection[column];
+
+    this.filteredDiscounts.sort((a: any, b: any) => {
+      let aValue = a[column];
+      let bValue = b[column];
+
+      // For nested or custom fields, handle here
+      if (column === 'name') {
+        aValue = a.name?.toLowerCase() || '';
+        bValue = b.name?.toLowerCase() || '';
+      }
+      if (column === 'status') {
+        // Active > Inactive > Expired
+        const getStatusRank = (d: any) => this.isActive(d) ? 2 : this.isExpired(d) ? 0 : 1;
+        aValue = getStatusRank(a);
+        bValue = getStatusRank(b);
+      }
+      if (column === 'startDate') {
+        aValue = new Date(a.startDate).getTime();
+        bValue = new Date(b.startDate).getTime();
+      }
+
+      if (aValue < bValue) return direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return direction === 'asc' ? 1 : -1;
+      return 0;
+    });
   }
 }

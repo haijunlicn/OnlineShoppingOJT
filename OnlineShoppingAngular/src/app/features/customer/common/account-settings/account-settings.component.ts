@@ -212,4 +212,10 @@ export class AccountSettingsComponent implements OnInit {
     }
     return ""
   }
+
+  // Helper to get user initial for default avatar
+  getUserInitial(name?: string): string {
+    if (!name) return '';
+    return name.trim().charAt(0).toUpperCase();
+  }
 }

@@ -972,6 +972,18 @@ input[type="checkbox"]:disabled {
   background: var(--color-accent);
   color: var(--color-primary);
 }
+
+.export-dropdown .dropdown-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.export-dropdown .dropdown-item.disabled:hover,
+.export-dropdown .dropdown-item.disabled:focus {
+  background: transparent;
+  color: var(--color-brown);
+}
 .export-dropdown .bi-file-earmark-pdf {
   font-size: 1.2rem;
   color: #dc3545 !important;

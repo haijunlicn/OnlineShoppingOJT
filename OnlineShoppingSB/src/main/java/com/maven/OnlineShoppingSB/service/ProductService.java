@@ -451,27 +451,62 @@ public class ProductService {
         return savedImages; // return for logging
     }
 
+//    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+//    public List<ProductListItemDTO> getAllPublicProducts() {
+//        List<ProductEntity> products = productRepo.findByDelFgAndBrand_DelFgAndCategory_DelFgOrderByCreatedDateDesc(1, 1, 1);
+//        return products.stream()
+//                .map(this::mapToProductListItemDTO)
+//                .collect(Collectors.toList());
+//    }
+//
+//    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+//    public List<ProductListItemDTO> getAllProducts() {
+//        List<ProductEntity> products = productRepo.findAll(Sort.by(Sort.Direction.DESC, "createdDate"));
+//        return products.stream()
+//                .map(this::mapToProductListItemDTO)
+//                .collect(Collectors.toList());
+//    }
+//
+//    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+//    public ProductListItemDTO getProductById(Long id) {
+//        ProductEntity product = productRepo.findById(id)
+//                .orElseThrow(() -> new NoSuchElementException("Product not found with id: " + id));
+//        return mapToProductListItemDTO(product);
+//    }
+
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<ProductListItemDTO> getAllPublicProducts() {
-        List<ProductEntity> products = productRepo.findByDelFgAndBrand_DelFgAndCategory_DelFgOrderByCreatedDateDesc(1, 1, 1);
+        List<ProductEntity> products = productRepo
+                .findByDelFgAndBrand_DelFgAndCategory_DelFgOrderByCreatedDateDesc(1, 1, 1);
+
         return products.stream()
-                .map(this::mapToProductListItemDTO)
+                .map(product -> mapToProductListItemDTO(product, false)) // false = don't include deleted variants
                 .collect(Collectors.toList());
     }
 
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<ProductListItemDTO> getAllProducts() {
         List<ProductEntity> products = productRepo.findAll(Sort.by(Sort.Direction.DESC, "createdDate"));
+
         return products.stream()
-                .map(this::mapToProductListItemDTO)
+                .map(product -> mapToProductListItemDTO(product, true)) // true = include all variants, including deleted
                 .collect(Collectors.toList());
+    }
+
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public ProductListItemDTO getPublicProductById(Long id) {
+        ProductEntity product = productRepo.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Product not found with id: " + id));
+
+        return mapToProductListItemDTO(product, false); // assuming admin access
     }
 
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ProductListItemDTO getProductById(Long id) {
         ProductEntity product = productRepo.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Product not found with id: " + id));
-        return mapToProductListItemDTO(product);
+
+        return mapToProductListItemDTO(product, true); // assuming admin access
     }
 
     private void updateVariantPrice(ProductVariantEntity variant, BigDecimal newPrice, UserEntity createdBy) {
@@ -504,51 +539,10 @@ public class ProductService {
 //    private ProductListItemDTO mapToProductListItemDTO(ProductEntity product) {
 //        ProductDTO productDTO = mapper.map(product, ProductDTO.class);
 //        CategoryDTO categoryDTO = mapper.map(product.getCategory(), CategoryDTO.class);
-//        BrandDTO brandDTO = null;
-//        if (product.getBrand() != null) {
-//            brandDTO = mapper.map(product.getBrand(), BrandDTO.class);
-//        }
+//        BrandDTO brandDTO = product.getBrand() != null ? mapper.map(product.getBrand(), BrandDTO.class) : null;
 //
-//        // List<ProductVariantDTO> variants = variantRepo.findByProductId(product.getId()).stream()
-//        List<ProductVariantDTO> variants = variantRepo.findByProductIdAndDelFg(product.getId(), 1).stream()
-//                .map(variant -> {
-//                    ProductVariantDTO dto = new ProductVariantDTO();
-//                    dto.setId(variant.getId());
-//                    dto.setSku(variant.getSku());
-//                    dto.setImgPath(variant.getImgPath());
-//                    dto.setStock(variant.getStock());
-//                    dto.setCreatedBy(userDTO.fromEntity(variant.getCreatedBy()));
-//                    dto.setCreatedDate(variant.getCreatedDate());
-//
-//                    LocalDateTime now = LocalDateTime.now();
-//                    VariantPriceEntity currentPrice = variant.getPrices().stream()
-//                            .filter(price ->
-//                                    (price.getStartDate() == null || !price.getStartDate().isAfter(now)) &&
-//                                            (price.getEndDate() == null || !price.getEndDate().isBefore(now))
-//                            )
-//                            .findFirst()
-//                            .orElse(null);
-//
-//                    if (currentPrice != null) {
-//                        dto.setPrice(currentPrice.getPrice());
-//                    }
-//
-//                    dto.setOptions(variant.getVariantOptionValues().stream()
-//                            .map(vov -> {
-//                                OptionValueEntity val = vov.getOptionValue();
-//                                OptionEntity opt = val.getOption();
-//
-//                                VariantOptionDTO optDTO = new VariantOptionDTO();
-//                                optDTO.setOptionId(opt.getId());
-//                                optDTO.setOptionName(opt.getName());
-//                                optDTO.setOptionValueId(val.getId());
-//                                optDTO.setValueName(val.getValue());
-//
-//                                return optDTO;
-//                            }).collect(Collectors.toList()));
-//
-//                    return dto;
-//                }).collect(Collectors.toList());
+//        List<ProductVariantEntity> variantEntities = variantRepo.findByProductIdAndDelFg(product.getId(), 1);
+//        List<ProductVariantDTO> variants = mapToProductVariantDTOList(variantEntities);
 //
 //        List<ProductOptionDTO> options = productOptionRepo.findByProduct(product).stream()
 //                .map(po -> {
@@ -591,23 +585,28 @@ public class ProductService {
 //        item.setVariants(variants);
 //        item.setOptions(options);
 //        item.setImages(images);
+//
 //        return item;
 //    }
 
-    private ProductListItemDTO mapToProductListItemDTO(ProductEntity product) {
+    private ProductListItemDTO mapToProductListItemDTO(ProductEntity product, boolean forAdmin) {
         ProductDTO productDTO = mapper.map(product, ProductDTO.class);
         CategoryDTO categoryDTO = mapper.map(product.getCategory(), CategoryDTO.class);
         BrandDTO brandDTO = product.getBrand() != null ? mapper.map(product.getBrand(), BrandDTO.class) : null;
 
-        List<ProductVariantEntity> variantEntities = variantRepo.findByProductIdAndDelFg(product.getId(), 1);
-        List<ProductVariantDTO> variants = mapToProductVariantDTOList(variantEntities);
+        // Use filtered variants based on forAdmin
+        List<ProductVariantEntity> variantEntities = forAdmin
+                ? variantRepo.findByProductId(product.getId())
+                : variantRepo.findByProductIdAndDelFg(product.getId(), 1);
 
+        List<ProductVariantDTO> variants = mapToProductVariantDTOList(variantEntities, forAdmin);
+
+        // Option values should be collected from variantEntities (not all product variants)
         List<ProductOptionDTO> options = productOptionRepo.findByProduct(product).stream()
                 .map(po -> {
                     OptionEntity option = po.getOption();
 
-                    List<OptionValueEntity> usedOptionValues = product.getVariants().stream()
-                            .filter(variant -> variant.getDelFg() != null && variant.getDelFg() == 1)
+                    List<OptionValueEntity> usedOptionValues = variantEntities.stream()
                             .flatMap(variant -> variant.getVariantOptionValues().stream())
                             .map(VariantOptionValueEntity::getOptionValue)
                             .filter(val -> val.getOption().getId().equals(option.getId()))
@@ -647,10 +646,11 @@ public class ProductService {
         return item;
     }
 
-    private List<ProductVariantDTO> mapToProductVariantDTOList(List<ProductVariantEntity> variants) {
+    private List<ProductVariantDTO> mapToProductVariantDTOList(List<ProductVariantEntity> variants, boolean forAdmin) {
         LocalDateTime now = LocalDateTime.now();
 
         return variants.stream()
+                .filter(variant -> forAdmin || (variant.getDelFg() != null && variant.getDelFg() == 1))
                 .map(variant -> {
                     ProductVariantDTO dto = new ProductVariantDTO();
                     dto.setId(variant.getId());
@@ -659,6 +659,7 @@ public class ProductService {
                     dto.setStock(variant.getStock());
                     dto.setCreatedBy(userDTO.fromEntity(variant.getCreatedBy()));
                     dto.setCreatedDate(variant.getCreatedDate());
+                    dto.setDelFg(variant.getDelFg());
 
                     VariantPriceEntity currentPrice = variant.getPrices().stream()
                             .filter(price ->
@@ -673,6 +674,7 @@ public class ProductService {
                     }
 
                     dto.setOptions(variant.getVariantOptionValues().stream()
+                            .filter(vov -> forAdmin || (vov.getOptionValue().getDelFg() != null && vov.getOptionValue().getDelFg() == 1))
                             .map(vov -> {
                                 OptionValueEntity val = vov.getOptionValue();
                                 OptionEntity opt = val.getOption();
@@ -691,6 +693,52 @@ public class ProductService {
                 })
                 .collect(Collectors.toList());
     }
+
+//    private List<ProductVariantDTO> mapToProductVariantDTOList(List<ProductVariantEntity> variants) {
+//        LocalDateTime now = LocalDateTime.now();
+//
+//        return variants.stream()
+//                .map(variant -> {
+//                    ProductVariantDTO dto = new ProductVariantDTO();
+//                    dto.setId(variant.getId());
+//                    dto.setSku(variant.getSku());
+//                    dto.setImgPath(variant.getImgPath());
+//                    dto.setStock(variant.getStock());
+//                    dto.setCreatedBy(userDTO.fromEntity(variant.getCreatedBy()));
+//                    dto.setCreatedDate(variant.getCreatedDate());
+//                    dto.setDelFg(variant.getDelFg());
+//
+//                    VariantPriceEntity currentPrice = variant.getPrices().stream()
+//                            .filter(price ->
+//                                    (price.getStartDate() == null || !price.getStartDate().isAfter(now)) &&
+//                                            (price.getEndDate() == null || !price.getEndDate().isBefore(now))
+//                            )
+//                            .findFirst()
+//                            .orElse(null);
+//
+//                    if (currentPrice != null) {
+//                        dto.setPrice(currentPrice.getPrice());
+//                    }
+//
+//                    dto.setOptions(variant.getVariantOptionValues().stream()
+//                            .map(vov -> {
+//                                OptionValueEntity val = vov.getOptionValue();
+//                                OptionEntity opt = val.getOption();
+//
+//                                VariantOptionDTO optDTO = new VariantOptionDTO();
+//                                optDTO.setOptionId(opt.getId());
+//                                optDTO.setOptionName(opt.getName());
+//                                optDTO.setOptionValueId(val.getId());
+//                                optDTO.setValueName(val.getValue());
+//
+//                                return optDTO;
+//                            }).collect(Collectors.toList())
+//                    );
+//
+//                    return dto;
+//                })
+//                .collect(Collectors.toList());
+//    }
 
     // Provide Excel template as InputStreamResource
     public InputStreamResource getExcelTemplate() throws IOException {
@@ -1344,86 +1392,6 @@ public class ProductService {
         }
     }
 
-
-//    private void logProductImageChanges(ProductImageDTO.ProductImageUpdateLogResult changes, Long productId, UserEntity admin, HttpServletRequest request) {
-//        System.out.println("Logging product image changes for productId=" + productId);
-//        String userAgent = request.getHeader("User-Agent");
-//
-//        for (var removed : changes.removed()) {
-//            auditPublisher.publishEvent(new AuditEventDTO(
-//                    "UPDATE",
-//                    "ProductImage",
-//                    productId,
-//                    Map.of(
-//                            "action", "REMOVE",
-//                            "productId", productId,
-//                            "imgPath", removed.imgPath(),
-//                            "altText", removed.altText(),
-//                            "displayOrder", removed.displayOrder(),
-//                            "mainImageStatus", removed.mainImage()
-//                    ),
-//                    admin.getId(),
-//                    admin.getName(),
-//                    admin.getRole().getName(),
-//                    null,
-//                    userAgent
-//            ));
-//        }
-//
-//        for (var added : changes.added()) {
-//            auditPublisher.publishEvent(new AuditEventDTO(
-//                    "UPDATE",
-//                    "ProductImage",
-//                    productId,
-//                    Map.of(
-//                            "action", "ADD",
-//                            "productId", productId,
-//                            "imgPath", added.imgPath(),
-//                            "altText", added.altText(),
-//                            "displayOrder", added.displayOrder(),
-//                            "mainImageStatus", added.mainImage()
-//                    ),
-//                    admin.getId(),
-//                    admin.getName(),
-//                    admin.getRole().getName(),
-//                    null,
-//                    userAgent
-//            ));
-//        }
-//
-//        for (var updated : changes.updated()) {
-//            Map<String, Object> oldMap = updated.oldSnapshot() != null ? updated.oldSnapshot() : Map.of();
-//            Map<String, Object> newMap = Map.of(
-//                    "imgPath", updated.imgPath(),
-//                    "altText", updated.altText(),
-//                    "displayOrder", updated.displayOrder(),
-//                    "mainImageStatus", updated.mainImage()
-//            );
-//
-//            Map<String, Object> diff = AuditAspect.getDifferences(oldMap, newMap);
-//            if (diff.isEmpty()) {
-//                System.out.println("No differences detected, skipping audit event.");
-//                continue;
-//            }
-//
-//            auditPublisher.publishEvent(new AuditEventDTO(
-//                    "UPDATE",
-//                    "ProductImage",
-//                    productId,
-//                    Map.of(
-//                            "action", "UPDATE",
-//                            "productId", productId,
-//                            "changes", diff
-//                    ),
-//                    admin.getId(),
-//                    admin.getName(),
-//                    admin.getRole().getName(),
-//                    null,
-//                    userAgent
-//            ));
-//        }
-//    }
-
     private void logProductVariantChanges(ProductVariantDTO.ProductVariantUpdateLogResult changes, Long productId, UserEntity admin, HttpServletRequest request) {
         System.out.println("Logging product variant changes for productId=" + productId);
 
@@ -1579,9 +1547,60 @@ public class ProductService {
         }
     }
 
-    public List<ProductVariantDTO> fetchDeletedVariants(Long productId) {
-        List<ProductVariantEntity> deletedVariants = variantRepo.findByProductIdAndDelFg(productId, 0);
-        return mapToProductVariantDTOList(deletedVariants);
+    @Transactional
+    public void restoreProduct(Long productId, UserEntity currentUser) {
+        ProductEntity product = productRepo.findById(productId)
+                .orElseThrow(() -> new NoSuchElementException("Product not found: " + productId));
+
+        if (product.getDelFg() != 1) {
+            Integer oldDelFg = product.getDelFg();
+
+            product.setDelFg(1); // restore product
+            productRepo.save(product);
+
+            Map<String, Object> auditData = new HashMap<>();
+            auditData.put("delFg", Map.of("old", oldDelFg, "new", 1));
+
+            auditPublisher.publishEvent(new AuditEventDTO(
+                    "RESTORE",
+                    "Product",
+                    productId,
+                    auditData,
+                    currentUser.getId(),
+                    currentUser.getName(),
+                    currentUser.getRole().getName(),
+                    null,
+                    null
+            ));
+        }
+    }
+
+    @Transactional
+    public void restoreVariant(Long variantId, UserEntity currentUser) {
+        ProductVariantEntity variant = variantRepo.findById(variantId)
+                .orElseThrow(() -> new NoSuchElementException("Variant not found: " + variantId));
+
+        if (variant.getDelFg() != 1) {
+            Integer oldDelFg = variant.getDelFg();
+
+            variant.setDelFg(1); // restore variant
+            variantRepo.save(variant);
+
+            Map<String, Object> auditData = new HashMap<>();
+            auditData.put("delFg", Map.of("old", oldDelFg, "new", 1));
+
+            auditPublisher.publishEvent(new AuditEventDTO(
+                    "RESTORE",
+                    "ProductVariant",
+                    variantId,
+                    auditData,
+                    currentUser.getId(),
+                    currentUser.getName(),
+                    currentUser.getRole().getName(),
+                    null,
+                    null
+            ));
+        }
     }
 
 }

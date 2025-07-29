@@ -9,7 +9,7 @@ public interface WishlistRepository extends JpaRepository<WishlistEntity, Long> 
     List<WishlistEntity> findByWishlistTitleId(Long wishlistTitleId);
     List<WishlistEntity> findByWishlistTitleUserId(Long userId);
     List<WishlistEntity> findByWishlistTitleUserIdAndWishlistTitleId(Long userId, Long titleId);
-
+    List<WishlistEntity> findByProductId(Long productId);
     void deleteByWishlistTitleUserIdAndProductId(Long userId, Long productId);
 
 }

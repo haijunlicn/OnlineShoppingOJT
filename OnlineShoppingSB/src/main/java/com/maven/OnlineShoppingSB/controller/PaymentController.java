@@ -3,6 +3,7 @@ package com.maven.OnlineShoppingSB.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.maven.OnlineShoppingSB.dto.PaymentDTO;
@@ -25,7 +26,19 @@ public class PaymentController {
     }
 
     @GetMapping("/list")
+    @PreAuthorize("hasAuthority('PAYMENT_READ') or hasRole('SUPERADMIN')")
     public ResponseEntity<List<PaymentDTO>> getAllPaymentMethods(@RequestParam(required = false) String type) {
+        List<PaymentDTO> dtoList;
+        if (type != null) {
+            dtoList = paymentService.getPaymentMethodsByType(type);
+        } else {
+            dtoList = paymentService.getAllPaymentMethods();
+        }
+        return ResponseEntity.ok(dtoList);
+    }
+
+    @GetMapping("/Public/list")
+    public ResponseEntity<List<PaymentDTO>> getAllPublicPaymentMethods(@RequestParam(required = false) String type) {
         List<PaymentDTO> dtoList;
         if (type != null) {
             dtoList = paymentService.getPaymentMethodsByType(type);

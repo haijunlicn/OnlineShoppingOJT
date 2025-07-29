@@ -98,6 +98,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   hasReviewedProduct = false
   editingReview: any = null
   editReviewData: EditReviewData = { rating: 5, comment: "", images: [] }
+  showAddReviewModal = false;
+  showEditReviewModal = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -118,8 +120,17 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.authService.isLoggedIn$.subscribe((isLoggedIn) => {
-      this.isLoggedIn = isLoggedIn
-    })
+      this.isLoggedIn = isLoggedIn;
+    });
+    // Set userId and userName from AuthService if available
+    if (this.authService.user$) {
+      this.authService.user$.subscribe((user) => {
+        if (user) {
+          this.userId = user.id;
+          this.userName = user.name || user.email || undefined;
+        }
+      });
+    }
 
     this.route.paramMap.subscribe((params) => {
       const id = params.get("id")
@@ -260,6 +271,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
   goToDetail(product: ProductDTO): void {
     this.router.navigate(["/customer/product", product.id])
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   // Discount carousel methods
@@ -678,7 +690,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       this.showAlert("Please select all options.", "warning")
       return
     }
-
+    console.log("May",item);
     const stock = this.selectedVariant.stock
     const inCart = this.getCurrentVariantCartQuantity()
 
@@ -707,6 +719,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
         brandId: Number(item.product.brandId),
         categoryId: Number(item.product.categoryId),
       })
+      const cart = this.cartService.getCart();   
     }
 
     this.showAlert(
@@ -737,7 +750,6 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       customClass: { popup: "custom-toast-popup" },
     })
   }
-
   // Coupon methods - simplified since copyToClipboard is now handled by service
   onCouponCopied(code: string): void {
     this.showAlert(`Coupon code "${code}" copied to clipboard`, "success")
@@ -856,13 +868,29 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     return image.url
   }
 
+  openAddReviewModal() {
+    this.showAddReviewModal = true;
+  }
+  closeAddReviewModal() {
+    this.showAddReviewModal = false;
+  }
+  openEditReviewModal() {
+    this.showEditReviewModal = true;
+  }
+  closeEditReviewModal() {
+    this.showEditReviewModal = false;
+    this.editingReview = null;
+  }
+
+  // Override openEditReview to use modal
   openEditReview(review: any) {
-    this.editingReview = review
+    this.editingReview = review;
     this.editReviewData = {
       rating: review.rating,
       comment: review.comment,
       images: review.images ? review.images.map((img: any) => ({ imageUrl: img.imageUrl })) : [],
-    }
+    };
+    this.openEditReviewModal();
   }
 
   closeEditReview() {
@@ -880,7 +908,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     }
     this.reviewService.updateReview(updatedReview).subscribe({
       next: () => {
-        this.closeEditReview()
+        this.closeEditReviewModal()
         this.loadReviews()
       },
       error: () => {
@@ -986,6 +1014,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
         this.newReview = { rating: 5, comment: "" }
         this.uploadedReviewImages = []
         this.loadReviews() // Refresh review list
+        this.hasReviewedProduct = true;
+        this.closeAddReviewModal();
         Swal.fire({
           title: "Success!",
           text: "Your review has been submitted successfully.",
@@ -1123,6 +1153,14 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
   onOfferClicked(discountId: number): void {
     this.router.navigate(['/customer/discount', discountId]);
+  }
+
+  // Method to trigger file input click for review images
+  triggerFileInput(inputId: string): void {
+    const fileInput = document.getElementById(inputId) as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
   }
 
 }

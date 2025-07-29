@@ -46,7 +46,7 @@
             <img *ngIf="iconPreview" [src]="iconPreview" alt="icon preview" style="width:60px;height:60px;object-fit:contain;margin-top:8px;">
           </div>
           <!-- Preview Section -->
-<div class="alert alert-info mt-4" *ngIf="method?.minDistance != null && method?.maxDistance != null && method?.baseFee != null && method?.feePerKm != null && method?.feePerKmOutCity != null">
+<div class="alert alert-info mt-4" *ngIf="method && method.minDistance != null && method.maxDistance != null && method.baseFee != null && method.feePerKm != null && method.feePerKmOutCity != null">
   <strong>Preview:</strong><br>
   <span>
     This delivery method can be used for distances from <b>{{ method.minDistance }}</b> km to <b>{{ method.maxDistance }}</b> km.
@@ -70,7 +70,7 @@
         [(ngModel)]="sampleDistance"
         [ngModelOptions]="{standalone: true}"
         min="0"
-        [attr.max]="method?.maxDistance != null ? method.maxDistance : null"
+        [attr.max]="method && method.maxDistance != null ? method.maxDistance : null"
         placeholder="e.g. 10"
       >
     </div>

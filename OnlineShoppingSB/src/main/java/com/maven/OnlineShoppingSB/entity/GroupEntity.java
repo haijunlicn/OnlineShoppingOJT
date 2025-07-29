@@ -19,9 +19,9 @@ public class GroupEntity {
     private String createDate;
     private String updateDate;
 
-    @OneToMany(mappedBy = "group",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "group",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<CustomerGroupEntity> customerGroup;
 
-    @OneToMany(mappedBy = "Group",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "Group",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<DiscountConditionGroupEntity> discountConditionGroups;
 }

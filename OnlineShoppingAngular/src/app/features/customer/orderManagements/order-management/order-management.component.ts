@@ -716,7 +716,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     if (this.selectedAddress && this.storeLocation) {
       const distance = this.getDistanceFromStore(this.selectedAddress)
 
-      this.deliveryMethodService.getAll().subscribe((methods) => {
+      this.deliveryMethodService.publicgetAll().subscribe((methods) => {
         this.allDeliveryMethods = methods
 
         let filtered = methods.filter((method) => {

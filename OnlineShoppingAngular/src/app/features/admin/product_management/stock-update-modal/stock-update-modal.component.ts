@@ -3,7 +3,10 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CreateProductRequestDTO, ProductCardItem } from '@app/core/models/product.model';
 import { AlertService } from '@app/core/services/alert.service';
 import { ProductService } from '@app/core/services/product.service';
-
+import { NotificationService } from '@app/core/services/notification.service';
+import { StorageService } from '@app/core/services/StorageService';
+import { Console } from 'console';
+        
 @Component({
   selector: 'app-stock-update-modal',
   standalone: false,
@@ -25,6 +28,8 @@ export class StockUpdateModalComponent {
     private fb: FormBuilder,
     private alertService: AlertService,
     private productService: ProductService,
+    private notificationService: NotificationService,
+    private storageService: StorageService,
   ) { }
 
   ngOnInit(): void {
@@ -80,6 +85,7 @@ export class StockUpdateModalComponent {
     this.isUpdatingStock = true;
 
     const stockUpdates: { variantId: number; newStock: number }[] = [];
+    let shouldNotifyWishlist = false;
 
     this.product.variants.forEach(variant => {
       const newStock = this.stockForm.get(`stock_${variant.id}`)?.value;
@@ -88,6 +94,10 @@ export class StockUpdateModalComponent {
           variantId: variant.id!,
           newStock: newStock
         });
+        // Check if this variant was out of stock and is now in stock
+        if (variant.stock === 0 && newStock > 0) {
+          shouldNotifyWishlist = true;
+        }
       }
     });
 
@@ -107,11 +117,26 @@ export class StockUpdateModalComponent {
           }
         });
 
+        // Notify wishlist users only if at least one variant was previously out of stock
+        if (shouldNotifyWishlist && this.product && this.product.product && this.product.product.id) {
+          console.log("May Noti");
+          this.notificationService.notifyWishlistUsersOnStockUpdate(this.product!.product!.id!).subscribe({
+            next: () => {
+              this.alertService.toast('Wishlist users notified!', 'success');
+            },
+            error: (err) => {
+              this.alertService.toast('Failed to notify wishlist users.', 'error');
+              console.error('Notify wishlist error:', err);
+            }
+          });
+        }
+
         this.alertService.toast(`Stock updated for ${stockUpdates.length} variant(s).`, 'success');
         this.stockUpdated.emit();
         this.close();
         this.initStockForm(); // Optional: to reset form values
         this.isUpdatingStock = false;
+
       },
       error: (err) => {
         this.alertService.toast('Failed to update stock.', 'error');

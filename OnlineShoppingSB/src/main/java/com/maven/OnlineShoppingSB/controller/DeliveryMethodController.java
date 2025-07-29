@@ -3,6 +3,7 @@ package com.maven.OnlineShoppingSB.controller;
 import com.maven.OnlineShoppingSB.dto.DeliveryMethodDto;
 import com.maven.OnlineShoppingSB.service.DeliveryMethodService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,7 +27,13 @@ public class DeliveryMethodController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('DELIVERY_READ') or hasRole('SUPERADMIN')")
     public List<DeliveryMethodDto> getAll() {
+        return deliveryMethodService.getAll();
+    }
+
+    @GetMapping("/public")
+    public List<DeliveryMethodDto> PublicgetAll() {
         return deliveryMethodService.getAll();
     }
 

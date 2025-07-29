@@ -117,6 +117,10 @@ export class OrderService {
     return this.http.get<OrderDetail>(`${this.apiUrl}/${orderId}/details`);
   }
 
+  getPublicOrderDetails(orderId: number): Observable<OrderDetail> {
+    return this.http.get<OrderDetail>(`${this.apiUrl}/public/${orderId}/details`);
+  }
+
   updatePaymentStatus(
     orderId: number,
     status: 'PAID' | 'FAILED',

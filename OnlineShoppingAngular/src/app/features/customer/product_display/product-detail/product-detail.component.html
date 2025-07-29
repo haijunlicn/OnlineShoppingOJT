@@ -252,20 +252,7 @@
       </div>
     </div>
 
-    <!-- Mobile Discount Section (Below main content) -->
-    <!-- <div class="mobile-discount-section d-lg-none" *ngIf="getVisibleDiscounts().length > 0" #mobileDiscounts>
-      <div class="mobile-discount-container">
-        <div class="mobile-discount-header">
-          <h5 class="mb-3">
-            <i class="pi pi-tag me-2"></i>
-            Special Offers ({{ getVisibleDiscounts().length }})
-          </h5>
-        </div>
-        <app-discount-condition-display [discountHints]="getVisibleDiscounts()" [showTitle]="false"
-          [maxDisplayItems]="3">
-        </app-discount-condition-display>
-      </div>
-    </div> -->
+  
 
     <!-- Product Details Tabs -->
     <div class="product-tabs-section">
@@ -292,12 +279,7 @@
               <button class="nav-link" id="qanda-tab" data-bs-toggle="tab" data-bs-target="#qanda" type="button"
                 role="tab" aria-controls="qanda" aria-selected="false">Q & A</button>
             </li>
-            <!-- <li class="nav-item" role="presentation">
-              <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button"
-                role="tab" aria-controls="reviews" aria-selected="false">
-                Reviews
-              </button>
-            </li> -->
+           
           </ul>
         </div>
         <div class="card-body">
@@ -329,139 +311,171 @@
               </table>
             </div>
             <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
-              <!-- Review Summary -->
-              <div *ngIf="reviewTotal > 0" class="review-summary">
-                <div class="d-flex align-items-center">
-                  <span class="average-rating">{{ reviewAverage | number:'1.1-1' }}</span>
-                  <span class="star-icons">
-                    <ng-container *ngFor="let s of [1,2,3,4,5]">
-                      <i class="bi"
-                        [ngClass]="s <= getRounded(reviewAverage) ? 'bi-star-fill text-warning' : 'bi-star text-secondary'"></i>
-                    </ng-container>
-                  </span>
-                  <span class="total-ratings">{{ reviewTotal }} Ratings</span>
-                </div>
-                <div class="mt-2">
-                  <div *ngFor="let s of [5,4,3,2,1]" class="review-breakdown-row">
-                    <span class="star-label">{{s}} <i class="bi bi-star-fill text-warning"></i></span>
-                    <div class="bar-bg">
-                      <div class="bar-fill" [style.width.%]="(reviewBreakdown[s] || 0) / reviewTotal * 100"></div>
+              <!-- Enhanced Review Summary -->
+              <div *ngIf="reviewTotal > 0" class="review-summary-enhanced">
+                <div class="review-summary-header">
+                  <div class="rating-overview">
+                    <div class="average-rating-display">
+                      <span class="rating-number">{{ reviewAverage | number:'1.1-1' }}</span>
+                      <div class="rating-stars">
+                        <ng-container *ngFor="let s of [1,2,3,4,5]">
+                          <i class="bi" [ngClass]="s <= getRounded(reviewAverage) ? 'bi-star-fill' : 'bi-star'"></i>
+                        </ng-container>
+                      </div>
+                      <span class="total-reviews">Based on {{ reviewTotal }} reviews</span>
                     </div>
-                    <span class="count-label">{{reviewBreakdown[s] || 0}}</span>
+                  </div>
+                  
+                  <div class="rating-breakdown">
+                    <div *ngFor="let s of [5,4,3,2,1]" class="rating-bar-row">
+                      <span class="star-count">{{s}} <i class="bi bi-star-fill"></i></span>
+                      <div class="progress-bar-container">
+                        <div class="progress-bar" [style.width.%]="(reviewBreakdown[s] || 0) / reviewTotal * 100"></div>
+                      </div>
+                      <span class="count-number">{{reviewBreakdown[s] || 0}}</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <!-- Review Sort/Filter -->
-              <div class="d-flex align-items-center mb-2">
-                <div>
-                  <label>Sort:</label>
-                  <select [(ngModel)]="reviewSort" (change)="onReviewSortChange(reviewSort)">
-                    <option value="date_desc">Newest First</option>
-                    <option value="date_asc">Oldest First</option>
-                    <option value="rating_desc">Rating: High to Low</option>
-                    <option value="rating_asc">Rating: Low to High</option>
-                  </select>
+              <!-- Review Controls -->
+              <div class="review-controls d-flex align-items-center justify-content-between flex-wrap">
+                <div class="controls-left d-flex align-items-center flex-wrap">
+                  <div class="sort-control me-3">
+                    <label class="control-label">Sort by:</label>
+                    <select [(ngModel)]="reviewSort" (change)="onReviewSortChange(reviewSort)" class="form-select form-select-sm">
+                      <option value="date_desc">Newest First</option>
+                      <option value="date_asc">Oldest First</option>
+                      <option value="rating_desc">Highest Rated</option>
+                      <option value="rating_asc">Lowest Rated</option>
+                    </select>
+                  </div>
+                  <div class="filter-control">
+                    <label class="control-label">Filter by:</label>
+                    <select [(ngModel)]="reviewFilterRating" (change)="onReviewFilterChange(reviewFilterRating)" class="form-select form-select-sm">
+                      <option [ngValue]="undefined">All Ratings</option>
+                      <option *ngFor="let s of [5,4,3,2,1]" [ngValue]="s">{{s}} Star{{s > 1 ? 's' : ''}}</option>
+                    </select>
+                  </div>
                 </div>
-                <div class="ms-3">
-                  <label>Filter:</label>
-                  <select [(ngModel)]="reviewFilterRating" (change)="onReviewFilterChange(reviewFilterRating)">
-                    <option [ngValue]="undefined">All stars</option>
-                    <option *ngFor="let s of [5,4,3,2,1]" [ngValue]="s">{{s}} star</option>
-                  </select>
+                <div class="controls-right d-flex align-items-center mt-2 mt-md-0">
+                  <span class="reviews-count me-3">{{ reviews.length }} of {{ reviewTotal }} reviews</span>
+                  <button *ngIf="isLoggedIn && hasPurchasedProduct && !hasReviewedProduct" class="btn btn-primary add-review-btn" (click)="openAddReviewModal()">
+                    <i class="bi bi-plus-circle"></i> Add Review
+                  </button>
+                </div>
+              </div>
+
+              <!-- Loading State -->
+              <div *ngIf="isLoadingReviews" class="loading-state">
+                <div class="loading-spinner">
+                  <div class="spinner"></div>
+                  <p>Loading reviews...</p>
                 </div>
               </div>
 
               <!-- Review List -->
-              <div *ngIf="isLoadingReviews" class="text-center py-3">
-                <span class="spinner-border"></span>
-              </div>
-              <div *ngIf="!isLoadingReviews && reviews.length > 0" class="review-list">
-                <div *ngFor="let review of reviews" class="review-item">
-                  <div class="review-header">
-                    <span class="review-username">{{review.userName || 'User'}}</span>
-                    <span class="review-stars">
-                      <ng-container *ngFor="let s of [1,2,3,4,5]">
-                        <i class="bi"
-                          [ngClass]="s <= review.rating ? 'bi-star-fill text-warning' : 'bi-star text-secondary'"></i>
-                      </ng-container>
-                    </span>
-                    <span *ngIf="review.verifiedPurchase" class="review-verified">Verified Purchase</span>
-                    <span class="review-date">
-                      {{review.createdDate | date:'mediumDate'}}
-                      <ng-container *ngIf="review.userId === userId">
-                        <i class="bi bi-pencil-square edit-icon" (click)="openEditReview(review)" title="Edit"></i>
-                        <i class="bi bi-trash delete-icon ms-2" (click)="deleteReview(review)" title="Delete"></i>
-                      </ng-container>
-                    </span>
+              <div *ngIf="!isLoadingReviews && reviews.length > 0" class="review-list-enhanced">
+                <div *ngFor="let review of reviews" class="review-card">
+                  <div class="review-card-header">
+                    <div class="reviewer-info">
+                      <div class="reviewer-avatar">
+                        <i class="bi bi-person-circle"></i>
+                      </div>
+                      <div class="reviewer-details">
+                        <span class="reviewer-name">{{review.userName || 'Anonymous User'}}</span>
+                        <div class="review-meta">
+                          <span class="review-date">{{review.createdDate | date:'MMM dd, yyyy'}}</span>
+                          <span *ngIf="review.verifiedPurchase" class="verified-badge">
+                            <i class="bi bi-check-circle-fill"></i> Verified Purchase
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="review-rating">
+                      <div class="star-display">
+                        <ng-container *ngFor="let s of [1,2,3,4,5]">
+                          <i class="bi" [ngClass]="s <= review.rating ? 'bi-star-fill' : 'bi-star'"></i>
+                        </ng-container>
+                      </div>
+                      <span class="rating-text">{{review.rating}}/5</span>
+                    </div>
                   </div>
-                  <div class="review-comment">{{review.comment}}</div>
-                  <div class="review-images" *ngIf="review.images?.length">
-                    <img *ngFor="let img of review.images" [src]="img.imageUrl">
+                  
+                  <div class="review-content">
+                    <div class="review-icon-text-row">
+                      <i class="bi bi-chat-quote review-quote-icon"></i>
+                      <p class="review-text">{{review.comment}}</p>
+                    </div>
+                    
+                    <div class="review-images" *ngIf="review.images?.length">
+                      <div class="image-gallery">
+                        <img *ngFor="let img of review.images" [src]="img.imageUrl" class="review-image" alt="Review image">
+                      </div>
+                    </div>
                   </div>
+                  
+                 <div class="review-actions" *ngIf="review.userId === userId">
+  <button class="icon-btn edit-btn" data-bs-toggle="tooltip" title="Edit Review" (click)="openEditReview(review)">
+    <i class="bi bi-pencil-square"></i>
+  </button>
+  <button class="icon-btn delete-btn" data-bs-toggle="tooltip" title="Delete Review" (click)="deleteReview(review)">
+    <i class="bi bi-trash-fill"></i>
+  </button>
+</div>
                 </div>
-                <!-- Pagination -->
-                <nav class="mt-2">
-                  <ul class="pagination justify-content-center">
+                
+                <!-- Enhanced Pagination -->
+                <nav class="pagination-container" *ngIf="getPages().length > 1">
+                  <ul class="pagination pagination-sm">
                     <li class="page-item" [class.disabled]="reviewPage === 1">
-                      <button class="page-link" (click)="onReviewPageChange(reviewPage-1)"
-                        [disabled]="reviewPage === 1">&laquo;</button>
+                      <button class="page-link" (click)="onReviewPageChange(reviewPage-1)" [disabled]="reviewPage === 1">
+                        <i class="bi bi-chevron-left"></i>
+                      </button>
                     </li>
                     <li class="page-item" *ngFor="let p of getPages()" [class.active]="reviewPage === p">
                       <button class="page-link" (click)="onReviewPageChange(p)">{{p}}</button>
                     </li>
                     <li class="page-item" [class.disabled]="reviewPage === getPages().length">
-                      <button class="page-link" (click)="onReviewPageChange(reviewPage+1)"
-                        [disabled]="reviewPage === getPages().length">&raquo;</button>
+                      <button class="page-link" (click)="onReviewPageChange(reviewPage+1)" [disabled]="reviewPage === getPages().length">
+                        <i class="bi bi-chevron-right"></i>
+                      </button>
                     </li>
                   </ul>
                 </nav>
               </div>
-              <div *ngIf="!isLoadingReviews && reviews.length === 0">
-                <p class="text-center py-3">No reviews yet. Be the first to review this product!</p>
-              </div>
-
-              <!-- Add Review Form (only if logged in, has purchased, and hasn't reviewed) -->
-              <div class="review-form mt-3" *ngIf="isLoggedIn && hasPurchasedProduct && !hasReviewedProduct">
-                <h5>Add Your Review</h5>
-                <form (ngSubmit)="submitReview()" class="mb-3">
-                  <div class="mb-2">
-                    <label>Rating:</label>
-                    <select [(ngModel)]="newReview.rating" name="rating" required>
-                      <option *ngFor="let r of [5,4,3,2,1]" [value]="r">{{r}} Star{{r>1?'s':''}}</option>
-                    </select>
-                  </div>
-                  <div class="mb-2">
-                    <textarea [(ngModel)]="newReview.comment" name="comment" class="form-control" rows="2"
-                      placeholder="Write your review..." required></textarea>
-                  </div>
-                  <div class="mb-2">
-                    <label>Upload Images:</label>
-                    <input type="file" (change)="onReviewImageSelected($event)" multiple accept="image/*" />
-                    <div class="mt-2">
-                      <span *ngFor="let img of uploadedReviewImages; let i = index" class="uploaded-image-preview">
-                        <img [src]="img.imageUrl">
-                        <button type="button" class="btn-close btn-sm" (click)="removeReviewImage(i)"></button>
-                      </span>
-                    </div>
-                  </div>
-                  <button class="btn btn-primary" type="submit" [disabled]="isSubmittingReview">Submit Review</button>
-                </form>
-              </div>
-
-              <!-- Message for users who have already reviewed -->
-              <div class="mt-3" *ngIf="isLoggedIn && hasPurchasedProduct && hasReviewedProduct">
-                <div class="alert alert-success">
-                  <i class="bi bi-check-circle me-2"></i>
-                  You have already reviewed this product. Thank you for your feedback!
+              
+              <!-- Empty State -->
+              <div *ngIf="!isLoadingReviews && reviews.length === 0" class="empty-state">
+                <div class="empty-state-content">
+                  <i class="bi bi-chat-dots"></i>
+                  <h5>No reviews yet</h5>
+                  <p>Be the first to share your experience with this product!</p>
                 </div>
               </div>
 
-              <!-- Message for users who haven't purchased or not logged in -->
-              <div class="mt-3" *ngIf="!isLoggedIn || (isLoggedIn && !hasPurchasedProduct)">
+              <!-- Enhanced Review Form -->
+              <!-- Removed inline review form -->
+
+              <!-- Status Messages -->
+              <div class="status-message" *ngIf="isLoggedIn && hasPurchasedProduct && hasReviewedProduct">
+                <div class="alert alert-success">
+                  <i class="bi bi-check-circle"></i>
+                  <div class="message-content">
+                    <h6>Review Submitted</h6>
+                    <p>Thank you for your feedback! You have already reviewed this product.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="status-message" *ngIf="!isLoggedIn || (isLoggedIn && !hasPurchasedProduct)">
                 <div class="alert alert-info">
-                  <i class="bi bi-info-circle me-2"></i>
-                  You need to purchase and receive this product to write a review.
+                  <i class="bi bi-info-circle"></i>
+                  <div class="message-content">
+                    <h6>Review Requirements</h6>
+                    <p>You need to purchase and receive this product to write a review.</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -534,79 +548,212 @@
 </app-sticky-discount-progress> -->
 
 
-<!-- Edit Review Modal -->
+<!-- Enhanced Edit Review Modal -->
 <div class="edit-review-modal" *ngIf="editingReview">
   <div class="edit-review-content">
-    <h5>Edit Your Review</h5>
-    <div class="star-rating mb-2">
-      <ng-container *ngFor="let s of [1,2,3,4,5]">
-        <i class="bi" [ngClass]="s <= editReviewData.rating ? 'bi-star-fill text-warning' : 'bi-star text-secondary'"
-          (click)="editReviewData.rating = s" style="cursor:pointer; font-size: 2rem;"></i>
-      </ng-container>
+    <div class="modal-header">
+      <h5><i class="bi bi-pencil-square"></i> Edit Your Review</h5>
+      <button type="button" class="custom-close-btn" (click)="closeEditReview()">
+  <i class="bi bi-x-lg"></i> <!-- Bootstrap Icons X -->
+</button>
     </div>
-    <textarea [(ngModel)]="editReviewData.comment" rows="3" class="form-control mb-2"></textarea>
-    <!-- Image Edit UI -->
-    <div class="mb-2" *ngIf="editReviewData.images && editReviewData.images.length">
-      <label>Edit Images:</label>
-      <div class="edit-review-images">
-        <span *ngFor="let img of editReviewData.images; let i = index" class="uploaded-image-preview">
-          <img [src]="img.imageUrl"
-            style="width:60px; height:60px; object-fit:cover; border-radius:8px; margin-right:8px;">
-          <input type="file" accept="image/*" (change)="onEditReviewImageSelected($event, i)" style="display:none"
-            #editImgInput>
-          <button type="button" class="btn btn-sm btn-outline-primary me-1"
-            (click)="editImgInput.click()">Replace</button>
-          <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeEditReviewImage(i)">Remove</button>
-        </span>
+    
+    <div class="modal-body">
+      <div class="rating-input-section">
+        <label class="form-label">Your Rating</label>
+        <div class="star-rating-input">
+          <ng-container *ngFor="let s of [1,2,3,4,5]">
+            <i class="bi star-input" 
+               [ngClass]="s <= editReviewData.rating ? 'bi-star-fill' : 'bi-star'"
+               (click)="editReviewData.rating = s"
+               [class.active]="s <= editReviewData.rating"></i>
+          </ng-container>
+          <span class="rating-label">{{editReviewData.rating}}/5</span>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Your Review</label>
+        <textarea [(ngModel)]="editReviewData.comment" 
+                  rows="4" 
+                  class="form-control review-textarea"
+                  placeholder="Share your thoughts about this product..."></textarea>
+      </div>
+      
+      <!-- Enhanced Image Edit UI -->
+      <div class="form-group" *ngIf="editReviewData.images && editReviewData.images.length">
+        <label class="form-label">Edit Images</label>
+        <div class="edit-images-grid">
+          <div *ngFor="let img of editReviewData.images; let i = index" class="edit-image-item">
+            <img [src]="img.imageUrl" alt="Review image">
+            <div class="image-actions">
+              <input type="file" accept="image/*" (change)="onEditReviewImageSelected($event, i)" style="display:none" #editImgInput>
+              <button type="button" class="btn btn-sm btn-outline-primary" (click)="editImgInput.click()">
+                <i class="bi bi-arrow-clockwise"></i> Replace
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeEditReviewImage(i)">
+                <i class="bi bi-trash"></i> Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Add More Images</label>
+        <div class="add-image-section">
+          <input type="file" #addEditImgInput style="display:none" (change)="onAddEditReviewImageSelected($event)">
+          <button type="button" class="btn btn-outline-success add-image-btn" (click)="addEditReviewImage(addEditImgInput)"
+            [disabled]="editReviewData.images.length >= 5">
+            <i class="bi bi-plus-circle"></i>
+            Add Image ({{editReviewData.images.length}}/5)
+          </button>
+        </div>
       </div>
     </div>
-    <div class="mb-2">
-      <input type="file" #addEditImgInput style="display:none" (change)="onAddEditReviewImageSelected($event)">
-      <button type="button" class="btn btn-sm btn-success mt-2" (click)="addEditReviewImage(addEditImgInput)"
-        [disabled]="editReviewData.images.length >= 5">
-        Add Image
+    
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeEditReview()">
+        <i class="bi bi-x-circle"></i> Cancel
       </button>
-    </div>
-    <div class="d-flex justify-content-end mt-3">
-      <button class="btn btn-secondary me-2" (click)="closeEditReview()">Cancel</button>
-      <button class="btn btn-primary" (click)="submitEditReview()">Save</button>
+      <button class="btn btn-primary" (click)="submitEditReview()">
+        <i class="bi bi-check-circle"></i> Save Changes
+      </button>
     </div>
   </div>
 </div>
 
+<!-- Add Review Modal -->
+<div class="modal fade show" tabindex="-1" [ngClass]="{'d-block': showAddReviewModal}" *ngIf="showAddReviewModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-chat-quote"></i> Write a Review</h5>
+        <button type="button" class="btn-close" (click)="closeAddReviewModal()"></button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="submitReview()" class="review-form-content">
+          <div class="review-form-body">
+            <div class="star-rating-input-group mb-2">
+              <label class="form-label mb-1">Your Rating</label>
+              <div class="star-rating-input">
+                <ng-container *ngFor="let s of [1,2,3,4,5]">
+                  <i class="bi star-input"
+                     [ngClass]="s <= newReview.rating ? 'bi-star-fill' : 'bi-star'"
+                     (click)="newReview.rating = s"
+                     [class.active]="s <= newReview.rating"></i>
+                </ng-container>
+                <span class="rating-label ms-2">{{newReview.rating}}/5</span>
+              </div>
+            </div>
+            <div class="form-group mb-2">
+              <label class="form-label mb-1">Your Review</label>
+              <textarea [(ngModel)]="newReview.comment"
+                        name="comment"
+                        class="form-control review-textarea"
+                        rows="3"
+                        placeholder="Share your thoughts..."
+                        required></textarea>
+            </div>
+            <div class="form-group mb-2">
+              <label class="form-label mb-1">Add Photos <span class="text-muted">(Optional, up to 5)</span></label>
+              <div class="image-upload-row">
+                <input type="file"
+                       id="reviewImageInput"
+                       (change)="onReviewImageSelected($event)"
+                       multiple
+                       accept="image/*"
+                       style="display: none;" />
+                <button type="button" class="btn btn-light btn-upload-image" (click)="triggerFileInput('reviewImageInput')">
+                  <i class="bi bi-camera"></i> Add Photos
+                </button>
+                <div class="uploaded-images ms-2" *ngIf="uploadedReviewImages.length > 0">
+                  <div *ngFor="let img of uploadedReviewImages; let i = index" class="uploaded-image-thumb">
+                    <img [src]="img.imageUrl" alt="Uploaded image">
+                    <button type="button" class="remove-image-btn" (click)="removeReviewImage(i)">
+                      <i class="bi bi-x"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="review-form-footer mt-3 text-end">
+            <button class="btn btn-primary submit-review-btn px-4" type="submit" [disabled]="isSubmittingReview">
+              <span class="spinner-border spinner-border-sm me-2" *ngIf="isSubmittingReview"></span>
+              {{ isSubmittingReview ? 'Submitting...' : 'Submit Review' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
+</div>
 
-
-<!-- Add styles for modal and icon -->
-<style>
-  .edit-review-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.2);
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .edit-review-content {
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.15);
-    padding: 2rem;
-    min-width: 320px;
-    max-width: 90vw;
-  }
-
-  .edit-icon {
-    cursor: pointer;
-    margin-left: 8px;
-    color: #007bff;
-  }
-
-  .edit-icon:hover {
-    color: #0056b3;
-  }
-</style>
+<!-- Edit Review Modal -->
+<div class="modal fade show" tabindex="-1" [ngClass]="{'d-block': showEditReviewModal}" *ngIf="showEditReviewModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-pencil-square"></i> Edit Your Review</h5>
+        <button type="button" class="btn-close" (click)="closeEditReviewModal()"></button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="submitEditReview()" class="review-form-content">
+          <div class="review-form-body">
+            <div class="star-rating-input-group mb-2">
+              <label class="form-label mb-1">Your Rating</label>
+              <div class="star-rating-input">
+                <ng-container *ngFor="let s of [1,2,3,4,5]">
+                  <i class="bi star-input"
+                     [ngClass]="s <= editReviewData.rating ? 'bi-star-fill' : 'bi-star'"
+                     (click)="editReviewData.rating = s"
+                     [class.active]="s <= editReviewData.rating"></i>
+                </ng-container>
+                <span class="rating-label ms-2">{{editReviewData.rating}}/5</span>
+              </div>
+            </div>
+            <div class="form-group mb-2">
+              <label class="form-label mb-1">Your Review</label>
+              <textarea [(ngModel)]="editReviewData.comment"
+                        name="editComment"
+                        class="form-control review-textarea"
+                        rows="3"
+                        placeholder="Share your thoughts..."
+                        required></textarea>
+            </div>
+            <div class="form-group mb-2">
+              <label class="form-label mb-1">Edit Images</label>
+              <div class="image-upload-row">
+                <div class="uploaded-images" *ngIf="editReviewData.images.length > 0">
+                  <div *ngFor="let img of editReviewData.images; let i = index" class="uploaded-image-thumb">
+                    <img [src]="img.imageUrl" alt="Review image">
+                    <button type="button" class="remove-image-btn" (click)="removeEditReviewImage(i)">
+                      <i class="bi bi-x"></i>
+                    </button>
+                    <input type="file" accept="image/*" (change)="onEditReviewImageSelected($event, i)" style="display:none" #editImgInput>
+                    <button type="button" class="btn btn-sm btn-outline-primary ms-1" (click)="editImgInput.click()">
+                      <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                  </div>
+                </div>
+                <input type="file" #addEditImgInput style="display:none" (change)="onAddEditReviewImageSelected($event)">
+                <button type="button" class="btn btn-outline-success add-image-btn ms-2" (click)="addEditReviewImage(addEditImgInput)" [disabled]="editReviewData.images.length >= 5">
+                  <i class="bi bi-plus-circle"></i> Add Image ({{editReviewData.images.length}}/5)
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="review-form-footer mt-3 text-end">
+            <button class="btn btn-primary submit-review-btn px-4" type="submit">
+              <span class="spinner-border spinner-border-sm me-2" *ngIf="isSubmittingReview"></span>
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
+</div>

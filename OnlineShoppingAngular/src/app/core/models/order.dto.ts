@@ -98,6 +98,7 @@ export interface OrderItemDetail {
     stock: number;
     variantName: string;
     imgPath: string;
+    options?: VariantOption[]; // <-- add this line
   };
   product: {
     id: number;
@@ -108,6 +109,13 @@ export interface OrderItemDetail {
   };
   maxReturnQty?: number;
   appliedDiscounts?: OrderItemDiscountMechanismDTO[];
+}
+
+export interface VariantOption {
+  optionId: number;
+  optionValueId: number;
+  optionName: string;
+  valueName: string;
 }
 
 export interface OrderStatusEntity {

@@ -21,6 +21,7 @@ public class ProductVariantDTO {
     private String imgPath;  // For display (optional)
     private userDTO createdBy;
     private LocalDateTime createdDate;
+    private Integer delFg;
 
     public static ProductVariantDTO fromEntity(ProductVariantEntity entity) {
         if (entity == null) return null;
@@ -44,6 +45,21 @@ public class ProductVariantDTO {
                             (p.getEndDate() == null || p.getEndDate().isAfter(now)))
                     .findFirst()
                     .ifPresent(activePrice -> dto.setPrice(activePrice.getPrice()));
+        }
+
+        // Set options from variantOptionValues
+        if (entity.getVariantOptionValues() != null && !entity.getVariantOptionValues().isEmpty()) {
+            List<VariantOptionDTO> optionDTOs = entity.getVariantOptionValues().stream()
+                .map(vov -> {
+                    VariantOptionDTO vo = new VariantOptionDTO();
+                    vo.setOptionId(vov.getOptionValue().getOption().getId());
+                    vo.setOptionValueId(vov.getOptionValue().getId());
+                    vo.setOptionName(vov.getOptionValue().getOption().getName());
+                    vo.setValueName(vov.getOptionValue().getValue());
+                    return vo;
+                })
+                .collect(Collectors.toList());
+            dto.setOptions(optionDTOs);
         }
 
         return dto;

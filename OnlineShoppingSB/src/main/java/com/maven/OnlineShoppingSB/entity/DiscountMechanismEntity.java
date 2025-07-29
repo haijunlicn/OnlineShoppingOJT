@@ -46,12 +46,12 @@ public class DiscountMechanismEntity {
     @JoinColumn(name = "discounts_id")
     private DiscountEntity discount;
 
-    @OneToMany(mappedBy = "discountMechanism", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "discountMechanism", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<DiscountConditionGroupEntity> discountConditionGroup;
 
-    @OneToMany(mappedBy = "mechanism", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "mechanism", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<FreeGiftEntity> freeGifts;
 
-    @OneToMany(mappedBy = "discountMechanism", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "discountMechanism", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<DiscountProductEntity> discountProducts;
 }
