@@ -26,60 +26,7 @@
             <button class="btn btn-outline-primary btn-sm" (click)="toggleFilters()">
                 <i class="bi bi-funnel me-1"></i>{{ showFilters ? 'Hide Filters' : 'Show Filters' }}
             </button>
-            <div class="dropdown">
-                <button class="btn btn-outline dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <span class="btn-icon">📥</span>
-                    Export
-                </button>
-                <ul class="dropdown-menu">
-                    <li>
-                        <a class="dropdown-item" href="javascript:void(0)" (click)="exportTableToPdf()">
-                            <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Export PDF
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="javascript:void(0)" (click)="exportTableToExcel()">
-                            <i class="bi bi-file-earmark-excel me-2 text-success"></i>Export Excel
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <button *ngIf="canCreateProduct" class="btn btn-primary" routerLink="/admin/productCreate">
-                <i class="bi bi-plus-circle me-2"></i>Add Product
-            </button>
-            <button *ngIf="canBulkUploadProducts" class="btn btn-outline-success btn-sm" (click)="bulkUpload()">
-                <i class="fas fa-upload me-1"></i>Bulk Upload
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Main Content -->
-<div>
-    <!-- Error Message -->
-    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="fas fa-exclamation-triangle me-2"></i>{{ errorMessage }}
-        <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
-    </div>
-
-                <div class="header-content">
-                    <div class="header-info">
-                        <h2 class="page-title">Products Management</h2>
-                        <p class="page-subtitle">Manage your product inventory and details</p>
-                    </div>
-                    <div class="header-actions">
-                        <button *ngIf="canCreateProduct" class="btn btn-success" routerLink="/admin/productCreate">
-                            <i class="bi bi-plus-circle"></i>
-                            Add Product
-                        </button>
-                        <button class="btn btn-outline-secondary btn-sm" (click)="refreshData()" [disabled]="isLoading">
-                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
-                        </button>
-                        <button class="btn btn-outline-primary btn-filter" (click)="toggleFilters()">
-                            <i class="bi bi-funnel"></i>
-                            {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
-                        </button>
-                        <div class="dropdown d-inline-block ms-2">
+           <div class="dropdown d-inline-block ms-2">
                             <button class="btn btn-outline-secondary dropdown-toggle" type="button"
                                 data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-download me-1"></i> Export
@@ -117,7 +64,30 @@
                                 </li>
                             </ul>
                         </div>
+            <button *ngIf="canCreateProduct" class="btn btn-primary" routerLink="/admin/productCreate">
+                <i class="bi bi-plus-circle me-2"></i>Add Product
+            </button>
+            <button *ngIf="canBulkUploadProducts" class="btn btn-outline-success btn-sm" (click)="bulkUpload()">
+                <i class="fas fa-upload me-1"></i>Bulk Upload
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div>
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>{{ errorMessage }}
+        <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+    </div>
+
+                <div class="header-content">
+                    <div class="header-info">
+                        <h2 class="page-title">Products Management</h2>
+                        <p class="page-subtitle">Manage your product inventory and details</p>
                     </div>
+                    
 
                     <!-- Brand Filter -->
                     <div class="col-6 col-lg-2">
@@ -164,8 +134,7 @@
 
                 </div>
             </div>
-        </div>
-    </div>
+       
 
     <!-- Data Table Card -->
     <div class="data-section">
@@ -406,4 +375,4 @@
             </div>
         </div>
     </div>
-</div>
+
