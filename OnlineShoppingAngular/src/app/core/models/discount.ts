@@ -156,6 +156,7 @@ export interface Category {
 export interface Brand {
   id: number
   name: string
+  delFg?: number
 }
 
 export interface City {

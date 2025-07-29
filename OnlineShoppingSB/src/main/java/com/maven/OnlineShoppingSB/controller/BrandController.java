@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
@@ -61,7 +62,7 @@ public class BrandController {
 
     @GetMapping("/public/list")
     public ResponseEntity<List<BrandDTO>> getAllPublicBrands() {
-        return ResponseEntity.ok(brandService.getAllBrands());
+        return ResponseEntity.ok(brandService.getAllPublicBrands());
     }
 
     @GetMapping("/getbyid/{id}")
@@ -75,6 +76,12 @@ public class BrandController {
     public ResponseEntity<String> deleteBrand(@PathVariable Long id) {
         brandService.deleteBrand(id);
         return ResponseEntity.ok("Brand deleted successfully!");
+    }
+
+    @GetMapping("/product-counts")
+    @PreAuthorize("hasAuthority('BRAND_READ') or hasRole('SUPERADMIN')")
+    public ResponseEntity<Map<Long, Integer>> getProductCountsByBrand() {
+        return ResponseEntity.ok(brandService.getProductCountsByBrand());
     }
 
 }

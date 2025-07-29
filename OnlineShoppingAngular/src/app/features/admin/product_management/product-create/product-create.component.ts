@@ -623,6 +623,7 @@ export class ProductCreateComponent implements OnInit {
             id: formValue.brandId,
             name: formValue.brandName || '',
             logo: formValue.brandLogo || 'default-logo.png',
+            delFg: 1 // Use delFg: 1=active
           },
         },
         options: formValue.options,

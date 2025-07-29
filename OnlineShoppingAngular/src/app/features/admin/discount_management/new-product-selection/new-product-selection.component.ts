@@ -31,6 +31,7 @@ export interface Category {
 export interface Brand {
   id: number
   name: string
+  delFg?: number
 }
 
 export interface City {
@@ -113,9 +114,8 @@ export class NewProductSelectionComponent implements OnInit, OnChanges {
     this.disocuntService.getAllCategories().subscribe(categories => {
       this.categories = categories;
     });
-
     this.disocuntService.getAllBrands().subscribe(brands => {
-      this.brands = brands.map(b => ({ ...b, id: b.id.toString() }));
+      this.brands = brands.map(b => ({ ...b, id: b.id.toString(), delFg: b.delFg }));
     });
 
     this.currentSelectedProducts = this.selectedProducts ? [...this.selectedProducts] : [];

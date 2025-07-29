@@ -1,11 +1,24 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <div class="input-group" style="max-width: 300px;">
-    <span class="input-group-text bg-white border-end-0">
-      <i class="pi pi-search text-muted"></i>
-    </span>
-    <input type="text" class="form-control border-start-0" placeholder="Search categories..."
-      [(ngModel)]="categoryFilter" (ngModelChange)="updateFilters()">
+  <div class="d-flex gap-3 align-items-center">
+    <div class="input-group" style="max-width: 300px;">
+      <span class="input-group-text bg-white border-end-0">
+        <i class="pi pi-search text-muted"></i>
+      </span>
+      <input type="text" class="form-control border-start-0" placeholder="Search categories..."
+        [(ngModel)]="categoryFilter" (ngModelChange)="updateFilters()">
+    </div>
+    
+    <!-- Status Filter Dropdown -->
+    <div class="d-flex align-items-center gap-2">
+      <label class="form-label mb-0 text-muted small">Status:</label>
+      <select class="form-select" [(ngModel)]="statusFilter" (change)="updateFilters()" style="min-width: 120px;">
+        <option [ngValue]="null">All Statuses</option>
+        <option [ngValue]="1">Active</option>
+        <option [ngValue]="0">Inactive</option>
+      </select>
+    </div>
   </div>
+  
   <button pButton type="button" label="Add Category" icon="pi pi-plus" class="p-button-success p-button-sm"
     (click)="openCategoryDialog()"></button>
 </div>
@@ -39,6 +52,12 @@
               <span class="options-badge" *ngIf="hasAssignedOptions(rootCategory.id!)">
                 <i class="pi pi-cog"></i>
                 Options assigned
+              </span>
+              <!-- Status Badge -->
+              <span 
+                class="badge ms-2" 
+                [class]="(rootCategory.delFg ?? 1) === 1 ? 'bg-success' : 'bg-secondary'">
+                {{ (rootCategory.delFg ?? 1) === 1 ? 'Active' : 'Inactive' }}
               </span>
             </div>
           </div>
@@ -108,6 +127,12 @@
             <span class="options-badge" *ngIf="hasAssignedOptions(category.id!)">
               <i class="pi pi-cog"></i>
               Options assigned
+            </span>
+            <!-- Status Badge -->
+            <span 
+              class="badge ms-2" 
+              [class]="(category.delFg ?? 1) === 1 ? 'bg-success' : 'bg-secondary'">
+              {{ (category.delFg ?? 1) === 1 ? 'Active' : 'Inactive' }}
             </span>
           </div>
         </div>

@@ -54,6 +54,9 @@ export interface BrandDTO {
   name: string;
   logo?: string;
   baseSku?: string;
+  status?: number; // Optional for frontend compatibility
+  delFg?: number; // Backend soft delete flag: 1=active, 0=inactive
+  productCount?: number; // Number of products associated with this brand
 }
 
 // Create Product Request DTO
