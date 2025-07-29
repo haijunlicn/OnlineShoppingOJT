@@ -10,6 +10,7 @@ import { BrandService } from '@app/core/services/brand.service';
   templateUrl: './brand-dialog.component.html',
   styleUrls: ['./brand-dialog.component.css']
 })
+
 export class BrandDialogComponent implements OnInit, OnChanges {
   @Input() visible = false;
   @Input() editingBrand: BrandDTO | null = null;
@@ -27,16 +28,20 @@ export class BrandDialogComponent implements OnInit, OnChanges {
     private alertService: AlertService
   ) {
     this.brandForm = this.fb.group({
-      name: ['', Validators.required]
+      name: ['', Validators.required],
+      baseSku: ['', Validators.required]
     });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['editingBrand']) {
       if (this.editingBrand) {
-        this.brandForm.patchValue({ name: this.editingBrand.name });
+        this.brandForm.patchValue({
+          name: this.editingBrand.name,
+          baseSku: this.editingBrand.baseSku
+        });
         this.previewUrl = this.editingBrand.logo || null;
       } else {
         this.brandForm.reset();
@@ -79,14 +84,20 @@ export class BrandDialogComponent implements OnInit, OnChanges {
     if (this.brandForm.invalid) return;
 
     const name = this.brandForm.value.name.trim();
-    if (!name) return;
+    const baseSku = this.brandForm.value.baseSku.trim(); // ✅ define it
+
+    if (!name || !baseSku) return;
 
     const saveOrUpdate = (logoUrl?: string) => {
       const dto: BrandDTO = {
         id: this.editingBrand?.id || '',
         name,
+        baseSku: baseSku,
         logo: logoUrl ?? this.editingBrand?.logo ?? ''
       };
+
+      console.log("brand dto : ", dto);
+
 
       const action$ = this.editingBrand
         ? this.brandService.updateBrand(dto)
@@ -98,14 +109,19 @@ export class BrandDialogComponent implements OnInit, OnChanges {
             `Brand ${this.editingBrand ? 'updated' : 'created'} successfully.`,
             'success'
           );
-          this.isUploading = false; // ✅ hide spinner after all done
+          this.isUploading = false;
           this.save.emit(savedBrand);
           this.closeDialog();
         },
         error: (err) => {
           this.isUploading = false;
           console.error('Error saving brand:', err);
-          this.alertService.toast('Failed to save brand.', 'error');
+
+          const message =
+            err?.error?.message || // if backend uses ResponseStatusException
+            err?.error ||          // fallback if backend returns string directly
+            'Failed to save brand.';
+          this.alertService.toast(message, 'error');
         }
       });
     };
@@ -113,9 +129,7 @@ export class BrandDialogComponent implements OnInit, OnChanges {
     if (this.selectedFile) {
       this.isUploading = true;
       this.brandService.uploadImage(this.selectedFile).subscribe({
-        next: (url: string) => {
-          saveOrUpdate(url); // only closeDialog after saving done
-        },
+        next: (url: string) => saveOrUpdate(url),
         error: (err) => {
           this.isUploading = false;
           console.error('Image upload error:', err);

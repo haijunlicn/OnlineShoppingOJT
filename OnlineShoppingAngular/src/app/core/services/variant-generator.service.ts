@@ -1,16 +1,14 @@
 import { Injectable } from '@angular/core';
 import { ProductVariantDTO } from '../models/product.model';
 
-
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
-@Injectable({ providedIn: 'root' })
-export class VariantGeneratorService {
 
+export class VariantGeneratorService {
   /**
- * Generate default variant for products with no options
- */
+   * Generate default variant for products with no options
+   */
   generateDefaultVariant(): ProductVariantDTO {
     return {
       options: [],
@@ -23,13 +21,15 @@ export class VariantGeneratorService {
     }
   }
 
-  generateCombinations(options: { optionId: number, optionName: string, values: { optionValueId: number, valueName: string }[] }[]): ProductVariantDTO[] {
-    let combinations: ProductVariantDTO[] = [{ options: [], price: 0, stock: 0, sku: '' }];
+  generateCombinations(
+    options: { optionId: number; optionName: string; values: { optionValueId: number; valueName: string }[] }[],
+  ): ProductVariantDTO[] {
+    let combinations: ProductVariantDTO[] = [{ options: [], price: 0, stock: 0, sku: "" }]
 
-    options.forEach(option => {
-      const newCombinations: ProductVariantDTO[] = [];
-      combinations.forEach(combination => {
-        option.values.forEach(value => {
+    options.forEach((option) => {
+      const newCombinations: ProductVariantDTO[] = []
+      combinations.forEach((combination) => {
+        option.values.forEach((value) => {
           newCombinations.push({
             options: [
               ...combination.options,
@@ -37,25 +37,23 @@ export class VariantGeneratorService {
                 optionId: option.optionId,
                 optionValueId: value.optionValueId,
                 optionName: option.optionName,
-                valueName: value.valueName
-              }
+                valueName: value.valueName,
+              },
             ],
             price: combination.price,
             stock: combination.stock,
             sku: combination.sku,
-            // displayLabel: this.generateDisplayLabel(combination),
             isDefault: false,
             isRemovable: true,
-          });
-        });
-      });
-      combinations = newCombinations;
-    });
-    return combinations;
+          })
+        })
+      })
+      combinations = newCombinations
+    })
+    return combinations
   }
 
   private generateDisplayLabel(combination: any[]): string {
     return combination.map((item) => `${item.optionName}: ${item.valueName}`).join(", ")
   }
-
 }

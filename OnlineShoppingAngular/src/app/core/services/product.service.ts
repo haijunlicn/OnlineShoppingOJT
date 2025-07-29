@@ -72,5 +72,13 @@ export class ProductService {
     return this.http.get<ProductDTO[]>(`${this.baseUrl}/related?categoryId=${categoryId}&productId=${productId}`);
   }
 
+  softDeleteProduct(productId: number): Observable<string> {
+    return this.http.put(`${this.baseUrl}/${productId}/soft-delete`, null, { responseType: 'text' });
+  }
+
+  softDeleteVariant(variantId: number): Observable<string> {
+    // Assuming variant endpoints are under /products/variants
+    return this.http.put(`${this.baseUrl}/variants/${variantId}/soft-delete`, null, { responseType: 'text' });
+  }
 
 }

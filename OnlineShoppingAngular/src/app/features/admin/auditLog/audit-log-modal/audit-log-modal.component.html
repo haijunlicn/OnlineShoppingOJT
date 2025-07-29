@@ -1,0 +1,45 @@
+<div class="modal-backdrop show"></div>
+<div class="modal d-block fade show" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <div class="d-flex flex-column w-100">
+          <h5 class="modal-title">Audit Log</h5>
+          <!-- Creation info below the title inside header -->
+          <small class="text-muted" *ngIf="createdMeta?.createdBy || createdMeta?.createdDate">
+            Created by <strong>{{ createdMeta?.createdBy?.name || 'Unknown' }}</strong>
+            &#64;
+            {{ createdMeta?.createdDate ? (createdMeta?.createdDate | date: 'dd MMM yyyy, h:mm a') : 'Unknown date' }}
+          </small>
+        </div>
+        <button type="button" class="btn-close" (click)="close.emit()"></button>
+      </div>
+
+
+      <div class="modal-body">
+
+        <!-- Then list other logs (can be empty) -->
+        <div *ngFor="let item of parsedLogs">
+          <div class="mb-3 border-bottom pb-2">
+            <div><strong>{{ item.action }}</strong> - {{ item.description }}</div>
+            <small class="text-muted">{{ item.username }} &#64; {{ item.createdDate | date:'dd MMM yyyy, h:mm a'
+              }}</small>
+
+            <div *ngIf="item.details?.length">
+              <ul>
+                <li *ngFor="let detail of item.details">
+                  <span [innerHTML]="detail"></span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Show if no logs at all -->
+        <p *ngIf="parsedLogs.length === 0" class="text-muted">No logs for this item.</p>
+
+      </div>
+    </div>
+  </div>
+</div>

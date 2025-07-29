@@ -286,7 +286,7 @@
                   <div class="product-info">
                     <div class="product-name">{{ product.product.name }}</div>
                     <small class="text-muted d-block d-md-none">
-                      {{ product.brand.name || 'N/A' }} • {{ product.category.name || 'N/A' }}
+                      {{ product.brand?.name || 'N/A' }} • {{ product.category.name || 'N/A' }}
                     </small>
                   </div>
                 </td>
@@ -294,7 +294,7 @@
                   <div class="brand-category-info">
                     <div class="brand-name">
                       <i class="fas fa-tag brand-icon me-1"></i>
-                      {{ product.brand.name || 'N/A' }}
+                      {{ product.brand?.name || 'N/A' }}
                     </div>
                     <div class="category-name">
                       <i class="fas fa-folder category-icon me-1"></i>

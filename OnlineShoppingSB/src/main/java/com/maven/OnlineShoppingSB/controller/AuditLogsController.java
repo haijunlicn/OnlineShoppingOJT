@@ -1,6 +1,7 @@
 package com.maven.OnlineShoppingSB.controller;
 
 import com.maven.OnlineShoppingSB.audit.AuditEventDTO;
+import com.maven.OnlineShoppingSB.dto.AuditLogDTO;
 import com.maven.OnlineShoppingSB.service.AuditLogsService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,4 +35,11 @@ public class AuditLogsController {
 
         return ResponseEntity.ok(logs);
     }
+
+    @GetMapping("/product/{productId}")
+    public ResponseEntity<List<AuditLogDTO>> getAuditLogsForProduct(@PathVariable Long productId) {
+        List<AuditLogDTO> logs = auditLogsService.getAuditLogsForProduct(productId);
+        return ResponseEntity.ok(logs);
+    }
+
 }

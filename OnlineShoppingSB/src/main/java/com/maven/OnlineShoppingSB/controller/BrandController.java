@@ -17,12 +17,41 @@ public class BrandController {
     @Autowired
     private BrandService brandService;
 
+    @PutMapping("/update/{id}")
+    @PreAuthorize("hasAuthority('BRAND_MANAGE') or hasRole('SUPERADMIN')")
+    public ResponseEntity<String> updateBrand(@RequestBody BrandDTO dto) {
+        try {
+            brandService.updateBrand(dto);
+            return ResponseEntity.ok("Brand updated successfully!");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('BRAND_MANAGE') or hasRole('SUPERADMIN')")
     public ResponseEntity<String> insertBrand(@RequestBody BrandDTO dto) {
-        brandService.insertBrand(dto);
-        return ResponseEntity.ok("Brand created successfully!");
+        try {
+            brandService.insertBrand(dto);
+            return ResponseEntity.ok("Brand creat=ed successfully!");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
+
+//    @PostMapping("/create")
+//    @PreAuthorize("hasAuthority('BRAND_MANAGE') or hasRole('SUPERADMIN')")
+//    public ResponseEntity<String> insertBrand(@RequestBody BrandDTO dto) {
+//        brandService.insertBrand(dto);
+//        return ResponseEntity.ok("Brand created successfully!");
+//    }
+//
+//    @PutMapping("/update/{id}")
+//    @PreAuthorize("hasAuthority('BRAND_MANAGE') or hasRole('SUPERADMIN')")
+//    public ResponseEntity<String> updateBrand(@RequestBody BrandDTO dto) {
+//        brandService.updateBrand(dto);
+//        return ResponseEntity.ok("Brand updated successfully!");
+//    }
 
     @GetMapping("/list")
     @PreAuthorize("hasAuthority('BRAND_READ') or hasRole('SUPERADMIN')")
@@ -39,13 +68,6 @@ public class BrandController {
     @PreAuthorize("hasAuthority('BRAND_READ') or hasRole('SUPERADMIN')")
     public ResponseEntity<BrandDTO> getById(@PathVariable Long id) {
         return ResponseEntity.ok(brandService.getById(id));
-    }
-
-    @PutMapping("/update/{id}")
-    @PreAuthorize("hasAuthority('BRAND_MANAGE') or hasRole('SUPERADMIN')")
-    public ResponseEntity<String> updateBrand(@RequestBody BrandDTO dto) {
-        brandService.updateBrand(dto);
-        return ResponseEntity.ok("Brand updated successfully!");
     }
 
     @DeleteMapping("/delete/{id}")

@@ -1,17 +1,4 @@
 
-// <<<<<<< HEAD
-// import { Component, OnInit, ViewChild } from '@angular/core';
-// import { Table } from 'primeng/table';
-// import { BrandDTO, ProductListItemDTO } from '../../../../core/models/product.model';
-// import { ProductService } from '../../../../core/services/product.service';
-// import { CategoryService } from '../../../../core/services/category.service';
-// import { CategoryDTO } from '../../../../core/models/category-dto';
-// import { BrandService } from '@app/core/services/brand.service';
-// import { Router } from '@angular/router';
-// import { AccessControlService } from '@app/core/services/AccessControl.service';
-// import { PdfExportService } from '@app/core/services/pdf-export.service';
-// import { ExcelExportService } from '@app/core/services/excel-export.service';
-// =======
 import { Component, OnInit, viewChild, ViewChild } from "@angular/core"
 import { Router } from "@angular/router"
 import type { CategoryDTO } from "@app/core/models/category-dto"
@@ -23,8 +10,6 @@ import { ProductService } from "@app/core/services/product.service"
 import { Table } from "primeng/table"
 import { PdfExportService } from '@app/core/services/pdf-export.service';
 import { ExcelExportService } from '@app/core/services/excel-export.service';
-
-
 
 interface ExtendedProductListItemDTO extends ProductListItemDTO {
   status: string
@@ -74,11 +59,6 @@ export class ProductListComponent implements OnInit {
   priceRange: number[] = [0, 1000]
   maxPrice = 1000
   minPrice = 0
-  // selectedCategory: any = null
-  // selectedBrand: any = null
-  // selectedStatus: any = null
-  // globalFilterValue = ""
-  // showFilters = false
 
   // Filter values
   selectedCategory: any = null;

@@ -35,6 +35,9 @@ public class VariantPriceEntity {
     @Column(name = "end_date")
     private LocalDateTime endDate;
 
-    // getters & setters
+    @ManyToOne
+    @JoinColumn(name = "created_by")
+    private UserEntity createdBy;
+
 }
 

@@ -12,10 +12,10 @@ import lombok.Setter;
 public class BrandDTO {
 
     private Long id;
-
     @NotEmpty(message = "Name is required")
     private String name;
     private String logo;
+    private String baseSku;
     private Integer delFg;
     private String createdDate;
     private String updatedDate;
@@ -33,6 +33,7 @@ public class BrandDTO {
         BrandDTO dto = new BrandDTO();
         dto.setId(entity.getId());
         dto.setName(entity.getName());
+        dto.setBaseSku(entity.getBaseSku());
         return dto;
     }
 

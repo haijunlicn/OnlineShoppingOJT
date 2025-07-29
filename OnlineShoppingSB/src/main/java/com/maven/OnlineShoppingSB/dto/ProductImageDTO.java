@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -34,6 +35,24 @@ public class ProductImageDTO {
         dto.setCreatedDate(entity.getCreatedDate());
 
         return dto;
+    }
+
+
+    public record ProductImageChange(
+            Long id,
+            String action, // "ADDED", "REMOVED", "UPDATED"
+            String imgPath,
+            String altText,
+            Integer displayOrder,
+            Boolean mainImage,
+            Map<String, Object> oldSnapshot  // add this
+    ) {}
+
+    public record ProductImageUpdateLogResult(
+            List<ProductImageChange> added,
+            List<ProductImageChange> removed,
+            List<ProductImageChange> updated
+    ) {
     }
 
 }

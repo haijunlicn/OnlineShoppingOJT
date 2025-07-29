@@ -12,8 +12,20 @@ export class BrandService {
 
   constructor(private http: HttpClient) { }
 
-  createBrand(brand: BrandDTO): Observable<BrandDTO> {
-    return this.http.post<BrandDTO>(`${this.baseUrl}/create`, brand, { responseType: 'text' as 'json' });
+  // createBrand(brand: BrandDTO): Observable<BrandDTO> {
+  //   return this.http.post<BrandDTO>(`${this.baseUrl}/create`, brand, { responseType: 'text' as 'json' });
+  // }
+
+  // updateBrand(brand: BrandDTO): Observable<any> {
+  //   return this.http.put(`${this.baseUrl}/update/${brand.id}`, brand, { responseType: 'text' as 'json' });
+  // }
+
+  createBrand(brand: BrandDTO): Observable<any> {
+    return this.http.post<string>(`${this.baseUrl}/create`, brand, { responseType: 'text' as 'json' });
+  }
+
+  updateBrand(brand: BrandDTO): Observable<any> {
+    return this.http.put<string>(`${this.baseUrl}/update/${brand.id}`, brand, { responseType: 'text' as 'json' });
   }
 
   getAllBrands(): Observable<BrandDTO[]> {
@@ -26,10 +38,6 @@ export class BrandService {
 
   getBrandById(id: number): Observable<BrandDTO> {
     return this.http.get<BrandDTO>(`${this.baseUrl}/getbyid/${id}`);
-  }
-
-  updateBrand(brand: BrandDTO): Observable<any> {
-    return this.http.put(`${this.baseUrl}/update/${brand.id}`, brand, { responseType: 'text' as 'json' });
   }
 
   deleteBrand(id: number): Observable<string> {

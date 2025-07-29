@@ -11,6 +11,7 @@ public class ProductListItemDTO {
     private BrandDTO brand;
     private CategoryDTO category;
     private List<ProductVariantDTO> variants;
+    private List<ProductVariantDTO> deletedVariants;
     private List<ProductOptionDTO> options;
     private List<ProductImageDTO> images;
 }
