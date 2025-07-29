@@ -188,6 +188,12 @@
                   <span class="item-sku">SKU: {{ item.variant.sku }}</span>
                   <span class="item-qty">Quantity: {{ item.quantity }}</span>
                 </div>
+                <!-- Show variant options dynamically -->
+                <div class="item-options" *ngIf="item.variant.options && item.variant.options.length">
+                  <span *ngFor="let opt of item.variant.options; let last = last">
+                    {{ opt.optionName }}: <b>{{ opt.valueName }}</b><span *ngIf="!last">, </span>
+                  </span>
+                </div>
 
                 <!-- Show Discount Info (same as admin) -->
                 <div *ngIf="hasItemDiscounts(item) && order.orderType !== 'REPLACEMENT'" class="item-discounts">

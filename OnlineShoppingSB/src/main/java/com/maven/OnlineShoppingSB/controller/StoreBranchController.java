@@ -3,6 +3,7 @@ package com.maven.OnlineShoppingSB.controller;
 import com.maven.OnlineShoppingSB.dto.StoreBranchDto;
 import com.maven.OnlineShoppingSB.service.StoreBranchService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class StoreBranchController {
     }
 
     @GetMapping("/all")
+    @PreAuthorize("hasAuthority('STORE_MANAGEMENT') or hasRole('SUPERADMIN')")
     public List<StoreBranchDto> getAll() {
         return service.getAll();
     }

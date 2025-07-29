@@ -12,6 +12,9 @@ export class DeliveryMethodService {
   getAll(): Observable<DeliveryMethod[]> {
     return this.http.get<DeliveryMethod[]>(this.apiUrl);
   }
+  publicgetAll(): Observable<DeliveryMethod[]> {
+    return this.http.get<DeliveryMethod[]>(`${this.apiUrl}/public`);
+  }
 
   getById(id: number): Observable<DeliveryMethod> {
     return this.http.get<DeliveryMethod>(`${this.apiUrl}/${id}`);

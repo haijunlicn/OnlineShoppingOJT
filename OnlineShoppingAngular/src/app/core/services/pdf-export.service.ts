@@ -260,7 +260,7 @@ export class PdfExportService {
   }
 
   /**
-   * Export an order invoice to PDF (styled, no logo, always MMK, no tax/terms)
+   * Export an order invoice to PDF with modern layout design
    */
   exportOrderInvoiceToPdf(
     order: any, // OrderDetail
@@ -269,198 +269,732 @@ export class PdfExportService {
   ): void {
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageWidth = pdf.internal.pageSize.getWidth();
-    let y = 18;
-    const leftMargin = 18;
-    const rightMargin = 18;
-    const contentWidth = pageWidth - leftMargin - rightMargin;
-    // Black and white only
-    const tableHeaderBg = [255, 255, 255]; // white
-    const tableHeaderText = [0, 0, 0]; // black
-    const rowAltBg = [255, 255, 255]; // white
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 15;
+    const contentWidth = pageWidth - (margin * 2);
+    
+    // Modern color scheme
+    const primaryColor: [number, number, number] = [52, 73, 94]; // Dark blue-gray
+    const accentColor: [number, number, number] = [231, 76, 60]; // Red accent
+    const headerBgColor: [number, number, number] = [245, 246, 250]; // Very light gray
+    const borderColor: [number, number, number] = [220, 221, 225]; // Light border
+    const textColor: [number, number, number] = [44, 62, 80]; // Dark text
+    const lightTextColor: [number, number, number] = [127, 140, 141]; // Light text
+    
+    let y = 20;
+    
+    // --- Helper for date formatting ---
+    function formatDateTime(dateString: string | undefined | null): string {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return '';
+      // Format: dd/MM/yyyy hh:mm AM/PM
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = String(date.getFullYear());
+      let hours = date.getHours();
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      return `${day}/${month}/${year} ${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+    }
 
-    // --- Company Info ---
+    // --- Modern Header Section ---
+    // Company section
+    pdf.setTextColor(...primaryColor);
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(18);
-    pdf.setTextColor(0, 0, 0);
-    pdf.text(store?.name || 'Store Name', leftMargin, y);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(11);
-    pdf.setTextColor(0, 0, 0);
-    y += 7;
-    if (store?.address) {
-      pdf.text(store.address, leftMargin, y);
-      y += 5;
-    }
-    let addrLine = '';
-    if (store?.city) addrLine += store.city;
-    if (store?.state) addrLine += (addrLine ? ', ' : '') + store.state;
-    // if (store?.zipCode) addrLine += (addrLine ? ', ' : '') + store.zipCode;
-    if (addrLine) {
-      pdf.text(addrLine, leftMargin, y);
-      y += 5;
-    }
-    if (store?.phoneNumber) {
-      pdf.text('Phone: ' + store.phoneNumber, leftMargin, y);
-      y += 5;
-    }
-
-    // --- Invoice Title ---
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(22);
-    pdf.setTextColor(0, 0, 0);
-    pdf.text('INVOICE', pageWidth - rightMargin, 22, { align: 'right' });
-    pdf.setTextColor(0, 0, 0);
-
-    // --- Invoice Info Box ---
-    y += 6;
-    const infoBoxX = pageWidth - rightMargin - 60;
-    const infoBoxY = y - 2;
-    const infoBoxW = 60;
-    let infoBoxH = 24; // will adjust if needed
+    pdf.text('BRITIUM GALLERY', margin, 18);
+    
+    // Invoice details on the right
+    pdf.setFontSize(14);
+    pdf.setTextColor(...accentColor);
+    pdf.text('INVOICE', pageWidth - margin, 18, { align: 'right' });
+    
     pdf.setFontSize(10);
-    let infoY = y + 3;
+    pdf.setTextColor(...lightTextColor);
+    pdf.text(`#${order.trackingNumber || order.id}`, pageWidth - margin, 25, { align: 'right' });
+    pdf.text(formatDateTime(order.createdDate), pageWidth - margin, 30, { align: 'right' });
+    
+    y = 40;
+    
+    // --- Information Grid Layout ---
+    const gridY = y;
+    const gridHeight = 35;
+    const gridColWidth = contentWidth / 3;
+    
+    // Grid background
+    pdf.setFillColor(...headerBgColor);
+    pdf.rect(margin, gridY, contentWidth, gridHeight, 'F');
+    pdf.setDrawColor(...borderColor);
+    pdf.setLineWidth(0.3);
+    pdf.rect(margin, gridY, contentWidth, gridHeight, 'S');
+    
+    // Vertical dividers
+    pdf.line(margin + gridColWidth, gridY, margin + gridColWidth, gridY + gridHeight);
+    pdf.line(margin + gridColWidth * 2, gridY, margin + gridColWidth * 2, gridY + gridHeight);
+    
+    // Section titles
+    pdf.setFillColor(...primaryColor);
+    pdf.rect(margin, gridY, gridColWidth, 8, 'F');
+    pdf.rect(margin + gridColWidth, gridY, gridColWidth, 8, 'F');
+    pdf.rect(margin + gridColWidth * 2, gridY, gridColWidth, 8, 'F');
+    
+    pdf.setTextColor(255, 255, 255);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Invoice #', infoBoxX + 3, infoY);
+    pdf.setFontSize(9);
+    pdf.text('CUSTOMER', margin + 5, gridY + 5);
+    pdf.text('ORDER INFO', margin + gridColWidth + 5, gridY + 5);
+    pdf.text('PAYMENT', margin + gridColWidth * 2 + 5, gridY + 5);
+    
+    // Customer details
+    pdf.setTextColor(...textColor);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(String(order.id).padStart(7, '0'), infoBoxX + 30, infoY);
-    infoY += 6;
+    pdf.setFontSize(8);
+    pdf.text(order.user?.name || 'N/A', margin + 5, gridY + 15);
+    pdf.text(order.user?.email || 'N/A', margin + 5, gridY + 20);
+    if (order.shippingAddress?.phoneNumber) {
+      pdf.text(order.shippingAddress.phoneNumber, margin + 5, gridY + 25);
+    }
+    
+    // Order details
+    pdf.text(`ID: ${order.trackingNumber || order.id}`, margin + gridColWidth + 5, gridY + 15);
+    pdf.text(`Status: ${order.currentOrderStatus || 'N/A'}`, margin + gridColWidth + 5, gridY + 20);
+    if (order.estimatedDeliveryDate) {
+      pdf.text(`Delivery: ${formatDateTime(order.estimatedDeliveryDate)}`, margin + gridColWidth + 5, gridY + 25);
+    }
+    
+    // Payment details
+    pdf.text(order.paymentMethod?.methodName || 'N/A', margin + gridColWidth * 2 + 5, gridY + 15);
+    pdf.text(`Total: ${(order.totalAmount || 0).toLocaleString()} MMK`, margin + gridColWidth * 2 + 5, gridY + 20);
+    
+    y = gridY + gridHeight + 15;
+    
+    // --- Shipping Address Section ---
+    const addressY = y;
+    const addressHeight = 20;
+    
+    // Address background
+    pdf.setFillColor(...headerBgColor);
+    pdf.rect(margin, addressY, contentWidth, addressHeight, 'F');
+    pdf.setDrawColor(...borderColor);
+    pdf.rect(margin, addressY, contentWidth, addressHeight, 'S');
+    
+    // Address title
+    pdf.setFillColor(...primaryColor);
+    pdf.rect(margin, addressY, contentWidth, 8, 'F');
+    pdf.setTextColor(255, 255, 255);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Date', infoBoxX + 3, infoY);
+    pdf.setFontSize(9);
+    pdf.text('SHIPPING ADDRESS', margin + 5, addressY + 5);
+    
+    // Address content - Single line with wrapping
+    pdf.setTextColor(...textColor);
     pdf.setFont('helvetica', 'normal');
-    const dateStr = order.createdDate ? new Date(order.createdDate).toLocaleDateString('en-US') : '';
-    pdf.text(dateStr, infoBoxX + 30, infoY);
-    infoY += 6;
-    // --- Order Status in Info Box ---
+    pdf.setFontSize(9);
+    
+    let fullAddress = '';
+    if (order.shippingAddress?.address) fullAddress += order.shippingAddress.address;
+    if (order.shippingAddress?.township) fullAddress += (fullAddress ? ', ' : '') + order.shippingAddress.township;
+    if (order.shippingAddress?.city) fullAddress += (fullAddress ? ', ' : '') + order.shippingAddress.city;
+    if (order.shippingAddress?.zipCode) fullAddress += (fullAddress ? ', ' : '') + order.shippingAddress.zipCode;
+    if (order.shippingAddress?.country) fullAddress += (fullAddress ? ', ' : '') + order.shippingAddress.country;
+    
+    // Split address if too long (approximately 60 characters per line)
+    const maxCharsPerLine = 60;
+    if (fullAddress.length > maxCharsPerLine) {
+      const firstLine = fullAddress.substring(0, maxCharsPerLine);
+      const secondLine = fullAddress.substring(maxCharsPerLine);
+      pdf.text(firstLine, margin + 5, addressY + 15);
+      pdf.text(secondLine, margin + 5, addressY + 20);
+    } else {
+      pdf.text(fullAddress, margin + 5, addressY + 15);
+    }
+    
+    y = addressY + addressHeight + 15;
+    
+    // --- Items Table with Modern Design ---
+    const tableY = y;
+    const tableHeaderHeight = 15;
+    const rowHeight = 15; // Increased height to accommodate SKU under product name
+    
+    // Table header with gradient effect
+    pdf.setFillColor(...primaryColor);
+    pdf.rect(margin, tableY, contentWidth, tableHeaderHeight, 'F');
+    
+    // Header text
+    pdf.setTextColor(255, 255, 255);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Status', infoBoxX + 3, infoY);
+    pdf.setFontSize(10);
+    
+    const colWidths = [95, 20, 35, 35]; // Item (with SKU), Qty, Price, Subtotal
+    const colX = [margin + 5, margin + 100, margin + 120, margin + 155];
+    
+    pdf.text('Product', colX[0], tableY + 10);
+    pdf.text('Qty', colX[1], tableY + 10);
+    pdf.text('Price', colX[2], tableY + 10);
+    pdf.text('Total', colX[3], tableY + 10);
+    
+    y = tableY + tableHeaderHeight;
+    
+    // Table data with modern styling
     pdf.setFont('helvetica', 'normal');
-    const statusText = order.currentOrderStatus || '';
-    pdf.text(statusText, infoBoxX + 30, infoY);
-    // Find status date from statusHistory if available
-    let statusDate = '';
-    if (order.statusHistory && Array.isArray(order.statusHistory)) {
-      const statusEntry = order.statusHistory.find((s: any) => s.statusCode === order.currentOrderStatus);
-      if (statusEntry && statusEntry.createdAt) {
-        statusDate = new Date(statusEntry.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    pdf.setFontSize(9);
+    
+    order.items.forEach((item: any, index: number) => {
+      // Modern alternating row colors
+      if (index % 2 === 0) {
+        pdf.setFillColor(250, 250, 250); // Very light gray
+        pdf.rect(margin, y, contentWidth, rowHeight, 'F');
       }
-    }
-    if (!statusDate && order.createdDate) {
-      statusDate = new Date(order.createdDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-    }
-    if (statusDate) {
-      pdf.setFont('helvetica', 'normal');
+      
+      // Item name with variant options
+      let name = item.product?.name || '';
+      if (item.variant?.options && Array.isArray(item.variant.options) && item.variant.options.length > 0) {
+        const optionsStr = item.variant.options.map((opt: any) => `${opt.optionName}: ${opt.valueName}`).join(', ');
+        name += ` [${optionsStr}]`;
+      }
+      
+      // Truncate long names
+      if (name.length > 45) {
+        name = name.substring(0, 42) + '...';
+      }
+      
+      const qty = String(item.quantity || 0);
+      const price = item.price ? `${item.price.toLocaleString()} MMK` : '0 MMK';
+      const subtotal = item.totalPrice ? `${item.totalPrice.toLocaleString()} MMK` : '0 MMK';
+      const sku = item.variant?.sku || 'N/A';
+      
+      // Product name and SKU
+      pdf.setTextColor(...textColor);
+      pdf.text(name, colX[0], y + 6);
+      pdf.setTextColor(...lightTextColor);
+      pdf.setFontSize(8);
+      pdf.text(`SKU: ${sku}`, colX[0], y + 12);
       pdf.setFontSize(9);
-      pdf.text(`as of ${statusDate}`, infoBoxX + 3, infoY + 5);
-      infoBoxH = Math.max(infoBoxH, (infoY + 8) - infoBoxY);
+      
+      // Other columns
+      pdf.setTextColor(...textColor);
+      pdf.text(qty, colX[1], y + 8);
+      pdf.text(price, colX[2], y + 8);
+      pdf.text(subtotal, colX[3], y + 8);
+      
+      y += rowHeight;
+    });
+    
+    // Table bottom border
+    pdf.setDrawColor(...borderColor);
+    pdf.setLineWidth(0.5);
+    pdf.line(margin, y, margin + contentWidth, y);
+    
+    y += 15;
+    
+    // --- Modern Totals Section ---
+    const subtotal = order.items.reduce((sum: number, item: any) => sum + (item.totalPrice || 0), 0);
+    let discount = 0;
+    if (typeof order.getTotalSavings === 'function') {
+      discount = order.getTotalSavings();
+    } else if (order.totalDiscount) {
+      discount = order.totalDiscount;
+    } else if (order.items) {
+      discount = order.items.reduce((sum: number, item: any) => {
+        if (!item.appliedDiscounts) return sum;
+        return sum + item.appliedDiscounts.reduce((dSum: number, d: any) => dSum + (d.discountAmount || 0) * (item.quantity || 1), 0);
+      }, 0);
     }
-
-    // --- Payment Method (below Info Box) ---
-    let paymentY = infoY + 10;
-    if (order.paymentMethod && order.paymentMethod.methodName) {
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(10);
-      pdf.text('Payment Method:', infoBoxX + 3, paymentY);
-      pdf.setFont('helvetica', 'normal');
-      let paymentText = order.paymentMethod.methodName;
-      if (order.paymentMethod.type) {
-        paymentText += ` (${order.paymentMethod.type})`;
-      }
-      pdf.text(paymentText, infoBoxX + 35, paymentY);
+    const shippingFee = order.shippingFee || 0;
+    const totalPaid = (subtotal - discount + shippingFee);
+    
+    // Totals container
+    const totalsWidth = 100;
+    const totalsX = pageWidth - margin - totalsWidth;
+    
+    // Totals background with primary color border
+    pdf.setFillColor(...headerBgColor);
+    pdf.rect(totalsX, y, totalsWidth, 50, 'F');
+    pdf.setDrawColor(...primaryColor);
+    pdf.setLineWidth(1);
+    pdf.rect(totalsX, y, totalsWidth, 50, 'S');
+    
+    // Totals content
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9);
+    
+    let currentY = y + 10;
+    
+    // Subtotal
+    pdf.setTextColor(...lightTextColor);
+    pdf.text('Subtotal:', totalsX + 5, currentY);
+    pdf.setTextColor(...textColor);
+    pdf.text(`${subtotal.toLocaleString()} MMK`, totalsX + totalsWidth - 5, currentY, { align: 'right' });
+    currentY += 8;
+    
+    // Discount
+    if (discount > 0) {
+      pdf.setTextColor(...lightTextColor);
+      pdf.text('Discount:', totalsX + 5, currentY);
+      pdf.setTextColor(...accentColor);
+      pdf.text(`-${discount.toLocaleString()} MMK`, totalsX + totalsWidth - 5, currentY, { align: 'right' });
+      currentY += 8;
     }
-
-    // --- Bill To ---
-    y += 20;
+    
+    // Shipping
+    pdf.setTextColor(...lightTextColor);
+    pdf.text('Shipping:', totalsX + 5, currentY);
+    pdf.setTextColor(...textColor);
+    pdf.text(`${shippingFee.toLocaleString()} MMK`, totalsX + totalsWidth - 5, currentY, { align: 'right' });
+    currentY += 12;
+    
+    // Total line
+    pdf.setDrawColor(...primaryColor);
+    pdf.setLineWidth(0.5);
+    pdf.line(totalsX + 5, currentY, totalsX + totalsWidth - 5, currentY);
+    currentY += 8;
+    
+    // Final total
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(12);
-    pdf.text('Bill To', leftMargin, y);
+    pdf.setTextColor(...primaryColor);
+    pdf.text('TOTAL:', totalsX + 5, currentY);
+    pdf.setTextColor(...primaryColor);
+    pdf.text(`${totalPaid.toLocaleString()} MMK`, totalsX + totalsWidth - 5, currentY, { align: 'right' });
+    
+    y += 60;
+    
+    // --- Modern Footer Section ---
+    const footerY = pageHeight - 25;
+    
+    // Footer content
+    pdf.setTextColor(...lightTextColor);
     pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(11);
-    pdf.text(order.user?.name || '', leftMargin, y + 6);
-    let custAddrY = y + 12;
-    if (order.shippingAddress) {
-      let addr = order.shippingAddress.address || '';
-      if (order.shippingAddress.township) addr += ', ' + order.shippingAddress.township;
-      pdf.text(addr, leftMargin, custAddrY);
-      custAddrY += 5;
-      let cityLine = '';
-      if (order.shippingAddress.city) cityLine += order.shippingAddress.city;
-      // if (order.shippingAddress.zipCode) cityLine += (cityLine ? ', ' : '') + order.shippingAddress.zipCode;
-      if (cityLine) {
-        pdf.text(cityLine, leftMargin, custAddrY);
-        custAddrY += 5;
+    pdf.setFontSize(8);
+    
+    // Left footer
+    pdf.text('Thank you for choosing Britium Gallery!', margin, footerY + 8);
+    pdf.text('support@britiumgallery.com', margin, footerY + 14);
+    
+    // Center footer
+    pdf.text('Computer-generated invoice • No signature required', pageWidth / 2, footerY + 8, { align: 'center' });
+    
+    // Right footer
+    pdf.text(`Page ${pdf.getCurrentPageInfo().pageNumber}`, pageWidth - margin, footerY + 8, { align: 'right' });
+    pdf.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth - margin, footerY + 14, { align: 'right' });
+    
+    // Save PDF
+    pdf.save(filename);
+  }
+
+  /**
+   * Export product catalog report with dark theme design
+   * @param data - Array of product data
+   * @param filename - Name of the PDF file
+   * @param options - Additional options
+   */
+  async exportProductCatalogReport(
+    data: any[],
+    filename: string = 'product-catalog-report.pdf',
+    options: {
+      includeVariants?: boolean;
+      includeImages?: boolean;
+      filters?: any;
+      generatedBy?: string;
+    } = {}
+  ): Promise<void> {
+    const pdf = new jsPDF('portrait', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 15;
+    const contentWidth = pageWidth - (margin * 2);
+    
+    // Colors - using black and white for better readability
+    const darkBg: [number, number, number] = [20, 20, 20];
+    const blackText: [number, number, number] = [0, 0, 0];
+    const whiteText: [number, number, number] = [255, 255, 255];
+    
+    let y = 20;
+    
+    // Title Section with dark background
+    pdf.setFillColor(darkBg[0], darkBg[1], darkBg[2]);
+    pdf.rect(0, 0, pageWidth, 35, 'F');
+    
+    // Add company name as white text (no box)
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.text('BRITIUM GALLERY', margin + 5, 18);
+    
+    // Main title
+    pdf.setTextColor(whiteText[0], whiteText[1], whiteText[2]);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(16);
+    pdf.text('PRODUCT CATALOG REPORT', pageWidth / 2, 28, { align: 'center' });
+    
+    // Separator line
+    y = 40;
+    this.drawSeparatorLine(pdf, y, pageWidth, margin);
+    y += 5;
+    
+    // Report Info Section
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    
+    const generatedBy = options.generatedBy || 'Admin';
+    const totalProducts = data.length;
+    const filters = options.filters || {};
+    
+    // Report metadata
+    pdf.setTextColor(blackText[0], blackText[1], blackText[2]);
+    pdf.text(`Generated On:`, margin, y);
+    pdf.setTextColor(blackText[0], blackText[1], blackText[2]);
+    pdf.text(` ${new Date().toLocaleString()}`, margin + 40, y);
+    y += 5;
+    
+    pdf.setTextColor(blackText[0], blackText[1], blackText[2]);
+    pdf.text(`Generated By:`, margin, y);
+    pdf.setTextColor(blackText[0], blackText[1], blackText[2]);
+    pdf.text(` ${generatedBy}`, margin + 40, y);
+    y += 5;
+    
+    pdf.setTextColor(blackText[0], blackText[1], blackText[2]);
+    pdf.text(`Total Products:`, margin, y);
+    pdf.setTextColor(blackText[0], blackText[1], blackText[2]);
+    pdf.text(` ${totalProducts}`, margin + 40, y);
+    y += 5;
+    
+    // Filters applied
+    if (Object.keys(filters).length > 0) {
+      pdf.setTextColor(blackText[0], blackText[1], blackText[2]);
+      pdf.text(`Filters Applied:`, margin, y);
+      y += 5;
+      
+      Object.entries(filters).forEach(([key, value]) => {
+        pdf.setTextColor(blackText[0], blackText[1], blackText[2]);
+        pdf.text(`  ${key} = `, margin + 10, y);
+        pdf.setTextColor(blackText[0], blackText[1], blackText[2]);
+        pdf.text(`"${value}"`, margin + 40, y);
+        y += 4;
+      });
+    }
+    
+    pdf.setTextColor(blackText[0], blackText[1], blackText[2]);
+    pdf.text(`Include Variants:`, margin, y);
+    pdf.setTextColor(blackText[0], blackText[1], blackText[2]);
+    pdf.text(` ${options.includeVariants ? 'YES' : 'NO'}`, margin + 40, y);
+    y += 8;
+    
+    // Separator
+    this.drawSeparatorLine(pdf, y, pageWidth, margin);
+    y += 8;
+    
+    // Product Details
+    data.forEach((product, index) => {
+      // Check if we need a new page
+      if (y > pageHeight - 100) {
+        pdf.addPage();
+        y = 20;
       }
-      // if (order.shippingAddress.country) {
-      //   pdf.text(order.shippingAddress.country, leftMargin, custAddrY);
-      //   custAddrY += 5;
-      // }
-      if (order.shippingAddress.phoneNumber) {
-        pdf.text('Phone: ' + order.shippingAddress.phoneNumber, leftMargin, custAddrY);
-        custAddrY += 5;
+      
+      // Product header
+      pdf.setTextColor(blackText[0], blackText[1], blackText[2]);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(12);
+      pdf.text(`PRODUCT: ${product.product?.name || product.name}`, margin, y);
+      y += 5;
+      
+      this.drawSeparatorLine(pdf, y, pageWidth, margin);
+      y += 5;
+      
+      // Product details (removed description)
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      
+      const details = [
+        { label: 'Product ID', value: product.id || product.product?.id || 'N/A' },
+        { label: 'Brand', value: product.brand?.name || 'N/A' },
+        { label: 'Category', value: product.category?.name || 'N/A' },
+        { label: 'Base Price', value: product.product?.basePrice || product.basePrice || 0 },
+        { label: 'Created Date', value: product.product?.createdDate || product.createdDate || 'N/A' },
+        { label: 'Order Count', value: product.product?.orderCount || 0 }
+      ];
+      
+      details.forEach(detail => {
+        if (detail.value !== undefined && detail.value !== null) {
+          pdf.setTextColor(blackText[0], blackText[1], blackText[2]);
+          pdf.text(`${detail.label}:`, margin, y);
+          
+          let displayValue = detail.value;
+          if (detail.label === 'Base Price') {
+            displayValue = `${Number(detail.value).toLocaleString()} MMK`;
+            pdf.setTextColor(blackText[0], blackText[1], blackText[2]);
+          } else {
+            pdf.setTextColor(blackText[0], blackText[1], blackText[2]);
+          }
+          
+          pdf.text(` ${displayValue}`, margin + 40, y);
+          y += 4;
+        }
+      });
+      
+      // Variants section
+      if (options.includeVariants && product.variants && product.variants.length > 0) {
+        y += 5;
+        pdf.setTextColor(blackText[0], blackText[1], blackText[2]);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('VARIANTS', pageWidth / 2, y, { align: 'center' });
+        y += 5;
+        
+        this.drawSeparatorLine(pdf, y, pageWidth, margin);
+        y += 5;
+        
+        // Variants table header
+        const variantHeaders = ['SKU', 'Options', 'Price', 'Stock', 'Order Count'];
+        const colWidths = [35, 55, 30, 20, 25];
+        let x = margin;
+        
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(9);
+        variantHeaders.forEach((header, i) => {
+          pdf.setTextColor(blackText[0], blackText[1], blackText[2]);
+          pdf.text(`| ${header}`, x, y);
+          x += colWidths[i];
+        });
+        pdf.text('|', x, y);
+        y += 4;
+        
+        this.drawSeparatorLine(pdf, y, pageWidth, margin);
+        y += 4;
+        
+        // Variants data
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(8);
+        
+        product.variants.forEach((variant: any) => {
+          if (y > pageHeight - 50) {
+            pdf.addPage();
+            y = 20;
+          }
+          
+          x = margin;
+          pdf.setTextColor(blackText[0], blackText[1], blackText[2]);
+          
+          // SKU
+          pdf.text(`| ${variant.sku || 'N/A'}`, x, y);
+          x += colWidths[0];
+          
+          // Options - handle different data structures
+          let optionsText = 'N/A';
+          if (variant.options && variant.options.length > 0) {
+            optionsText = variant.options.map((opt: any) => {
+              if (opt.valueName) return opt.valueName;
+              if (opt.optionValue?.value) return opt.optionValue.value;
+              if (opt.value) return opt.value;
+              return 'undefined';
+            }).join(', ');
+          }
+          pdf.text(`| ${optionsText}`, x, y);
+          x += colWidths[1];
+          
+          // Price
+          pdf.text(`| ${Number(variant.price || 0).toLocaleString()} MMK`, x, y);
+          x += colWidths[2];
+          
+          // Stock
+          pdf.text(`| ${variant.stock || 0}`, x, y);
+          x += colWidths[3];
+          
+          // Order Count
+          pdf.text(`| ${variant.orderCount || 0}`, x, y);
+          x += colWidths[4];
+          
+          pdf.text('|', x, y);
+          y += 4;
+        });
+        
+        this.drawSeparatorLine(pdf, y, pageWidth, margin);
+        y += 8;
+      }
+      
+      // Separator between products
+      if (index < data.length - 1) {
+        this.drawSeparatorLine(pdf, y, pageWidth, margin);
+        y += 8;
+      }
+    });
+    
+    // Footer
+    const footerY = pageHeight - 15;
+    pdf.setFillColor(darkBg[0], darkBg[1], darkBg[2]);
+    pdf.rect(0, footerY, pageWidth, 15, 'F');
+    
+    pdf.setTextColor(whiteText[0], whiteText[1], whiteText[2]);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(8);
+    pdf.text(`Total Products: ${totalProducts} | Generated: ${new Date().toLocaleDateString()}`, pageWidth / 2, footerY + 8, { align: 'center' });
+    
+    pdf.save(filename);
+  }
+
+  /**
+   * Export Order Status Report
+   */
+
+
+  // Export Bulk Order Status Report (All Orders or Filtered Orders)
+  async exportBulkOrderStatusReport(
+    ordersData: any[],
+    filename: string = 'bulk-order-status-report.pdf',
+    options: {
+      isFiltered?: boolean;
+      filters?: any;
+    } = {}
+  ): Promise<void> {
+    const pdf = new jsPDF('portrait', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 15;
+    const contentWidth = pageWidth - (margin * 2);
+    
+    let y = 20;
+    
+    // Title Section
+    pdf.setFillColor(0, 0, 0);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(16);
+    pdf.text('ORDER STATUS REPORT', pageWidth / 2, y, { align: 'center' });
+    y += 15;
+    
+    // Report Info
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    const reportInfo = options.isFiltered 
+      ? `Filtered Orders Report (${ordersData.length} orders)`
+      : `All Orders Report (${ordersData.length} orders)`;
+    pdf.text(reportInfo, pageWidth / 2, y, { align: 'center' });
+    y += 10;
+    
+    // Generate Date
+    const currentDate = new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+    pdf.text(`Generated on: ${currentDate}`, pageWidth / 2, y, { align: 'center' });
+    y += 15;
+    
+    // Process each order
+    for (let i = 0; i < ordersData.length; i++) {
+      const orderData = ordersData[i];
+      
+      // Check if we need a new page
+      if (y > pageHeight - 60) {
+        pdf.addPage();
+        y = 20;
+      }
+      
+      // Order Details Section with better formatting
+      y += 5;
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(12);
+      pdf.text(`Order ID      : ${orderData.trackingNumber}`, margin, y);
+      y += 6;
+      pdf.text(`Customer Name : ${orderData.customerName}`, margin, y);
+      y += 6;
+      pdf.text(`Order Date    : ${orderData.orderDate}`, margin, y);
+      y += 6;
+      pdf.text(`Total Amount  : ${orderData.totalAmount}`, margin, y);
+      y += 8;
+      
+      // Status History Section
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(11);
+      pdf.text('Status History:', margin, y);
+      y += 6;
+      
+      // Status History Table - Simple and Clean Design
+      const tableX = margin;
+      const tableY = y;
+      const colWidths = [15, 40, 45, 30, 35];
+      const rowHeight = 7;
+      
+      // Draw table header - Simple text without background
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(9);
+      pdf.setTextColor(0, 0, 0);
+      
+      let x = tableX;
+      const headers = ['#', 'Status', 'Changed By', 'Role', 'Date'];
+      headers.forEach((header, index) => {
+        pdf.text(header, x + 2, y + 5);
+        x += colWidths[index];
+      });
+      y += rowHeight;
+      
+      // Draw separator line under header
+      pdf.setDrawColor(0, 0, 0);
+      pdf.setLineWidth(0.2);
+      pdf.line(tableX, y, tableX + colWidths.reduce((sum, width) => sum + width, 0), y);
+      y += 2;
+      
+      // Draw table data - Simple text without background
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(8);
+      pdf.setTextColor(0, 0, 0);
+      
+      if (orderData.statusHistory && orderData.statusHistory.length > 0) {
+        orderData.statusHistory.forEach((history: any, index: number) => {
+          // Check if we need a new page
+          if (y > pageHeight - 40) {
+            pdf.addPage();
+            y = 20;
+          }
+          
+          x = tableX;
+          const rowData = [
+            (index + 1).toString(),
+            history.status,
+            history.changedBy,
+            history.role,
+            history.date
+          ];
+          
+          rowData.forEach((cell, cellIndex) => {
+            pdf.text(cell, x + 2, y + 5);
+            x += colWidths[cellIndex];
+          });
+          y += rowHeight;
+        });
+      } else {
+        // No history row
+        x = tableX;
+        pdf.text('No status history available', x + 2, y + 5);
+        y += rowHeight;
+      }
+      
+      y += 5;
+      
+      // Notes Section - Inline format (next to label)
+      if (orderData.notes && orderData.notes.trim()) {
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(10);
+        pdf.text('Notes:', margin, y);
+        
+        // Add notes inline (next to the label)
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(9);
+        pdf.text(orderData.notes, margin + 25, y);
+        y += 6;
+      }
+      
+      // Add separator between orders
+      if (i < ordersData.length - 1) {
+        y += 5;
+        pdf.line(margin, y, pageWidth - margin, y);
+        y += 10;
       }
     }
-
-    // --- Table Header ---
-    y = Math.max(custAddrY, y + 18) + 6;
-    pdf.setFillColor(tableHeaderBg[0], tableHeaderBg[1], tableHeaderBg[2]);
-    pdf.setTextColor(tableHeaderText[0], tableHeaderText[1], tableHeaderText[2]);
-    pdf.setFont('helvetica', 'bold');
-    pdf.rect(leftMargin, y, contentWidth, 10, 'F');
-    // Restore columns: SL, Description, Qty, Unit Price, Amount
-    const colWidths = [12, 80, 18, 35, 35];
-    let colX = leftMargin;
-    ['SL', 'Description', 'Qty', 'Unit Price', 'Amount'].forEach((header, i) => {
-      pdf.text(header, colX + 2, y + 7);
-      colX += colWidths[i];
-    });
-
-    // --- Table Rows ---
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(11);
-    pdf.setTextColor(0, 0, 0);
-    let rowY = y + 10;
-    order.items.forEach((item: any, idx: number) => {
-      colX = leftMargin;
-      // All rows white background
-      pdf.setFillColor(rowAltBg[0], rowAltBg[1], rowAltBg[2]);
-      pdf.rect(leftMargin, rowY, contentWidth, 10, 'F');
-      // SL (serial number)
-      pdf.text(String(idx + 1), colX + 2, rowY + 7);
-      colX += colWidths[0];
-      // Description
-      pdf.text(item.product?.name || '', colX + 2, rowY + 7);
-      colX += colWidths[1];
-      // Qty
-      pdf.text(String(item.quantity), colX + 2, rowY + 7);
-      colX += colWidths[2];
-      // Unit Price
-      pdf.text((item.price || 0).toLocaleString() + ' MMK', colX + 2, rowY + 7, { align: 'left' });
-      colX += colWidths[3];
-      // Amount
-      pdf.text((item.totalPrice || 0).toLocaleString() + ' MMK', colX + 2, rowY + 7, { align: 'left' });
-      rowY += 10;
-    });
-
-    // --- Subtotal and Total ---
-    rowY += 2;
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(11);
-    // Move to Unit Price + Amount columns (right side)
-    let totalLabelX = leftMargin + colWidths[0] + colWidths[1] + colWidths[2];
-    pdf.text('Subtotal', totalLabelX, rowY + 7);
-    pdf.text((order.subtotal || order.totalAmount || 0).toLocaleString() + ' MMK', totalLabelX + colWidths[3], rowY + 7, { align: 'left' });
-    rowY += 8;
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(13);
-    pdf.text('Total', totalLabelX, rowY + 7);
-    pdf.text((order.totalAmount || 0).toLocaleString() + ' MMK', totalLabelX + colWidths[3], rowY + 7, { align: 'left' });
-    pdf.setTextColor(0, 0, 0);
-
-    // --- Footer ---
-    pdf.setFontSize(10);
-    pdf.setTextColor(150, 150, 150);
-    pdf.text('Thank you for your purchase!', leftMargin, 285);
-
-    // Save
+    
+    // Save the PDF
     pdf.save(filename);
   }
 
@@ -537,5 +1071,20 @@ export class PdfExportService {
   // Helper function
   private getNestedValue(obj: any, path: string): any {
     return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+  }
+
+  /**
+   * Draw separator line with dashes
+   */
+  private drawSeparatorLine(pdf: any, y: number, pageWidth: number, margin: number): void {
+    const lineLength = pageWidth - (margin * 2);
+    const dashLength = 3;
+    const gapLength = 2;
+    let x = margin;
+    
+    while (x < margin + lineLength) {
+      pdf.line(x, y, Math.min(x + dashLength, margin + lineLength), y);
+      x += dashLength + gapLength;
+    }
   }
 } 

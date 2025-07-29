@@ -8,6 +8,7 @@ import com.maven.OnlineShoppingSB.service.OrderService;
 import com.maven.OnlineShoppingSB.service.RefundRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -73,6 +74,7 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}/details")
+    @PreAuthorize("hasAuthority('ORDER_DETAIL') or hasRole('SUPERADMIN')")
     public ResponseEntity<OrderDetailDto> getOrderByIdWithDetails(@PathVariable Long orderId) {
         try {
             OrderEntity order = orderService.getOrderByIdWithDetails(orderId);
@@ -88,8 +90,25 @@ public class OrderController {
             return ResponseEntity.badRequest().build();
         }
     }
+    @GetMapping("/public/{orderId}/details")
 
+    public ResponseEntity<OrderDetailDto> getPublicOrderByIdWithDetails(@PathVariable Long orderId) {
+        try {
+            OrderEntity order = orderService.getOrderByIdWithDetails(orderId);
+            OrderDetailDto dto = orderService.convertToOrderDetailDto(order);
+
+            // Use simplified refund mapping
+            List<RefundRequestAdminDTO> refunds = refundRequestService.getRefundsForOrderDetailPage(orderId);
+            dto.setRefunds(refunds);
+
+            return ResponseEntity.ok(dto);
+        } catch (Exception e) {
+            System.err.println("Error getting order details: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
     @PostMapping("/admin/bulk-status")
+    @PreAuthorize("hasAuthority('ORDER_UPDATE_STATUS') or hasRole('SUPERADMIN')")
     public ResponseEntity<List<OrderDetailDto>> bulkUpdateOrderStatus(@RequestBody BulkOrderStatusUpdateRequest request) {
         try {
             List<OrderEntity> updatedOrders = orderService.bulkUpdateOrderStatus(request);
@@ -124,6 +143,8 @@ public class OrderController {
     }
 
     @PutMapping("/{id}/payment-status")
+    @PreAuthorize("hasAuthority('ORDER_UPDATE') or hasRole('SUPERADMIN')")
+
     public ResponseEntity<?> updatePaymentStatus(
             @PathVariable Long id,
             @RequestBody PaymentRejectionReasonDTO.PaymentStatusUpdateRequest request,

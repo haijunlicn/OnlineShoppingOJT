@@ -260,6 +260,20 @@ public class OrderService {
             variantDto.setPrice(BigDecimal.valueOf(item.getPrice().doubleValue()));
             variantDto.setStock(item.getVariant().getStock());
             variantDto.setImgPath(item.getVariant().getImgPath());
+            // Set options from variantOptionValues
+            if (item.getVariant().getVariantOptionValues() != null && !item.getVariant().getVariantOptionValues().isEmpty()) {
+                List<VariantOptionDTO> optionDTOs = item.getVariant().getVariantOptionValues().stream()
+                    .map(vov -> {
+                        VariantOptionDTO vo = new VariantOptionDTO();
+                        vo.setOptionId(vov.getOptionValue().getOption().getId());
+                        vo.setOptionValueId(vov.getOptionValue().getId());
+                        vo.setOptionName(vov.getOptionValue().getOption().getName());
+                        vo.setValueName(vov.getOptionValue().getValue());
+                        return vo;
+                    })
+                    .collect(Collectors.toList());
+                variantDto.setOptions(optionDTOs);
+            }
             itemDto.setVariant(variantDto);
 
             // Convert product

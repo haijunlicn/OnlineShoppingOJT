@@ -4,6 +4,7 @@ import com.maven.OnlineShoppingSB.dto.VlogDTO;
 import com.maven.OnlineShoppingSB.service.VlogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,7 +24,13 @@ public class VlogController {
     }
 
     @GetMapping("/list")
+    @PreAuthorize("hasAuthority('BLOG_MANAGEMENT') or hasRole('SUPERADMIN')")
     public ResponseEntity<List<VlogDTO>> getAllVlogs() {
+        return ResponseEntity.ok(vlogService.getAllVlogs());
+    }
+
+    @GetMapping("/Public/list")
+    public ResponseEntity<List<VlogDTO>> PublicgetAllVlogs() {
         return ResponseEntity.ok(vlogService.getAllVlogs());
     }
 
