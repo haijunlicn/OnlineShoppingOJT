@@ -71,7 +71,7 @@
 }
 
 .wishlist-input .mat-form-field-label {
-  color: var(--color-primary); /* brown color */
+  color: #fff; /* brown color */
   font-weight: 600;
 }
 

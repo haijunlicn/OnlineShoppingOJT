@@ -183,7 +183,12 @@ public class RefundRequestService {
                     h.setStatus(history.getStatus());
                     h.setNote(history.getNote());
                     h.setCreatedAt(history.getCreatedAt());
-                    h.setUpdatedBy(history.getUpdatedBy());
+                    h.setUpdatedBy(Optional.ofNullable(history.getUpdatedBy()).map(UserEntity::getId).orElse(null));
+                    h.setUpdatedAdmin(Optional.ofNullable(history.getUpdatedBy()).map(UserEntity::getName).orElse(null));
+                    h.setUpdatedAdminRole(Optional.ofNullable(history.getUpdatedBy())
+                            .map(UserEntity::getRole)
+                            .map(RoleEntity::getName)
+                            .orElse(null));
                     return h;
                 }).toList();
         dto.setStatusHistory(historyDTOs);
@@ -211,7 +216,12 @@ public class RefundRequestService {
                         h.setStatus(history.getStatus());
                         h.setNote(history.getNote());
                         h.setCreatedAt(history.getCreatedAt());
-                        h.setUpdatedBy(history.getUpdatedBy());
+                        h.setUpdatedBy(Optional.ofNullable(history.getUpdatedBy()).map(UserEntity::getId).orElse(null));
+                        h.setUpdatedAdmin(Optional.ofNullable(history.getUpdatedBy()).map(UserEntity::getName).orElse(null));
+                        h.setUpdatedAdminRole(Optional.ofNullable(history.getUpdatedBy())
+                                .map(UserEntity::getRole)
+                                .map(RoleEntity::getName)
+                                .orElse(null));
                         return h;
                     }).toList();
             i.setStatusHistory(itemHistoryDTOs);
@@ -416,7 +426,7 @@ public class RefundRequestService {
             history.setStatus(item.getStatus());
             history.setCreatedAt(LocalDateTime.now());
             history.setNote("Admin reviewed item");
-            history.setUpdatedBy(admin.getId());
+            history.setUpdatedBy(admin);
             refundItemStatusHistoryRepository.save(history);
         }
 
@@ -458,7 +468,7 @@ public class RefundRequestService {
             statusHistory.setStatus(newStatus);
             statusHistory.setNote("Admin updated request status after item decisions");
             statusHistory.setCreatedAt(LocalDateTime.now());
-            statusHistory.setUpdatedBy(admin.getId());
+            statusHistory.setUpdatedBy(admin);
             refundStatusHistoryRepository.save(statusHistory);
 
             // Send notification based on new status
@@ -568,13 +578,16 @@ public class RefundRequestService {
             }
         }
 
+        UserEntity adminUser = userRepository.findById(request.getAdminId())
+                .orElseThrow(() -> new RuntimeException("Admin user not found"));
+
         // Save status history
         RefundItemStatusHistoryEntity history = new RefundItemStatusHistoryEntity();
         history.setRefundItem(item);
         history.setStatus(newStatus);
         history.setCreatedAt(LocalDateTime.now());
         history.setNote("Admin updated status");
-        history.setUpdatedBy(request.getAdminId());
+        history.setUpdatedBy(adminUser);
         refundItemStatusHistoryRepository.save(history);
 
         // Now check if all items have reached final state
@@ -608,7 +621,7 @@ public class RefundRequestService {
             statusHistory.setStatus(newRequestStatus);
             statusHistory.setCreatedAt(LocalDateTime.now());
             statusHistory.setNote("Refund request status updated automatically");
-            statusHistory.setUpdatedBy(request.getAdminId());
+            statusHistory.setUpdatedBy(adminUser);
             refundStatusHistoryRepository.save(statusHistory);
         } else {
             // Optional: update updatedAt if you want, or skip save entirely

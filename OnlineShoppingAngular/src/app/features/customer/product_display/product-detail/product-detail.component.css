@@ -156,7 +156,7 @@
           box-shadow: var(--color-shadow);
 
           &:hover {
-            background: var(--color-accent);
+            background: var(--color-primary);
             color: white;
             transform: translateY(-50%) scale(1.1);
           }
@@ -211,11 +211,11 @@
 
           &.active {
             border-color: var(--color-primary);
-            box-shadow: 0 0 0 2px var(--color-accent);
+            box-shadow: 0 0 0 2px var(--color-primary);
           }
 
           &:hover {
-            border-color: var(--color-accent);
+            border-color: var(--color-primary);
             transform: translateY(-2px);
           }
 
@@ -305,7 +305,7 @@
             }
 
             .savings-badge {
-              background: var(--color-accent);
+              background: #198754;
               color: white;
               padding: 0.125rem 0.5rem;
               border-radius: 12px;
@@ -367,8 +367,8 @@
               border-color: var(--color-primary);
 
               &:hover {
-                background-color: var(--color-accent);
-                border-color: var(--color-accent);
+                background-color: #075631;
+                border-color: var(--color-primary);
               }
             }
 
@@ -407,8 +407,8 @@
             color: var(--color-brown);
 
             &:hover {
-              background-color: var(--color-accent);
-              border-color: var(--color-accent);
+              background-color: var(--color-primary);
+              border-color: var(--color-primary);
               color: white;
             }
           }
@@ -430,8 +430,8 @@
           border-color: var(--color-primary);
 
           &:hover {
-            background-color: var(--color-accent);
-            border-color: var(--color-accent);
+            background-color: #014a28;
+            border-color: var(--color-primary);
           }
         }
 
@@ -445,8 +445,8 @@
           border-color: var(--color-border);
 
           &:hover {
-            background-color: var(--color-accent);
-            border-color: var(--color-accent);
+            background-color: var(--color-primary);
+            border-color: var(--color-primary);
             color: white;
           }
         }
@@ -538,7 +538,7 @@
               position: absolute;
               top: 0;
               left: 0;
-              background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+              background: var(--color-primary);
               color: white;
               padding: 0.3rem 0.8rem;
               font-size: 0.6rem;
@@ -649,7 +649,7 @@
               }
 
               .view-detail-btn {
-                background: var(--color-accent);
+                background: var(--color-primary);
                 color: white;
                 border: none;
                 padding: 0.5rem 1rem;
@@ -661,7 +661,7 @@
                 margin-top: auto;
 
                 &:hover {
-                  background: var(--color-highlight);
+                  background: var(--color-primary);
                   transform: translateY(-1px);
                 }
               }
@@ -690,7 +690,7 @@
           transition: all 0.3s ease;
 
           &.active {
-            background: var(--color-accent);
+            background: var(--color-primary);
             transform: scale(1.2);
           }
 
@@ -720,7 +720,7 @@
         color: var(--color-brown);
 
         &:hover {
-          background: var(--color-accent);
+          background: var(--color-primary);
           color: white;
           transform: translateY(-50%) scale(1.1);
         }
@@ -743,7 +743,7 @@
 
   .mobile-discount-container {
     background: white;
-    border-radius: 12px;
+    border-radius: 10px;
     box-shadow: var(--color-shadow);
     padding: 1.5rem;
     border: 1px solid var(--color-border);
@@ -837,7 +837,7 @@
     box-shadow: var(--color-shadow);
 
     &:hover {
-      background: var(--color-accent);
+      background: var(--color-primary);
       color: white;
       transform: translateY(-50%) scale(1.1);
     }

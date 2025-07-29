@@ -1,5 +1,6 @@
 package com.maven.OnlineShoppingSB.dto;
 
+import com.maven.OnlineShoppingSB.audit.AuditableDto;
 import com.maven.OnlineShoppingSB.entity.ProductEntity;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
@@ -9,10 +10,12 @@ import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
-public class ProductDTO {
+public class ProductDTO implements AuditableDto {
     private Long id;
     private String name;
     private String description;
@@ -21,9 +24,11 @@ public class ProductDTO {
     private BigDecimal basePrice;
     private List<ProductImageDTO> productImages;
     private LocalDateTime createdDate;
+    private userDTO createdBy;
     private BrandDTO brand;
     private CategoryDTO category;
     private List<ProductVariantDTO> productVariants;
+    private Integer delFg;
 
     // Overload with 1 param for Function<T, R> compatibility
     public static ProductDTO fromEntity(ProductEntity entity) {
@@ -68,6 +73,44 @@ public class ProductDTO {
         }
 
         return dto;
+    }
+
+    // Hold old snapshot for audit comparison
+    private ProductDTO oldSnapshot;
+
+    @Override
+    public Map<String, Object> toAuditMap() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", id);
+        map.put("name", name);
+        map.put("description", description);
+        map.put("brandId", brandId);
+
+        map.put("categoryId", categoryId);
+
+        map.put("basePrice", basePrice);
+        return map;
+    }
+
+    @Override
+    public Map<String, Object> toOldAuditMap() {
+        if (oldSnapshot == null) return Map.of();
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", oldSnapshot.getId());
+        map.put("name", oldSnapshot.getName());
+        map.put("description", oldSnapshot.getDescription());
+        map.put("brandId", oldSnapshot.getBrandId());
+
+        map.put("categoryId", oldSnapshot.getCategoryId());
+
+        map.put("basePrice", oldSnapshot.getBasePrice());
+
+        return map;
+    }
+
+    public void setOldSnapshot(ProductDTO oldSnapshot) {
+        this.oldSnapshot = oldSnapshot;
     }
 
 }

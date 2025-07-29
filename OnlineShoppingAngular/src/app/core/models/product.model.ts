@@ -1,6 +1,7 @@
 import type { CategoryDTO } from "./category-dto";
 import { DiscountDisplayDTO } from "./discount";
 import type { OptionTypeDTO, OptionValueDTO } from "./option.model";
+import { User } from "./User";
 import type { VariantOptionDTO } from "./variant.model";
 
 // Product Variant
@@ -16,6 +17,10 @@ export interface ProductVariantDTO {
   isDefault?: boolean
   isRemovable?: boolean
   isExisting?: boolean
+  isActive?: boolean
+  createdBy?: User
+  createdDate?: string
+  delFg?: number;
 }
 
 // Product Option
@@ -38,17 +43,19 @@ export interface ProductDTO {
   createdDate?: string;
   productImages?: ProductImageDTO[];
   discountPrice?: number;
-   originalPrice?: number;
-  
+  originalPrice?: number;
   productVariants?: { stock: number }[];
+  createdBy?: User;
+  delFg?: number;
 }
 
 // Brand DTO
 export interface BrandDTO {
   id: string;
-
   name: string;
   logo?: string;
+  baseSku?: string;
+  delFg?: number;
 }
 
 // Create Product Request DTO

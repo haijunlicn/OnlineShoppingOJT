@@ -1,7 +1,50 @@
 <div class="min-h-screen bg-gradient">
-  <!-- Header -->
-  <!-- Remove the entire header section at the top -->
-  <!-- <div class="header"> ... </div> -->
+  <!-- Clean Navigation Bar -->
+  <div class="navigation-bar mb-3">
+    <div class="nav-left">
+      <div class="nav-info">
+        <nav aria-label="breadcrumb" class="mb-1">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              <i class="fas fa-home me-1"></i>
+              <a href="/admin/dashboard" class="text-decoration-none">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item">
+              <i class="fas fa-shopping-bag me-1"></i>
+              Order Management
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Orders</li>
+          </ol>
+        </nav>
+        <h1 class="nav-title">Order Management</h1>
+      </div>
+    </div>
+    <div class="nav-right">
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-secondary btn-sm" (click)="refreshData()" [disabled]="isLoading">
+          <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+        </button>
+        <div class="dropdown" style="display:inline-block;">
+          <button class="btn btn-outline dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="btn-icon">📥</span>
+            Export
+          </button>
+          <ul class="dropdown-menu">
+            <li>
+              <a class="dropdown-item" href="javascript:void(0)" (click)="exportOrdersToPdf()">
+                <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Export PDF
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="javascript:void(0)" (click)="exportOrdersToExcel()">
+                <i class="bi bi-file-earmark-excel me-2 text-success"></i>Export Excel
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="container">
 

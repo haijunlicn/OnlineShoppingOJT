@@ -9,7 +9,7 @@ public class VariantOptionDTO {
 
 	private Long optionId;
 	private Long optionValueId;
-	private String optionName;   // Optional, e.g., "Material"
+	private String optionName;
 	private String valueName;
 
 }

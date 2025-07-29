@@ -141,7 +141,9 @@ export interface RefundStatusHistoryDTO {
   status: RefundStatus;
   note?: string;
   createdAt?: Date;
-  updatedBy?: number; // optional admin ID
+  updatedBy?: number;
+  updatedAdmin?: string;
+  updatedAdminRole?: string;
 }
 
 export interface RefundItemStatusHistoryDTO {
@@ -150,5 +152,7 @@ export interface RefundItemStatusHistoryDTO {
   status: RefundItemStatus;
   note?: string;
   createdAt?: Date;
-  updatedBy?: number; // optional admin ID
+  updatedBy?: number;
+  updatedAdmin?: string;
+  updatedAdminRole?: string;
 }

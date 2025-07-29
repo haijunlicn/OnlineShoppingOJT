@@ -39,7 +39,7 @@ public class RefundRequestMapper {
                     h.setStatus(history.getStatus());
                     h.setNote(history.getNote());
                     h.setCreatedAt(history.getCreatedAt());
-                    h.setUpdatedBy(history.getUpdatedBy());
+                    h.setUpdatedBy(history.getUpdatedBy().getId());
                     return h;
                 }).toList();
         dto.setStatusHistory(historyDTOs);
@@ -67,7 +67,7 @@ public class RefundRequestMapper {
                         h.setStatus(history.getStatus());
                         h.setNote(history.getNote());
                         h.setCreatedAt(history.getCreatedAt());
-                        h.setUpdatedBy(history.getUpdatedBy());
+                        h.setUpdatedBy(history.getUpdatedBy().getId());
                         return h;
                     }).toList();
             i.setStatusHistory(itemHistoryDTOs);

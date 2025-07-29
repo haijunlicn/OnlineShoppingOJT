@@ -10,7 +10,7 @@ export class AdminAccountService {
   private baseUrl = 'http://localhost:8080/adminAccounts';
 
   createAccount(payload: any): Observable<any> {
-    return this.http.post(`${this.baseUrl}/create`, payload);
+    return this.http.post(`${this.baseUrl}/create`, payload, { responseType: 'text' });
   }
 
   getAllUsers(): Observable<User[]> {

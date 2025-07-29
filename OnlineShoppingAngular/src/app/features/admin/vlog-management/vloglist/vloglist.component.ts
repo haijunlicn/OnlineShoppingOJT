@@ -338,7 +338,7 @@ export class VlogListComponent implements OnInit {
   }
 
   goToCreateBlog(): void {
-    this.router.navigate(['/admin/vlogcreate']);
+    this.router.navigate(['/admin/blogcreate']);
   }
 
   getRowClass(blog: VlogDTO): string {

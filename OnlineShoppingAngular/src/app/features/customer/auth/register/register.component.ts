@@ -102,6 +102,11 @@ export class RegisterComponent implements OnInit {
   onSubmit(): void {
     this.isSubmitted = true;
 
+    // Check acceptTerms manually
+    if (!this.registerForm.get('acceptTerms')?.value) {
+      return;
+    }
+
     if (this.registerForm.invalid) {
       return;
     }

@@ -51,8 +51,7 @@
                       + Add brand
                     </button>
                   </div>
-                  <select id="brand" class="form-select" [class.error]="hasError('brandId')"
-                    formControlName="brandId">
+                  <select id="brand" class="form-select" [class.error]="hasError('brandId')" formControlName="brandId">
                     <option value="">Select Brand</option>
                     <option *ngFor="let brand of brands" [value]="brand.id">
                       {{ brand.name }}
@@ -69,8 +68,7 @@
                     <label for="category" class="form-label mb-0">
                       Category <span class="text-danger">*</span>
                     </label>
-                    <button type="button" class="btn btn-link btn-sm p-0"
-                      (click)="openCategoryDialogForNew()">
+                    <button type="button" class="btn btn-link btn-sm p-0" (click)="openCategoryDialogForNew()">
                       + Add category
                     </button>
                   </div>
@@ -99,8 +97,7 @@
                               [class]="getCategoryIndentClass(category.level || 0)"
                               (click)="selectCategory(category, $event)">
                               <span>{{ category.name }}</span>
-                              <i *ngIf="category.children?.length"
-                                class="fas fa-chevron-right small text-muted"></i>
+                              <i *ngIf="category.children?.length" class="fas fa-chevron-right small text-muted"></i>
                             </button>
                             <ul *ngIf="category.children?.length" class="submenu">
                               <ng-container
@@ -123,9 +120,9 @@
                   </label>
                   <div class="input-group">
                     <span class="input-group-text">MMK</span>
-                    <input type="text" class="form-control" [value]="displayPrice"
-                      (input)="onDisplayPriceInput($event)" mask="separator" thousandSeparator=","
-                      decimalMarker="." [dropSpecialCharacters]="false" placeholder="0.00" />
+                    <input type="text" class="form-control" [value]="displayPrice" (input)="onDisplayPriceInput($event)"
+                      mask="separator" thousandSeparator="," decimalMarker="." [dropSpecialCharacters]="false"
+                      placeholder="0.00" />
                     <input type="hidden" formControlName="basePrice" />
                   </div>
                   <div class="error-message" *ngIf="hasError('basePrice')">
@@ -180,8 +177,8 @@
                     <!-- Main Image Button -->
                     <button type="button" class="btn btn-sm position-absolute"
                       style="bottom: -8px; left: -8px; font-size: 0.7rem; width: 24px; height: 20px; padding: 0;"
-                      [class.btn-success]="img.isMain" [class.btn-warning]="!img.isMain"
-                      (click)="setMainImage(img.id)" title="Set as main image">
+                      [class.btn-success]="img.isMain" [class.btn-warning]="!img.isMain" (click)="setMainImage(img.id)"
+                      title="Set as main image">
                       <i class="fas fa-star"></i>
                     </button>
                     <!-- Reorder Controls -->
@@ -218,8 +215,8 @@
                 </button>
               </div>
 
-              <input type="file" #productFileInput class="d-none" (change)="onImagesSelected($event)"
-                accept="image/*" multiple>
+              <input type="file" #productFileInput class="d-none" (change)="onImagesSelected($event)" accept="image/*"
+                multiple>
             </div>
           </div>
         </div>
@@ -275,8 +272,7 @@
                             <button type="button" class="btn btn-outline-secondary"
                               (click)="openAddOptionDialog()">+</button>
                           </div>
-                          <div class="error-message"
-                            *ngIf="option.get('id')?.invalid && option.get('id')?.touched">
+                          <div class="error-message" *ngIf="option.get('id')?.invalid && option.get('id')?.touched">
                             Option type is required
                           </div>
                         </div>
@@ -287,8 +283,7 @@
                           <div *ngIf="option.get('id')?.value; else noTypeSelected" class="dropdown">
                             <button
                               class="btn btn-outline-secondary dropdown-toggle w-100 text-start d-flex justify-content-between align-items-center"
-                              type="button" [id]="'optionDropdown' + i" data-bs-toggle="dropdown"
-                              aria-expanded="false"
+                              type="button" [id]="'optionDropdown' + i" data-bs-toggle="dropdown" aria-expanded="false"
                               [class.error]="option.get('values')?.invalid && option.get('values')?.touched">
                               <span class="dropdown-text">
                                 <span *ngIf="getSelectedValuesCount(i) === 0" class="text-muted">Select values</span>
@@ -507,11 +502,12 @@
                     </td>
 
                     <td>
-                      <input type="number" class="form-control form-control-sm" formControlName="stock" min="0" step="1">
+                      <input type="number" class="form-control form-control-sm" formControlName="stock" min="0"
+                        step="1">
                     </td>
 
                     <td class="small text-muted">
-                      {{ getSkuForVariant(i) }}
+                      {{ baseSku }}-XXXXX
                     </td>
 
                     <td>
@@ -556,8 +552,7 @@
 </app-brand-dialog>
 
 <app-category-dialog [(visible)]="categoryDialogVisible" [editingCategory]="editingCategory"
-  [parentCategoryForNew]="parentCategoryForNew" [categoryDropdown]="categoryDropdown"
-  (save)="onCategorySaved($event)">
+  [parentCategoryForNew]="parentCategoryForNew" [categoryDropdown]="categoryDropdown" (save)="onCategorySaved($event)">
 </app-category-dialog>
 
 <app-option-dialog [(visible)]="optionDialogVisible" [editingOption]="editingOption" (save)="onOptionTypeSaved($event)">

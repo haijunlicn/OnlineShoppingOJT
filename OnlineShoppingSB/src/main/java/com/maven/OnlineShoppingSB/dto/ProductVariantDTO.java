@@ -7,6 +7,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Data
@@ -18,6 +19,9 @@ public class ProductVariantDTO {
     private String sku;
     private List<VariantPriceDTO> priceHistory;
     private String imgPath;  // For display (optional)
+    private userDTO createdBy;
+    private LocalDateTime createdDate;
+    private Integer delFg;
 
     public static ProductVariantDTO fromEntity(ProductVariantEntity entity) {
         if (entity == null) return null;
@@ -60,6 +64,28 @@ public class ProductVariantDTO {
 
         return dto;
     }
+
+    public record VariantOptionDisplay(
+            String optionName,
+            String valueName
+    ) {}
+
+    public record ProductVariantChange(
+            Long id,
+            String action, // "ADDED", "UPDATED", "REMOVED"
+            String sku,
+            int stock,
+            String imgPath,
+            BigDecimal price,
+            List<VariantOptionDisplay> options,
+            Map<String, Object> oldSnapshot // add this
+    ) {}
+
+    public record ProductVariantUpdateLogResult(
+            List<ProductVariantChange> added,
+            List<ProductVariantChange> removed,
+            List<ProductVariantChange> updated
+    ) {}
 
 }
 

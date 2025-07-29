@@ -1,6 +1,7 @@
 package com.maven.OnlineShoppingSB.dto;
 
 
+import com.maven.OnlineShoppingSB.entity.UserEntity;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,6 +13,7 @@ import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -35,15 +37,36 @@ public class userDTO {
     private String roleName;
     private List<String> permissions;
     private LocalDateTime lastLoginDate;
-
     @NotBlank(message = "Password is required")
     @Size(min = 6, max = 100, message = "Password must be between 6 and 100 characters")
     private String password;
-
     @NotNull(message = "Role ID is required")
     private Long roleId;
-
     private List<Long> groupIds;
-    // Add city for user address
     private String city;
+
+    public static userDTO fromEntity(UserEntity entity) {
+        if (entity == null) return null;
+
+        userDTO dto = new userDTO();
+        dto.setId(entity.getId());
+        dto.setEmail(entity.getEmail());
+        dto.setName(entity.getName());
+
+        if (entity.getRole() != null) {
+            dto.setRoleId(entity.getRole().getId());
+            dto.setRoleName(entity.getRole().getName());
+            if (entity.getRole().getPermissions() != null) {
+                dto.setPermissions(
+                        entity.getRole().getPermissions()
+                                .stream()
+                                .map(p -> p.getCode()) // assuming PermissionEntity has getName()
+                                .collect(Collectors.toList())
+                );
+            }
+        }
+
+        return dto;
+    }
+
 }

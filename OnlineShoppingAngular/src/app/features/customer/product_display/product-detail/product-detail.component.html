@@ -59,7 +59,7 @@
             <h1 class="product-title">{{ product.product.name }}</h1>
 
             <div class="product-badges">
-              <span class="badge bg-secondary me-2">{{ product.brand.name }}</span>
+              <span class="badge bg-secondary me-2">{{ product.brand?.name || 'No Brand' }}</span>
               <span class="badge bg-info">{{ product.category.name }}</span>
             </div>
           </div>
@@ -311,7 +311,7 @@
                 <tbody>
                   <tr>
                     <th scope="row">Brand</th>
-                    <td>{{ product.brand.name }}</td>
+                    <td>{{ product.brand?.name || 'No Brand' }}</td>
                   </tr>
                   <tr>
                     <th scope="row">Category</th>

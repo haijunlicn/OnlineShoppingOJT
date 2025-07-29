@@ -1,17 +1,4 @@
 
-// <<<<<<< HEAD
-// import { Component, OnInit, ViewChild } from '@angular/core';
-// import { Table } from 'primeng/table';
-// import { BrandDTO, ProductListItemDTO } from '../../../../core/models/product.model';
-// import { ProductService } from '../../../../core/services/product.service';
-// import { CategoryService } from '../../../../core/services/category.service';
-// import { CategoryDTO } from '../../../../core/models/category-dto';
-// import { BrandService } from '@app/core/services/brand.service';
-// import { Router } from '@angular/router';
-// import { AccessControlService } from '@app/core/services/AccessControl.service';
-// import { PdfExportService } from '@app/core/services/pdf-export.service';
-// import { ExcelExportService } from '@app/core/services/excel-export.service';
-// =======
 import { Component, OnInit, viewChild, ViewChild } from "@angular/core"
 import { Router } from "@angular/router"
 import type { CategoryDTO } from "@app/core/models/category-dto"
@@ -78,11 +65,6 @@ export class ProductListComponent implements OnInit {
   priceRange: number[] = [0, 1000]
   maxPrice = 1000
   minPrice = 0
-  // selectedCategory: any = null
-  // selectedBrand: any = null
-  // selectedStatus: any = null
-  // globalFilterValue = ""
-  // showFilters = false
 
   // Filter values
   selectedCategory: any = null;
@@ -131,7 +113,7 @@ export class ProductListComponent implements OnInit {
       })
   }
 
- 
+
   loadProducts(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.productService.getProductList().subscribe({
@@ -176,7 +158,7 @@ export class ProductListComponent implements OnInit {
     })
   }
 
-  
+
   loadBrands(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.brandService.getAllBrands().subscribe({
@@ -384,14 +366,24 @@ export class ProductListComponent implements OnInit {
     }
 
     // Brand filter
-    if (this.filterParams.brand) {
+    if (this.filterParams.brand && this.filterParams.brand !== '') {
       filtered = filtered.filter((product) => product.brand?.id?.toString() === this.filterParams.brand)
     }
 
     // Category filter
-    if (this.filterParams.category) {
+    if (this.filterParams.category && this.filterParams.category !== '') {
       filtered = filtered.filter((product) => product.category?.id?.toString() === this.filterParams.category)
     }
+
+    // // Brand filter
+    // if (this.filterParams.brand) {
+    //   filtered = filtered.filter((product) => product.brand?.id?.toString() === this.filterParams.brand)
+    // }
+
+    // // Category filter
+    // if (this.filterParams.category) {
+    //   filtered = filtered.filter((product) => product.category?.id?.toString() === this.filterParams.category)
+    // }
 
     // Status filter
     if (this.filterParams.status) {
@@ -499,13 +491,13 @@ export class ProductListComponent implements OnInit {
     this.applyFilters()
   }
 
- 
+
   onPriceChange() {
     this.currentPage = 1
     this.applyFilters()
   }
 
-  
+
   toggleFilters() {
     this.showFilters = !this.showFilters
     if (!this.showFilters) {
@@ -513,14 +505,18 @@ export class ProductListComponent implements OnInit {
     }
   }
   exportSingleProductToPdf(product: any): void {
-  // PDF export logic goes here
-  console.log("Exporting to PDF:", product);
-}
+    // PDF export logic goes here
+    console.log("Exporting to PDF:", product);
+  }
 
-exportSingleProductToExcel(product: any): void {
-  // Excel export logic goes here
-  console.log("Exporting to Excel:", product);
-}
+  exportSingleProductToExcel(product: any): void {
+    // Excel export logic goes here
+    console.log("Exporting to Excel:", product);
+  }
+
+  onImageError(event: any): void {
+    event.target.src = "assets/img/default-product.jpg";
+  }
 
 
   clearAllFilters() {
@@ -539,7 +535,7 @@ exportSingleProductToExcel(product: any): void {
     return "ACTIVE"
   }
 
-  
+
   getTotalStock(product: ProductListItemDTO): number {
     return product.variants.reduce((total, variant) => total + variant.stock, 0)
   }
@@ -564,12 +560,12 @@ exportSingleProductToExcel(product: any): void {
     this.router.navigate(["/admin/product", productId])
   }
 
-  
+
   editProduct(productId: string): void {
     this.router.navigate(["/admin/product/edit", productId])
   }
 
- 
+
   deleteProduct(productId: string): void {
     const product = this.products.find((p) => p.id?.toString() === productId)
     if (product && confirm(`Are you sure you want to delete "${product.product.name}"?`)) {
@@ -588,7 +584,7 @@ exportSingleProductToExcel(product: any): void {
     return this.accessControl.hasAny("PRODUCT_CREATE", "SUPERADMIN_PERMISSION")
   }
 
- 
+
   get canBulkUploadProducts(): boolean {
     return this.accessControl.hasAny("PRODUCT_CREATE", "SUPERADMIN_PERMISSION")
   }
@@ -603,7 +599,7 @@ exportSingleProductToExcel(product: any): void {
     console.log("Export products")
   }
 
- 
+
   /**
    * Get filtered products count
    */
