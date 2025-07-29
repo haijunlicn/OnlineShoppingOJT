@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef } from "@angular/core"
+import { Component, ViewChild, ElementRef, Input, Output, EventEmitter } from "@angular/core"
 import { OnInit } from "@angular/core"
 import { FormBuilder, FormGroup, FormArray, Validators } from "@angular/forms"
 import { Router } from "@angular/router"
@@ -17,6 +17,7 @@ import {
 import { ProductDTO } from "@app/core/models/product.model"
 import { CloudinaryService } from "@app/core/services/cloudinary.service"
 import { DiscountService } from "@app/core/services/discount.service"
+import { Console } from "console"
 import { distinctUntilChanged } from "rxjs"
 
 
@@ -31,12 +32,12 @@ export interface Brand {
 }
 
 @Component({
-  selector: "app-new-create-discount",
+  selector: 'app-new-edit-discount',
   standalone: false,
-  templateUrl: "./new-create-discount.component.html",
-  styleUrl: "./new-create-discount.component.css",
+  templateUrl: './new-edit-discount.component.html',
+  styleUrl: './new-edit-discount.component.css'
 })
-export class NewCreateDiscountComponent implements OnInit {
+export class NewEditDiscountComponent implements OnInit {
   discountForm: FormGroup
   discountTypes = Object.values(typeCA)
   mechanismTypes = Object.values(MechanismType)
@@ -87,6 +88,9 @@ export class NewCreateDiscountComponent implements OnInit {
   // Conditions visibility toggle
   showConditionsForMechanism: { [mechanismIndex: number]: boolean } = {}
 
+  @Input() discount: DiscountEA_A | null = null;
+  @Output() close = new EventEmitter<boolean>();
+
   constructor(
     private fb: FormBuilder,
     private discountService: DiscountService,
@@ -97,37 +101,162 @@ export class NewCreateDiscountComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.setupFormSubscriptions()
-    this.loadInitialData()
+    this.setupFormSubscriptions();
+    this.loadInitialData();
+    // Remove loadDiscountForEdit from here to avoid async issues
+    // if (this.discount) {
+    //   this.loadDiscountForEdit(this.discount);
+    // }
+  }
+
+  loadDiscountForEdit(discount: DiscountEA_A) {
+    console.log('Editing discount:', discount);
+    if (discount.discountMechanisms) {
+      console.log('discountMechanisms:HIHIHI', discount.discountMechanisms);
+    }
+    this.discountForm.patchValue({
+      name: discount.name,
+      description: discount.description,
+      startDate: discount.startDate,
+      endDate: discount.endDate,
+      isActive: discount.isActive,
+      imgUrl: discount.imgUrl, // bind image url to form
+      // ...other fields as needed
+    });
+    this.imagePreviewUrl = discount.imgUrl || null; // bind image url to preview
+    // Clear existing mechanisms
+    this.discountMechanisms.clear();
+    // Restore per-offer settings if present
+    this.customerEligibilitySettings = {};
+    this.productRuleSettings = {};
+    this.orderRuleSettings = {};
+    this.showConditionsForMechanism = {};
+    this.discountProducts = {};
+    if (discount.discountMechanisms && Array.isArray(discount.discountMechanisms)) {
+      discount.discountMechanisms.forEach((m, i) => {
+        console.log(`Mechanism[${i}]`, m);
+        if (m.discountProducts) {
+          console.log(`Mechanism[${i}].discountProducts:`, m.discountProducts);
+          this.discountProducts[i] = m.discountProducts.map((obj: any) => obj.productId ?? (obj.product && obj.product.id) ?? obj.id);
+          console.log(`Set this.discountProducts[${i}]`, this.discountProducts[i]);
+        }
+        // --- Bind conditions from discountConditionGroup ---
+        if (m.discountConditionGroup && m.discountConditionGroup.length > 0) {
+          this.showConditionsForMechanism[i] = true;
+          const groupCond = m.discountConditionGroup[0].discountCondition || [];
+          // Customer group
+          const customerCond = groupCond.find((c: any) => c.conditionType === "CUSTOMER_GROUP");
+          console.log("HIIHIHI",customerCond);
+         
+          if (customerCond) {
+          
+            const selectedGroups = this.customerGroups.filter(g => customerCond.value.includes(g.id.toString()));
+              
+            this.customerEligibilitySettings[i] = {
+              type: "specific",
+              groups: selectedGroups
+            };
+          } else {
+            this.customerEligibilitySettings[i] = { type: "all", groups: [] };
+          }
+          // Product rule
+          const productCond = groupCond.find((c: any) => c.conditionType === "PRODUCT");
+          if (productCond) {
+            let items: any[] = [];
+            if (productCond.conditionDetail === "product") {
+              items = this.allProducts.filter((p: ProductDTO) =>
+                typeof p.id === 'number' && productCond.value.includes(p.id.toString())
+              );
+            } else if (productCond.conditionDetail === "brand") {
+              items = this.allBrands.filter((b: Brand) =>
+                typeof b.id === 'number' && productCond.value.includes(b.id.toString())
+              );
+            } else if (productCond.conditionDetail === "category") {
+              items = this.allCategories.filter((c: Category) =>
+                typeof c.id === 'number' && productCond.value.includes(c.id.toString())
+              );
+            }
+            this.productRuleSettings[i] = {
+              type: productCond.conditionDetail,
+              items
+            };
+          } else {
+            this.productRuleSettings[i] = { type: "", items: [] };
+          }
+          // Order rule
+          const orderCond = groupCond.find((c: any) => c.conditionType === "ORDER");
+          if (orderCond) {
+            this.orderRuleSettings[i] = {
+              type: orderCond.conditionDetail,
+              value: orderCond.value[0]
+            };
+          } else {
+            this.orderRuleSettings[i] = { type: "", value: "" };
+          }
+        } else {
+          this.showConditionsForMechanism[i] = false;
+          this.customerEligibilitySettings[i] = { type: "all", groups: [] };
+          this.productRuleSettings[i] = { type: "", items: [] };
+          this.orderRuleSettings[i] = { type: "", value: "" };
+        }
+        // --- End bind conditions ---
+        const logicOperatorRaw = m.discountConditionGroup && m.discountConditionGroup.length > 0
+          ? m.discountConditionGroup[0].logicOperator
+          : undefined;
+        const logicOperatorValue =
+          typeof logicOperatorRaw === 'string'
+            ? logicOperatorRaw === 'true'
+            : !!logicOperatorRaw;
+        const mechanismGroup = this.fb.group({
+          mechanismType: [m.mechanismType, Validators.required],
+          quantity: [m.quantity],
+          discountType: [m.discountType, Validators.required],
+          value: [m.value, Validators.required],
+          maxDiscountAmount: [m.maxDiscountAmount],
+          serviceDiscount: [m.serviceDiscount],
+          discountConditionGroup: [m.discountConditionGroup],
+          couponcode: [m.couponcode],
+          usageLimitPerUser: [m.usageLimitPerUser],
+          usageLimitTotal: [m.usageLimitTotal],
+          logicOperator: [logicOperatorValue],
+        });
+        this.discountMechanisms.push(mechanismGroup);
+      });
+    }
   }
 
   private loadInitialData(): void {
     // Load customer groups
     this.discountService.getAllGroups().subscribe((groups) => {
-      this.customerGroups = groups
-      this.filteredCustomerGroups = [...groups]
-    })
+      this.customerGroups = groups;
+      this.filteredCustomerGroups = [...groups];
+      // No loadDiscountForEdit here
+    });
 
     // Load categories
     this.discountService.getAllCategories().subscribe((categories) => {
       this.allCategories = categories.map((cat) => ({
         id: cat.id,
         name: cat.name,
-      }))
-    })
+      }));
+    });
 
     // Load brands
     this.discountService.getAllBrands().subscribe((brands) => {
       this.allBrands = brands.map((brand) => ({
         id: brand.id,
         name: brand.name,
-      }))
-    })
+      }));
+    });
 
     // Load products
     this.discountService.getAllProducts().subscribe((products) => {
-      this.allProducts = products
-    })
+      this.allProducts = products;
+      // Now that allProducts is loaded, call loadDiscountForEdit if discount exists
+      if (this.discount) {
+        this.loadDiscountForEdit(this.discount);
+      }
+    });
   }
 
   private createForm(): FormGroup {
@@ -580,20 +709,17 @@ export class NewCreateDiscountComponent implements OnInit {
     this.showProductRuleModal = false;
 
     if (this.currentProductRuleType === 'product') {
-      // Product selection logic (old flow)
+      // Product selection logic
       this.productSelectionContext = 'condition_builder';
       this.currentMechanismIndex = mechanismIndex;
       this.productSelectionMode = 'multiple';
       this.showProductSelection = true;
     } else {
       // Brand/Category selection logic (shared modal)
-    
       this.showProductRuleModal = true;
-     
     }
   }
 
-  
   closeProductRuleModal(): void {
     this.showProductRuleModal = false
     this.currentProductRuleMechanismIndex = -1
@@ -604,7 +730,6 @@ export class NewCreateDiscountComponent implements OnInit {
   onProductRuleProductsSelected(products: ProductDTO[]): void {
     this.selectedProductRuleItems = products;
     this.confirmProductRuleSelection();
-    this.showProductSelection = false;  
   }
 
   loadProductRuleItems(): void {
@@ -642,6 +767,14 @@ export class NewCreateDiscountComponent implements OnInit {
     }
   }
 
+  // Remove a single item (product, brand, or category) from selected product rule list
+  removeSingleProductRule(mechanismIndex: number, itemId: number): void {
+    const settings = this.productRuleSettings[mechanismIndex];
+    if (settings && settings.items) {
+      settings.items = settings.items.filter((item: any) => item.id !== itemId);
+    }
+  }
+
   confirmProductRuleSelection(): void {
     if (this.currentProductRuleMechanismIndex >= 0) {
       this.productRuleSettings[this.currentProductRuleMechanismIndex] = {
@@ -667,6 +800,7 @@ export class NewCreateDiscountComponent implements OnInit {
   }
 
   getProductRuleValues(index: number): any[] {
+  
     return this.productRuleSettings[index]?.items || []
   }
 
@@ -722,7 +856,7 @@ export class NewCreateDiscountComponent implements OnInit {
   }
 
   hasDiscountProducts(mechanismIndex: number): boolean {
-    return this.discountProducts[mechanismIndex] && this.discountProducts[mechanismIndex].length > 0
+    return Array.isArray(this.discountProducts[mechanismIndex]) && this.discountProducts[mechanismIndex].length > 0;
   }
 
   getDiscountProductCount(mechanismIndex: number): number {
@@ -761,14 +895,44 @@ export class NewCreateDiscountComponent implements OnInit {
     }
   }
 
+  // When opening product selection, ensure selected products are checked
   getSelectedProductsForCurrentContext(): ProductDTO[] {
-    const allProducts = this.allProducts || []
+    console.log('getSelectedProductsForCurrentContext: START', {
+      currentMechanismIndex: this.currentMechanismIndex,
+      discountProducts: this.discountProducts,
+      discountMechanisms: this.discountMechanisms.value
+    });
+    const allProducts = this.allProducts || [];
+    let selectedIds: number[] = [];
     if (this.productSelectionContext === "discount_product") {
-      return (this.discountProducts[this.currentMechanismIndex] || [])
+      // Try to get selected product IDs from discountProducts or products field
+      if (this.discountProducts[this.currentMechanismIndex]) {
+        selectedIds = this.discountProducts[this.currentMechanismIndex];
+      } else {
+        // Fallback: check if the mechanism has a 'products' or 'discountProducts' field
+        const mechanism = this.discountMechanisms.at(this.currentMechanismIndex)?.value;
+        if (mechanism) {
+          if (Array.isArray(mechanism.discountProducts) && mechanism.discountProducts.length > 0) {
+            // If array of objects, extract productId or product.id or id
+            if (typeof mechanism.discountProducts[0] === 'object' && mechanism.discountProducts[0] !== null) {
+              selectedIds = mechanism.discountProducts.map((obj: any) =>
+                obj.productId ?? (obj.product && obj.product.id) ?? obj.id
+              );
+            } else {
+              selectedIds = mechanism.discountProducts;
+            }
+          } else if (Array.isArray(mechanism.products) && mechanism.products.length > 0) {
+            selectedIds = mechanism.products;
+          }
+        }
+      }
+      const selected = selectedIds
         .map((id: number) => allProducts.find((p: ProductDTO) => p.id === id))
-        .filter((p): p is ProductDTO => !!p)
+        .filter((p): p is ProductDTO => !!p);
+      console.log('getSelectedProductsForCurrentContext:HIHIHIHIHHHHIIH', selectedIds, selected);
+      return selected;
     }
-    return []
+    return [];
   }
 
   onProductSelectionBack(): void {
@@ -776,154 +940,27 @@ export class NewCreateDiscountComponent implements OnInit {
     this.currentMechanismIndex = -1
   }
 
+  // On submit, include all settings in the update payload
   onSubmit(): void {
-    if (!this.discountForm.valid) {
-      this.markFormGroupTouched(this.discountForm);
-      return;
-    }
-    if (this.isUploadingImage) {
-      this.errors["general"] = "Please wait for image upload to complete";
-      return;
-    }
-    this.isSubmitting = true;
-    this.errors = {};
-  
-    const formValue = this.discountForm.value;
-  
-    const mechanisms: DiscountMechanismEA_B[] = (formValue.discountMechanisms || []).map((mech: any, idx: number) => {
-      // Add discount products
-      if (this.discountProducts[idx]?.length) {
-        mech.discountProducts = this.discountProducts[idx].map(
-          (productId: number) =>
-            ({
-              id: 0,
-              productId,
-              discountMechanismId: 0,
-            }) as any,
-        );
-      }
-  
-      // Only create condition groups if conditions are enabled for this mechanism
-      if (this.showConditionsForMechanism[idx]) {
-        const conditionGroups: DiscountConditionGroupEA_C[] = [];
-        const conditions: DiscountConditionEA_D[] = [];
-  
-        // Customer group conditions
-        const customerSettings = this.customerEligibilitySettings[idx];
-        if (customerSettings && customerSettings.type === "specific" && customerSettings.groups.length > 0) {
-          const customerCondition: DiscountConditionEA_D = {
-            id: 0,
-            conditionType: ConditionType.CUSTOMER_GROUP,
-            conditionDetail: "customer_group",
-            operator: Operator.IS_ONE_OF,
-            value: customerSettings.groups.map((g) => g.id.toString()),
-            delFg: false,
-          };
-          conditions.push(customerCondition);
-        }
-  
-        // Product rule conditions
-        const productSettings = this.productRuleSettings[idx];
-        if (productSettings && productSettings.type && productSettings.items.length > 0) {
-          const productCondition: DiscountConditionEA_D = {
-            id: 0,
-            conditionType: ConditionType.PRODUCT,
-            conditionDetail: productSettings.type,
-            operator: Operator.IS_ONE_OF,
-            value: productSettings.items.map((item) => item.id.toString()),
-            delFg: false,
-          };
-          conditions.push(productCondition);
-        }
-  
-        // Order rule conditions
-        const orderSettings = this.orderRuleSettings[idx];
-        if (orderSettings && orderSettings.type && orderSettings.value) {
-          const orderCondition: DiscountConditionEA_D = {
-            id: 0,
-            conditionType: ConditionType.ORDER,
-            conditionDetail: orderSettings.type,
-            operator: Operator.GREATER_THAN_OR_EQUAL,
-            value: [orderSettings.value],
-            delFg: false,
-          };
-          conditions.push(orderCondition);
-        }
-  
-        // Create condition group if we have conditions
-        if (conditions.length > 0) {
-          const conditionGroup: DiscountConditionGroupEA_C = {
-            id: 0,
-            discountMechanismId: 0,
-            logicOperator: mech.logicOperator ? "true" : "false",
-            discountCondition: conditions,
-          };
-          conditionGroups.push(conditionGroup);
-        }
-  
-        mech.discountConditionGroup = conditionGroups;
-      }
-  
-      // Ensure value types are correct
-      if (typeof mech.value === "number") {
-        mech.value = mech.value.toString();
-      }
-      if (
-        mech.maxDiscountAmount !== undefined &&
-        mech.maxDiscountAmount !== null &&
-        typeof mech.maxDiscountAmount === "number"
-      ) {
-        mech.maxDiscountAmount = mech.maxDiscountAmount.toString();
-      }
-  
-      if (mech.couponcode !== undefined && mech.couponcode !== null) {
-        mech.couponcode = mech.couponcode.toString();
-      }
-  
-      return mech;
-    });
-  
-    const createRequest: DiscountEA_A = {
-      ...formValue,
-      delFg: false,
-      imgUrl: this.cloudinaryImageUrl || formValue.imgUrl || undefined,
-      startDate: new Date(formValue.startDate).toISOString(),
-      endDate: new Date(formValue.endDate).toISOString(),
-      discountMechanisms: mechanisms,
+    if (!this.discountForm.valid) return;
+    const updatedDiscount = {
+      ...this.discount,
+      ...this.discountForm.value,
+      discountMechanisms: this.discountMechanisms.value,
+      customerEligibilitySettings: this.customerEligibilitySettings,
+      productRuleSettings: this.productRuleSettings,
+      orderRuleSettings: this.orderRuleSettings,
+      showConditionsForMechanism: this.showConditionsForMechanism,
+      discountProducts: this.discountProducts,
     };
-  
-    mechanisms.forEach((m) => {
-      if (m.mechanismType === MechanismType.FREE_GIFT) {
-        m.discountType = undefined;
-      } else if (m.mechanismType === MechanismType.DISCOUNT) {
-        if (!m.discountType || m.discountType === undefined || m.discountType === "") {
-          m.discountType = DiscountType.PERCENTAGE;
-        }
-      }
-  
-      if (m.discountConditionGroup) {
-        m.discountConditionGroup.forEach((g) => {
-          g.discountCondition.forEach((c) => {
-            c.conditionType = c.conditionType.toString().toUpperCase();
-          });
-        });
-      }
-    });
-  
-    console.log("Submitting discount with payload:", createRequest);
-  
-    this.discountService.createDiscount(createRequest).subscribe({
-      next: (response: string) => {
-        if (response === "success") {
-          this.router.navigate(["/admin/discountList"]);
-        } else {
-          this.errors["general"] = response;
-        }
+    this.discountService.updateDiscount(updatedDiscount.id, updatedDiscount).subscribe({
+      next: () => {
+        this.close.emit(true);
       },
-      error: (error) => {
-        this.errors["general"] = error.error || "An error occurred while creating the discount.";
+      error: (err) => {
+        this.errors["general"] = err.error || "An error occurred while updating the discount.";
         this.isSubmitting = false;
-      },
+      }
     });
   }
 
@@ -1027,11 +1064,7 @@ export class NewCreateDiscountComponent implements OnInit {
     return true
   }
 
-  // Remove a single item (product, brand, or category) from selected product rule list
-  removeSingleProductRule(mechanismIndex: number, itemId: number): void {
-    const settings = this.productRuleSettings[mechanismIndex];
-    if (settings && settings.items) {
-      settings.items = settings.items.filter((item: any) => item.id !== itemId);
-    }
+  onCancel(): void {
+    this.close.emit(false);
   }
 }

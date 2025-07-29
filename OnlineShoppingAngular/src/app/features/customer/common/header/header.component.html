@@ -69,8 +69,18 @@
             <div class="profile-dropdown-container">
               <button class="profile-btn d-none d-md-flex" (click)="toggleProfileDropdown()">
                 <div class="profile-avatar">
-                  <!-- {{ getUserInitials(currentUser.name) }} -->
-                  <img [src]="currentUser.profile || '/assets/images/default-avatar.png'" alt="Profile Photo" width="32" height="32" class="rounded-circle" />
+                  <ng-container *ngIf="currentUser?.profile; else initialsAvatar">
+                    <img [src]="currentUser.profile"
+                         alt="Profile Photo"
+                         width="32" height="32"
+                         class="rounded-circle" />
+                  </ng-container>
+                  <ng-template #initialsAvatar>
+                    <div class="d-flex align-items-center justify-content-center rounded-circle"
+                         style="width: 32px; height: 32px; background: #212529; color: #fff; font-weight: bold; font-size: 1.1rem;">
+                      {{ getUserInitials(currentUser?.name || '') }}
+                    </div>
+                  </ng-template>
                 </div>
                 <span class="profile-name">{{ currentUser.name.split(' ')[0] }}</span>
                 <i class="fas fa-chevron-down profile-chevron" [class.rotated]="isProfileDropdownOpen"></i>
@@ -80,8 +90,18 @@
               <div class="profile-dropdown" [class.show]="isProfileDropdownOpen">
                 <div class="profile-dropdown-header">
                   <div class="profile-avatar-large">
-                    <!-- {{ getUserInitials(currentUser.name) }} -->
-                    <img [src]="currentUser.profile || '/assets/images/default-avatar.png'" alt="Profile Photo" width="80" height="80" class="rounded-circle" />
+                    <ng-container *ngIf="currentUser?.profile; else initialsAvatarLarge">
+                      <img [src]="currentUser.profile"
+                           alt="Profile Photo"
+                           width="80" height="80"
+                           class="rounded-circle" />
+                    </ng-container>
+                    <ng-template #initialsAvatarLarge>
+                      <div class="d-flex align-items-center justify-content-center rounded-circle"
+                           style="width: 80px; height: 80px; background: #212529; color: #fff; font-weight: bold; font-size: 2.2rem;">
+                        {{ getUserInitials(currentUser?.name || '') }}
+                      </div>
+                    </ng-template>
                   </div>
                   <div class="profile-info">
                     <div class="profile-name-full">{{ currentUser.name }}</div>

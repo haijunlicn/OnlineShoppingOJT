@@ -9,8 +9,18 @@
         <div class="sidebar-header p-4 border-bottom">
           <div class="d-flex align-items-center">
             <div class="user-avatar me-3">
-              <img [src]="currentUser?.profile || '/assets/images/default-avatar.png'" alt="Profile"
-                   class="rounded-circle" width="48" height="48">
+              <ng-container *ngIf="currentUser && currentUser.profile; else initialsAvatar">
+                <img [src]="currentUser.profile"
+                     alt="Profile Photo"
+                     class="rounded-circle border"
+                     width="80" height="80">
+              </ng-container>
+              <ng-template #initialsAvatar>
+                <div class="profile-initials-avatar d-flex align-items-center justify-content-center rounded-circle"
+                     style="width: 80px; height: 80px; background: #212529; color: #fff; font-size: 2rem; font-weight: bold;">
+                  {{ getUserInitial(currentUser?.name) }}
+                </div>
+              </ng-template>
             </div>
             <div>
               <h6 class="mb-1 fw-semibold text-primary">{{ currentUser?.name || 'User' }}</h6>

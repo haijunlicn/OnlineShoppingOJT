@@ -3,6 +3,13 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { NotificationType } from '../models/notification.model';
 
+interface NotificationTypeMethod {
+  notificationTypeId: number;
+  notificationTypeName: string;
+  method: string;
+  status: number;
+}
+
 
 @Injectable({
   providedIn: 'root'
@@ -27,7 +34,23 @@ export class NotificationTypeService {
   deleteNotificationType(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/delete/${id}`);
   }
-    getNotifications(): Observable<Notification[]> {
+
+  // Get all notification type methods
+  getNotificationTypeMethods(): Observable<NotificationTypeMethod[]> {
+    return this.http.get<NotificationTypeMethod[]>(`${this.baseUrl}/methods`);
+  }
+
+  // Update notification method status
+  updateNotificationMethodStatus(notificationTypeId: number, method: string, status: number): Observable<void> {
+    return this.http.put<void>(`${this.baseUrl}/methods/${notificationTypeId}/${method}/status?status=${status}`, {});
+  }
+
+  // Get notification type by ID
+  getNotificationTypeById(id: number): Observable<NotificationType> {
+    return this.http.get<NotificationType>(`${this.baseUrl}/${id}`);
+  }
+
+  getNotifications(): Observable<Notification[]> {
     return this.http.get<Notification[]>(`${this.baseUrl}/list`);
   }
 

@@ -10,7 +10,7 @@ import { ProductDTO, ProductListItemDTO } from '@app/core/models/product.model';
 
 @Component({
   selector: "app-home",
-  standalone:false,
+  standalone: false,
   templateUrl: "./home.component.html",
   styleUrls: ["./home.component.css"],
 })
@@ -76,19 +76,19 @@ export class HomeComponent implements OnInit {
   }
 
   onAddToCart(product: ProductDTO) {
-    console.log("Add to Cart:", product.name)
+    console.log("Add to Cart:", product.name);
   }
 
   onWishlist(product: ProductDTO) {
-    console.log("Wishlist:", product.name)
+    console.log("Wishlist:", product.name);
   }
 
   getRatingStars(rating: number) {
-    const maxRating = 5
-    const filledStars = Math.round(rating)
+    const maxRating = 5;
+    const filledStars = Math.round(rating);
     return Array(maxRating)
       .fill(0)
-      .map((_, i) => i < filledStars)
+      .map((_, i) => i < filledStars);
   }
 
   onSearch(query: string) {
@@ -107,5 +107,13 @@ export class HomeComponent implements OnInit {
     }
     return "assets/images/placeholder.jpg";
   }
-  
+
+  // Performance optimization methods
+  trackByCategory(index: number, category: CategoryDTO): any {
+    return category.id || index;
+  }
+
+  trackByProduct(index: number, product: ProductListItemDTO): any {
+    return product.id || index;
+  }
 }

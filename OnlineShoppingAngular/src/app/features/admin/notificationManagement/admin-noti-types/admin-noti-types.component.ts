@@ -3,9 +3,15 @@ import { FormBuilder, FormGroup, Validators } from "@angular/forms"
 import { NotificationType } from "@app/core/models/notification.model"
 import { NotificationTypeService } from "@app/core/services/notificatiiontype.service"
 
+// Import interfaces from service
+type NotificationTypeMethod = {
+  notificationTypeId: number;
+  notificationTypeName: string;
+  method: string;
+  status: number;
+}
 
 declare var bootstrap: any // Declare bootstrap for modal functionality
-
 @Component({
   selector: "app-admin-noti-types",
   standalone: false,
@@ -17,6 +23,7 @@ export class AdminNotiTypesComponent implements OnInit {
   notificationTypes: NotificationType[] = []
   filteredNotificationTypes: NotificationType[] = []
   paginatedNotificationTypes: NotificationType[] = []
+  notificationTypeMethods: NotificationTypeMethod[] = []
 
   // Form for creating new notification types
   createForm: FormGroup
@@ -46,6 +53,7 @@ export class AdminNotiTypesComponent implements OnInit {
   // Modal properties
   notificationTypeToDelete: NotificationType | null = null
   showCreateForm = false // To toggle visibility of the create form
+  selectedNotificationType: NotificationType | null = null
 
   constructor(
     private notificationTypeService: NotificationTypeService,
@@ -69,7 +77,10 @@ export class AdminNotiTypesComponent implements OnInit {
     this.isLoading = true
     this.error = "" // Clear previous errors
 
-    this.loadNotificationTypes()
+    Promise.all([
+      this.loadNotificationTypes(),
+      this.loadNotificationTypeMethods()
+    ])
       .then(() => {
         this.applyFilters() // Apply filters and sorting after data is loaded
       })
@@ -97,6 +108,81 @@ export class AdminNotiTypesComponent implements OnInit {
           reject(err)
         },
       })
+    })
+  }
+
+  /**
+   * Load notification type methods from service
+   */
+  loadNotificationTypeMethods(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.notificationTypeService.getNotificationTypeMethods().subscribe({
+        next: (data) => {
+          this.notificationTypeMethods = data
+          resolve()
+        },
+        error: (err) => {
+          console.error("Failed to load notification type methods", err)
+          reject(err)
+        },
+      })
+    })
+  }
+
+  /**
+   * Get method status for a specific notification type and method
+   */
+  getMethodStatus(notificationTypeId: number, method: string): number {
+    const methodData = this.notificationTypeMethods.find(
+      (m) => m.notificationTypeId === notificationTypeId && m.method === method
+    )
+    return methodData ? methodData.status : 0
+  }
+
+  /**
+   * Handle checkbox change for method status
+   */
+  onMethodStatusChange(notificationTypeId: number, method: string, event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const isChecked = target.checked;
+    const status = isChecked ? 1 : 0
+    
+    this.notificationTypeService.updateNotificationMethodStatus(notificationTypeId, method, status).subscribe({
+      next: () => {
+        // Update local data
+        const methodData = this.notificationTypeMethods.find(
+          (m) => m.notificationTypeId === notificationTypeId && m.method === method
+        )
+        if (methodData) {
+          methodData.status = status
+        }
+        this.message = `${method} method status updated successfully!`
+        setTimeout(() => this.message = "", 3000)
+      },
+      error: (err) => {
+        this.error = `Failed to update ${method} method status.`
+        console.error("Error updating method status:", err)
+        setTimeout(() => this.error = "", 5000)
+      }
+    })
+  }
+
+  /**
+   * View message template modal
+   */
+  viewMessageTemplate(notificationTypeId: number): void {
+    this.selectedNotificationType = null
+    this.notificationTypeService.getNotificationTypeById(notificationTypeId).subscribe({
+      next: (data) => {
+        this.selectedNotificationType = data
+        // Show modal using Bootstrap
+        const modal = new bootstrap.Modal(document.getElementById('messageTemplateModal'))
+        modal.show()
+      },
+      error: (err) => {
+        this.error = "Failed to load notification type details."
+        console.error("Error loading notification type details:", err)
+      }
     })
   }
 

@@ -1,21 +1,20 @@
-import { animate, keyframes, state, style, transition, trigger } from '@angular/animations';
+import { animate, keyframes, state, style, transition, trigger } from "@angular/animations"
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
-  NgZone,
   OnInit,
-  Output
-} from '@angular/core';
-import { DiscountEventDTO, DiscountMechanismDTO } from '@app/core/models/discount';
-import { CountdownService } from '@app/core/services/countdown-service.service';
-import { CountdownEvent } from 'ngx-countdown';
+  Output,
+} from "@angular/core"
+import { DiscountEventDTO, DiscountMechanismDTO } from "@app/core/models/discount"
+import { CountdownService } from "@app/core/services/countdown-service.service"
+import { CountdownEvent } from "ngx-countdown"
 
 @Component({
   selector: "app-discount-hero-carousel",
-  standalone: false,
+  standalone:false,
   templateUrl: "./discount-hero-carousel.component.html",
   styleUrls: ["./discount-hero-carousel.component.css"],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -71,61 +70,45 @@ export class DiscountHeroCarouselComponent implements OnInit {
   @Input() discounts: DiscountEventDTO[] = []
   @Output() viewDetails = new EventEmitter<DiscountEventDTO>()
   @Output() shopNow = new EventEmitter<void>()
-
   currentIndex = 0
-  countdownConfig: any = {};
-  countdownText = "";
-  showCountdown = true;
+  countdownConfig: any = {}
+  countdownText = ""
+  showCountdown = true 
+  countdownParts = {
+    days: "00",
+    hours: "00",
+    minutes: "00",
+    seconds: "00",
+  }
 
   constructor(
     private cdr: ChangeDetectorRef,
-    private countdownService: CountdownService
-  ) { }
+    private countdownService: CountdownService, // Assuming this service provides getRemainingSeconds
+  ) {}
 
   ngOnInit(): void {
     this.updateCountdownForCurrentDiscount()
   }
 
   goToSlide(index: number): void {
-    this.currentIndex = index;
-    console.log('Slide changed to index:', index, 'Current discount:', this.currentDiscount);
-
-    this.showCountdown = false; // temporarily remove countdown from DOM
-    this.cdr.markForCheck();
-
+    this.currentIndex = index
+    this.showCountdown = false // Hide to force re-render of countdown component
+    this.cdr.markForCheck()
     setTimeout(() => {
-      this.updateCountdownForCurrentDiscount();
-      this.showCountdown = true; // re-add countdown to restart it
-      this.cdr.markForCheck();
-    }, 0);
+      this.updateCountdownForCurrentDiscount()
+      this.showCountdown = true // Show again
+      this.cdr.markForCheck()
+    }, 0)
   }
 
   goToPrevious(): void {
-    this.currentIndex = this.currentIndex === 0 ? this.discounts.length - 1 : this.currentIndex - 1;
-    console.log('Slide changed to previous index:', this.currentIndex, 'Current discount:', this.currentDiscount);
-
-    this.showCountdown = false;
-    this.cdr.markForCheck();
-
-    setTimeout(() => {
-      this.updateCountdownForCurrentDiscount();
-      this.showCountdown = true;
-      this.cdr.markForCheck();
-    }, 0);
+    this.currentIndex = this.currentIndex === 0 ? this.discounts.length - 1 : this.currentIndex - 1
+    this.goToSlide(this.currentIndex)
   }
 
   goToNext(): void {
-    this.currentIndex = (this.currentIndex + 1) % this.discounts.length;
-    console.log('Slide changed to next index:', this.currentIndex, 'Current discount:', this.currentDiscount);
-
-    this.showCountdown = false;
-    this.cdr.markForCheck();
-
-    setTimeout(() => {
-      this.updateCountdownForCurrentDiscount();
-      this.showCountdown = true;
-      this.cdr.markForCheck();
-    }, 0);
+    this.currentIndex = (this.currentIndex + 1) % this.discounts.length
+    this.goToSlide(this.currentIndex)
   }
 
   onViewDetails(): void {
@@ -170,45 +153,46 @@ export class DiscountHeroCarouselComponent implements OnInit {
     return Math.max(0, total - 3)
   }
 
-  // getRemainingSeconds(endTime?: string | Date): number {
-  //   if (!endTime) return 0
-  //   const end = new Date(endTime).getTime()
-  //   const now = Date.now()
-  //   const diff = Math.max(0, Math.floor((end - now) / 1000))
-  //   return diff
-  // }
-
   private updateCountdownForCurrentDiscount(): void {
     if (this.currentDiscount?.endDate) {
-      const end = this.currentDiscount.endDate;
+      const end = this.currentDiscount.endDate
+      const remaining = this.countdownService.getRemainingSeconds(end) // This should return seconds until end date
       this.countdownConfig = {
-        leftTime: this.countdownService.getRemainingSeconds(end),
-        format: this.countdownService.getCountdownFormat(end),
-        notify: [1],
-      };
+        leftTime: remaining,
+        format: "HH:mm:ss",
+        notify: [1], // Notify every 1 second
+      }
+      this.splitTimeUnits(remaining) // Initial split
     } else {
-      this.countdownConfig = null;
+      this.countdownConfig = null
+      this.countdownParts = { days: "00", hours: "00", minutes: "00", seconds: "00" } // Reset if no end date
     }
   }
-
-
-  // private updateCountdownForCurrentDiscount(): void {
-  //   if (this.currentDiscount?.endDate) {
-  //     this.countdownConfig = {
-  //       leftTime: this.getRemainingSeconds(this.currentDiscount.endDate),
-  //       format: 'd:HH:mm:ss',
-  //       notify: [1],
-  //     };
-  //   } else {
-  //     this.countdownConfig = null;
-  //   }
-  // }
 
   onCountdownEvent(event: CountdownEvent): void {
-    if (event.action === 'done') {
-      this.countdownText = 'Expired!';
-      this.cdr.markForCheck();
+    if (event.action === "notify") {
+      if (event.left !== undefined) {
+        this.splitTimeUnits(event.left)
+        this.cdr.markForCheck() // Manually trigger change detection for OnPush strategy
+      }
+    }
+    if (event.action === "done") {
+      this.countdownText = "Expired!"
+      this.cdr.markForCheck()
     }
   }
 
+  private splitTimeUnits(totalSeconds: number): void {
+    const days = Math.floor(totalSeconds / 86400)
+    const hours = Math.floor((totalSeconds % 86400) / 3600)
+    const minutes = Math.floor((totalSeconds % 3600) / 60)
+    const seconds = totalSeconds % 60
+
+    this.countdownParts = {
+      days: String(days).padStart(2, "0"),
+      hours: String(hours).padStart(2, "0"),
+      minutes: String(minutes).padStart(2, "0"),
+      seconds: String(seconds).padStart(2, "0"),
+    }
+  }
 }
