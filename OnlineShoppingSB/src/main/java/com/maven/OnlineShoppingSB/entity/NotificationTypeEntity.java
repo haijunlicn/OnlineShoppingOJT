@@ -1,5 +1,6 @@
 package com.maven.OnlineShoppingSB.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,6 +8,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -39,6 +41,7 @@ public class NotificationTypeEntity {
     private boolean adminOnly = false;
 
     @OneToMany(mappedBy = "type", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<NotificationTypeMethodEntity> supportedMethods = new ArrayList<>();
 
     @Column(name = "title_template", nullable = false)
@@ -51,6 +54,13 @@ public class NotificationTypeEntity {
     public boolean supportsMethod(NotiMethod method) {
         return supportedMethods.stream()
                 .anyMatch(m -> m.getMethod() == method);
+    }
+
+    // Helper method to get only active methods (status = 1)
+    public List<NotificationTypeMethodEntity> getActiveSupportedMethods() {
+        return supportedMethods.stream()
+                .filter(method -> method.getDisplayOrder() == 1)
+                .collect(Collectors.toList());
     }
 
     @Column(nullable = false)

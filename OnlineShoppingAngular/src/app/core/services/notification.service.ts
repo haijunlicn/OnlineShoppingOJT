@@ -82,6 +82,7 @@ export class NotificationService {
   loadInAppNotificationsForUser(userId: number): void {
     this.http.get<UserNotificationDTO[]>(`${this.baseUrl}/in-app/${userId}`).subscribe(
       (data) => {
+        console.log("May----------------------------------"+userId)
         console.log('Loaded in-app notifications:', data); 
         this.notificationsSubject.next(data);
       },
@@ -89,6 +90,7 @@ export class NotificationService {
         console.error('Failed to load in-app notifications', error);
       }
     );
+    //User-specific notifications တွေကို backend မှ load လုပ်တယ်
   }
 
   markAsRead(id: number): Observable<void> {
@@ -100,6 +102,7 @@ export class NotificationService {
   }
 
   addNotification(notification: UserNotificationDTO) {
+    //Notification အားလုံးကို read လုပ်တယ် (PUT reques
     const current = this.notificationsSubject.value;
     this.notificationsSubject.next([notification, ...current]);
 
@@ -118,8 +121,8 @@ export class NotificationService {
 
 
   renderNotification(notification: UserNotificationDTO): UserNotificationDTO {
+    //New notification ကို local state ထဲထည့်တယ် (WebSocket မှာအသုံးများ)
     let metadata: { [key: string]: string } = {};
-
     try {
       if (typeof notification.metadata === 'string') {
         metadata = JSON.parse(notification.metadata);
@@ -127,7 +130,6 @@ export class NotificationService {
     } catch (e) {
       metadata = {};
     }
-
     const render = (template: string): { text: string, routerLink?: string }[] => {
       const regex = /{{(.*?)}}/g;
       const parts: { text: string; routerLink?: string }[] = [];
@@ -174,16 +176,17 @@ export class NotificationService {
   }
 
   createCustomNotification(payload: CreateNotificationPayload): Observable<any> {
+    //Metadata တွေကို template ထဲမှာ dynamic string rendering လုပ်တယ်
     return this.http.post(`${this.baseUrl}/custom`, payload);
   }
 
   getCustomNotifications(): Observable<Notification[]> {
+    //Custom notification အသစ် create လုပ်တယ် (POST)
     return this.http.get<Notification[]>(`${this.baseUrl}/list/custom`);
   }
 
   // Notify wishlist users when stock is updated for a product
   notifyWishlistUsersOnStockUpdate(productId: number): Observable<any> {
-    console.log("HIHIHIHMay")
     return this.http.post(`${this.baseUrl}/stock-update-for-wishlist/${productId}`, {});
   }
 }

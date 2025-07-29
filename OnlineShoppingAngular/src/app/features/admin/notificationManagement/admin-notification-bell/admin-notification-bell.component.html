@@ -55,7 +55,7 @@
                             </span>
                         </div>
                         <!-- <p>{{ noti.message | slice:0:80 }}{{ noti.message.length > 80 ? '...' : '' }}</p> -->
-                        <p>
+                        <!-- <p>
                             <ng-container *ngIf="noti.richContent?.messageParts as parts; else plainMessage">
                                 <ng-container *ngFor="let part of parts">
                                     <ng-container *ngIf="part.routerLink; else plainMessageText">
@@ -69,7 +69,7 @@
                             <ng-template #plainMessage>
                                 {{ noti.message | slice:0:80 }}{{ noti.message.length > 80 ? '...' : '' }}
                             </ng-template>
-                        </p>
+                        </p> -->
                         <div class="notification-footer">
                             <small>
                                 <i class="fas fa-clock"></i>

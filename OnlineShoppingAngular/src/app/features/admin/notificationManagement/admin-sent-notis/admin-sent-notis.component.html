@@ -20,6 +20,9 @@
       <button class="btn btn-outline-secondary btn-sm nav-btn" (click)="loadNotifications()" [disabled]="isLoading">
         <i class="fas fa-sync-alt me-1" [class.fa-spin]="isLoading"></i>Refresh
       </button>
+      <button class="btn btn-primary btn-sm nav-btn" (click)="createNotification()">
+        <i class="fas fa-plus me-1"></i>Create Notification
+      </button>
     </div>
   </div>
 </div>
@@ -135,7 +138,7 @@
                     <i class="fas ms-1" [class]="getSortIcon('scheduledAt')"></i>
                   </div>
                 </th>
-                <th>Metadata</th>
+                <!-- <th>Metadata</th> -->
               </tr>
             </thead>
             <tbody>
@@ -144,12 +147,12 @@
                 <td>{{ noti.title || 'N/A' }}</td>
                 <td>{{ getMessagePreview(noti.message) }}</td>
                 <td class="d-none d-lg-table-cell">{{ noti.scheduledAt || 'N/A' }}</td>
-                <td>
+                <!-- <td>
                   <button class="btn btn-sm btn-outline-info"
                           (click)="openMetadataModal(noti.metadata || null)">
                     View
                   </button>
-                </td>
+                </td> -->
               </tr>
             </tbody>
           </table>

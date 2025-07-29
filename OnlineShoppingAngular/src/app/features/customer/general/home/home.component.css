@@ -1,5 +1,9 @@
+
+
+
 :root {
-  --color-primary: #2a3439; /* Dark slate */
+  --color-primary: #2a3439;
+ /* Dark slate */
   --color-accent: #d4af37; /* Gold */
   --color-highlight: #f8f5f0; /* Light beige */
   --color-background: #f5f1eb;
@@ -672,3 +676,4 @@
     padding: 1rem 0.5rem;
   }
 }
+

@@ -260,6 +260,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
   goToDetail(product: ProductDTO): void {
     this.router.navigate(["/customer/product", product.id])
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   // Discount carousel methods
@@ -678,7 +679,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       this.showAlert("Please select all options.", "warning")
       return
     }
-
+    console.log("May",item);
     const stock = this.selectedVariant.stock
     const inCart = this.getCurrentVariantCartQuantity()
 
@@ -707,6 +708,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
         brandId: Number(item.product.brandId),
         categoryId: Number(item.product.categoryId),
       })
+      const cart = this.cartService.getCart();   
     }
 
     this.showAlert(
@@ -737,7 +739,6 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       customClass: { popup: "custom-toast-popup" },
     })
   }
-
   // Coupon methods - simplified since copyToClipboard is now handled by service
   onCouponCopied(code: string): void {
     this.showAlert(`Coupon code "${code}" copied to clipboard`, "success")

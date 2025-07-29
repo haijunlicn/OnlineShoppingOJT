@@ -99,7 +99,7 @@ public class NotificationController {
 
     @PostMapping("/stock-update-for-wishlist/{productId}")
 public ResponseEntity<?> notifyWishlistUsersOnStockUpdate(@PathVariable Long productId) {
-    System.out.println("may-----------------------------------------------------------------------------"+productId);
+   
     notificationService.notifyWishlistUsersOnStockUpdate(productId);
     // ✅ Always return JSON object, not plain string
     return ResponseEntity.ok(Map.of(

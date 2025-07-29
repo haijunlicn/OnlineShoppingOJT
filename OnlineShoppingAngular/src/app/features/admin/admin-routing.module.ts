@@ -66,6 +66,7 @@ import { AdminAccountListComponent } from './roleAndPermission/admin-account-lis
 import { UserDetailListComponent } from './adminUserManagement/user-detail-list/user-detail-list.component';
 import { UserViewDetailComponent } from './adminUserManagement/user-view-detail/user-view-detail.component';
 
+
 const routes: Routes = [
   {
     path: 'login',
@@ -156,6 +157,7 @@ const routes: Routes = [
       { path: 'vlogcreate', component: VlogCreateComponent },
       {path:'userList',component:UserDetailListComponent},
       {path:'user-view-detail/:id', component:UserViewDetailComponent}
+
 
     ]
   }
