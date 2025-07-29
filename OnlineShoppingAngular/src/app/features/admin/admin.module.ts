@@ -100,6 +100,7 @@ import { QuestionComponent } from './QuestionManagement/question/question.compon
 import { AdminAccountListComponent } from './roleAndPermission/admin-account-list/admin-account-list.component';
 import { UserViewDetailComponent } from './adminUserManagement/user-view-detail/user-view-detail.component';
 import { AdminOrdersDetailComponent } from './adminOrderManagement/admin-orders-detail/admin-orders-detail.component';
+import { UserDetailListComponent } from './adminUserManagement/user-detail-list/user-detail-list.component';
 
 @NgModule({
   declarations: [
@@ -178,7 +179,8 @@ import { AdminOrdersDetailComponent } from './adminOrderManagement/admin-orders-
     NewProductSelectionComponent,
     QuestionComponent,
     AdminAccountListComponent,
-    UserViewDetailComponent
+    UserViewDetailComponent,
+    UserDetailListComponent
 
   ],
   imports: [
