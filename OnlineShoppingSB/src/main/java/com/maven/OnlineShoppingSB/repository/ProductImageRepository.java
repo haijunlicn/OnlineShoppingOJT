@@ -15,6 +15,8 @@ import java.util.List;
 @Repository
 public interface ProductImageRepository extends JpaRepository<ProductImageEntity, Long> {
 
+    List<ProductImageEntity> findByProductId(Long productId);
+
     @Modifying
     @Transactional
     @Query("DELETE FROM ProductImageEntity i WHERE i.product.id = :productId")

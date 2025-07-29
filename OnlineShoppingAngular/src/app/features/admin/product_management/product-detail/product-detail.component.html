@@ -1,255 +1,229 @@
+<!-- Loading State -->
+<div *ngIf="loading" class="container-fluid">
+    <div class="loading-container">
+        <div class="d-flex flex-column align-items-center justify-content-center py-5">
+            <div class="spinner-border text-primary mb-3" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="text-muted mb-0">Loading product details...</p>
+        </div>
+    </div>
+</div>
 
-            <div class="container-fluid" *ngIf="product">
-                <!-- Header Section -->
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div>
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb mb-2">
-                                <li class="breadcrumb-item"><a routerLink="/admin/dashboard"
-                                        class="text-decoration-none">Dashboard</a></li>
-                                <li class="breadcrumb-item"><a routerLink="/admin/productList"
-                                        class="text-decoration-none">Products</a></li>
-                                <li class="breadcrumb-item active">{{ product.product.name }}</li>
-                            </ol>
-                        </nav>
-                        <h2 class="fw-bold text-dark mb-0">Product Details</h2>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-outline-primary" (click)="openStockUpdateModal()" *ngIf="canUpdateStock">
-                            <i class="bi bi-box-seam me-2"></i>Update Stock
-                        </button>
-                        <button class="btn btn-primary" (click)="editProduct()" *ngIf="canEditProduct">
-                            <i class="bi bi-pencil-square me-2"></i>Edit Product
-                        </button>
-                    </div>
+<!-- Main Content -->
+<div *ngIf="!loading && product">
+    <!-- Navigation Bar -->
+    <div class="navigation-bar mb-4">
+        <div class="nav-left">
+            <div class="nav-info">
+                <nav aria-label="breadcrumb" class="mb-1">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <i class="fas fa-box me-1"></i>
+                            <a routerLink="/admin/productList" class="text-decoration-none">Products</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ product.product.name }}</li>
+                    </ol>
+                </nav>
+                <h1 class="nav-title">Product Details</h1>
+                <p class="nav-subtitle">Manage product information, variants, and track changes</p>
+            </div>
+        </div>
+        <div class="nav-right">
+            <!-- Action Buttons -->
+            <button class="btn btn-outline-secondary btn-sm nav-btn" (click)="openStockUpdateModal()"
+                *ngIf="canUpdateStock">
+                <i class="fas fa-boxes me-1"></i>Update Stock
+            </button>
+            <button class="btn btn-primary btn-sm nav-btn" (click)="editProduct()" *ngIf="canEditProduct">
+                <i class="fas fa-edit me-1"></i>Edit Product
+            </button>
 
-                </div>
+            <!-- Publish/Unpublish Button -->
+            <button class="btn btn-success btn-sm nav-btn" (click)="publishProduct()"
+                *ngIf="canEditProduct && !isProductPublished()">
+                <i class="fas fa-eye me-1"></i>Publish Product
+            </button>
+            <button class="btn btn-outline-danger btn-sm nav-btn" (click)="unpublishProduct()"
+                *ngIf="canEditProduct && isProductPublished()">
+                <i class="fas fa-eye-slash me-1"></i>Unpublish Product
+            </button>
+        </div>
+    </div>
 
-                <!-- Main Product Card -->
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-body p-4">
-                        <div class="row g-4">
-                            <!-- Product Image -->
-                            <div class="col-lg-4">
-                                <div class="position-relative">
-                                    <img [src]="mainImageUrl" class="img-fluid rounded-3 w-100"
-                                        [alt]="product.product.name" style="height: 300px; object-fit: cover;" />
-                                    <div class="position-absolute top-0 end-0 m-3">
-                                        <span class="badge bg-white text-dark shadow-sm">
-                                            {{ product.product.productImages?.length || 0 }} Images
-                                        </span>
-                                    </div>
-                                </div>
-                                <!-- Thumbnail Gallery -->
-                                <div class="d-flex gap-2 mt-3 overflow-auto"
-                                    *ngIf="product.product.productImages && product.product.productImages.length > 1">
-                                    <img *ngFor="let image of product.product.productImages" [src]="image.imgPath"
-                                        class="rounded-2 border cursor-pointer"
-                                        [class.border-primary]="image.imgPath === mainImageUrl"
-                                        style="width: 60px; height: 60px; object-fit: cover; flex-shrink: 0;"
-                                        (click)="setMainImage(image.imgPath)" />
+    <div class="container-fluid px-0">
+        <!-- Product Status Alert -->
+        <div class="alert mb-4" [ngClass]="getProductStatusClass()">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Product Status: {{ getProductStatus() }}</strong>
+            </div>
+        </div>
+
+        <!-- Main Product Card -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-4">
+                    <!-- Product Image -->
+                    <div class="col-lg-5">
+                        <div class="product-image-container">
+                            <div class="main-image-wrapper">
+                                <img [src]="mainImageUrl" class="main-product-image" [alt]="product.product.name" />
+                                <div class="image-badge">
+                                    <i class="fas fa-images me-1"></i>
+                                    {{ product.product.productImages?.length || 0 }} Images
                                 </div>
                             </div>
+                            <!-- Thumbnail Gallery -->
+                            <div class="thumbnail-gallery"
+                                *ngIf="product.product.productImages && product.product.productImages.length > 1">
+                                <button *ngFor="let image of this.allImages" class="thumbnail-btn"
+                                    [class.active]="image.imgPath === mainImageUrl"
+                                    (click)="setMainImage(image.imgPath)">
+                                    <img [src]="image.imgPath" [alt]="image.altText || 'Product image'"
+                                        class="thumbnail-image" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
-                            <!-- Product Information -->
-                            <div class="col-lg-8">
-                                <div class="row g-4">
-                                    <div class="col-md-8">
-                                        <h3 class="fw-bold text-dark mb-3">{{ product.product.name }}</h3>
+                    <!-- Product Information -->
+                    <div class="col-lg-7">
+                        <div class="product-info">
+                            <h2 class="product-title">{{ product.product.name }}</h2>
 
-                                        <div class="mb-3">
-                                            <span class="badge bg-light text-dark border me-2 px-3 py-2">
-                                                <i class="bi bi-tag me-1"></i>{{ product.brand.name }}
-                                            </span>
-                                            <span class="badge bg-light text-dark border px-3 py-2">
-                                                <i class="bi bi-grid me-1"></i>{{ product.category.name }}
-                                            </span>
-                                        </div>
+                            <!-- Product Tags -->
+                            <div class="product-tags">
+                                <span class="product-tag" [ngClass]="product.brand?.delFg === 0 ? 'tag-inactive' : ''">
+                                    <i class="fas fa-tag"></i>
+                                    {{ product.brand?.name || 'No Brand' }}
+                                    <span *ngIf="product.brand?.delFg === 0" class="ms-1 text-danger">(Inactive)</span>
+                                </span>
+                                <span class="product-tag"
+                                    [ngClass]="product.category.delFg === 0 ? 'tag-inactive' : ''">
+                                    <i class="fas fa-th-large"></i>
+                                    {{ product.category.name }}
+                                    <span *ngIf="product.category.delFg === 0"
+                                        class="ms-1 text-danger">(Inactive)</span>
+                                </span>
+                                <button class="product-tag audit-log-btn"
+                                    (click)="openAuditModal('Product', product.product.id!)">
+                                    <i class="fas fa-history"></i>
+                                    View Audit Log
+                                </button>
+                            </div>
 
-                                        <div class="mb-4">
-                                            <h4 class="text-success fw-bold mb-1">{{ getPriceRange() }}</h4>
-                                            <small class="text-muted">Base Price: {{ product.product.basePrice |
-                                                currency:'MMK ':'code':'1.0-0' }}</small>
-                                        </div>
+                            <!-- Price Information -->
+                            <div class="price-section">
+                                <div class="current-price">{{ getPriceRange() }}</div>
+                                <div class="base-price">Base Price: {{ product.product.basePrice | currency:'MMK'
+                                    : 'code':'1.0-0' }}</div>
+                            </div>
 
-                                        <div class="mb-4">
-                                            <h6 class="text-muted mb-2">DESCRIPTION</h6>
-                                            <p class="text-dark lh-base">{{ product.product.description
-                                                || 'No description available' }}</p>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-4">
-                                        <div class="bg-light rounded-3 p-3 h-100">
-                                            <h6 class="mb-3">PRODUCT INFO</h6>
-
-                                            <div class="mb-3">
-                                                <small class="text-muted d-block">Created</small>
-                                                <span class="fw-medium">
-                                                    {{ product.product.createdDate | date: 'MMM dd,y'
-                                                    }}</span>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <small class="text-muted d-block">Total Variants</small>
-                                                <span class="fw-medium">{{ product.variants.length }}</span>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <small class="text-muted d-block">Total Stock</small>
-                                                <span class="fw-bold" [ngClass]="getOverallStockClass()">
-                                                    {{ getTotalStock() }} units
-                                                </span>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <small class="text-muted d-block">Stock Status</small>
-                                                <span class="fw-medium" [ngClass]="getOverallStockClass()">
-                                                    <i class="bi" [ngClass]="getStockIcon()"></i>
-                                                    {{ getOverallStockStatus() }}
-                                                </span>
-                                            </div>
-
-                                            <div *ngIf="product.options && product.options.length > 0">
-                                                <small class="text-muted d-block">Options</small>
-                                                <div class="d-flex flex-wrap gap-1 mt-1">
-                                                    <span class="badge bg-white text-dark border small"
-                                                        *ngFor="let option of product.options">
-                                                        {{ option.name }}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <!-- Description -->
+                            <div class="description-section" *ngIf="product.product.description">
+                                <h6 class="section-title">DESCRIPTION</h6>
+                                <p class="description-text">{{ product.product.description }}</p>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Enhanced Stock Overview Card with Colored Border -->
-                <div class="card border-0 shadow-sm mb-4 stock-overview">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <h5 class="fw-bold text-dark mb-0 d-flex align-items-center">
-                                <i class="bi bi-bar-chart-fill me-2 text-primary"></i>
-                                Stock Overview
+        <!-- Quick Stats -->
+        <div class="stats-grid mb-4">
+            <div class="stat-card stat-total">
+                <div class="stat-icon">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ getTotalStock() }}</div>
+                    <div class="stat-label">Total Stock</div>
+                </div>
+            </div>
+            <div class="stat-card stat-success">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ getInStockVariants() }}</div>
+                    <div class="stat-label">In Stock</div>
+                </div>
+            </div>
+            <div class="stat-card stat-warning">
+                <div class="stat-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ getLowStockVariants() }}</div>
+                    <div class="stat-label">Low Stock</div>
+                </div>
+            </div>
+            <div class="stat-card stat-danger">
+                <div class="stat-icon">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ getOutOfStockVariants() }}</div>
+                    <div class="stat-label">Out of Stock</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Section -->
+        <div class="card">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" [class.active]="activeTab === 'variants'"
+                            (click)="setActiveTab('variants')" type="button">
+                            <i class="fas fa-list me-2"></i>Variants ({{ getActiveVariants().length }} Active, {{
+                            getInactiveVariants().length }} Inactive)
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" [class.active]="activeTab === 'options'"
+                            (click)="setActiveTab('options')" type="button">
+                            <i class="fas fa-cog me-2"></i>Options ({{ product.options.length }})
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card-body p-0">
+                <!-- Variants Tab -->
+                <div class="tab-content" *ngIf="activeTab === 'variants'">
+                    <!-- Active Variants Section -->
+                    <div *ngIf="getActiveVariants().length > 0">
+                        <div class="section-header">
+                            <h5 class="section-title mb-0">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Active Variants ({{ getActiveVariants().length }})
                             </h5>
                         </div>
-
-                        <div class="row g-3">
-                            <div class="col-md-3 col-sm-6">
-                                <div class="stats-card total-stock bg-light rounded-3 p-3 h-100">
-                                    <div class="d-flex align-items-center">
-                                        <div class="stats-icon bg-primary bg-opacity-10 rounded-circle p-2 me-3">
-                                            <i class="bi bi-boxes text-primary"></i>
-                                        </div>
-                                        <div>
-                                            <p class="text-muted small mb-1">Total Stock</p>
-                                            <h4 class="fw-bold mb-0">{{ getTotalStock() }}</h4>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-3 col-sm-6">
-                                <div class="stats-card in-stock bg-light rounded-3 p-3 h-100">
-                                    <div class="d-flex align-items-center">
-                                        <div class="stats-icon bg-success bg-opacity-10 rounded-circle p-2 me-3">
-                                            <i class="bi bi-check-circle-fill text-success"></i>
-                                        </div>
-                                        <div>
-                                            <p class="text-muted small mb-1">In Stock</p>
-                                            <h4 class="fw-bold mb-0 text-success">{{ getInStockVariants() }}</h4>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-3 col-sm-6">
-                                <div class="stats-card low-stock bg-light rounded-3 p-3 h-100">
-                                    <div class="d-flex align-items-center">
-                                        <div class="stats-icon bg-warning bg-opacity-10 rounded-circle p-2 me-3">
-                                            <i class="bi bi-exclamation-triangle-fill text-warning"></i>
-                                        </div>
-                                        <div>
-                                            <p class="text-muted small mb-1">Low Stock</p>
-                                            <h4 class="fw-bold mb-0 text-warning">{{ getLowStockVariants() }}</h4>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-3 col-sm-6">
-                                <div class="stats-card out-of-stock bg-light rounded-3 p-3 h-100">
-                                    <div class="d-flex align-items-center">
-                                        <div class="stats-icon bg-danger bg-opacity-10 rounded-circle p-2 me-3">
-                                            <i class="bi bi-x-circle-fill text-danger"></i>
-                                        </div>
-                                        <div>
-                                            <p class="text-muted small mb-1">Out of Stock</p>
-                                            <h4 class="fw-bold mb-0 text-danger">{{ getOutOfStockVariants() }}</h4>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Product Options (if any) -->
-                <div class="card border-0 shadow-sm mb-4" *ngIf="product.options && product.options.length > 0">
-                    <div class="card-body p-4">
-                        <h5 class="fw-bold text-dark mb-3">
-                            <i class="bi bi-gear me-2"></i>Product Options
-                        </h5>
-                        <div class="row g-3">
-                            <div class="col-md-6" *ngFor="let option of product.options">
-                                <div class="border rounded-3 p-3 bg-light">
-                                    <h6 class="fw-bold text-primary mb-2">{{ option.name }}</h6>
-                                    <div class="d-flex flex-wrap gap-2">
-                                        <span class="badge bg-white text-dark border"
-                                            *ngFor="let value of option.optionValues">
-                                            {{ value.value }}
-                                        </span>
-                                    </div>
-                                    <small class="text-muted mt-2 d-block">{{ option.optionValues.length }}
-                                        values</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Variants Table -->
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="fw-bold text-dark mb-0">
-                                <i class="bi bi-list-ul me-2"></i>Product Variants ({{ product.variants.length }})
-                            </h5>
-                        </div>
-
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle">
-                                <thead class="table-light">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
                                     <tr>
-                                        <th class="border-0 fw-bold">SKU</th>
-                                        <th class="border-0 fw-bold">Configuration</th>
-                                        <th class="border-0 fw-bold">Price</th>
-                                        <th class="border-0 fw-bold">Stock</th>
-                                        <th class="border-0 fw-bold">Status</th>
-                                        <th class="border-0 fw-bold">Image</th>
+                                        <th class="fw-bold">SKU</th>
+                                        <th class="fw-bold">Configuration</th>
+                                        <th class="fw-bold">Price</th>
+                                        <th class="fw-bold">Stock</th>
+                                        <th class="fw-bold">Status</th>
+                                        <th class="fw-bold">Image</th>
+                                        <th class="fw-bold">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr *ngFor="let variant of product.variants; trackBy: trackByVariantId">
+                                    <tr *ngFor="let variant of getActiveVariants(); trackBy: trackByVariantId">
                                         <td>
-                                            <code class="bg-light px-2 py-1 rounded text-dark">{{ variant.sku }}</code>
+                                            <code class="sku-code">{{ variant.sku }}</code>
                                         </td>
                                         <td>
-                                            <div *ngIf="variant.options && variant.options.length > 0">
-                                                <span class="badge bg-light text-dark border me-1 mb-1"
+                                            <div *ngIf="variant.options && variant.options.length > 0"
+                                                class="variant-options">
+                                                <span class="variant-option-badge"
                                                     *ngFor="let option of variant.options">
                                                     {{ getOptionName(option.optionId) }}: {{
                                                     getOptionValue(option.optionId,
@@ -262,43 +236,65 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <div class="fw-bold">{{ variant.price | currency:'MMK ':'code':'1.0-0' }}
-                                            </div>
-                                            <small class="text-muted"
-                                                *ngIf="variant.price !== product.product.basePrice">
-                                                <span
+                                            <div class="price-info">
+                                                <div class="fw-bold">{{ variant.price | currency:'MMK ':'code':'1.0-0'
+                                                    }}
+                                                </div>
+                                                <small class="price-diff"
+                                                    *ngIf="variant.price !== product.product.basePrice"
                                                     [class]="variant.price > product.product.basePrice ? 'text-success' : 'text-danger'">
                                                     {{ variant.price > product.product.basePrice ? '+' : '' }}{{
-                                                    (variant.price - product.product.basePrice)
-                                                    | currency:'MMK':'code':'1.0-0' }}
-                                                </span>
-                                            </small>
+                                                    (variant.price
+                                                    - product.product.basePrice) | currency:'MMK':'code':'1.0-0' }}
+                                                </small>
+                                            </div>
                                         </td>
                                         <td>
-                                            <span class="fw-bold fs-5">{{ variant.stock }}</span>
+                                            <span class="stock-number">{{ variant.stock }}</span>
                                         </td>
                                         <td>
-                                            <span class="status-badge" [ngClass]="{
-                                                'status-active': variant.stock > 5,
-                                                'status-inactive': variant.stock === 0,
-                                                'status-warning': variant.stock > 0 && variant.stock <= 5
-                                            }">
-                                                <i class="bi" [ngClass]="{
-                                                    'bi-check-circle-fill': variant.stock > 5,
-                                                    'bi-x-circle-fill': variant.stock === 0,
-                                                    'bi-exclamation-triangle-fill': variant.stock > 0 && variant.stock <= 5
-                                                }"></i>
+                                            <span class="status-badge" [ngClass]="getVariantStockClass(variant.stock)">
+                                                <i [class]="getVariantStockIcon(variant.stock)"></i>
                                                 {{ getVariantStockStatus(variant.stock) }}
                                             </span>
                                         </td>
                                         <td>
-                                            <img *ngIf="variant.imgPath" [src]="variant.imgPath" alt="Variant Image"
-                                                class="rounded-2 border"
-                                                style="width: 50px; height: 50px; object-fit: cover;">
-                                            <div *ngIf="!variant.imgPath"
-                                                class="d-flex align-items-center justify-content-center bg-light rounded-2 border text-muted"
-                                                style="width: 50px; height: 50px;">
-                                                <i class="bi bi-image"></i>
+                                            <div class="variant-image">
+                                                <img *ngIf="variant.imgPath" [src]="variant.imgPath" alt="Variant Image"
+                                                    class="variant-img">
+                                                <div *ngIf="!variant.imgPath" class="variant-img-placeholder">
+                                                    <i class="fas fa-image"></i>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="table-action-buttons">
+                                                <div class="btn-group">
+                                                    <button
+                                                        class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split"
+                                                        data-bs-toggle="dropdown" aria-expanded="false"
+                                                        title="More Actions">
+                                                        <span class="visually-hidden">More Actions</span>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end">
+                                                        <li>
+                                                            <a class="dropdown-item"
+                                                                (click)="openAuditModal('ProductVariant', variant.id!)">
+                                                                <i class="fas fa-history"></i>View Audit Log
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <hr class="dropdown-divider">
+                                                        </li>
+                                                        <li>
+                                                            <a class="dropdown-item text-danger"
+                                                                (click)="deactivateVariant(variant.id!)"
+                                                                *ngIf="canEditProduct">
+                                                                <i class="fas fa-eye-slash"></i>Deactivate Variant
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>
@@ -306,10 +302,140 @@
                             </table>
                         </div>
                     </div>
+
+                    <!-- Inactive Variants Section -->
+                    <div *ngIf="getInactiveVariants().length > 0" class="mt-4">
+                        <div class="section-header inactive-section">
+                            <h5 class="section-title mb-0">
+                                <i class="fas fa-times-circle text-danger me-2"></i>
+                                Inactive Variants ({{ getInactiveVariants().length }})
+                            </h5>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 inactive-table">
+                                <thead>
+                                    <tr>
+                                        <th class="fw-bold">SKU</th>
+                                        <th class="fw-bold">Configuration</th>
+                                        <th class="fw-bold">Price</th>
+                                        <th class="fw-bold">Stock</th>
+                                        <th class="fw-bold">Status</th>
+                                        <th class="fw-bold">Image</th>
+                                        <th class="fw-bold">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let variant of getInactiveVariants(); trackBy: trackByVariantId"
+                                        class="inactive-row">
+                                        <td>
+                                            <code class="sku-code inactive">{{ variant.sku }}</code>
+                                        </td>
+                                        <td>
+                                            <div *ngIf="variant.options && variant.options.length > 0"
+                                                class="variant-options">
+                                                <span class="variant-option-badge inactive"
+                                                    *ngFor="let option of variant.options">
+                                                    {{ getOptionName(option.optionId) }}: {{
+                                                    getOptionValue(option.optionId,
+                                                    option.optionValueId) }}
+                                                </span>
+                                            </div>
+                                            <span class="text-muted small"
+                                                *ngIf="!variant.options || variant.options.length === 0">
+                                                Default variant
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="price-info">
+                                                <div class="fw-bold text-muted">{{ variant.price | currency:'MMK'
+                                                    : 'code':'1.0-0' }}
+                                                </div>
+                                                <small class="price-diff text-muted"
+                                                    *ngIf="variant.price !== product.product.basePrice">
+                                                    {{ variant.price > product.product.basePrice ? '+' : '' }}{{
+                                                    (variant.price
+                                                    - product.product.basePrice) | currency:'MMK':'code':'1.0-0' }}
+                                                </small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="stock-number text-muted">{{ variant.stock }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge status-inactive">
+                                                <i class="fas fa-times-circle"></i>
+                                                Inactive
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="variant-image">
+                                                <img *ngIf="variant.imgPath" [src]="variant.imgPath" alt="Variant Image"
+                                                    class="variant-img inactive">
+                                                <div *ngIf="!variant.imgPath" class="variant-img-placeholder inactive">
+                                                    <i class="fas fa-image"></i>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="table-action-buttons d-flex align-items-center">
+                                                <button class="btn btn-success btn-sm"
+                                                    (click)="activateVariant(variant.id!)" *ngIf="canEditProduct">
+                                                    <i class="fas fa-eye me-1"></i>Activate
+                                                </button>
+
+                                                <!-- Audit log icon button -->
+                                                <button class="btn btn-outline-secondary btn-sm ms-1"
+                                                    (click)="openAuditModal('ProductVariant', variant.id!)"
+                                                    title="View Audit Log">
+                                                    <i class="fas fa-history"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- No Variants Message -->
+                    <div *ngIf="getActiveVariants().length === 0 && getInactiveVariants().length === 0"
+                        class="empty-state">
+                        <i class="fas fa-box-open"></i>
+                        <h5>No Variants Found</h5>
+                        <p>This product doesn't have any variants configured.</p>
+                    </div>
+                </div>
+
+                <!-- Options Tab -->
+                <div class="tab-content p-4" *ngIf="activeTab === 'options'">
+                    <div *ngIf="product.options && product.options.length > 0" class="options-grid">
+                        <div class="option-card" *ngFor="let option of product.options">
+                            <h6 class="option-title">{{ option.name }}</h6>
+                            <div class="option-values">
+                                <span class="option-value-badge" *ngFor="let value of option.optionValues">
+                                    {{ value.value }}
+                                </span>
+                            </div>
+                            <div class="option-meta">{{ option.optionValues.length }} values available</div>
+                        </div>
+                    </div>
+                    <div *ngIf="!product.options || product.options.length === 0" class="empty-state">
+                        <i class="fas fa-cog"></i>
+                        <h5>No Options Configured</h5>
+                        <p>This product doesn't have any configurable options.</p>
+                    </div>
                 </div>
             </div>
-            
-    <!-- Stock Update Modal - Using Angular's *ngIf instead of Bootstrap modal -->
-    <app-stock-update-modal [show]="showStockModal" [product]="product" (closeModal)="onCloseStockModal()"
-        (stockUpdated)="onStockUpdated()">
-    </app-stock-update-modal>
+        </div>
+    </div>
+</div>
+
+<!-- Stock Update Modal -->
+<app-stock-update-modal [show]="showStockModal" [product]="product" (closeModal)="onCloseStockModal()"
+    (stockUpdated)="onStockUpdated()">
+</app-stock-update-modal>
+
+<!-- Audit Log Modal -->
+<app-audit-log-modal *ngIf="showAuditModal" [logs]="selectedAuditLogs" [createdMeta]="selectedCreatedMeta"
+    (close)="showAuditModal = false">
+</app-audit-log-modal>

@@ -31,8 +31,6 @@ public class ProductVariantEntity {
     @Column
     private Integer stock = 0;
 
-//    @Column(name = "del_fg")
-//    private Boolean deleted = false;
 
     @Column(name = "del_fg", nullable = false, columnDefinition = "TINYINT(1) DEFAULT 1")
     private Integer delFg = 1;
@@ -53,6 +51,10 @@ public class ProductVariantEntity {
 
     @Column(name = "img_path")
     private String imgPath;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private UserEntity createdBy;
 
     public boolean isDeleted() {
         return delFg != null && delFg == 0;

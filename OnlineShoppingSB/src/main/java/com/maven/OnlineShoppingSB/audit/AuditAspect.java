@@ -12,7 +12,9 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Aspect
 @Component
@@ -28,18 +30,20 @@ public class AuditAspect {
         Method method = signature.getMethod();
         Audit audit = method.getAnnotation(Audit.class);
 
-        // 🔍 Debug prints
-        System.out.println("✅ AuditAspect triggered!");
-        System.out.println("Action: " + audit.action());
-        System.out.println("Entity Type: " + audit.entityType());
-        System.out.println("Returned Result: " + result);
-
-        // Dummy values — replace with actual authentication extraction
         Long userId = getCurrentUserId();
         String userType = getCurrentUserType();
+        String username = getCurrentUsername();
 
-        Long entityId = extractEntityId(result); // Optional helper
-        Map<String, Object> changes = extractChanges(joinPoint.getArgs()); // Optional
+        Map<String, Object> newData = extractChanges(joinPoint.getArgs());
+        Map<String, Object> oldData = extractOldChanges(joinPoint.getArgs());
+
+        Map<String, Object> changes = getDifferences(oldData, newData);
+
+        // ✅ Do NOT log if nothing changed
+        if (changes.isEmpty()) return;
+
+        // ✅ Entity ID from returned object (if method returns updated product)
+        Long entityId = extractEntityId(result);
 
         String ip = request.getRemoteAddr();
         String userAgent = request.getHeader("User-Agent");
@@ -50,13 +54,25 @@ public class AuditAspect {
                 entityId,
                 changes,
                 userId,
-                getCurrentUsername(),
+                username,
                 userType,
                 ip,
                 userAgent
         );
 
         publisher.publishEvent(event);
+    }
+
+    private Map<String, Object> extractOldChanges(Object[] args) {
+        for (Object arg : args) {
+            if (arg instanceof AuditableDto auditable) {
+                Map<String, Object> oldMap = auditable.toOldAuditMap();
+                if (oldMap != null && !oldMap.isEmpty()) {
+                    return oldMap;
+                }
+            }
+        }
+        return Map.of();
     }
 
     private Long getCurrentUserId() {
@@ -98,6 +114,38 @@ public class AuditAspect {
             return userDetails.getUser().getName();
         }
         return "UNKNOWN";
+    }
+    public static Map<String, Object> getDifferences(Map<String, Object> oldMap, Map<String, Object> newMap) {
+        Map<String, Object> changes = new LinkedHashMap<>();
+
+        System.out.println("Starting difference check...");
+        System.out.println("Old map: " + oldMap);
+        System.out.println("New map: " + newMap);
+
+        for (String key : newMap.keySet()) {
+            Object newVal = newMap.get(key);
+            Object oldVal = oldMap.get(key);
+
+            System.out.println("Checking key: '" + key + "'");
+            System.out.println("  oldVal = " + oldVal);
+            System.out.println("  newVal = " + newVal);
+
+            if (!Objects.equals(newVal, oldVal)) {
+                System.out.println("  -> Values differ, recording change.");
+
+                Map<String, Object> diff = new LinkedHashMap<>();
+                diff.put("old", oldVal); // may be null
+                diff.put("new", newVal); // may be null
+                changes.put(key, diff);
+            } else {
+                System.out.println("  -> Values are equal, no change.");
+            }
+        }
+
+        System.out.println("Detected changes: " + changes);
+        System.out.println("Difference check complete.");
+
+        return changes;
     }
 
 

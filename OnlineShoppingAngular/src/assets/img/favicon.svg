@@ -1,0 +1,47 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradient definitions -->
+    <linearGradient id="faviconPrimaryGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="faviconAccentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="16" cy="16" r="15" fill="url(#faviconPrimaryGradient)" stroke="#1e40af" stroke-width="0.5"/>
+  
+  <!-- Shopping bag with gallery elements -->
+  <g transform="translate(6, 6)">
+    <!-- Shopping bag base -->
+    <path d="M5 6h14v12c0 1.2-1 2.2-2.2 2.2H7.2C6 20.2 5 19.2 5 18V6z" 
+          fill="white" 
+          stroke="#1e40af" 
+          stroke-width="0.3"/>
+    
+    <!-- Bag handles -->
+    <path d="M5 6c0-1.2 1-2.2 2.2-2.2h5.6c1.2 0 2.2 1 2.2 2.2" 
+          fill="none" 
+          stroke="#1e40af" 
+          stroke-width="1.2" 
+          stroke-linecap="round"/>
+    
+    <!-- Gallery frame elements inside bag -->
+    <rect x="7" y="9" width="2.5" height="1.5" fill="url(#faviconAccentGradient)" rx="0.2"/>
+    <rect x="10.5" y="9" width="2.5" height="1.5" fill="url(#faviconAccentGradient)" rx="0.2"/>
+    <rect x="14" y="9" width="2.5" height="1.5" fill="url(#faviconAccentGradient)" rx="0.2"/>
+    
+    <rect x="7" y="11.5" width="2.5" height="1.5" fill="url(#faviconAccentGradient)" rx="0.2"/>
+    <rect x="10.5" y="11.5" width="2.5" height="1.5" fill="url(#faviconAccentGradient)" rx="0.2"/>
+    <rect x="14" y="11.5" width="2.5" height="1.5" fill="url(#faviconAccentGradient)" rx="0.2"/>
+    
+    <!-- Decorative dots representing gallery items -->
+    <circle cx="8.5" cy="15" r="0.6" fill="#fbbf24"/>
+    <circle cx="11" cy="15" r="0.6" fill="#fbbf24"/>
+    <circle cx="13.5" cy="15" r="0.6" fill="#fbbf24"/>
+    <circle cx="16" cy="15" r="0.6" fill="#fbbf24"/>
+  </g>
+</svg> 

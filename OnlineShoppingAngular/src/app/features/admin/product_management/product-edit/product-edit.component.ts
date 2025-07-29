@@ -15,6 +15,7 @@ import { OptionvalueService } from '@app/core/services/optionvalue.service';
 import { AlertService } from '@app/core/services/alert.service';
 import { FormValidationService } from '@app/core/services/form-validation.service';
 
+
 @Component({
   selector: "app-product-edit",
   standalone: false,
@@ -26,11 +27,25 @@ export class ProductEditComponent implements OnInit {
   productVariants: ProductVariantDTO[] = []
   bulkStockValue = 10
   selectedCategory: CategoryDTO | null = null
+  selectedBrand: BrandDTO | null = null
   flatCategories: CategoryDTO[] = []
   brands: BrandDTO[] = []
   categories: CategoryDTO[] = []
   optionTypes: OptionTypeDTO[] = []
-  displayPrice: string = '';
+  displayPrice = ""
+  baseSku = "SKU"
+
+  // Track original option values for edit restrictions
+  originalOptionValues: Map<number, string[]> = new Map()
+
+  // Track which options are existing vs new
+  existingOptionIds: Set<number> = new Set()
+
+  // Manual assignment tracking
+  variantNewOptionAssignments: { [variantIndex: number]: { [optionName: string]: string } } = {}
+
+  // FIXED: Cache option type names to prevent infinite loops
+  private optionTypeNamesCache: Map<string, string> = new Map()
 
   // Centralized Image Pool
   imagePool: ImagePoolItem[] = []
@@ -50,9 +65,12 @@ export class ProductEditComponent implements OnInit {
   uploadProgress = 0
   errorMessage = ""
 
-  existingVariants: ProductVariantDTO[] = [] // Variants loaded from DB
-  newVariants: ProductVariantDTO[] = [] // Newly generated variants
+  existingVariants: ProductVariantDTO[] = []
+  newVariants: ProductVariantDTO[] = []
   existingVariantCombinations: Set<string> = new Set<string>()
+
+  // FIXED: Add flag to prevent infinite loops
+  private isUpdatingOptions = false
 
   loading = {
     categories: false,
@@ -63,8 +81,14 @@ export class ProductEditComponent implements OnInit {
 
   @ViewChild("productFileInput") productFileInputRef!: ElementRef<HTMLInputElement>
 
-  // --- VARIANT SEPARATION ---
-  productId: number | null = null;
+  // Dialog control
+  optionDialogVisible = false
+  editingOption: OptionTypeDTO | null = null
+  optionValueDialogVisible = false
+  selectedOptionTypeForDialog: OptionTypeDTO | null = null
+  editingOptionValue: OptionValueDTO | null = null
+
+  productId: number | null = null
 
   constructor(
     private categoryService: CategoryService,
@@ -82,42 +106,74 @@ export class ProductEditComponent implements OnInit {
   ) {
     this.productForm = this.productFormService.createProductForm()
 
-    // Watch for option changes
+    // FIXED: Simplified option change detection to prevent infinite loops
     this.options.valueChanges.subscribe(() => {
-      console.log("option changes");
-      // this.refreshDisplayValues();
-      this.checkOptionsAndGenerateVariants()
+      if (!this.isUpdatingOptions) {
+        console.log("Option changes detected")
+        this.checkOptionsAndGenerateVariants()
+      }
     })
   }
 
   ngOnInit(): void {
     // Get product ID from route
-    this.route.params.subscribe(params => {
-      const id = params['id'];
+    this.route.params.subscribe((params) => {
+      const id = params["id"]
       if (id) {
-        this.productId = +id;
-        this.loadProductForEdit(this.productId);
+        this.productId = +id
+        this.loadProductForEdit(this.productId)
       }
-    });
+    })
     this.fetchCategories()
     this.fetchBrands()
     this.fetchOptionTypes()
 
     // Reactive sync from raw value to formatted display
-    this.productForm.get('basePrice')?.valueChanges.subscribe((val: number) => {
-      this.displayPrice = this.formatPrice(val);
-    });
+    this.productForm.get("basePrice")?.valueChanges.subscribe((val: number) => {
+      this.displayPrice = this.formatPrice(val)
+    })
+
+    // Watch for brand changes and update baseSku
+    this.productForm.get("brandId")?.valueChanges.subscribe(() => {
+      const brandId = this.productForm.get("brandId")?.value
+      const selectedBrand = this.brands.find((b) => b.id == brandId)
+      this.selectedBrand = selectedBrand || null
+      this.baseSku = selectedBrand?.baseSku || "SKU"
+      this.updateVariantSkusBasedOnBrand()
+    })
+  }
+
+  /**
+   * FIXED: Cache option type names to prevent infinite template calls
+   */
+  private buildOptionTypeNamesCache(): void {
+    this.optionTypeNamesCache.clear()
+    this.optionTypes.forEach((optionType) => {
+      this.optionTypeNamesCache.set(optionType.id.toString(), optionType.name)
+    })
+  }
+
+  /**
+   * Update variant SKUs in form for display purposes
+   */
+  updateVariantSkusBasedOnBrand(): void {
+    const variantsArray = this.productFormService.getVariantsArray(this.productForm)
+    const existingCount = this.existingVariants.length
+
+    // Update only new variants (after existing ones)
+    for (let i = existingCount; i < variantsArray.length; i++) {
+      const control = variantsArray.at(i)
+      control.patchValue({ sku: this.baseSku })
+    }
   }
 
   /**
    * Build a set of existing variant combinations to avoid duplicates
    */
-  private buildExistingVariantCombinations()
-    : void {
+  private buildExistingVariantCombinations(): void {
     this.existingVariantCombinations.clear()
     this.existingVariants.forEach((variant) => {
       if (variant.options && variant.options.length > 0) {
-        // Create a unique key for this combination
         const combinationKey = this.createVariantCombinationKey(variant.options)
         this.existingVariantCombinations.add(combinationKey)
       }
@@ -127,12 +183,11 @@ export class ProductEditComponent implements OnInit {
   /**
    * Create a unique key for variant option combination
    */
-  private createVariantCombinationKey(options: any[])
-    : string {
+  private createVariantCombinationKey(options: any[]): string {
     return options
-      .map(opt => `${opt.optionId}:${opt.optionValueId}`)
+      .map((opt) => `${opt.optionId}:${opt.optionValueId}`)
       .sort()
-      .join('|');
+      .join("|")
   }
 
   /**
@@ -148,11 +203,10 @@ export class ProductEditComponent implements OnInit {
     this.existingVariants.forEach((variant: ProductVariantDTO) => {
       const group = this.productFormService.createVariantGroupWithImageAssignment()
 
-      // Ensure price is a proper number
       const priceValue = variant.price ? Number(variant.price) : 0
 
       group.patchValue({
-        price: priceValue, // Make sure this is a number
+        price: priceValue,
         stock: variant.stock || 0,
         assignedImageId: this.findImageIdByUrl(variant.imgPath!),
         isRemovable: false,
@@ -160,7 +214,6 @@ export class ProductEditComponent implements OnInit {
         sku: variant.sku || "",
       })
 
-      // Explicitly set the price control value to ensure it's properly initialized
       const priceControl = group.get("price")
       if (priceControl && priceValue) {
         priceControl.setValue(priceValue, { emitEvent: true })
@@ -168,45 +221,34 @@ export class ProductEditComponent implements OnInit {
 
       variantsArray.push(group)
     })
-
-    console.log(
-      "Initialized existing variants with prices:",
-      this.existingVariants.map((v) => v.price),
-    )
   }
 
   /**
    * Force update price display components
    */
-  forceUpdatePriceDisplays()
-    : void {
+  forceUpdatePriceDisplays(): void {
     const variantsArray = this.productFormService.getVariantsArray(this.productForm)
 
-    // Trigger value changes for all price controls to ensure proper formatting
     for (let i = 0; i < variantsArray.length; i++) {
       const priceControl = variantsArray.at(i).get("price")
       if (priceControl && priceControl.value !== null && priceControl.value !== undefined) {
         const currentValue = priceControl.value
-        // Trigger the valueChanges observable
         priceControl.setValue(currentValue, { emitEvent: true })
       }
     }
-    console.log("Forced update of price displays")
   }
 
   formatPrice(value: number | null | undefined): string {
-    if (value == null || isNaN(value)) return '';
-    return value.toLocaleString('en-US', { minimumFractionDigits: 0 });
+    if (value == null || isNaN(value)) return ""
+    return value.toLocaleString("en-US", { minimumFractionDigits: 0 })
   }
 
   /**
-   * Enhanced loadProductForEdit with better price handling
+   * Enhanced loadProductForEdit with better price handling and brand tracking
    */
-  loadProductForEdit(productId: number)
-    : void {
+  loadProductForEdit(productId: number): void {
     this.productService.getProductById(productId).subscribe({
       next: (productCard: any) => {
-        // Populate form fields
         const product = productCard.product
         this.productForm.patchValue({
           name: product.name,
@@ -216,10 +258,11 @@ export class ProductEditComponent implements OnInit {
           basePrice: product.basePrice,
         })
 
-        // Set selected category
         this.selectedCategory = productCard.category
+        this.selectedBrand = this.brands.find((b) => b.id === product.brandId) || null
+        this.baseSku = this.selectedBrand?.baseSku || "SKU"
 
-        // Set images (if any)
+        // Set images
         if (product.productImages && product.productImages.length > 0) {
           this.imagePool = product.productImages.map((img: ProductImageDTO, idx: number) => ({
             id: `img_${++this.imageIdCounter}`,
@@ -233,46 +276,54 @@ export class ProductEditComponent implements OnInit {
           }))
         }
 
-        // Set options (for editing/generation)
+        // FIXED: Simplified option loading to prevent loops
+        this.isUpdatingOptions = true
         this.options.clear()
+        this.originalOptionValues.clear()
+        this.existingOptionIds.clear()
+
         if (productCard.options && productCard.options.length > 0) {
           for (const opt of productCard.options) {
             const optionGroup = this.productFormService.createOptionGroup()
+            const optionValues = opt.optionValues.map((v: OptionValueDTO) => v.value)
+
             optionGroup.patchValue({
               id: opt.id,
               name: opt.name,
-              values: opt.optionValues.map((v: OptionValueDTO) => v.value),
+              values: optionValues,
             })
             this.options.push(optionGroup)
+
+            // Track as existing option
+            this.existingOptionIds.add(opt.id)
+            this.originalOptionValues.set(opt.id, [...optionValues])
           }
         }
+        this.isUpdatingOptions = false
 
-        // --- IMPROVED VARIANT HANDLING WITH PROPER PRICE FORMATTING ---
-        // Store existing variants with proper price conversion
+        // FIXED: Build cache after loading option types
+        this.buildOptionTypeNamesCache()
+
+        // Store existing variants
         this.existingVariants = (productCard.variants || []).map((variant: any) => ({
           ...variant,
-          price: variant.price ? Number(variant.price) : 0, // Ensure price is a number
-          stock: variant.stock ? Number(variant.stock) : 0, // Ensure stock is a number
+          price: variant.price ? Number(variant.price) : 0,
+          stock: variant.stock ? Number(variant.stock) : 0,
         }))
-        console.log("Loaded existing variants:", this.existingVariants)
+
         this.buildExistingVariantCombinations()
-
-
-        // Initialize form arrays for existing variants with proper price handling
         this.initializeExistingVariantForms()
+        this.initializeVariantAssignments()
 
-        // Clear new variants initially
         this.newVariants = []
         this.clearNewVariantForms()
 
-        // Set display price with proper formatting
         this.displayPrice = product.basePrice ? Number(product.basePrice).toLocaleString() : ""
 
-        // ✅ Update displayPrice *after* patching
         setTimeout(() => {
-          const rawBasePrice = this.productForm.get('basePrice')?.value;
-          this.displayPrice = this.formatPrice(rawBasePrice);
-        });
+          const rawBasePrice = this.productForm.get("basePrice")?.value
+          this.displayPrice = this.formatPrice(rawBasePrice)
+        })
       },
       error: (err) => {
         this.errorMessage = "Failed to load product for editing."
@@ -282,40 +333,43 @@ export class ProductEditComponent implements OnInit {
   }
 
   /**
+   * Initialize variant assignments for manual assignment tracking
+   */
+  private initializeVariantAssignments(): void {
+    this.variantNewOptionAssignments = {}
+    this.existingVariants.forEach((variant, index) => {
+      this.variantNewOptionAssignments[index] = {}
+    })
+  }
+
+  /**
    * Find image ID by URL for existing variants
    */
-  private findImageIdByUrl(imgPath: string)
-    : string {
-    if (!imgPath) return '';
+  private findImageIdByUrl(imgPath: string): string {
+    if (!imgPath) return ""
     const foundImage = this.imagePool.find((img) => img.uploadedUrl === imgPath)
-    return foundImage ? foundImage.id : '';
+    return foundImage ? foundImage.id : ""
   }
 
   /**
    * Clear new variant form controls
    */
-  private clearNewVariantForms()
-    : void {
+  private clearNewVariantForms(): void {
     // New variants will be added after existing variants in the form array
-    // We'll manage this in the generateNewVariants method
   }
 
   /**
    * Enhanced variant generation - only generate NEW combinations
    */
   generateProductVariants(): void {
-    // Fixed undeclared variable
     console.log("Generating product variants...")
-
-    // Don't clear existing variants, only generate new ones
-    this.generateNewVariants() // Fixed undeclared variable
+    this.generateNewVariants()
   }
 
   /**
-   * Enhanced variant generation with proper price initialization
+   * Enhanced variant generation with proper price initialization and duplicate prevention
    */
-  generateNewVariants()
-    : void {
+  generateNewVariants(): void {
     const variantsArray = this.productFormService.getVariantsArray(this.productForm)
 
     // Remove only the new variant form controls (keep existing ones)
@@ -330,42 +384,40 @@ export class ProductEditComponent implements OnInit {
     this.bulkAssignmentMode = false
 
     if (!this.hasValidOptionsSelected()) {
-      // If no options selected and no existing variants, create default
       if (this.existingVariants.length === 0) {
         this.initializeDefaultVariant()
       }
-      return;
+      return
     }
 
     const optionsWithValues = this.buildOptionsWithValues()
     if (optionsWithValues.length === 0) {
-      return;
+      return
     }
 
     // Generate all possible combinations
     const allPossibleVariants = this.variantGeneratorService.generateCombinations(optionsWithValues)
 
-    // Filter out combinations that already exist
+    // Filter out combinations that already exist or are manually assigned
     const newVariantCombinations = allPossibleVariants.filter((variant) => {
       const combinationKey = this.createVariantCombinationKey(variant.options)
-      return !this.existingVariantCombinations.has(combinationKey)
+      return !this.existingVariantCombinations.has(combinationKey) && !this.isManuallyAssigned(variant)
     })
 
-    // Store new variants
     this.newVariants = newVariantCombinations
 
-    // Create form controls for new variants with proper price initialization
+    // Create form controls for new variants
     const basePrice = this.productForm.get("basePrice")?.value || 0
     this.newVariants.forEach(() => {
       const variantGroup = this.productFormService.createVariantGroupWithImageAssignment()
       variantGroup.patchValue({
-        price: Number(basePrice), // Ensure it's a number
+        price: Number(basePrice),
         stock: 0,
         assignedImageId: "",
         isRemovable: true,
+        sku: this.baseSku,
       })
 
-      // Explicitly set the price control value
       const priceControl = variantGroup.get("price")
       if (priceControl) {
         priceControl.setValue(Number(basePrice), { emitEvent: true })
@@ -374,110 +426,375 @@ export class ProductEditComponent implements OnInit {
       variantsArray.push(variantGroup)
     })
 
-    console.log(`Generated ${this.newVariants.length} new variants with base price: ${basePrice}`)
-
-    // Force update price displays for new variants
     setTimeout(() => {
       this.forceUpdatePriceDisplays()
     }, 100)
   }
 
   /**
+   * Check if a variant combination is manually assigned to existing variants
+   */
+  private isManuallyAssigned(variant: ProductVariantDTO): boolean {
+    // Check if this combination is covered by manual assignments
+    for (let i = 0; i < this.existingVariants.length; i++) {
+      const assignments = this.variantNewOptionAssignments[i]
+      if (!assignments) continue
+
+      let allAssigned = true
+      for (const option of variant.options) {
+        const optionName = option.optionName
+        if (!optionName) continue // skip if optionName is undefined
+
+        const assignedValue = assignments[optionName]
+        if (!assignedValue || assignedValue !== option.valueName) {
+          allAssigned = false
+          break
+        }
+      }
+      if (allAssigned) return true
+    }
+    return false
+  }
+
+  /**
    * Get total variants count
    */
-  getTotalVariantsCount()
-    : number {
-    // Fixed undeclared variable
-    return this.existingVariants.length + this.newVariants.length;
+  getTotalVariantsCount(): number {
+    return this.existingVariants.length + this.newVariants.length
+  }
+
+  /**
+   * Get total options count (existing + new)
+   */
+  getTotalOptionsCount(): number {
+    return this.options.length
+  }
+
+  /**
+   * Check if option is existing (read-only) or new
+   */
+  isExistingOption(index: number): boolean {
+    const optionId = this.options.at(index).get("id")?.value
+    return this.existingOptionIds.has(Number(optionId))
+  }
+
+  /**
+   * Add new option type
+   */
+  addNewOptionType(): void {
+    const optionGroup = this.productFormService.createOptionGroup()
+    this.options.push(optionGroup)
+  }
+
+  addOption(): void {
+    this.productFormService.addOption(this.productForm)
+  }
+
+  /**
+   * Remove new option (only allowed for non-existing options)
+   */
+  removeNewOption(index: number): void {
+    if (!this.isExistingOption(index)) {
+      this.options.removeAt(index)
+    }
+  }
+
+  /**
+   * Handle new option type change
+   */
+  onNewOptionTypeChange(index: number): void {
+    // console.log(`Triggered onNewOptionTypeChange for index: ${index}`);
+
+    if (this.isExistingOption(index)) {
+      // console.log(`Index ${index} is for an existing option. Change is ignored.`);
+      return
+    }
+
+    const control = this.options.at(index)
+    const selectedTypeId = control.get("id")?.value
+
+    // onsole.log("Selected Option Type ID:", selectedTypeId);
+
+    if (!selectedTypeId) {
+      console.warn("No option type selected. Clearing name and values...")
+      control.patchValue({
+        name: "",
+        values: [],
+      })
+      return
+    }
+
+    const selectedOptionType = this.optionTypes.find((ot) => ot.id.toString() === selectedTypeId.toString())
+
+    console.log("Matched Option Type:", selectedOptionType)
+
+    if (selectedOptionType) {
+      console.log(`Setting name = ${selectedOptionType.name} and clearing values for index ${index}`)
+
+      control.patchValue({
+        name: selectedOptionType.name,
+        values: [],
+      })
+
+      // Optionally log the available values for this type
+      console.log("Available values for selected type:", selectedOptionType.optionValues)
+    } else {
+      console.warn("No option type matched the selected ID.")
+    }
+  }
+
+  /**
+   * Get available option types (excluding already used ones)
+   */
+  getAvailableOptionTypes(): OptionTypeDTO[] {
+    const usedTypeIds = new Set<number>()
+
+    // Add existing option IDs
+    this.existingOptionIds.forEach((id) => usedTypeIds.add(id))
+
+    // Add new option IDs
+    for (let i = 0; i < this.options.length; i++) {
+      const optionId = this.options.at(i).get("id")?.value
+      if (optionId && !this.isExistingOption(i)) {
+        usedTypeIds.add(Number(optionId))
+      }
+    }
+
+    return this.optionTypes.filter((type) => !usedTypeIds.has(Number(type.id)))
+  }
+
+  /**
+   * Get new options that require manual assignment
+   */
+  getNewOptions(): AbstractControl[] {
+    return this.options.controls.filter((_, index) => !this.isExistingOption(index))
+  }
+
+  /**
+   * Check if there are new options requiring assignment
+   */
+  hasNewOptionsRequiringAssignment(): boolean {
+    return this.getNewOptions().length > 0 && this.existingVariants.length > 0
+  }
+
+  /**
+   * Check if there are unassigned combinations
+   */
+  hasUnassignedCombinations(): boolean {
+    if (!this.hasNewOptionsRequiringAssignment()) return false
+
+    // Check if all existing variants have assignments for all new options
+    for (let i = 0; i < this.existingVariants.length; i++) {
+      const assignments = this.variantNewOptionAssignments[i]
+      if (!assignments) return true
+
+      for (const newOption of this.getNewOptions()) {
+        const optionName = this.getOptionTypeName(newOption.get("id")?.value)
+        if (!assignments[optionName]) return true
+      }
+    }
+    return false
+  }
+
+  /**
+   * FIXED: Apply manual assignments with duplicate prevention
+   */
+  applyManualAssignments(): void {
+    console.log("Applying manual assignments...")
+
+    // Update existing variants with new option assignments
+    this.existingVariants.forEach((variant, index) => {
+      const assignments = this.variantNewOptionAssignments[index]
+      if (!assignments) return
+
+      // Initialize options array if it doesn't exist
+      if (!variant.options) variant.options = []
+
+      // Add new options to existing variant (with duplicate checking)
+      for (const newOption of this.getNewOptions()) {
+        const optionId = newOption.get("id")?.value
+        const optionName = this.getOptionTypeName(optionId)
+        const assignedValue = assignments[optionName]
+
+        if (assignedValue && optionId) {
+          // FIXED: Check if this option already exists for this variant
+          const existingOptionIndex = variant.options.findIndex((opt) => opt.optionId === Number(optionId))
+
+          // Find the option value ID
+          const optionType = this.optionTypes.find((ot) => ot.id.toString() === optionId.toString())
+          const optionValue = optionType?.optionValues?.find((ov) => ov.value === assignedValue)
+
+          if (optionValue) {
+            const newOptionData = {
+              optionId: Number(optionId),
+              optionValueId: Number(optionValue.id),
+              optionName: optionName,
+              valueName: assignedValue,
+            }
+
+            if (existingOptionIndex >= 0) {
+              // FIXED: Update existing option instead of adding duplicate
+              console.log(`Updating existing option for variant ${index}: ${optionName} = ${assignedValue}`)
+              variant.options[existingOptionIndex] = newOptionData
+            } else {
+              // Add new option
+              console.log(`Adding new option to variant ${index}: ${optionName} = ${assignedValue}`)
+              variant.options.push(newOptionData)
+            }
+          }
+        }
+      }
+    })
+
+    // Rebuild existing variant combinations
+    this.buildExistingVariantCombinations()
+
+    // Regenerate new variants (will exclude manually assigned combinations)
+    this.generateNewVariants()
+
+    this.alertService.toast("Manual assignments applied successfully!", "success")
+  }
+
+  /**
+   * Get display label for existing variant
+   */
+  getExistingVariantDisplayLabel(variant: ProductVariantDTO): string {
+    if (!variant.options || variant.options.length === 0) {
+      return "Default Variant"
+    }
+    return variant.options.map((opt) => `${opt.optionName}: ${opt.valueName}`).join(", ")
   }
 
   /**
    * Get variant at index (handles both existing and new)
    */
-  getVariantAtIndex(index: number)
-    : ProductVariantDTO {
+  getVariantAtIndex(index: number): ProductVariantDTO {
     if (index < this.existingVariants.length) {
-      return this.existingVariants[index];
+      return this.existingVariants[index]
     } else {
       const newIndex = index - this.existingVariants.length
-      return this.newVariants[newIndex];
+      return this.newVariants[newIndex]
     }
   }
 
   /**
    * Check if variant is existing (from DB) or new
    */
-  isExistingVariant(index: number)
-    : boolean {
-    return index < this.existingVariants.length;
+  isExistingVariant(index: number): boolean {
+    return index < this.existingVariants.length
   }
 
   /**
    * Enhanced variant removal - only allow removal of new variants
    */
   removeVariant(variantIndex: number): void {
-    const variantsArray = this.productFormService.getVariantsArray(this.productForm);
+    const variantsArray = this.productFormService.getVariantsArray(this.productForm)
 
-    // 1. Remove from form array
-    variantsArray.removeAt(variantIndex);
+    // Remove from form array
+    variantsArray.removeAt(variantIndex)
 
-    // 2. Remove from existingVariants or newVariants
+    // Remove from existingVariants or newVariants
     if (variantIndex < this.existingVariants.length) {
-      this.existingVariants.splice(variantIndex, 1); // Removed variant won't be sent to backend
+      this.existingVariants.splice(variantIndex, 1)
     } else {
-      const newVariantIndex = variantIndex - this.existingVariants.length;
+      const newVariantIndex = variantIndex - this.existingVariants.length
       if (newVariantIndex >= 0 && newVariantIndex < this.newVariants.length) {
-        this.newVariants.splice(newVariantIndex, 1);
+        this.newVariants.splice(newVariantIndex, 1)
       }
     }
 
-    // 3. Update selectedVariants indices
-    const newSelectedVariants = new Set<number>();
-    this.selectedVariants.forEach(index => {
+    // Update selectedVariants indices
+    const newSelectedVariants = new Set<number>()
+    this.selectedVariants.forEach((index) => {
       if (index < variantIndex) {
-        newSelectedVariants.add(index);
+        newSelectedVariants.add(index)
       } else if (index > variantIndex) {
-        newSelectedVariants.add(index - 1);
+        newSelectedVariants.add(index - 1)
       }
-      // skip if equal to removed index
-    });
-    this.selectedVariants = newSelectedVariants;
+    })
+    this.selectedVariants = newSelectedVariants
   }
 
   /**
    * Enhanced variant display label
    */
-  getVariantDisplayLabel(variantIndex: number)
-    : string {
+  getVariantDisplayLabel(variantIndex: number): string {
     const variant = this.getVariantAtIndex(variantIndex)
-    if (!variant) return "";
+    if (!variant) return ""
 
     if (variant.isDefault) {
-      return "Default Variant";
+      return "Default Variant"
     }
 
     if (!variant.options || variant.options.length === 0) {
-      return "Default Variant";
+      return "Default Variant"
     }
 
-    return variant.options.map((opt) => `${opt.optionName}: ${opt.valueName}`).join(", ");
+    return variant.options.map((opt) => `${opt.optionName}: ${opt.valueName}`).join(", ")
   }
 
   /**
    * Enhanced canRemoveVariant - only new variants can be removed
    */
   canRemoveVariant(variantIndex: number): boolean {
-    return !this.isExistingVariant(variantIndex);
+    return !this.isExistingVariant(variantIndex)
   }
 
   /**
-   * Enhanced submit method
+   * Get existing values for an option (cannot be removed)
    */
-  async onSubmit()
-    : Promise<void> {
+  getExistingValuesForOption(optionIndex: number): string[] {
+    const optionId = this.options.at(optionIndex).get("id")?.value
+    return this.originalOptionValues.get(optionId) || []
+  }
+
+  /**
+   * Get newly selected values for an option (can be removed)
+   */
+  getNewSelectedValues(optionIndex: number): string[] {
+    const allValues = this.options.at(optionIndex).get("values")?.value || []
+    const existingValues = this.getExistingValuesForOption(optionIndex)
+    return allValues.filter((val: string) => !existingValues.includes(val))
+  }
+
+  /**
+   * Get count of newly selected values
+   */
+  getNewSelectedValuesCount(optionIndex: number): number {
+    return this.getNewSelectedValues(optionIndex).length
+  }
+
+  /**
+   * Get available values for selection (excluding already selected)
+   */
+  getAvailableValuesForOption(optionIndex: number): OptionValueDTO[] {
+    const optionId = this.options.at(optionIndex).get("id")?.value
+    const allOptionValues = this.getOptionValues(optionId)
+    const selectedValues = this.options.at(optionIndex).get("values")?.value || []
+
+    return allOptionValues.filter((val) => !selectedValues.includes(val.value))
+  }
+
+  /**
+   * Check if a value is an existing value (cannot be removed)
+   */
+  isExistingValue(optionIndex: number, value: string): boolean {
+    const existingValues = this.getExistingValuesForOption(optionIndex)
+    return existingValues.includes(value)
+  }
+
+  /**
+   * Enhanced submit method with baseSku logic
+   */
+  async onSubmit(): Promise<void> {
     if (!this.productForm.valid) {
       this.markFormGroupTouched()
-      return;
+      return
+    }
+
+    if (this.hasUnassignedCombinations()) {
+      this.errorMessage = "Please complete manual assignments for new options before saving."
+      return
     }
 
     this.loading.submission = true
@@ -497,7 +814,7 @@ export class ProductEditComponent implements OnInit {
       // Combine existing and new variants
       const allVariants: ProductVariantDTO[] = []
 
-      // Add existing variants (updated with form values)
+      // Add existing variants (updated with form values) - keep original SKU
       this.existingVariants.forEach((variant, index) => {
         const formVariant = formValue.variants[index]
         const assignedImage = this.getAssignedImage(index)
@@ -507,10 +824,11 @@ export class ProductEditComponent implements OnInit {
           price: formVariant?.price || variant.price,
           stock: formVariant?.stock || variant.stock,
           imgPath: assignedImage?.uploadedUrl || variant.imgPath,
+          sku: variant.sku,
         })
       })
 
-      // Add new variants
+      // Add new variants - use brand's baseSku
       this.newVariants.forEach((variant, index) => {
         const formIndex = this.existingVariants.length + index
         const formVariant = formValue.variants[formIndex]
@@ -520,7 +838,7 @@ export class ProductEditComponent implements OnInit {
           ...variant,
           price: formVariant?.price || 0,
           stock: formVariant?.stock || 0,
-          sku: this.getSkuForVariant(formIndex),
+          sku: this.baseSku,
           imgPath: assignedImage?.uploadedUrl || "",
         })
       })
@@ -539,13 +857,12 @@ export class ProductEditComponent implements OnInit {
         productImages: productImages,
       }
 
-      console.log("Updating product:", requestDto)
+      console.log("update request dto : ", requestDto)
 
       this.productService.updateProduct(requestDto).subscribe({
         next: (res) => {
-          console.log("Product updated successfully", res)
           this.cleanupPreviewUrls()
-          this.router.navigate(["/admin/productList"])
+          this.router.navigate([`/admin/product/${this.productId}`])
         },
         error: (err) => {
           console.error("Error updating product:", err)
@@ -563,8 +880,6 @@ export class ProductEditComponent implements OnInit {
   }
 
   private async uploadAllImagesFromPool(): Promise<void> {
-    console.log("image pool : ", this.imagePool);
-
     const uploadPromises = this.imagePool.map(async (imageItem) => {
       if (!imageItem.uploaded) {
         const uploadedUrl = await this.imageUploadService.uploadImage(imageItem.file).toPromise()
@@ -584,13 +899,17 @@ export class ProductEditComponent implements OnInit {
     this.cleanupPreviewUrls()
     this.productForm.reset()
     this.selectedCategory = null
+    this.selectedBrand = null
+    this.baseSku = "SKU"
     this.imagePool = []
     this.imageIdCounter = 0
     this.selectedVariants.clear()
     this.selectedImageForBulkAssignment = ""
     this.bulkAssignmentMode = false
+    this.originalOptionValues.clear()
+    this.existingOptionIds.clear()
+    this.variantNewOptionAssignments = {}
 
-    // Clear variant arrays
     this.existingVariants = []
     this.newVariants = []
     this.existingVariantCombinations.clear()
@@ -606,8 +925,7 @@ export class ProductEditComponent implements OnInit {
   /**
    * Initialize with a default variant for products without options
    */
-  private initializeDefaultVariant()
-    : void {
+  private initializeDefaultVariant(): void {
     const defaultVariant = this.variantGeneratorService.generateDefaultVariant()
     this.newVariants = [defaultVariant]
     const variantsArray = this.productFormService.getVariantsArray(this.productForm)
@@ -617,145 +935,107 @@ export class ProductEditComponent implements OnInit {
       stock: 0,
       assignedImageId: "",
       isRemovable: false,
+      sku: this.baseSku,
     })
     variantsArray.push(variantGroup)
     this.hasOptionsSelected = false
   }
 
   onDisplayPriceInput(event: Event): void {
-    const input = (event.target as HTMLInputElement).value;
-    this.displayPrice = input;
+    const input = (event.target as HTMLInputElement).value
+    this.displayPrice = input
 
-    const numericValue = Number(input.replace(/,/g, ''));
+    const numericValue = Number(input.replace(/,/g, ""))
     if (!isNaN(numericValue)) {
-      this.productForm.get('basePrice')?.setValue(numericValue, { emitEvent: false });
+      this.productForm.get("basePrice")?.setValue(numericValue, { emitEvent: false })
     }
 
-    this.autoApplyBasePrice()
+    // FIXED: Only apply to new variants, not existing ones
+    this.autoApplyBasePriceToNewVariants()
   }
 
-  autoApplyBasePrice(): void {
-    this.productFormService.applyBulkPrice(this.productForm);
-    const variants = this.productFormService.getVariantsArray(this.productForm);
-    console.log("Auto-applied base price to all variants");
-    variants.controls.forEach((variant, i) => {
-      console.log(`Variant ${i} new price: `, variant.get('price')?.value);
-    });
+  // FIXED: New method that only applies base price to new variants
+  autoApplyBasePriceToNewVariants(): void {
+    const existingVariantCount = this.existingVariants.length
+    this.productFormService.applyBulkPriceToNewVariants(this.productForm, existingVariantCount)
+
+    console.log("Auto-applied base price only to new variants (preserving existing variant prices)")
   }
 
   getFormControl(control: AbstractControl | null): FormControl {
-    return control as FormControl;
+    return control as FormControl
   }
 
-  brandDialogVisible = false;
-  openBrandDialog() {
-    this.brandDialogVisible = true;
-  }
-  onBrandCreated() {
-    this.fetchBrands();
-    // this.productForm.patchValue({ brandId: newBrand.id });
-    this.brandDialogVisible = false;
-  }
-
-  categoryDialogVisible = false;
-  editingCategory: CategoryDTO | null = null;
-  parentCategoryForNew: CategoryDTO | null = null;
-  categoryDropdown: any[] = []; // your dropdown data here
-  openCategoryDialogForNew(parent?: CategoryDTO) {
-    this.editingCategory = null;
-    this.parentCategoryForNew = parent || null;
-    // Fetch categories and wait before opening the dialog
-    this.categoryService.getAllCategories().subscribe((categories) => {
-      this.categoryDropdown = categories.map((cat) => ({
-        value: cat.id,
-        label: cat.name,
-      }));
-      console.log("Dropdown data:", this.categoryDropdown);
-      this.categoryDialogVisible = true;
-    });
-  }
-  onCategorySaved(savedCategory: CategoryDTO) {
-    this.categoryDialogVisible = false;
-    this.fetchCategories();
-    this.selectedCategory = savedCategory;
-  }
-
-  // Dialog control
-  optionDialogVisible: boolean = false;
-  editingOption: OptionTypeDTO | null = null;
-  optionValueDialogVisible: boolean = false;
-  selectedOptionTypeForDialog: OptionTypeDTO | null = null;
-  editingOptionValue: OptionValueDTO | null = null;
+  // Dialog control methods
   openAddOptionDialog(): void {
-    this.editingOption = null;
-    this.optionDialogVisible = true;
+    this.editingOption = null
+    this.optionDialogVisible = true
   }
+
   onOptionTypeSaved(newType: OptionTypeDTO): void {
     this.optionService.createOptionType(newType).subscribe({
       next: () => {
-        this.fetchOptionTypes();
-        // Auto-select the new option in the form
-        const index = this.options.length - 1;
-        const group = this.options.at(index);
-        if (group) {
-          // Wait briefly to ensure fetchOptionTypes() completes before selection
-          setTimeout(() => {
-            const created = this.optionTypes.find(opt => opt.name === newType.name);
-            if (created) {
-              group.patchValue({ id: created.id, name: created.name, values: [] });
+        this.fetchOptionTypes()
+        setTimeout(() => {
+          const created = this.optionTypes.find((opt) => opt.name === newType.name)
+          if (created) {
+            // Find the last new option and set its type
+            const newOptions = this.getNewOptions()
+            if (newOptions.length > 0) {
+              const lastNewOption = newOptions[newOptions.length - 1]
+              lastNewOption.patchValue({ id: created.id, name: created.name, values: [] })
             }
-          }, 300); // Slight delay to ensure updated list is in
-        }
+          }
+        }, 300)
       },
       error: () => {
-        this.alertService.toast('Failed to save new option type.', 'error');
-      }
-    });
+        this.alertService.toast("Failed to save new option type.", "error")
+      },
+    })
   }
+
   openAddOptionValueDialog(optionTypeId: number): void {
-    // Try to find the full option type
-    const optionType = this.optionTypes.find(opt => Number(opt.id) == optionTypeId);
+    const optionType = this.optionTypes.find((opt) => Number(opt.id) == optionTypeId)
     if (!optionType) {
-      console.warn(`OptionType with id ${optionTypeId} not found`);
-      return;
+      console.warn(`OptionType with id ${optionTypeId} not found`)
+      return
     }
-    // Set dialog state
-    this.selectedOptionTypeForDialog = optionType;
-    this.editingOptionValue = null;
-    this.optionValueDialogVisible = true;
+    this.selectedOptionTypeForDialog = optionType
+    this.editingOptionValue = null
+    this.optionValueDialogVisible = true
   }
+
   onOptionValueSaved(newValue: OptionValueDTO): void {
-    const typeId = newValue.optionId;
+    const typeId = newValue.optionId
     this.optionValueService.createOptionValue(newValue).subscribe({
       next: () => {
-        // Re-fetch option values
         this.optionValueService.getValuesByOptionId(typeId).subscribe((values) => {
-          const optionType = this.optionTypes.find(opt => +opt.id === typeId);
+          const optionType = this.optionTypes.find((opt) => +opt.id === typeId)
           if (optionType) {
-            optionType.optionValues = values;
+            optionType.optionValues = values
           }
-          const newVal = values.find(v => v.value === newValue.value);
-          const index = this.options.controls.findIndex(ctrl => +ctrl.get('id')?.value === typeId);
+          const newVal = values.find((v) => v.value === newValue.value)
+          const index = this.options.controls.findIndex((ctrl) => +ctrl.get("id")?.value === typeId)
           if (index !== -1 && newVal) {
-            this.toggleOptionValue(index, newVal.value);
+            this.toggleOptionValue(index, newVal.value)
           }
-        });
+        })
       },
       error: () => {
-        this.alertService.toast('Failed to save new option value.', 'error');
-      }
-    });
+        this.alertService.toast("Failed to save new option value.", "error")
+      },
+    })
   }
 
   /**
-   * Check if options are selected and generate appropriate variants
+   * FIXED: Simplified option change detection to prevent infinite loops
    */
   private checkOptionsAndGenerateVariants(): void {
     const hasValidOptions = this.hasValidOptionsSelected()
     if (hasValidOptions !== this.hasOptionsSelected) {
       this.hasOptionsSelected = hasValidOptions
     }
-    this.generateProductVariants();
+    this.generateProductVariants()
   }
 
   /**
@@ -867,6 +1147,16 @@ export class ProductEditComponent implements OnInit {
     })
   }
 
+  get sortedImagePool(): ImagePoolItem[] {
+    return [...this.imagePool].sort((a, b) => {
+      // Main image comes first
+      if (a.isMain) return -1;
+      if (b.isMain) return 1;
+      // Then sort by display order
+      return (a.displayOrder ?? 999) - (b.displayOrder ?? 999);
+    });
+  }
+
   // Display Order Management
   moveImageUp(imageId: string): void {
     const index = this.imagePool.findIndex((img) => img.id === imageId)
@@ -917,15 +1207,11 @@ export class ProductEditComponent implements OnInit {
     }
   }
 
-  // Update the bulk operations to work on all variants\
-  selectAllVariants()
-    : void {
-    // Select all variants (both existing and new)
+  selectAllVariants(): void {
     for (let i = 0; i < this.getTotalVariantsCount(); i++) {
       this.selectedVariants.add(i)
     }
   }
-
 
   clearVariantSelection(): void {
     this.selectedVariants.clear()
@@ -939,45 +1225,33 @@ export class ProductEditComponent implements OnInit {
     return this.selectedVariants.size
   }
 
-  // Update bulk stock application to work on all variants
-  applyBulkStock()
-    : void {
+  applyBulkStock(): void {
     const variantsArray = this.productFormService.getVariantsArray(this.productForm)
 
-    // Apply to all variants
     for (let i = 0; i < variantsArray.length; i++) {
       const stockControl = variantsArray.at(i).get("stock")
       if (stockControl) {
         stockControl.setValue(this.bulkStockValue)
       }
     }
-
-    console.log(`Applied bulk stock value ${this.bulkStockValue} to all ${variantsArray.length} variants`)
   }
 
-  // Update bulk image assignment to work on all variants
-  applyBulkImageAssignment()
-    : void {
+  applyBulkImageAssignment(): void {
     if (!this.selectedImageForBulkAssignment || this.selectedVariants.size === 0) {
       return
     }
 
     this.selectedVariants.forEach((variantIndex) => {
       if (this.selectedImageForBulkAssignment === "clear") {
-        // Clear the image assignment
         this.assignImageToVariant(variantIndex, "")
       } else {
-        // Assign the selected image
         this.assignImageToVariant(variantIndex, this.selectedImageForBulkAssignment)
       }
     })
 
-    // Clear selection after assignment
     this.selectedVariants.clear()
     this.selectedImageForBulkAssignment = ""
     this.bulkAssignmentMode = false
-
-    console.log("Applied bulk image assignment to selected variants")
   }
 
   // Variant Image Assignment Methods
@@ -1016,7 +1290,6 @@ export class ProductEditComponent implements OnInit {
         this.categories = categoryTree
         this.flattenCategories()
         this.loading.categories = false
-        this.categoryDropdown = categoryTree
       },
       error: (err) => {
         console.error("Failed to fetch categories", err)
@@ -1045,6 +1318,8 @@ export class ProductEditComponent implements OnInit {
       next: (data) => {
         this.optionTypes = data
         this.loading.optionTypes = false
+        // FIXED: Build cache after fetching option types
+        this.buildOptionTypeNamesCache()
       },
       error: (err) => {
         console.error("Failed to fetch option types", err)
@@ -1056,35 +1331,6 @@ export class ProductEditComponent implements OnInit {
   flattenCategories(): void {
     this.flatCategories = []
     this.categoryService.flattenCategoriesRecursive(this.categories, this.flatCategories)
-  }
-
-  selectCategory(category: CategoryDTO, event: Event): void {
-    event.preventDefault()
-    event.stopPropagation()
-
-    this.selectedCategory = category
-    this.productForm.get("categoryId")?.setValue(category.id)
-    this.options.clear()
-
-    if (category.optionTypes && category.optionTypes.length > 0) {
-      for (const optionType of category.optionTypes) {
-        const optionGroup = this.productFormService.createOptionGroup()
-        optionGroup.patchValue({
-          id: optionType.id,
-          name: optionType.name,
-          values: [],
-        })
-        this.options.push(optionGroup)
-      }
-    }
-
-    const dropdown = document.getElementById("categoryDropdown")
-    if (dropdown) {
-      const bsDropdown = (window as any).bootstrap?.Dropdown?.getInstance(dropdown)
-      if (bsDropdown) {
-        bsDropdown.hide()
-      }
-    }
   }
 
   getSelectedCategoryPath(): string {
@@ -1110,10 +1356,6 @@ export class ProductEditComponent implements OnInit {
     return path.join(" > ")
   }
 
-  getCategoryIndentClass(level: number): string {
-    return `category-level-${Math.min(level, 4)}`
-  }
-
   get options(): FormArray {
     return this.productForm.get("options") as FormArray
   }
@@ -1122,41 +1364,12 @@ export class ProductEditComponent implements OnInit {
     return this.productForm.get("variants") as FormArray
   }
 
-  removeOption(index: number): void {
-    this.options.removeAt(index)
-  }
-
-  onOptionTypeChange(index: number): void {
-    const selectedTypeId = this.options.at(index).get("id")?.value
-
-    if (!selectedTypeId) {
-      this.options.at(index).patchValue({
-        name: "",
-        values: [],
-      })
-      return
-    }
-
-    const selectedOptionType = this.optionTypes.find((ot) => ot.id.toString() === selectedTypeId)
-
-    if (selectedOptionType) {
-      this.options.at(index).patchValue({
-        name: selectedOptionType.name,
-        values: [],
-      })
-    }
-  }
-
-  addOption(): void {
-    this.productFormService.addOption(this.productForm)
-  }
-
   getOptionValues(optionTypeId: string | number | null | undefined): OptionValueDTO[] {
     if (!optionTypeId) {
       return []
     }
 
-    const option = this.optionTypes.find((opt) => opt.id.toString() === optionTypeId.toString())
+    const option = this.optionTypes.find((opt) => opt.id === optionTypeId)
     if (!option) {
       return []
     }
@@ -1164,23 +1377,31 @@ export class ProductEditComponent implements OnInit {
     return option.optionValues?.filter((ov) => !ov.deleted) || []
   }
 
+  // FIXED: Simplified toggleOptionValue method based on product-create component
   toggleOptionValue(optionIndex: number, value: string): void {
     const valuesControl = this.options.at(optionIndex).get("values")
     const currentValues = valuesControl?.value || []
 
     if (currentValues.includes(value)) {
-      const newValues = currentValues.filter((v: string) => v !== value)
-      valuesControl?.setValue(newValues)
+      // Only allow removal if it's not an existing value
+      if (!this.isExistingValue(optionIndex, value)) {
+        const newValues = currentValues.filter((v: string) => v !== value)
+        valuesControl?.setValue(newValues)
+      }
     } else {
       valuesControl?.setValue([...currentValues, value])
     }
   }
 
+  // FIXED: Simplified removeOptionValue method
   removeOptionValue(optionIndex: number, valueToRemove: string): void {
-    const valuesControl = this.options.at(optionIndex).get("values")
-    const currentValues = valuesControl?.value || []
-    const newValues = currentValues.filter((v: string) => v !== valueToRemove)
-    valuesControl?.setValue(newValues)
+    // Only allow removal if it's not an existing value
+    if (!this.isExistingValue(optionIndex, valueToRemove)) {
+      const valuesControl = this.options.at(optionIndex).get("values")
+      const currentValues = valuesControl?.value || []
+      const newValues = currentValues.filter((v: string) => v !== valueToRemove)
+      valuesControl?.setValue(newValues)
+    }
   }
 
   isValueSelected(optionIndex: number, value: string): boolean {
@@ -1193,59 +1414,60 @@ export class ProductEditComponent implements OnInit {
     return values.length
   }
 
+  // FIXED: Cached getOptionTypeName to prevent infinite loops
   getOptionTypeName(optionTypeId: string): string {
-    const option = this.optionTypes.find((opt) => opt.id === optionTypeId)
-    return option ? option.name : optionTypeId
-  }
+    if (!optionTypeId) return ""
 
-  // Fix the SKU generation for all variants
-  getSkuForVariant(i: number)
-    : string {
-    const productName = this.productForm.get("name")?.value || "PRODUCT"
-    const variant = this.getVariantAtIndex(i)
-
-    if (!variant) {
-      return `${productName.toUpperCase().replace(/\s+/g, '-')}-DEFAULT`
+    // Use cached value if available
+    const cachedName = this.optionTypeNamesCache.get(optionTypeId)
+    if (cachedName) {
+      return cachedName
     }
 
-    return this.productFormService.getSkuForVariant(productName, variant)
+    // Fallback to direct lookup (shouldn't happen if cache is built properly)
+    const option = this.optionTypes.find((opt) => opt.id.toString() === optionTypeId.toString())
+    const name = option ? option.name : optionTypeId
+
+    // Cache the result
+    this.optionTypeNamesCache.set(optionTypeId, name)
+    return name
   }
 
-  // Add method to check if variant can be selected for bulk operations
-  canSelectVariantForBulk(variantIndex: number)
-    : boolean {
-    // All variants can be selected for bulk operations
-    return true;
+  getSkuForVariant(i: number): string {
+    if (this.isExistingVariant(i)) {
+      return this.existingVariants[i].sku || "EXISTING-SKU"
+    } else {
+      return this.baseSku + "-XXXXX"
+    }
   }
 
-  // Add method to get variant status
-  getVariantStatus(variantIndex: number)
-    : string {
-    return this.isExistingVariant(variantIndex) ? 'existing' : 'new';
+  getVariantStatus(variantIndex: number): string {
+    return this.isExistingVariant(variantIndex) ? "existing" : "new"
   }
 
-  // Add method to get variant status badge class
-  getVariantStatusBadgeClass(variantIndex: number)
-    : string {
-    return this.isExistingVariant(variantIndex) ? 'bg-info' : 'bg-success';
+  getVariantStatusBadgeClass(variantIndex: number): string {
+    return this.isExistingVariant(variantIndex) ? "bg-info" : "bg-success"
   }
 
-  // Add method to get variant status text
-  getVariantStatusText(variantIndex: number)
-    : string {
-    return this.isExistingVariant(variantIndex) ? 'Existing' : 'New';
+  getVariantStatusText(variantIndex: number): string {
+    return this.isExistingVariant(variantIndex) ? "Existing" : "New"
   }
 
   markFormGroupTouched(): void {
-    this.formValidation.markFormGroupTouched(this.productForm);
+    this.formValidation.markFormGroupTouched(this.productForm)
   }
 
   hasError(fieldName: string): boolean {
-    return this.formValidation.hasError(this.productForm, fieldName);
+    return this.formValidation.hasError(this.productForm, fieldName)
   }
 
   getErrorMessage(fieldName: string): string {
-    return this.formValidation.getErrorMessage(this.productForm, fieldName);
+    return this.formValidation.getErrorMessage(this.productForm, fieldName)
   }
 
+  backToDetail(): void {
+    if (this.productId) {
+      this.router.navigate([`/admin/product/${this.productId}`])
+    }
+  }
 }

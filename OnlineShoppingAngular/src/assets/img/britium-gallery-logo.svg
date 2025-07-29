@@ -1,0 +1,84 @@
+<svg width="200" height="60" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradient definitions -->
+    <linearGradient id="primaryGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1f2937;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#374151;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background rectangle for better visibility -->
+  <rect width="200" height="60" fill="transparent"/>
+  
+  <!-- Logo Icon - Stylized shopping bag with gallery elements -->
+  <g transform="translate(10, 10)">
+    <!-- Shopping bag base -->
+    <path d="M8 12h24v20c0 2.2-1.8 4-4 4H12c-2.2 0-4-1.8-4-4V12z" 
+          fill="url(#primaryGradient)" 
+          stroke="#1e40af" 
+          stroke-width="1"/>
+    
+    <!-- Bag handles -->
+    <path d="M8 12c0-2.2 1.8-4 4-4h8c2.2 0 4 1.8 4 4" 
+          fill="none" 
+          stroke="#1e40af" 
+          stroke-width="2" 
+          stroke-linecap="round"/>
+    
+    <!-- Gallery frame elements inside bag -->
+    <rect x="12" y="16" width="4" height="3" fill="url(#accentGradient)" rx="0.5"/>
+    <rect x="18" y="16" width="4" height="3" fill="url(#accentGradient)" rx="0.5"/>
+    <rect x="24" y="16" width="4" height="3" fill="url(#accentGradient)" rx="0.5"/>
+    
+    <rect x="12" y="21" width="4" height="3" fill="url(#accentGradient)" rx="0.5"/>
+    <rect x="18" y="21" width="4" height="3" fill="url(#accentGradient)" rx="0.5"/>
+    <rect x="24" y="21" width="4" height="3" fill="url(#accentGradient)" rx="0.5"/>
+    
+    <!-- Decorative dots representing gallery items -->
+    <circle cx="14" cy="26" r="1" fill="#fbbf24"/>
+    <circle cx="18" cy="26" r="1" fill="#fbbf24"/>
+    <circle cx="22" cy="26" r="1" fill="#fbbf24"/>
+    <circle cx="26" cy="26" r="1" fill="#fbbf24"/>
+  </g>
+  
+  <!-- Text Logo -->
+  <g transform="translate(50, 15)">
+    <!-- BRITIUM text -->
+    <text x="0" y="20" 
+          font-family="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" 
+          font-size="18" 
+          font-weight="700" 
+          fill="url(#textGradient)" 
+          letter-spacing="1">
+      BRITIUM
+    </text>
+    
+    <!-- GALLERY text -->
+    <text x="0" y="35" 
+          font-family="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" 
+          font-size="12" 
+          font-weight="500" 
+          fill="#6b7280" 
+          letter-spacing="0.5">
+      GALLERY
+    </text>
+  </g>
+  
+  <!-- Optional: Small tagline -->
+  <text x="50" y="50" 
+        font-family="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" 
+        font-size="8" 
+        font-weight="400" 
+        fill="#9ca3af" 
+        letter-spacing="0.3">
+    Online Shopping Experience
+  </text>
+</svg> 

@@ -6,7 +6,7 @@ import type { ProductImageDTO } from "../models/product.model"
   providedIn: "root",
 })
 export class ProductFormService {
-  constructor(private fb: FormBuilder) { }
+  constructor(private fb: FormBuilder) {}
 
   // Create the full product form with image support
   createProductForm(): FormGroup {
@@ -118,7 +118,6 @@ export class ProductFormService {
     }
   }
 
-  // Existing methods remain the same...
   createOptionGroup(): FormGroup {
     return this.fb.group({
       id: ["", Validators.required],
@@ -158,28 +157,53 @@ export class ProductFormService {
     this.getProductImagesArray(productForm).clear()
   }
 
-  applyBulkPrice(form: FormGroup): void {
-    const basePrice = Number(form.get("basePrice")?.value) || 0;
-    const variantsArray = this.getVariantsArray(form);
+  // FIXED: Enhanced applyBulkPrice with selective application
+  applyBulkPrice(
+    form: FormGroup,
+    options?: {
+      startIndex?: number
+      endIndex?: number
+      skipExisting?: boolean
+      existingVariantCount?: number
+    },
+  ): void {
+    const basePrice = Number(form.get("basePrice")?.value) || 0
+    const variantsArray = this.getVariantsArray(form)
 
-    for (let i = 0; i < variantsArray.length; i++) {
-      const control = variantsArray.at(i).get('price');
+    const startIndex = options?.startIndex || 0
+    const endIndex = options?.endIndex || variantsArray.length
+    const skipExisting = options?.skipExisting || false
+    const existingVariantCount = options?.existingVariantCount || 0
 
+    for (let i = startIndex; i < endIndex; i++) {
+      // Skip existing variants if requested
+      if (skipExisting && i < existingVariantCount) {
+        continue
+      }
+
+      const control = variantsArray.at(i).get("price")
       if (control) {
-        // First reset to 0 (to force value change even if basePrice is 0)
-        control.setValue(0, { emitEvent: true });
-
-        // Then apply the base price (ensure this triggers valueChanges even if same)
+        // Force update even if the value is the same
+        control.setValue(0, { emitEvent: false })
         setTimeout(() => {
-          control.setValue(basePrice, { emitEvent: true });
-        }, 10);
+          control.setValue(basePrice, { emitEvent: true })
+        }, 10)
       }
     }
   }
 
+  // FIXED: New method for applying bulk price only to new variants
+  applyBulkPriceToNewVariants(form: FormGroup, existingVariantCount: number): void {
+    this.applyBulkPrice(form, {
+      startIndex: existingVariantCount,
+      skipExisting: true,
+      existingVariantCount: existingVariantCount,
+    })
+  }
+
   applyBulkStock(variantsFormArray: any, stockValue: number): void {
     for (let i = 0; i < variantsFormArray.length; i++) {
-      variantsFormArray.at(i).get('stock')?.setValue(stockValue);
+      variantsFormArray.at(i).get("stock")?.setValue(stockValue)
     }
   }
 
@@ -188,32 +212,30 @@ export class ProductFormService {
       .split(/\s+/)
       .filter((word) => word.length > 0)
       .map((word) => word[0].toUpperCase())
-      .join('');
+      .join("")
 
-    const namePart = initials || 'PRD';
+    const namePart = initials || "PRD"
 
     const variantPart = variantOptions
       .map((value) => {
-        const digitMatch = value.match(/\d+/g);
+        const digitMatch = value.match(/\d+/g)
         if (digitMatch) {
-          return digitMatch.join('');
+          return digitMatch.join("")
         }
 
         return value
           .split(/\s+/)
           .filter((w) => w.length > 0)
           .map((w) => w.substring(0, 3).toUpperCase())
-          .join('-');
+          .join("-")
       })
-      .join('-');
+      .join("-")
 
-    return `${namePart}-${variantPart}`;
+    return `${namePart}-${variantPart}`
   }
 
   getSkuForVariant(productName: string, variant: any): string {
-    const variantOptionValues: string[] = variant.options.map((opt: any) => opt.valueName!);
-    return this.getSkuBase(productName, variantOptionValues);
+    const variantOptionValues: string[] = variant.options.map((opt: any) => opt.valueName!)
+    return this.getSkuBase(productName, variantOptionValues)
   }
-
-  
 }

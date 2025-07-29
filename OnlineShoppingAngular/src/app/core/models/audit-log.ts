@@ -8,4 +8,6 @@ export interface AuditLog {
   userType: string;
   ipAddress: string;
   userAgent: string;
+  createdDate: string;
+  description?: string;
 }

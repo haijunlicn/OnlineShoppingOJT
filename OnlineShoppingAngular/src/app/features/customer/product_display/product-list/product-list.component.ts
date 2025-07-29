@@ -607,18 +607,35 @@ export class ProductListComponent {
     return product.variants.some((v) => v.stock > 0) ? "In Stock" : "Out of Stock"
   }
 
-  getMainProductImage(product: ProductDTO): string {
-    if (product.productImages && product.productImages.length > 0) {
-      const mainImage = product.productImages.find((img: any) => img.mainImageStatus)
+  // getMainProductImage(product: ProductDTO): string {
+  //   if (product.productImages && product.productImages.length > 0) {
+  //     const mainImage = product.productImages.find((img: any) => img.mainImageStatus)
 
-      if (mainImage) {
-        return mainImage.imgPath!
-      } else if (product.productImages[0]) {
-        return product.productImages[0].imgPath!
-      }
+  //     if (mainImage) {
+  //       return mainImage.imgPath!
+  //     } else if (product.productImages[0]) {
+  //       return product.productImages[0].imgPath!
+  //     }
+  //   }
+  //   return "assets/images/placeholder.jpg"
+  // }
+
+  getMainProductImage(product: ProductDTO): string | null {
+  if (product.productImages && product.productImages.length > 0) {
+    const mainImage = product.productImages.find((img: any) => img.mainImageStatus && img.imgPath);
+    if (mainImage?.imgPath) {
+      return mainImage.imgPath;
     }
-    return "assets/images/placeholder.jpg"
+
+    const firstImage = product.productImages[0];
+    if (firstImage?.imgPath) {
+      return firstImage.imgPath;
+    }
   }
+
+  return null; // No image
+}
+
 
   getOriginalPrice(product: ProductCardItem): number {
     return product.originalPrice!

@@ -32,6 +32,7 @@ export class ProductCreateComponent implements OnInit {
   categories: CategoryDTO[] = []
   optionTypes: OptionTypeDTO[] = []
   displayPrice: string = '';
+  baseSku: string = 'SKU';
 
   // Centralized Image Pool
   imagePool: ImagePoolItem[] = []
@@ -91,6 +92,18 @@ export class ProductCreateComponent implements OnInit {
     this.fetchCategories()
     this.fetchBrands()
     this.fetchOptionTypes()
+
+    this.productForm.get('brandId')?.valueChanges.subscribe(() => {
+      console.log('🔁 Brand selection changed');
+      const brandId = this.productForm.get('brandId')?.value;
+      console.log('🆔 Selected brandId:', brandId);
+      const selectedBrand = this.brands.find(b => b.id == brandId);
+      console.log('🔍 Matched brand from list:', selectedBrand);
+      this.baseSku = selectedBrand?.baseSku || 'SKU';
+      console.log('🏷️  Updated baseSku:', this.baseSku);
+      this.updateVariantSkusBasedOnBrand(); // optional (for form display)
+    });
+
   }
 
   /**
@@ -619,7 +632,7 @@ export class ProductCreateComponent implements OnInit {
             options: this.productVariants[index].options,
             price: variant.price,
             stock: variant.stock,
-            sku: this.getSkuForVariant(index),
+            sku: this.baseSku,
             imgPath: assignedImage?.uploadedUrl || "",
           }
         }),
@@ -885,10 +898,17 @@ export class ProductCreateComponent implements OnInit {
     this.productFormService.applyBulkStock(this.variants, this.bulkStockValue);
   }
 
-  getSkuForVariant(i: number): string {
-    const productName = this.productForm.get("name")?.value || ""
-    const variant = this.productVariants[i]
-    return this.productFormService.getSkuForVariant(productName, variant)
+  // getSkuForVariant(i: number): string {
+  //   const productName = this.productForm.get("name")?.value || "";
+  //   const variant = this.productVariants[i]
+  //   return this.productFormService.getSkuForVariant(productName, variant)
+  // }
+
+  updateVariantSkusBasedOnBrand(): void {
+    const variants = this.productForm.get('variants') as FormArray;
+    variants.controls.forEach((control, i) => {
+      control.patchValue({ sku: this.baseSku });
+    });
   }
 
   markFormGroupTouched(): void {

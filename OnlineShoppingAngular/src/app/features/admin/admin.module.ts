@@ -103,6 +103,7 @@ import { UserViewDetailComponent } from './adminUserManagement/user-view-detail/
 import { AdminOrdersDetailComponent } from './adminOrderManagement/admin-orders-detail/admin-orders-detail.component';
 import { UserDetailListComponent } from './adminUserManagement/user-detail-list/user-detail-list.component';
 
+import { AuditLogModalComponent } from './auditLog/audit-log-modal/audit-log-modal.component';
 
 @NgModule({
   declarations: [
@@ -186,9 +187,10 @@ import { UserDetailListComponent } from './adminUserManagement/user-detail-list/
     UserDetailListComponent,
    
 
+    AuditLogModalComponent,
+    UserDetailListComponent
   ],
   imports: [
-    CommonModule,
     AdminRoutingModule,
     HttpClientModule,
     FormsModule,

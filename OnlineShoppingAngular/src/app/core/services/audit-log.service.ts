@@ -9,10 +9,15 @@ import { AuditLog } from '../models/audit-log';
 export class AuditLogService {
   private baseUrl = 'http://localhost:8080/audit-logs';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getAuditLogsByEntityType(entityType: string): Observable<AuditLog[]> {
     const params = new HttpParams().set('entityType', entityType);
     return this.http.get<AuditLog[]>(`${this.baseUrl}/list-by-entity`, { params });
   }
+
+  getLogsForProduct(productId: number): Observable<AuditLog[]> {
+    return this.http.get<AuditLog[]>(`${this.baseUrl}/product/${productId}`);
+  }
+
 }

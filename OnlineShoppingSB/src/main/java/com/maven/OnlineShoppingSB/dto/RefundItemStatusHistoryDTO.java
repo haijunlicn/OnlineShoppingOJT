@@ -13,4 +13,6 @@ public class RefundItemStatusHistoryDTO {
     private String note;
     private LocalDateTime createdAt;
     private Long updatedBy;
+    private String updatedAdmin;
+    private String updatedAdminRole;
 }

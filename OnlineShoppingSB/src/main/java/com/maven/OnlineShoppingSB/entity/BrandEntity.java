@@ -22,7 +22,10 @@ public class  BrandEntity {
 
     @Column(name = "logo" ,length = 255)
     private String logo;
-    
+
+    @Column(name = "base_sku", length = 50)
+    private String baseSku;
+
     @Column(name = "del_fg", nullable = false)
     private Integer delFg = 1;
 
