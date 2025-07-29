@@ -126,19 +126,13 @@
                         <input id="priceMin" type="number" class="form-control" [(ngModel)]="filterParams.priceMin"
                             (change)="onPriceChange()" placeholder="0">
                     </div>
+                    
                     <div class="col-6 col-lg-1">
                         <label for="priceMax" class="form-label">Max Price</label>
                         <input id="priceMax" type="number" class="form-control" [(ngModel)]="filterParams.priceMax"
                             (change)="onPriceChange()" placeholder="Max">
                     </div>
 
-                    <!-- Items per page -->
-                    <div class="col-6 col-lg-1">
-                        <label for="itemsPerPage" class="form-label">Show</label>
-                        <select id="itemsPerPage" class="form-select" [(ngModel)]="itemsPerPage" (change)="onItemsPerPageChange()">
-                            <option *ngFor="let option of getItemsPerPageOptions()" [value]="option">{{ option }}</option>
-                        </select>
-                    </div>
                 </div>
             </div>
         </div>

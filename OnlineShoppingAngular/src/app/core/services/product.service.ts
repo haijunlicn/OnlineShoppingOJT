@@ -42,7 +42,6 @@ export class ProductService {
     return this.http.get<ProductCardItem>(`${this.baseUrl}/public/${id}`);
   }
 
-
   generateSku(productName: string, variant: ProductVariantDTO): string {
     const skuBase = productName.substring(0, 3).toUpperCase();
 
@@ -68,6 +67,7 @@ export class ProductService {
       observe: 'events'
     });
   }
+
   getRelatedProducts(categoryId: number, productId: number) {
     return this.http.get<ProductDTO[]>(`${this.baseUrl}/related?categoryId=${categoryId}&productId=${productId}`);
   }
@@ -77,8 +77,15 @@ export class ProductService {
   }
 
   softDeleteVariant(variantId: number): Observable<string> {
-    // Assuming variant endpoints are under /products/variants
     return this.http.put(`${this.baseUrl}/variants/${variantId}/soft-delete`, null, { responseType: 'text' });
+  }
+
+  restoreProduct(productId: number): Observable<string> {
+    return this.http.put(`${this.baseUrl}/${productId}/restore`, null, { responseType: 'text' });
+  }
+
+  restoreVariant(variantId: number): Observable<string> {
+    return this.http.put(`${this.baseUrl}/variants/${variantId}/restore`, null, { responseType: 'text' });
   }
 
 }

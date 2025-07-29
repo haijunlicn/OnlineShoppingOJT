@@ -45,7 +45,7 @@ export class ProductDetailComponent implements OnInit {
     private productService: ProductService,
     private accessControl: AccessControlService,
     private auditLogService: AuditLogService,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get("id")
@@ -85,6 +85,296 @@ export class ProductDetailComponent implements OnInit {
         this.auditLogs = []
         this.loading = false
       },
+    })
+  }
+
+  // Product Status Methods
+  isProductPublished(): boolean {
+    if (!this.product) return false
+    return this.product.product.delFg === 1 && this.product.category.delFg === 1 && this.product.brand?.delFg === 1
+  }
+
+  getProductStatus(): string {
+    if (!this.product) return "Unknown"
+
+    if (this.product.product.delFg === 0) return "Unpublished"
+    if (this.product.category.delFg === 0) return "Unpublished (Category Inactive)"
+    if (this.product.brand?.delFg === 0) return "Unpublished (Brand Inactive)"
+
+    return "Published"
+  }
+
+  getProductStatusClass(): string {
+    const status = this.getProductStatus()
+    if (status === "Published") return "status-published"
+    return "status-unpublished"
+  }
+
+  canPublishProduct(): boolean {
+    if (!this.product) return false
+    return this.product.category.delFg === 1 && this.product.brand?.delFg === 1
+  }
+
+  publishProduct(): void {
+    if (!this.product) return
+
+    // Check if category or brand is inactive
+    if (!this.canPublishProduct()) {
+      let message = "Cannot publish product because:"
+      const reasons = []
+
+      if (this.product.category.delFg === 0) {
+        reasons.push(`Category "${this.product.category.name}" is inactive`)
+      }
+      if (this.product.brand?.delFg === 0) {
+        reasons.push(`Brand "${this.product.brand.name}" is inactive`)
+      }
+
+      message += "\n• " + reasons.join("\n• ")
+
+      Swal.fire({
+        title: "Cannot Publish Product",
+        text: message,
+        icon: "error",
+        customClass: {
+          popup: "luxury-alert",
+          confirmButton: "luxury-btn luxury-btn-primary",
+        },
+      })
+      return
+    }
+
+    Swal.fire({
+      title: "Publish Product",
+      text: `Are you sure you want to publish "${this.product.product.name}"?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#10b981",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, publish it!",
+      cancelButtonText: "Cancel",
+      customClass: {
+        popup: "luxury-alert",
+        confirmButton: "luxury-btn luxury-btn-success",
+        cancelButton: "luxury-btn luxury-btn-outline",
+      },
+    }).then((result) => {
+      if (result.isConfirmed && this.product) {
+        this.productService.restoreProduct(this.product.product.id!).subscribe({
+          next: (response) => {
+            Swal.fire({
+              title: "Published!",
+              text: "Product has been published successfully.",
+              icon: "success",
+              timer: 3000,
+              showConfirmButton: false,
+              toast: true,
+              position: "top-end",
+              customClass: {
+                popup: "luxury-toast luxury-toast-success",
+                htmlContainer: "luxury-toast-content",
+              },
+            })
+            // Refresh product data
+            const id = this.route.snapshot.paramMap.get("id")
+            if (id) {
+              this.loadProductData(+id)
+            }
+          },
+          error: (error) => {
+            Swal.fire({
+              title: "Error!",
+              text: "Failed to publish product. Please try again.",
+              icon: "error",
+              customClass: {
+                popup: "luxury-alert",
+                confirmButton: "luxury-btn luxury-btn-primary",
+              },
+            })
+          },
+        })
+      }
+    })
+  }
+
+  unpublishProduct(): void {
+    if (!this.product) return
+
+    Swal.fire({
+      title: "Unpublish Product",
+      text: `Are you sure you want to unpublish "${this.product.product.name}"?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, unpublish it!",
+      cancelButtonText: "Cancel",
+      customClass: {
+        popup: "luxury-alert",
+        confirmButton: "luxury-btn luxury-btn-danger",
+        cancelButton: "luxury-btn luxury-btn-outline",
+      },
+    }).then((result) => {
+      if (result.isConfirmed && this.product) {
+        this.productService.softDeleteProduct(this.product.product.id!).subscribe({
+          next: (response) => {
+            Swal.fire({
+              title: "Unpublished!",
+              text: "Product has been unpublished successfully.",
+              icon: "success",
+              timer: 3000,
+              showConfirmButton: false,
+              toast: true,
+              position: "top-end",
+              customClass: {
+                popup: "luxury-toast luxury-toast-success",
+                htmlContainer: "luxury-toast-content",
+              },
+            })
+            // Refresh product data
+            const id = this.route.snapshot.paramMap.get("id")
+            if (id) {
+              this.loadProductData(+id)
+            }
+          },
+          error: (error) => {
+            Swal.fire({
+              title: "Error!",
+              text: "Failed to unpublish product. Please try again.",
+              icon: "error",
+              customClass: {
+                popup: "luxury-alert",
+                confirmButton: "luxury-btn luxury-btn-primary",
+              },
+            })
+          },
+        })
+      }
+    })
+  }
+
+  // Variant Status Methods
+  getActiveVariants(): ProductVariantDTO[] {
+    if (!this.product) return []
+    return this.product.variants.filter((variant) => variant.delFg === 1)
+  }
+
+  getInactiveVariants(): ProductVariantDTO[] {
+    if (!this.product) return []
+    return this.product.variants.filter((variant) => variant.delFg === 0)
+  }
+
+  activateVariant(variantId: number): void {
+    const variant = this.product?.variants.find((v) => v.id === variantId)
+    if (!variant) return
+
+    Swal.fire({
+      title: "Activate Variant",
+      text: `Are you sure you want to activate variant "${variant.sku}"?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#10b981",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, activate it!",
+      cancelButtonText: "Cancel",
+      customClass: {
+        popup: "luxury-alert",
+        confirmButton: "luxury-btn luxury-btn-success",
+        cancelButton: "luxury-btn luxury-btn-outline",
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.productService.restoreVariant(variantId).subscribe({
+          next: (response) => {
+            Swal.fire({
+              title: "Activated!",
+              text: "Variant has been activated successfully.",
+              icon: "success",
+              timer: 3000,
+              showConfirmButton: false,
+              toast: true,
+              position: "top-end",
+              customClass: {
+                popup: "luxury-toast luxury-toast-success",
+                htmlContainer: "luxury-toast-content",
+              },
+            })
+            // Refresh product data
+            const id = this.route.snapshot.paramMap.get("id")
+            if (id) {
+              this.loadProductData(+id)
+            }
+          },
+          error: (error) => {
+            Swal.fire({
+              title: "Error!",
+              text: "Failed to activate variant. Please try again.",
+              icon: "error",
+              customClass: {
+                popup: "luxury-alert",
+                confirmButton: "luxury-btn luxury-btn-primary",
+              },
+            })
+          },
+        })
+      }
+    })
+  }
+
+  deactivateVariant(variantId: number): void {
+    const variant = this.product?.variants.find((v) => v.id === variantId)
+    if (!variant) return
+
+    Swal.fire({
+      title: "Deactivate Variant",
+      text: `Are you sure you want to deactivate variant "${variant.sku}"?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, deactivate it!",
+      cancelButtonText: "Cancel",
+      customClass: {
+        popup: "luxury-alert",
+        confirmButton: "luxury-btn luxury-btn-danger",
+        cancelButton: "luxury-btn luxury-btn-outline",
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.productService.softDeleteVariant(variantId).subscribe({
+          next: (response) => {
+            Swal.fire({
+              title: "Deactivated!",
+              text: "Variant has been deactivated successfully.",
+              icon: "success",
+              timer: 3000,
+              showConfirmButton: false,
+              toast: true,
+              position: "top-end",
+              customClass: {
+                popup: "luxury-toast luxury-toast-success",
+                htmlContainer: "luxury-toast-content",
+              },
+            })
+            // Refresh product data
+            const id = this.route.snapshot.paramMap.get("id")
+            if (id) {
+              this.loadProductData(+id)
+            }
+          },
+          error: (error) => {
+            Swal.fire({
+              title: "Error!",
+              text: "Failed to deactivate variant. Please try again.",
+              icon: "error",
+              customClass: {
+                popup: "luxury-alert",
+                confirmButton: "luxury-btn luxury-btn-primary",
+              },
+            })
+          },
+        })
+      }
     })
   }
 
@@ -149,22 +439,22 @@ export class ProductDetailComponent implements OnInit {
 
   getTotalStock(): number {
     if (!this.product) return 0
-    return this.product.variants.reduce((total, variant) => total + variant.stock, 0)
+    return this.getActiveVariants().reduce((total, variant) => total + variant.stock, 0)
   }
 
   getInStockVariants(): number {
     if (!this.product) return 0
-    return this.product.variants.filter((v) => v.stock > 5).length
+    return this.getActiveVariants().filter((v) => v.stock > 5).length
   }
 
   getLowStockVariants(): number {
     if (!this.product) return 0
-    return this.product.variants.filter((v) => v.stock > 0 && v.stock <= 5).length
+    return this.getActiveVariants().filter((v) => v.stock > 0 && v.stock <= 5).length
   }
 
   getOutOfStockVariants(): number {
     if (!this.product) return 0
-    return this.product.variants.filter((v) => v.stock === 0).length
+    return this.getActiveVariants().filter((v) => v.stock === 0).length
   }
 
   // Variant Stock Methods
@@ -188,11 +478,11 @@ export class ProductDetailComponent implements OnInit {
 
   // Price Methods
   getPriceRange(): string {
-    if (!this.product || this.product.variants.length === 0) {
+    if (!this.product || this.getActiveVariants().length === 0) {
       return this.product ? `${this.product.product.basePrice.toLocaleString()} MMK` : ""
     }
 
-    const prices = this.product.variants.map((v) => v.price)
+    const prices = this.getActiveVariants().map((v) => v.price)
     const minPrice = Math.min(...prices)
     const maxPrice = Math.max(...prices)
 
@@ -358,114 +648,13 @@ export class ProductDetailComponent implements OnInit {
     this.activeTab = tab
   }
 
-  // Soft Delete Methods
+  // Legacy method for backward compatibility
   softDeleteProduct(): void {
-    if (!this.product) return
-
-    Swal.fire({
-      title: "Delete Product",
-      text: `Are you sure you want to delete "${this.product.product.name}"? This action can be undone.`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#dc2626",
-      cancelButtonColor: "#6b7280",
-      confirmButtonText: "Yes, delete it!",
-      cancelButtonText: "Cancel",
-      customClass: {
-        popup: "luxury-alert",
-        confirmButton: "luxury-btn luxury-btn-danger",
-        cancelButton: "luxury-btn luxury-btn-outline",
-      },
-    }).then((result) => {
-      if (result.isConfirmed && this.product) {
-        this.productService.softDeleteProduct(this.product.product.id!).subscribe({
-          next: (response) => {
-            Swal.fire({
-              title: "Deleted!",
-              text: "Product has been deleted successfully.",
-              icon: "success",
-              timer: 3000,
-              showConfirmButton: false,
-              toast: true,
-              position: "top-end",
-              customClass: {
-                popup: "luxury-toast luxury-toast-success",
-                htmlContainer: "luxury-toast-content",
-              },
-            })
-            this.router.navigate(["/admin/productList"])
-          },
-          error: (error) => {
-            Swal.fire({
-              title: "Error!",
-              text: "Failed to delete product. Please try again.",
-              icon: "error",
-              customClass: {
-                popup: "luxury-alert",
-                confirmButton: "luxury-btn luxury-btn-primary",
-              },
-            })
-          },
-        })
-      }
-    })
+    this.unpublishProduct()
   }
 
   softDeleteVariant(variantId: number): void {
-    const variant = this.product?.variants.find((v) => v.id === variantId)
-    if (!variant) return
-
-    Swal.fire({
-      title: "Delete Variant",
-      text: `Are you sure you want to delete variant "${variant.sku}"? This action can be undone.`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#dc2626",
-      cancelButtonColor: "#6b7280",
-      confirmButtonText: "Yes, delete it!",
-      cancelButtonText: "Cancel",
-      customClass: {
-        popup: "luxury-alert",
-        confirmButton: "luxury-btn luxury-btn-danger",
-        cancelButton: "luxury-btn luxury-btn-outline",
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        this.productService.softDeleteVariant(variantId).subscribe({
-          next: (response) => {
-            Swal.fire({
-              title: "Deleted!",
-              text: "Variant has been deleted successfully.",
-              icon: "success",
-              timer: 3000,
-              showConfirmButton: false,
-              toast: true,
-              position: "top-end",
-              customClass: {
-                popup: "luxury-toast luxury-toast-success",
-                htmlContainer: "luxury-toast-content",
-              },
-            })
-            // Refresh product data
-            const id = this.route.snapshot.paramMap.get("id")
-            if (id) {
-              this.loadProductData(+id)
-            }
-          },
-          error: (error) => {
-            Swal.fire({
-              title: "Error!",
-              text: "Failed to delete variant. Please try again.",
-              icon: "error",
-              customClass: {
-                popup: "luxury-alert",
-                confirmButton: "luxury-btn luxury-btn-primary",
-              },
-            })
-          },
-        })
-      }
-    })
+    this.deactivateVariant(variantId)
   }
 
   // TrackBy Methods for Performance
@@ -499,9 +688,9 @@ export class ProductDetailComponent implements OnInit {
       this.selectedCreatedMeta =
         product?.createdBy && product?.createdDate
           ? {
-              createdBy: product.createdBy,
-              createdDate: product.createdDate,
-            }
+            createdBy: product.createdBy,
+            createdDate: product.createdDate,
+          }
           : null
     } else if (entityType === "ProductVariant") {
       console.log(`Audit log requested for entityType: ${entityType}, entityId: ${entityId}`)

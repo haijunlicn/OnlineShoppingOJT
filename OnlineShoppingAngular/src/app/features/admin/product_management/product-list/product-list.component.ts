@@ -105,7 +105,7 @@ export class ProductListComponent implements OnInit {
       })
   }
 
- 
+
   loadProducts(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.productService.getProductList().subscribe({
@@ -150,7 +150,7 @@ export class ProductListComponent implements OnInit {
     })
   }
 
-  
+
   loadBrands(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.brandService.getAllBrands().subscribe({
@@ -323,14 +323,24 @@ export class ProductListComponent implements OnInit {
     }
 
     // Brand filter
-    if (this.filterParams.brand) {
+    if (this.filterParams.brand && this.filterParams.brand !== '') {
       filtered = filtered.filter((product) => product.brand?.id?.toString() === this.filterParams.brand)
     }
 
     // Category filter
-    if (this.filterParams.category) {
+    if (this.filterParams.category && this.filterParams.category !== '') {
       filtered = filtered.filter((product) => product.category?.id?.toString() === this.filterParams.category)
     }
+
+    // // Brand filter
+    // if (this.filterParams.brand) {
+    //   filtered = filtered.filter((product) => product.brand?.id?.toString() === this.filterParams.brand)
+    // }
+
+    // // Category filter
+    // if (this.filterParams.category) {
+    //   filtered = filtered.filter((product) => product.category?.id?.toString() === this.filterParams.category)
+    // }
 
     // Status filter
     if (this.filterParams.status) {
@@ -438,13 +448,13 @@ export class ProductListComponent implements OnInit {
     this.applyFilters()
   }
 
- 
+
   onPriceChange() {
     this.currentPage = 1
     this.applyFilters()
   }
 
-  
+
   toggleFilters() {
     this.showFilters = !this.showFilters
     if (!this.showFilters) {
@@ -452,9 +462,9 @@ export class ProductListComponent implements OnInit {
     }
   }
   exportSingleProductToPdf(product: any): void {
-  // PDF export logic goes here
-  console.log("Exporting to PDF:", product);
-}
+    // PDF export logic goes here
+    console.log("Exporting to PDF:", product);
+  }
 
   exportSingleProductToExcel(product: any): void {
     // Excel export logic goes here
@@ -482,7 +492,7 @@ export class ProductListComponent implements OnInit {
     return "ACTIVE"
   }
 
-  
+
   getTotalStock(product: ProductListItemDTO): number {
     return product.variants.reduce((total, variant) => total + variant.stock, 0)
   }
@@ -507,12 +517,12 @@ export class ProductListComponent implements OnInit {
     this.router.navigate(["/admin/product", productId])
   }
 
-  
+
   editProduct(productId: string): void {
     this.router.navigate(["/admin/product/edit", productId])
   }
 
- 
+
   deleteProduct(productId: string): void {
     const product = this.products.find((p) => p.id?.toString() === productId)
     if (product && confirm(`Are you sure you want to delete "${product.product.name}"?`)) {
@@ -531,7 +541,7 @@ export class ProductListComponent implements OnInit {
     return this.accessControl.hasAny("PRODUCT_CREATE", "SUPERADMIN_PERMISSION")
   }
 
- 
+
   get canBulkUploadProducts(): boolean {
     return this.accessControl.hasAny("PRODUCT_CREATE", "SUPERADMIN_PERMISSION")
   }
@@ -546,7 +556,7 @@ export class ProductListComponent implements OnInit {
     console.log("Export products")
   }
 
- 
+
   /**
    * Get filtered products count
    */
@@ -574,8 +584,8 @@ export class ProductListComponent implements OnInit {
       ];
 
       const exportData = this.getExportData();
-      const filename = exportData.length === this.products.length 
-        ? 'ProductList_All_Products.pdf' 
+      const filename = exportData.length === this.products.length
+        ? 'ProductList_All_Products.pdf'
         : `ProductList_Filtered_${exportData.length}_Products.pdf`;
 
       this.pdfExportService.exportTableToPdf(
@@ -607,8 +617,8 @@ export class ProductListComponent implements OnInit {
       ];
 
       const exportData = this.getExportData();
-      const filename = exportData.length === this.products.length 
-        ? 'ProductList_All_Products.xlsx' 
+      const filename = exportData.length === this.products.length
+        ? 'ProductList_All_Products.xlsx'
         : `ProductList_Filtered_${exportData.length}_Products.xlsx`;
 
       await this.excelExportService.exportToExcel(

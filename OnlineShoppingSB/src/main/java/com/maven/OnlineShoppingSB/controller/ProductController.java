@@ -121,7 +121,7 @@ public class ProductController {
     @GetMapping("/public/{id}")
     public ResponseEntity<ProductListItemDTO> getPublicProductById(@PathVariable Long id) {
         try {
-            ProductListItemDTO productDTO = productService.getProductById(id);
+            ProductListItemDTO productDTO = productService.getPublicProductById(id);
             return ResponseEntity.ok(productDTO);
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -213,6 +213,40 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Variant not found.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete variant.");
+        }
+    }
+
+    @PutMapping("/{productId}/restore")
+    @PreAuthorize("hasAuthority('PRODUCT_DELETE') or hasRole('SUPERADMIN')")
+    public ResponseEntity<String> restoreProduct(
+            @PathVariable Long productId,
+            @AuthenticationPrincipal CustomUserDetails principal
+    ) {
+        try {
+            UserEntity currentUser = principal != null ? principal.getUser() : null;
+            productService.restoreProduct(productId, currentUser);
+            return ResponseEntity.ok("Product restored successfully.");
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to restore product.");
+        }
+    }
+
+    @PutMapping("/variants/{variantId}/restore")
+    @PreAuthorize("hasAuthority('PRODUCT_DELETE') or hasRole('SUPERADMIN')")
+    public ResponseEntity<String> restoreVariant(
+            @PathVariable Long variantId,
+            @AuthenticationPrincipal CustomUserDetails principal
+    ) {
+        try {
+            UserEntity currentUser = principal != null ? principal.getUser() : null;
+            productService.restoreVariant(variantId, currentUser);
+            return ResponseEntity.ok("Variant restored successfully.");
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Variant not found.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to restore variant.");
         }
     }
 

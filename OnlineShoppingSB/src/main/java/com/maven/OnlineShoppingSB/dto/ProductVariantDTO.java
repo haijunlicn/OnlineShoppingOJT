@@ -21,6 +21,7 @@ public class ProductVariantDTO {
     private String imgPath;  // For display (optional)
     private userDTO createdBy;
     private LocalDateTime createdDate;
+    private Integer delFg;
 
     public static ProductVariantDTO fromEntity(ProductVariantEntity entity) {
         if (entity == null) return null;

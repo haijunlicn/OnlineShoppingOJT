@@ -124,40 +124,6 @@ public class AuditLogsService {
         return "Unknown";
     }
 
-//    public AuditLogDTO toAuditLogDTO(AuditLogEntity log) {
-//        String entityType = log.getEntityType();
-//        Long entityId = log.getEntityId();
-//        String changedData = log.getChangedData(); // 🔧 keep as-is for DTO
-//
-//        Object affectedEntity = null;
-//        switch (entityType) {
-//            case "Product":
-//                affectedEntity = productRepo.findById(entityId).orElse(null);
-//                break;
-//            case "ProductVariant":
-//                affectedEntity = productVariantRepo.findById(entityId).orElse(null);
-//                break;
-//            // Add other entity types as needed
-//        }
-//
-//        String username = userRepository.findById(log.getPerformedBy())
-//                .map(UserEntity::getName)
-//                .orElse("Unknown");
-//
-//        AuditLogDTO dto = new AuditLogDTO();
-//        dto.setAction(log.getAction());
-//        dto.setEntityType(entityType);
-//        dto.setEntityId(entityId);
-//        dto.setChangedData(changedData); // ✅ pass string here
-//        dto.setUserId(log.getPerformedBy());
-//        dto.setUserType(log.getPerformedByType());
-//        dto.setUsername(username);
-//        dto.setCreatedDate(log.getCreatedAt());
-//        dto.setAffectedEntity(affectedEntity);
-//
-//        return dto;
-//    }
-
     public AuditLogDTO toAuditLogDTO(AuditLogEntity entity) {
         AuditLogDTO dto = new AuditLogDTO();
         dto.setAction(entity.getAction());
