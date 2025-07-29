@@ -456,10 +456,14 @@ export class ProductListComponent implements OnInit {
   console.log("Exporting to PDF:", product);
 }
 
-exportSingleProductToExcel(product: any): void {
-  // Excel export logic goes here
-  console.log("Exporting to Excel:", product);
-}
+  exportSingleProductToExcel(product: any): void {
+    // Excel export logic goes here
+    console.log("Exporting to Excel:", product);
+  }
+
+  onImageError(event: any): void {
+    event.target.src = "assets/img/default-product.jpg";
+  }
 
 
   clearAllFilters() {

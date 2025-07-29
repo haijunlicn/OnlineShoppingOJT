@@ -182,10 +182,10 @@ import { AuditLogModalComponent } from './auditLog/audit-log-modal/audit-log-mod
     AdminAccountListComponent,
     UserViewDetailComponent,
     UserDetailListComponent,
-    AuditLogModalComponent
+    AuditLogModalComponent,
+    UserDetailListComponent
   ],
   imports: [
-    CommonModule,
     AdminRoutingModule,
     HttpClientModule,
     FormsModule,

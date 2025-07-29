@@ -56,7 +56,6 @@ import { VlogCreateComponent } from './vlog-management/vlogcreate/vlogcreate.com
 import { DeliveryMethodListComponent } from './deliveryMethodManagement/delivery-method-list/delivery-method-list.component';
 import { CreateDeliveryMethodComponent } from './deliveryMethodManagement/create-delivery-method/create-delivery-method.component';
 import { EditDeliveryMethodComponent } from './deliveryMethodManagement/edit-delivery-method/edit-delivery-method.component';
-
 import { CreateDiscountGroupComponent } from './discount_management/create-discount-group/create-discount-group.component';
 import { CreateDiscountComponent } from './discount_management/create-discount/create-discount.component';
 import { DiscountListComponent } from './discount_management/discount-list/discount-list.component';
@@ -152,8 +151,8 @@ const routes: Routes = [
       },
       { path: 'bloglist', component: VlogListComponent },
       { path: 'blogcreate', component: VlogCreateComponent },
-      { path: 'vloglist', component: VlogListComponent },
-      { path: 'vlogcreate', component: VlogCreateComponent },
+      { path: 'bloglist', component: VlogListComponent },
+      { path: 'blogcreate', component: VlogCreateComponent },
       {path:'userList',component:UserDetailListComponent},
       {path:'user-view-detail/:id', component:UserViewDetailComponent}
 
