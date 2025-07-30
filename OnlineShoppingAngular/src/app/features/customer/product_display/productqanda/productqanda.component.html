@@ -1,41 +1,122 @@
 <div class="qanda-section">
-  <h5>Questions about this product ({{total}})</h5>
+  <div class="qanda-header">
+    <h5 class="qanda-title">
+      <i class="bi bi-question-circle"></i>
+      Questions about this product ({{ total }})
+    </h5>
+  </div>
+
   <ng-container *ngIf="isLoggedIn && isCustomer; else loginPrompt">
-    <input [(ngModel)]="newQuestion" placeholder="Enter your question(s) here" />
-    <button (click)="submitQuestion()">ASK QUESTIONS</button>
+    <div class="ask-box">
+      <div class="ask-input-container">
+        <input 
+          [(ngModel)]="newQuestion" 
+          placeholder="Enter your question(s) here..." 
+          class="ask-input"
+        />
+        <button (click)="submitQuestion()" class="ask-button">
+          <i class="bi bi-send"></i>
+          Ask Question
+        </button>
+      </div>
+    </div>
   </ng-container>
+
   <ng-template #loginPrompt>
-    <div class="alert alert-info">
-      To ask questions login in first
+    <div class="login-alert">
+      <i class="bi bi-info-circle"></i>
+      <div class="alert-content">
+        <h6>Login Required</h6>
+        <p>To ask questions, please log in first.</p>
+      </div>
     </div>
   </ng-template>
+
   <div class="qanda-list">
-    <div *ngFor="let q of questions">
+    <div *ngFor="let q of questions" class="qanda-item">
       <div class="q-row">
-        <span class="q-icon">Q</span>
-        <span class="q-text">{{q.questionText}}</span>
-        <span class="q-meta">{{q.userName}} - {{q.createdAt | date:'dd MMM yyyy'}}</span>
-        <ng-container *ngIf="canEditDelete(q)">
-          <button (click)="openEditModal(q)">Edit</button>
-          <button (click)="deleteQuestion(q)">Delete</button>
-        </ng-container>
+        <div class="q-icon-container">
+          <span class="q-icon">Q</span>
+        </div>
+        <div class="q-content">
+          <div class="q-text">{{ q.questionText }}</div>
+          <div class="q-meta">
+            <span class="user-name">{{ q.userName }}</span>
+            <span class="separator">•</span>
+            <span class="date">{{ q.createdAt | date: 'dd MMM yyyy, h:mm a' }}</span>
+          </div>
+        </div>
+        <div class="q-actions" *ngIf="canEditDelete(q)">
+          <button class="action-btn edit-btn" (click)="openEditModal(q)" title="Edit Question">
+            <i class="bi bi-pencil-square"></i>
+          </button>
+          <button class="action-btn delete-btn" (click)="deleteQuestion(q)" title="Delete Question">
+            <i class="bi bi-trash-fill"></i>
+          </button>
+        </div>
       </div>
-      <div *ngFor="let a of q.answers">
-        <span class="a-icon">A</span>
-        <span class="a-text">{{a.answerText}}</span>
-        <span class="a-meta">{{a.adminName}} - Answered {{a.createdAt | date:'dd MMM yyyy'}}</span>
+
+      <div *ngFor="let a of q.answers" class="a-row">
+        <div class="a-icon-container">
+          <span class="a-icon">A</span>
+        </div>
+        <div class="a-content">
+          <div class="a-text">{{ a.answerText }}</div>
+          <div class="a-meta">
+            <span class="admin-name">{{ a.adminName }}</span>
+            <span class="separator">•</span>
+            <span class="answer-label">Answered</span>
+            <span class="separator">•</span>
+            <span class="date">{{ a.createdAt | date: 'dd MMM yyyy, h:mm a' }}</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Edit Question Modal -->
+  <!-- Empty State -->
+  <div *ngIf="questions.length === 0" class="empty-state">
+    <div class="empty-state-content">
+      <i class="bi bi-chat-dots"></i>
+      <h6>No questions yet</h6>
+      <p>Be the first to ask a question about this product!</p>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
   <div *ngIf="showEditModal" class="edit-modal-backdrop">
     <div class="edit-modal-box">
-      <h4>Edit Your Question</h4>
-      <input [(ngModel)]="editQuestionText" />
-      <div class="edit-modal-actions">
-        <button (click)="closeEditModal()">Cancel</button>
-        <button (click)="submitEdit()">Save</button>
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-pencil-square"></i>
+          Edit Your Question
+        </h5>
+        <button class="custom-close-btn" (click)="closeEditModal()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Your Question</label>
+          <textarea 
+            [(ngModel)]="editQuestionText" 
+            class="form-control edit-textarea"
+            rows="4"
+            placeholder="Enter your question..."
+          ></textarea>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeEditModal()">
+          <i class="bi bi-x-circle"></i>
+          Cancel
+        </button>
+        <button class="btn btn-primary" (click)="submitEdit()">
+          <i class="bi bi-check-circle"></i>
+          Save Changes
+        </button>
       </div>
     </div>
   </div>
