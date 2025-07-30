@@ -901,3 +901,24 @@
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
+
+/* Add these styles to your existing CSS file for better button spacing */
+.table-action-buttons .btn + .btn {
+  margin-left: 0.25rem;
+}
+
+.dropdown-item i {
+  width: 16px;
+  text-align: center;
+  margin-right: 0.5rem;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+/* Price history button styling */
+.btn-outline-primary.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}

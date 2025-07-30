@@ -499,54 +499,9 @@
   background-color: #e6ffe6;
   color: #28a745;
 }
-.dropdown-item.disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-.dropdown-item.disabled:hover {
-  background-color: transparent;
-  color: #6b7280;
-}
-.dropdown-header {
-  font-weight: 600;
-  color: #374151;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.5rem 1rem;
-  margin: 0;
-}
 .dropdown-divider {
   border-top: 1px solid #e5e7eb;
   margin: 0.5rem 0;
-}
-
-/* Export button badge styling */
-.btn .badge {
-  font-size: 0.7rem;
-  padding: 0.2rem 0.4rem;
-}
-
-/* Export dropdown item styling */
-.dropdown-item .d-flex.flex-column {
-  width: 100%;
-}
-
-.dropdown-item small {
-  font-size: 0.75rem;
-  line-height: 1.2;
-}
-
-/* Filter indicator styling */
-.filter-indicator {
-  background-color: #fef3c7;
-  border: 1px solid #f59e0b;
-  color: #92400e;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  font-weight: 500;
 }
 
 /* Date Info */

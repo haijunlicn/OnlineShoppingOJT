@@ -267,6 +267,8 @@
                                                 </div>
                                             </div>
                                         </td>
+
+                                        <!-- Update your Active Variants Actions column -->
                                         <td>
                                             <div class="table-action-buttons">
                                                 <div class="btn-group">
@@ -277,6 +279,12 @@
                                                         <span class="visually-hidden">More Actions</span>
                                                     </button>
                                                     <ul class="dropdown-menu dropdown-menu-end">
+                                                        <li>
+                                                            <a class="dropdown-item"
+                                                                (click)="openPriceHistoryModal(variant)">
+                                                                <i class="fas fa-chart-line"></i>Price History
+                                                            </a>
+                                                        </li>
                                                         <li>
                                                             <a class="dropdown-item"
                                                                 (click)="openAuditModal('ProductVariant', variant.id!)">
@@ -297,6 +305,7 @@
                                                 </div>
                                             </div>
                                         </td>
+
                                     </tr>
                                 </tbody>
                             </table>
@@ -326,14 +335,14 @@
                                 </thead>
                                 <tbody>
                                     <tr *ngFor="let variant of getInactiveVariants(); trackBy: trackByVariantId"
-                                        class="inactive-row">
+                                        class="">
                                         <td>
-                                            <code class="sku-code inactive">{{ variant.sku }}</code>
+                                            <code class="sku-code">{{ variant.sku }}</code>
                                         </td>
                                         <td>
                                             <div *ngIf="variant.options && variant.options.length > 0"
                                                 class="variant-options">
-                                                <span class="variant-option-badge inactive"
+                                                <span class="variant-option-badge"
                                                     *ngFor="let option of variant.options">
                                                     {{ getOptionName(option.optionId) }}: {{
                                                     getOptionValue(option.optionId,
@@ -362,9 +371,9 @@
                                             <span class="stock-number text-muted">{{ variant.stock }}</span>
                                         </td>
                                         <td>
-                                            <span class="status-badge status-inactive">
-                                                <i class="fas fa-times-circle"></i>
-                                                Inactive
+                                            <span class="status-badge" [ngClass]="getVariantStockClass(variant.stock)">
+                                                <i [class]="getVariantStockIcon(variant.stock)"></i>
+                                                {{ getVariantStockStatus(variant.stock) }}
                                             </span>
                                         </td>
                                         <td>
@@ -376,19 +385,40 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td>
-                                            <div class="table-action-buttons d-flex align-items-center">
-                                                <button class="btn btn-success btn-sm"
-                                                    (click)="activateVariant(variant.id!)" *ngIf="canEditProduct">
-                                                    <i class="fas fa-eye me-1"></i>Activate
-                                                </button>
 
-                                                <!-- Audit log icon button -->
-                                                <button class="btn btn-outline-secondary btn-sm ms-1"
-                                                    (click)="openAuditModal('ProductVariant', variant.id!)"
-                                                    title="View Audit Log">
-                                                    <i class="fas fa-history"></i>
-                                                </button>
+                                        <td>
+                                            <div class="table-action-buttons">
+                                                <div class="btn-group">
+                                                    <button
+                                                        class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split"
+                                                        data-bs-toggle="dropdown" aria-expanded="false"
+                                                        title="More Actions">
+                                                        <span class="visually-hidden">More Actions</span>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end">
+                                                        <li>
+                                                            <a class="dropdown-item"
+                                                                (click)="openPriceHistoryModal(variant)">
+                                                                <i class="fas fa-chart-line"></i> Price History
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a class="dropdown-item"
+                                                                (click)="openAuditModal('ProductVariant', variant.id!)">
+                                                                <i class="fas fa-history"></i> View Audit Log
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <hr class="dropdown-divider" />
+                                                        </li>
+                                                        <li *ngIf="canEditProduct">
+                                                            <a class="dropdown-item text-success"
+                                                                (click)="activateVariant(variant.id!)">
+                                                                <i class="fas fa-eye"></i> Activate Variant
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>
@@ -439,3 +469,6 @@
 <app-audit-log-modal *ngIf="showAuditModal" [logs]="selectedAuditLogs" [createdMeta]="selectedCreatedMeta"
     (close)="showAuditModal = false">
 </app-audit-log-modal>
+
+<app-price-history-modal *ngIf="selectedVariantForPriceHistory" [variant]="selectedVariantForPriceHistory"
+    [show]="showPriceHistoryModal" (close)="closePriceHistoryModal()" />

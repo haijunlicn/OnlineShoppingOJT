@@ -36,59 +36,85 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
     {
       heading: "Dashboard",
       items: [
-        { label: "User Analytics", route: "/admin/createGroup", icon: "fas fa-chart-line" },
-        { label: "Analytics", route: "/admin/sale-analysis", icon: "fas fa-chart-bar" },
+        { label: "User Overview", route: "/admin/createGroup", icon: "fas fa-chart-line" },
+        { label: "Dashboard", route: "/admin/sale-analysis", icon: "fas fa-chart-bar" },
       ],
     },
     {
       heading: "Product Management",
       items: [
-        { label: "Chart Testing", route: "/admin/chartTesting", icon: "fas fa-box" },
         { label: "Product List", route: "/admin/productList", icon: "fas fa-box" },
         { label: "Product Attributes", route: "/admin/productAttributes", icon: "fas fa-tags" },
       ],
     },
     {
-      heading: "Roles And Permissions",
+      heading: "Order Management",
       items: [
-        { label: "Role", route: "/admin/role-list", icon: "fas fa-user-shield" },
-        { label: "Permission", route: "/admin/permission-list", icon: "fas fa-key" },
+        { label: "Order List", route: "/admin/AdminOrder", icon: "fas fa-shopping-cart" },
       ],
     },
     {
       heading: "Refund Management",
       items: [
-        { label: "Refund Requests", route: "/admin/refundRequestList", icon: "fas fa-credit-card" },
-        { label: "Order List", route: "/admin/AdminOrder", icon: "fas fa-credit-card" },
+        { label: "Refund Requests", route: "/admin/refundRequestList", icon: "fas fa-undo" },
+      ],
+    },
+    {
+      heading: "User Management",
+      items: [
+        { label: "Customer List", route: "/admin/userList", icon: "fas fa-users" },
+        { label: "Admin Accounts", route: "/admin/account/list", icon: "fas fa-user-cog" },
+      ],
+    },
+    {
+      heading: "Roles & Permissions",
+      items: [
+        { label: "Roles", route: "/admin/role-list", icon: "fas fa-user-shield" },
+        { label: "Permissions", route: "/admin/permission-list", icon: "fas fa-key" },
       ],
     },
     {
       heading: "Policy Management",
       items: [
-        { label: "Privacy, Terms & Condition", route: "/admin/policy/policy-list", icon: "fas fa-file-contract" },
-        { label: "Faq", route: "/admin/policy/faq-list", icon: "fas fa-question-circle" },
+        { label: "Privacy, Terms & Conditions", route: "/admin/policy/policy-list", icon: "fas fa-file-contract" },
+        { label: "FAQ", route: "/admin/policy/faq-list", icon: "fas fa-question-circle" },
       ],
     },
     {
-      heading: "Payment Management",
-      items: [{ label: "Payment", route: "/admin/payment-list", icon: "fas fa-credit-card" }],
+      heading: "Payment & Delivery",
+      items: [
+        { label: "Payments", route: "/admin/payment-list", icon: "fas fa-credit-card" },
+        { label: "Delivery Methods", route: "/admin/delivery-method-list", icon: "fas fa-truck" },
+        { label: "Store Locations", route: "/admin/storelocation", icon: "fas fa-map-marker-alt" }
+      ],
     },
     {
-      heading: "Notification Management",
+      heading: "Notification Center",
       items: [
-        {
-          label: "Notification Types",
-          route: "/admin/notificationTypes",
-          icon: "fas fa-tags",
-        },
-        {
-          label: "Sent Notifications",
-          route: "/admin/sentNotifications",
-          icon: "fas fa-paper-plane",
-        },
+        { label: "Notification Types", route: "/admin/notificationTypes", icon: "fas fa-tags" },
+        { label: "Sent Notifications", route: "/admin/sentNotifications", icon: "fas fa-paper-plane" },
+      ],
+    },
+    {
+      heading: "Content Management",
+      items: [
+        { label: "Blog Posts", route: "/admin/bloglist", icon: "fas fa-blog" },
+        { label: "Q&A", route: "/admin/answerqust", icon: "fas fa-question" },
+      ],
+    },
+    {
+      heading: "Discounts",
+      items: [
+        { label: "Discount List", route: "/admin/discountList", icon: "fas fa-percent" },
+      ],
+    },
+    {
+      heading: "Audit & Logs",
+      items: [
+        { label: "Audit Log", route: "/admin/audit-log", icon: "fas fa-clipboard-list" },
       ],
     }
-  ]
+  ];
 
   router: Router
   authService: AuthService

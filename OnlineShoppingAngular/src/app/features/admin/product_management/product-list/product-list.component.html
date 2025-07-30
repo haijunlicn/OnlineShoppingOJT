@@ -26,44 +26,24 @@
             <button class="btn btn-outline-primary btn-sm" (click)="toggleFilters()">
                 <i class="bi bi-funnel me-1"></i>{{ showFilters ? 'Hide Filters' : 'Show Filters' }}
             </button>
-           <div class="dropdown d-inline-block ms-2">
-                            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-download me-1"></i> Export
-                                <span *ngIf="isDataFiltered" class="badge bg-warning ms-1">
-                                    {{ exportDataCount }}
-                                </span>
-                            </button>
-                            <ul class="dropdown-menu shadow">
-                                
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item d-flex align-items-center" href="javascript:void(0)"
-                                        (click)="exportCatalogToPdf()" [class.disabled]="isExportingLayoutPdf">
-                                        <i class="bi bi-file-earmark-pdf text-danger me-2"></i> 
-                                        <div class="d-flex flex-column">
-                                            <span *ngIf="isExportingLayoutPdf">Exporting...</span>
-                                            <span *ngIf="!isExportingLayoutPdf">Catalog PDF</span>
-                                            <small class="text-muted" *ngIf="!isExportingLayoutPdf">
-                                                {{ isDataFiltered ? exportDataCount + ' Filtered Products' : 'All Products' }}
-                                            </small>
-                                        </div>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item d-flex align-items-center" href="javascript:void(0)"
-                                        (click)="exportCatalogToExcel()" [class.disabled]="isExportingExcel">
-                                        <i class="bi bi-file-earmark-excel text-success me-2"></i> 
-                                        <div class="d-flex flex-column">
-                                            <span *ngIf="!isExportingExcel">Catalog Excel</span>
-                                            <small class="text-muted" *ngIf="!isExportingExcel">
-                                                {{ isDataFiltered ? exportDataCount + ' Filtered Products' : 'All Products' }}
-                                            </small>
-                                        </div>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
+            <div class="dropdown">
+                <button class="btn btn-outline dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span class="btn-icon">📥</span>
+                    Export
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" href="javascript:void(0)" (click)="exportTableToPdf()">
+                            <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Export PDF
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="javascript:void(0)" (click)="exportTableToExcel()">
+                            <i class="bi bi-file-earmark-excel me-2 text-success"></i>Export Excel
+                        </a>
+                    </li>
+                </ul>
+            </div>
             <button *ngIf="canCreateProduct" class="btn btn-primary" routerLink="/admin/productCreate">
                 <i class="bi bi-plus-circle me-2"></i>Add Product
             </button>
@@ -82,12 +62,33 @@
         <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
     </div>
 
-                <div class="header-content">
-                    <div class="header-info">
-                        <h2 class="page-title">Products Management</h2>
-                        <p class="page-subtitle">Manage your product inventory and details</p>
+    <!-- Filter Controls Card -->
+    <div class="filter-section mb-3" *ngIf="showFilters">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-filter me-2"></i>Filters & Search
+                    </h6>
+                    <button type="button" class="btn btn-link btn-sm text-muted p-0" (click)="onReset()"
+                        *ngIf="filterParams.brand || filterParams.category || filterParams.status || filterParams.priceMin || filterParams.priceMax || filterParams.search.trim()">
+                        <i class="fas fa-times me-1"></i>Clear All
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <!-- Search -->
+                    <div class="col-12 col-lg-3">
+                        <label for="searchInput" class="form-label">Search</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                            <input id="searchInput" type="text" class="form-control" [(ngModel)]="filterParams.search"
+                                (input)="onSearchChange()" placeholder="Search by name, brand, category...">
+                        </div>
                     </div>
-                    
 
                     <!-- Brand Filter -->
                     <div class="col-6 col-lg-2">
@@ -125,16 +126,23 @@
                         <input id="priceMin" type="number" class="form-control" [(ngModel)]="filterParams.priceMin"
                             (change)="onPriceChange()" placeholder="0">
                     </div>
-                    
                     <div class="col-6 col-lg-1">
                         <label for="priceMax" class="form-label">Max Price</label>
                         <input id="priceMax" type="number" class="form-control" [(ngModel)]="filterParams.priceMax"
                             (change)="onPriceChange()" placeholder="Max">
                     </div>
 
+                    <!-- Items per page -->
+                    <div class="col-6 col-lg-1">
+                        <label for="itemsPerPage" class="form-label">Show</label>
+                        <select id="itemsPerPage" class="form-select" [(ngModel)]="itemsPerPage" (change)="onItemsPerPageChange()">
+                            <option *ngFor="let option of getItemsPerPageOptions()" [value]="option">{{ option }}</option>
+                        </select>
+                    </div>
                 </div>
             </div>
-       
+        </div>
+    </div>
 
     <!-- Data Table Card -->
     <div class="data-section">
@@ -375,4 +383,4 @@
             </div>
         </div>
     </div>
-
+</div>

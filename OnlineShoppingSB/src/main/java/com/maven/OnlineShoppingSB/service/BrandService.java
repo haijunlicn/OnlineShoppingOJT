@@ -3,10 +3,12 @@ package com.maven.OnlineShoppingSB.service;
 import com.maven.OnlineShoppingSB.dto.BrandDTO;
 import com.maven.OnlineShoppingSB.entity.BrandEntity;
 import com.maven.OnlineShoppingSB.repository.BrandRepository;
+import com.maven.OnlineShoppingSB.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -15,6 +17,9 @@ public class BrandService {
 
     @Autowired
     private BrandRepository repo;
+
+    @Autowired
+    private ProductRepository productRepo;
 
     public BrandDTO insertBrand(BrandDTO dto) {
         // Find active brands with the same name
@@ -51,6 +56,13 @@ public class BrandService {
     }
 
     public List<BrandDTO> getAllBrands() {
+        return repo.findAll()
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+    
+    public List<BrandDTO> getAllPublicBrands() {
         return repo.findByDelFg(1)
                 .stream()
                 .map(this::convertToDTO)
@@ -162,7 +174,14 @@ public class BrandService {
         BrandEntity existing = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Brand not found with id: " + id));
 
-        existing.setDelFg(0); // soft delete
+        // If brand is already inactive (delFg = 0), restore it to active (delFg = 1)
+        // If brand is active (delFg = 1), make it inactive (delFg = 0)
+        if (existing.getDelFg() == 0) {
+            existing.setDelFg(1); // Restore to active
+        } else {
+            existing.setDelFg(0); // Make inactive
+        }
+        
         repo.save(existing);
     }
 
@@ -178,6 +197,25 @@ public class BrandService {
         if (entity.getUpdatedDate() != null)
             dto.setUpdatedDate(entity.getUpdatedDate().toString());
         return dto;
+    }
+
+    public Map<Long, Integer> getProductCountsByBrand() {
+        // Get all active brands
+        List<BrandEntity> activeBrands = repo.findByDelFg(1);
+        
+        // Get brand IDs
+        List<Long> brandIds = activeBrands.stream()
+                .map(BrandEntity::getId)
+                .collect(Collectors.toList());
+        
+        // Get product counts for each brand
+        Map<Long, Integer> productCounts = brandIds.stream()
+                .collect(Collectors.toMap(
+                    brandId -> brandId,
+                    brandId -> productRepo.findByBrandIdIn(List.of(brandId)).size()
+                ));
+        
+        return productCounts;
     }
 
 }

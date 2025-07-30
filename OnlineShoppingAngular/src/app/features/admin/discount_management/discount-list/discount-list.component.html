@@ -1,174 +1,387 @@
 <ng-container *ngIf="!showEditDiscount">
 <ng-container *ngIf="!showProductSelectionModal">
-  <div class="discount-management" (click)="hideAllMenus()">
-    <!-- Header -->
-      <div class="header" style="margin-top: -40px; padding-top: 20px;">
-      <div class="header-content">
-        <h1>Discount Management</h1>
-        <p>Create and manage promotional campaigns</p>
+  <!-- Clean Navigation Bar -->
+  <div class="navigation-bar mb-3">
+    <div class="nav-left">
+      <div class="nav-info">
+        <nav aria-label="breadcrumb" class="mb-1">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              <i class="fas fa-home me-1"></i>
+              <a href="/admin/dashboard" class="text-decoration-none">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item">
+              <i class="fas fa-percentage me-1"></i>
+              Discount Management
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Discounts</li>
+          </ol>
+        </nav>
+        <h1 class="nav-title">Discount Management</h1>
       </div>
-      <button class="create-btn" (click)="createDiscount()">
-        <span class="plus-icon">+</span>
-        Create Discount
-      </button>
     </div>
-
-      <!-- Combined Stats + Search + Filters Row -->
-      <div class="stats-search-filter-row" style="margin-top: -30px;" >
-           <!-- Search + Filters -->
-           <div class="search-filter-group">
-      <div class="search-container">
-        <div class="search-icon">🔍</div>
-        <input 
-          type="text"
-          class="search-input"
-          placeholder="Search discounts..."
-          [(ngModel)]="searchTerm"
-          (input)="onSearch()"
-        >
-      </div>
-      <div class="filter-buttons">
-        <button 
-          *ngFor="let filter of filterOptions"
-          class="filter-btn"
-          [class.active]="currentFilter === filter.key"
-          (click)="setFilter(filter.key)"
-        >
-          {{ filter.label }}
+    <div class="nav-right">
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-secondary btn-sm" (click)="loadDiscounts()" [disabled]="loading">
+          <i class="bi bi-arrow-clockwise me-1"></i>Refresh
         </button>
+        <button class="btn btn-primary btn-sm" (click)="createDiscount()">
+          <i class="bi bi-plus me-1"></i>Create Discount
+        </button>
+        <div class="dropdown">
+          <button class="btn btn-outline-secondary dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-download me-1"></i>Export
+          </button>
+          <ul class="dropdown-menu">
+            <li>
+              <a class="dropdown-item" href="javascript:void(0)" (click)="exportToPdf()">
+                <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Export PDF
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="javascript:void(0)" (click)="exportToExcel()">
+                <i class="bi bi-file-earmark-excel me-2 text-success"></i>Export Excel
+              </a>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
-        <!-- Stat Cards -->
-        <div class="stat-cards-group">
-          <div class="stat-card" style="width: 218px;">
-            <div class="stat-content">
-              <div class="stat-label">Active Discounts</div>
-              <div class="stat-value green">{{ activeDiscounts }}</div>
-            </div>
-            <div class="stat-indicator green"></div>
-          </div>
-         
-          <div class="stat-card">
-            <div class="stat-content">
-              <div class="stat-label">Total Offers</div>
-              <div class="stat-value purple">{{ totalMechanisms }}</div>
-            </div>
-            <div class="stat-indicator purple"></div>
-          </div>
-         
-        </div>
-     
-      </div>
+  </div>
 
-      <!-- Discount Table -->
-      <div class="discount-section" style="margin-top: -30px; ">
-        <div class="section-header" style="height: 50px;">
-          <h2>All Discounts</h2>
-         
-      </div>
-      
-      <div class="table-container" *ngIf="!loading; else loadingTemplate">
-        <table class="discount-table">
-          <thead>
-            <tr>
-                <th class="text-center" style="width: 48px;">No.</th>
-                <th class="sortable" style="width: 180px;" (click)="sortBy('name')">
-                <span>Discount Name</span>
-                <span class="sort-icon">↕️</span>
-              </th>
-                <th class="sortable" style="width: 120px;" (click)="sortBy('status')">
-                <span>Status</span>
-                <span class="sort-icon">↕️</span>
-              </th>
-                <th class="sortable" style="width: 160px;" (click)="sortBy('startDate')">
-                <span>Valid Period</span>
-                <span class="sort-icon">↕️</span>
-              </th>
-             
-                <th class="text-center" style="width: 80px;">Active</th>
-                <th class="text-center" style="width: 120px;">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr 
-                *ngFor="let discount of filteredDiscounts; let i = index; trackBy: trackByDiscountId"
-              class="discount-row"
-              [class.expired]="isExpired(discount)"
-              [class.inactive]="!isActive(discount) && !isExpired(discount)"
-              (click)="hideAllDropdowns(); hideAllMenus()"
-            >
-                <!-- No. -->
-                <td class="text-center">{{ i + 1 }}</td>
-              <!-- Discount Name & Description -->
-              <td class="discount-info">
-                <div class="discount-name">{{ discount.name }}</div>
-                <div class="discount-description" *ngIf="discount.description">
-                  {{ discount.description | slice:0:60 }}{{ discount.description && discount.description.length > 60 ? '...' : '' }}
+  <!-- Main Content -->
+  <div>
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+      <i class="fas fa-exclamation-triangle me-2"></i>{{ errorMessage }}
+      <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-section mb-3">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <div class="card stat-card">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="stat-icon bg-success">
+                  <i class="bi bi-check-circle"></i>
                 </div>
-              </td>
+                <div class="stat-content ms-3">
+                  <h6 class="stat-label">Active Discounts</h6>
+                  <h3 class="stat-value text-success">{{ activeDiscounts }}</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card stat-card">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="stat-icon bg-primary">
+                  <i class="bi bi-gift"></i>
+                </div>
+                <div class="stat-content ms-3">
+                  <h6 class="stat-label">Total Offers</h6>
+                  <h3 class="stat-value text-primary">{{ totalMechanisms }}</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card stat-card">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="stat-icon bg-info">
+                  <i class="bi bi-percent"></i>
+                </div>
+                <div class="stat-content ms-3">
+                  <h6 class="stat-label">Total Discounts</h6>
+                  <h3 class="stat-value text-info">{{ totalDiscounts }}</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card stat-card">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="stat-icon bg-warning">
+                  <i class="bi bi-graph-up"></i>
+                </div>
+                <div class="stat-content ms-3">
+                  <h6 class="stat-label">Avg. Discount</h6>
+                  <h3 class="stat-value text-warning">{{ averageDiscount }}%</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-              <!-- Status -->
-              <td>
-                <span 
-                  class="status-badge"
-                  [class.active]="isActive(discount)"
-                  [class.inactive]="!isActive(discount) && !isExpired(discount)"
-                  [class.expired]="isExpired(discount)"
-                >
-                  {{ isActive(discount) ? 'ACTIVE' : (isExpired(discount) ? 'EXPIRED' : 'INACTIVE') }}
+    <!-- Filter Controls Card -->
+    <div class="filter-section mb-3">
+      <div class="card">
+        <div class="card-header">
+          <div class="d-flex align-items-center justify-content-between">
+            <h6 class="card-title mb-0">
+              <i class="fas fa-filter me-2"></i>Filters & Search
+            </h6>
+            <button type="button" class="btn btn-link btn-sm text-muted p-0" (click)="resetFilters()"
+              *ngIf="currentFilter !== 'all' || searchTerm.trim()">
+              <i class="fas fa-times me-1"></i>Clear All
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <!-- Search -->
+            <div class="col-12 col-lg-4">
+              <label for="searchInput" class="form-label">Search</label>
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="fas fa-search text-muted"></i>
                 </span>
-              </td>
+                <input id="searchInput" type="text" class="form-control" [(ngModel)]="searchTerm"
+                  (input)="onSearch()" placeholder="Search by name, code...">
+              </div>
+            </div>
 
-              <!-- Valid Period -->
-              <td class="date-range">
-                  <div class="date-start"> <b>From</b> {{ formatDate(discount.startDate) }} <b>To</b> {{ formatDate(discount.endDate) }}</div>
-                  
-              </td>
+            <!-- Status Filter -->
+            <div class="col-6 col-lg-3">
+              <label for="statusFilter" class="form-label">Status</label>
+              <select id="statusFilter" class="form-select" [(ngModel)]="currentFilter" (change)="setFilter(currentFilter)">
+                <option value="all">All Discounts</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="expired">Expired</option>
+              </select>
+            </div>
 
-              
+            <!-- Sort Order -->
+            <div class="col-6 col-lg-3">
+              <label for="sortOrder" class="form-label">Sort By</label>
+              <select id="sortOrder" class="form-select" [(ngModel)]="sortField" (change)="sortBy(sortField)">
+                <option value="name">Name</option>
+                <option value="status">Status</option>
+                <option value="startDate">Start Date</option>
+                <option value="createdAt">Created Date</option>
+              </select>
+            </div>
 
-              <!-- Toggle Switch -->
-              <td class="text-center">
-                <label class="toggle-switch">
-                  <input 
-                    type="checkbox"
-                    [checked]="discount.isActive"
-                    (change)="toggleDiscountStatus(discount)"
-                  >
-                  <span class="toggle-slider"></span>
-                </label>
-              </td>
-
-              <!-- Actions -->
-              <td class="text-center">
-                <div class="action-buttons">
-                    <button class="icon-btn view-btn"  (click)="viewDiscountDetails(discount)" title="View Details">
-                      <i class="fas fa-eye"></i>
-                  </button>
-                    <button class="icon-btn edit-btn" (click)="editDiscount(discount)" title="Edit">
-                      <i class="fas fa-pen-to-square"></i>
-                  </button>
-                    <button class="icon-btn delete-btn"(click)="deleteDiscount(discount.id)" title="Delete">
-                      <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <ng-template #loadingTemplate>
-        <div class="loading-table">
-          <div class="loading-spinner"></div>
-          <p>Loading discounts...</p>
+            <!-- Items per page -->
+            <div class="col-6 col-lg-2">
+              <label for="pageSize" class="form-label">Show</label>
+              <select id="pageSize" class="form-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
+          </div>
         </div>
-      </ng-template>
+      </div>
+    </div>
 
-      <div class="empty-state" *ngIf="!loading && filteredDiscounts.length === 0">
-        <div class="empty-icon">📋</div>
-        <h3>No discounts found</h3>
-        <p>Try adjusting your search or filter criteria</p>
+    <!-- Data Table Card -->
+    <div class="data-section">
+      <div class="card">
+        <div class="card-header">
+          <div class="row align-items-center">
+            <div class="col">
+              <h6 class="card-title mb-1">
+                <i class="fas fa-list me-2"></i>All Discounts
+              </h6>
+              <small class="text-muted">
+                Showing {{ (page - 1) * pageSize + 1 }} to
+                {{ Math.min(page * pageSize, totalDiscounts) }} of {{ totalDiscounts }} entries
+                <span *ngIf="filteredDiscounts.length !== discounts.length">
+                  (filtered from {{ discounts.length }} total)
+                </span>
+              </small>
+            </div>
+            <div class="col-auto" *ngIf="!loading && totalDiscounts > pageSize">
+              <small class="text-muted">
+                Page {{ page }} of {{ Math.ceil(totalDiscounts / pageSize) }}
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body p-0">
+          <!-- Loading State -->
+          <div *ngIf="loading" class="loading-state">
+            <div class="d-flex flex-column align-items-center justify-content-center py-5">
+              <div class="spinner-border text-primary mb-3" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="text-muted mb-0">Loading discounts...</p>
+            </div>
+          </div>
+
+          <!-- Data Table -->
+          <div *ngIf="!loading" class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="text-center" style="width: 60px;">No.</th>
+                  <th class="sortable" (click)="sortBy('name')">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <span>Discount Name</span>
+                      <i class="fas ms-1" [class]="getSortIcon('name')"></i>
+                    </div>
+                  </th>
+                  <th class="sortable" (click)="sortBy('status')">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <span>Status</span>
+                      <i class="fas ms-1" [class]="getSortIcon('status')"></i>
+                    </div>
+                  </th>
+                  <th class="sortable d-none d-lg-table-cell" (click)="sortBy('startDate')">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <span>Valid Period</span>
+                      <i class="fas ms-1" [class]="getSortIcon('startDate')"></i>
+                    </div>
+                  </th>
+                  <th class="text-center" style="width: 100px;">Active</th>
+                  <th class="text-center" style="width: 120px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let discount of filteredDiscounts; let i = index; trackBy: trackByDiscountId" 
+                    class="table-row-hover"
+                    [class.expired]="isExpired(discount)"
+                    [class.inactive]="!isActive(discount) && !isExpired(discount)">
+                  <!-- No. -->
+                  <td class="text-center">
+                    <span class="badge bg-light text-dark">{{ i + 1 }}</span>
+                  </td>
+
+                  <!-- Discount Name & Description -->
+                  <td>
+                    <div class="discount-info">
+                      <div class="discount-name">{{ discount.name }}</div>
+                      <div class="discount-description" *ngIf="discount.description">
+                        {{ discount.description | slice:0:60 }}{{ discount.description && discount.description.length > 60 ? '...' : '' }}
+                      </div>
+                      <small class="text-muted" *ngIf="discount.code">
+                        <i class="bi bi-tag me-1"></i>{{ discount.code }}
+                      </small>
+                    </div>
+                  </td>
+
+                  <!-- Status -->
+                  <td>
+                    <span [class]="getStatusBadgeClass(discount)">
+                      <i [ngClass]="getStatusIcon(discount)" class="me-1"></i>
+                      {{ getStatusText(discount) }}
+                    </span>
+                  </td>
+
+                  <!-- Valid Period -->
+                  <td class="d-none d-lg-table-cell">
+                    <div class="date-info">
+                      <div class="text-dark">
+                        <i class="bi bi-calendar-event me-1"></i>{{ formatDate(discount.startDate) }}
+                      </div>
+                      <small class="text-muted">
+                        <i class="bi bi-calendar-check me-1"></i>{{ formatDate(discount.endDate) }}
+                      </small>
+                    </div>
+                  </td>
+
+                  <!-- Toggle Switch -->
+                  <td class="text-center">
+                    <div class="form-check form-switch d-flex justify-content-center">
+                      <input class="form-check-input" type="checkbox" 
+                        [checked]="discount.isActive"
+                        (change)="toggleDiscountStatus(discount)"
+                        [disabled]="isExpired(discount)">
+                    </div>
+                  </td>
+
+                  <!-- Actions -->
+                  <td class="text-center">
+                    <div class="btn-group" role="group">
+                      <button class="btn btn-outline-primary btn-sm" 
+                        (click)="viewDiscountDetails(discount)" title="View Details">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      <button class="btn btn-outline-warning btn-sm" 
+                        (click)="editDiscount(discount)" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button class="btn btn-outline-danger btn-sm"
+                        (click)="deleteDiscount(discount.id)" title="Delete">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="!loading && filteredDiscounts.length === 0" class="empty-state">
+            <div class="text-center py-5">
+              <div class="empty-icon mb-3">
+                <i class="bi bi-percent display-1 text-muted"></i>
+              </div>
+              <h5 class="text-muted mb-2">No discounts found</h5>
+              <p class="text-muted mb-3">
+                <span *ngIf="currentFilter !== 'all' || searchTerm.trim()">
+                  <i class="bi bi-funnel"></i> No discounts match your current filters. Try adjusting your search criteria.
+                </span>
+                <span *ngIf="currentFilter === 'all' && !searchTerm.trim()">
+                  <i class="bi bi-emoji-frown"></i> No discounts have been created yet.
+                </span>
+              </p>
+              <button class="btn btn-outline-primary" (click)="resetFilters()"
+                *ngIf="currentFilter !== 'all' || searchTerm.trim()">
+                <i class="bi bi-x-circle me-1"></i>Clear All Filters
+              </button>
+              <button class="btn btn-primary" (click)="createDiscount()"
+                *ngIf="currentFilter === 'all' && !searchTerm.trim()">
+                <i class="bi bi-plus me-1"></i>Create First Discount
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagination Footer -->
+        <div class="card-footer" *ngIf="!loading && totalDiscounts > pageSize">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="pagination-info">
+              <small class="text-muted">
+                Showing {{ (page - 1) * pageSize + 1 }} to
+                {{ Math.min(page * pageSize, totalDiscounts) }} of {{ totalDiscounts }} entries
+              </small>
+            </div>
+            <nav aria-label="Discounts pagination">
+              <ul class="pagination pagination-sm mb-0 custom-pagination">
+                <li class="page-item" [class.disabled]="page === 1">
+                  <button class="page-link" (click)="goToPreviousPage()" [disabled]="page === 1">
+                    <i class="fas fa-chevron-left"></i>
+                  </button>
+                </li>
+                <li *ngFor="let pageNum of getPageNumbers()" class="page-item" [class.active]="pageNum === page">
+                  <button class="page-link" (click)="goToPage(pageNum)">{{ pageNum }}</button>
+                </li>
+                <li class="page-item" [class.disabled]="page === Math.ceil(totalDiscounts / pageSize)">
+                  <button class="page-link" (click)="goToNextPage()" [disabled]="page === Math.ceil(totalDiscounts / pageSize)">
+                    <i class="fas fa-chevron-right"></i>
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -186,7 +399,7 @@
     (onProductsSelected)="onProductsSelected($event)"
     (onBack)="onProductSelectionBack()"
   ></app-product-selection>
-  </ng-container>
+</ng-container>
 </ng-container>
 
 <ng-container *ngIf="showEditDiscount">

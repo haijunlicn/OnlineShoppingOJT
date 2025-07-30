@@ -746,26 +746,23 @@ export class AdminOrdersControlComponent implements OnInit, OnDestroy {
   // Bulk Order Status Report Methods
   async exportBulkOrderStatusReport(format: 'pdf' | 'excel' = 'pdf') {
     try {
-      this.alertService.toast('Preparing bulk order status report...', 'info');
-      
-      // Get the orders to export (filtered or all)
-      const ordersToExport = this.filteredOrders.length !== this.orders.length ? this.filteredOrders : this.orders;
+      const ordersToExport = this.filteredOrders.length > 0 ? this.filteredOrders : this.orders;
       
       if (ordersToExport.length === 0) {
         this.alertService.toast('No orders to export', 'warning');
         return;
       }
 
-      // Prepare bulk order data
+      // Prepare detailed data for bulk report
       const bulkOrderData = await this.prepareBulkOrderStatusReportData(ordersToExport);
       
-      const isFiltered = this.filteredOrders.length !== this.orders.length;
-      const filename = `BulkOrderStatus_${isFiltered ? 'Filtered' : 'All'}_${ordersToExport.length}_${format === 'pdf' ? 'pdf' : 'xlsx'}`;
+      const filename = `BulkOrderStatusReport_${ordersToExport.length}_orders.${format === 'pdf' ? 'pdf' : 'xlsx'}`;
+      const title = `Bulk Order Status Report - ${ordersToExport.length} Orders`;
 
       if (format === 'pdf') {
-        await this.pdfExportService.exportBulkOrderStatusReport(bulkOrderData, filename, { isFiltered });
+        await this.pdfExportService.exportBulkOrderStatusReport(bulkOrderData, filename, { isFiltered: this.filteredOrders.length !== this.orders.length });
       } else {
-        await this.excelExportService.exportBulkOrderStatusReport(bulkOrderData, filename, { isFiltered });
+        await this.excelExportService.exportBulkOrderStatusReport(bulkOrderData, filename, { isFiltered: this.filteredOrders.length !== this.orders.length });
       }
 
       this.alertService.toast(`Bulk order status report exported successfully as ${format.toUpperCase()}`, 'success');
@@ -775,6 +772,27 @@ export class AdminOrdersControlComponent implements OnInit, OnDestroy {
     }
   }
 
+  exportSingleOrderToPdf(order: Order) {
+    const filename = `Order_${order.trackingNumber}.pdf`;
+    this.pdfExportService.exportTableToPdf(
+      [order],
+      this.orderExportColumns,
+      filename,
+      'Order Detail',
+      'order'
+    );
+  }
+
+  async exportSingleOrderToExcel(order: Order) {
+    const filename = `Order_${order.trackingNumber}.xlsx`;
+    await this.excelExportService.exportToExcel(
+      [order],
+      this.orderExportColumns,
+      filename,
+      'Order Detail',
+      'Order Detail'
+    );
+  }
 
 
   private async prepareBulkOrderStatusReportData(orders: Order[]): Promise<any[]> {

@@ -1,11 +1,24 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <div class="input-group" style="max-width: 300px;">
-    <span class="input-group-text bg-white border-end-0">
-      <i class="pi pi-search text-muted"></i>
-    </span>
-    <input type="text" class="form-control border-start-0" placeholder="Search brands..." [(ngModel)]="brandFilter"
-      (ngModelChange)="updateFilters()">
+  <div class="d-flex gap-3 align-items-center">
+    <div class="input-group" style="max-width: 300px;">
+      <span class="input-group-text bg-white border-end-0">
+        <i class="pi pi-search text-muted"></i>
+      </span>
+      <input type="text" class="form-control border-start-0" placeholder="Search brands..." [(ngModel)]="brandFilter"
+        (ngModelChange)="updateFilters()">
+    </div>
+    
+    <!-- Status Filter Dropdown -->
+    <div class="d-flex align-items-center gap-2">
+      <label class="form-label mb-0 text-muted small">Status:</label>
+      <select class="form-select" [(ngModel)]="statusFilter" (change)="updateFilters()" style="min-width: 120px;">
+        <option [ngValue]="null">All Statuses</option>
+        <option [ngValue]="1">Active</option>
+        <option [ngValue]="0">Inactive</option>
+      </select>
+    </div>
   </div>
+  
   <button pButton type="button" label="Add Brand" icon="pi pi-plus" class="p-button-success"
     (click)="openBrandDialog()"></button>
 </div>
@@ -24,7 +37,24 @@
             style="max-height: 80px; object-fit: contain;"
           />
         </div>
-        <h6 class="card-title mb-2">{{ brand.name }} ({{ brand.baseSku }})</h6>
+        <h6 class="card-title mb-2">{{ brand.name }}({{brand.baseSku}}) </h6>
+
+        <!-- Status Badge -->
+        <div class="mb-2">
+          <span 
+            class="badge" 
+            [class]="(brand.delFg ?? 1) === 1 ? 'bg-success' : 'bg-secondary'">
+            {{ (brand.delFg ?? 1) === 1 ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+
+        <!-- Product Count -->
+        <div class="mb-2">
+          <small class="text-muted">
+            <i class="pi pi-box me-1"></i>
+            {{ brand.productCount || 0 }} {{ (brand.productCount || 0) === 1 ? 'Product' : 'Products' }}
+          </small>
+        </div>
 
         <!-- Buttons -->
         <div class="d-flex justify-content-center gap-1">
@@ -44,9 +74,9 @@
             pButton
             pRipple
             type="button"
-            icon="pi pi-trash"
-            class="p-button-rounded p-button-text p-button-sm p-button-danger"
-            pTooltip="Delete"
+            [icon]="(brand.delFg ?? 1) === 1 ? 'pi pi-trash' : 'pi pi-refresh'"
+            [class]="(brand.delFg ?? 1) === 1 ? 'p-button-rounded p-button-text p-button-sm p-button-danger' : 'p-button-rounded p-button-text p-button-sm p-button-danger'"
+            [pTooltip]="(brand.delFg ?? 1) === 1 ? 'Deactivate' : 'Restore'"
             tooltipPosition="top"
             tooltipStyleClass="custom-tooltip"
             (click)="deleteBrand(brand)"
