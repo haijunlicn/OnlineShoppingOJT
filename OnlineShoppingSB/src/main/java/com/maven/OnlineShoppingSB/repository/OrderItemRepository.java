@@ -6,28 +6,43 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
 public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long> {
-     boolean existsByOrderUserIdAndVariantProductId(Long userId, Long productId);
-     
-     @Query("SELECT COUNT(oi) > 0 FROM OrderItemEntity oi " +
+    boolean existsByOrderUserIdAndVariantProductId(Long userId, Long productId);
+
+    @Query("SELECT COUNT(oi) > 0 FROM OrderItemEntity oi " +
             "WHERE oi.order.user.id = :userId " +
             "AND oi.variant.product.id = :productId " +
             "AND oi.order.currentStatus.code = :statusCode")
-     boolean existsByOrderUserIdAndVariantProductIdAndOrderStatus(
-         @Param("userId") Long userId, 
-         @Param("productId") Long productId, 
-         @Param("statusCode") String statusCode
-     );
+    boolean existsByOrderUserIdAndVariantProductIdAndOrderStatus(
+            @Param("userId") Long userId,
+            @Param("productId") Long productId,
+            @Param("statusCode") String statusCode
+    );
 
-     // Alternative method for debugging
-     @Query("SELECT oi FROM OrderItemEntity oi " +
+    // Alternative method for debugging
+    @Query("SELECT oi FROM OrderItemEntity oi " +
             "WHERE oi.order.user.id = :userId " +
             "AND oi.variant.product.id = :productId")
-     List<OrderItemEntity> findByOrderUserIdAndVariantProductId(
-         @Param("userId") Long userId, 
-         @Param("productId") Long productId
-     );
+    List<OrderItemEntity> findByOrderUserIdAndVariantProductId(
+            @Param("userId") Long userId,
+            @Param("productId") Long productId
+    );
+
+    @Query("""
+                SELECT COUNT(oi)
+                FROM OrderItemEntity oi
+                WHERE oi.variant.id = :variantId
+                  AND oi.order.createdDate >= :start
+                  AND oi.order.createdDate <= :end
+            """)
+    Long countOrdersForVariantInPeriod(
+            @Param("variantId") Long variantId,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
+
 }

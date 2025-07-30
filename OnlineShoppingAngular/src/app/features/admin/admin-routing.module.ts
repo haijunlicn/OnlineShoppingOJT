@@ -1,7 +1,6 @@
 import { Component, NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AdminLoginComponent } from './auth/admin-login/admin-login.component';
-import { DashboardComponent } from './dashboard/dashboard.component';
 import { ProductListComponent } from './product_management/product-list/product-list.component';
 import { OptionManagementComponent } from './attribute_management/option-management/option-management.component';
 import { CategoryManagementComponent } from './attribute_management/category-management/category-management.component';
@@ -44,7 +43,6 @@ import { RejectionReasonFormComponent } from './policy-management/rejection-reas
 import { RefundRequestListComponent } from './RefundManagement/refund-request-list/refund-request-list.component';
 import { RefundRequestDetailComponent } from './RefundManagement/refund-request-detail/refund-request-detail.component';
 import { PolicyUpdateComponent } from './policy-management/policy-update/policy-update.component';
-import { ChartTestingComponent } from './SaleAnalysis/chart-testing/chart-testing.component';
 import { AdminLayoutComponent } from './common/admin-layout/admin-layout.component';
 import { NotificationCreateComponent } from './notificationManagement/notification-create/notification-create.component';
 import { AdminNotificationListComponent } from './notificationManagement/admin-notification-list/admin-notification-list.component';
@@ -78,7 +76,7 @@ const routes: Routes = [
     component: AdminLayoutComponent,
     canActivate: [AdminAuthGuard], // shared guard
     children: [
-      { path: 'dashboard', component: DashboardComponent },
+      { path: 'dashboard', component: SaleAnalysisComponent },
       { path: 'productList', component: ProductListComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['PRODUCT_READ'], ['SUPERADMIN_PERMISSION']] } },
       { path: 'productCreate', component: ProductCreateComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['PRODUCT_CREATE'], ['SUPERADMIN_PERMISSION']] } },
       // { path: 'group', component: DiscountGroupComponent },
@@ -125,7 +123,6 @@ const routes: Routes = [
       { path: 'orderDetailAdmin/:id', component: AdminOrdersDetailComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
       { path: 'refundRequestList', component: RefundRequestListComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
       { path: 'refundRequestDetail/:id', component: RefundRequestDetailComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
-      { path: 'chartTesting', component: ChartTestingComponent },
       { path: 'answerqust', component: QuestionComponent },
       {
         path: 'productAttributes',

@@ -7,7 +7,6 @@ import { AdminLoginComponent } from './auth/admin-login/admin-login.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AdminHeaderComponent } from './common/admin-header/admin-header.component';
 import { AdminSidebarComponent } from './common/admin-sidebar/admin-sidebar.component';
-import { DashboardComponent } from './dashboard/dashboard.component';
 import { HeaderComponent } from './layout/header/header.component';
 import { FooterComponent } from './layout/footer/footer.component';
 import { SidebarComponent } from './layout/sidebar/sidebar.component';
@@ -78,7 +77,6 @@ import { RefundReasonListComponent } from './policy-management/refund-reason-lis
 import { RefundRequestListComponent } from './RefundManagement/refund-request-list/refund-request-list.component';
 import { RefundRequestDetailComponent } from './RefundManagement/refund-request-detail/refund-request-detail.component';
 import { PolicyUpdateComponent } from './policy-management/policy-update/policy-update.component';
-import { ChartTestingComponent } from './SaleAnalysis/chart-testing/chart-testing.component';
 import { AdminLayoutComponent } from './common/admin-layout/admin-layout.component';
 import { NotificationCreateComponent } from './notificationManagement/notification-create/notification-create.component';
 import { AdminNotificationBellComponent } from './notificationManagement/admin-notification-bell/admin-notification-bell.component';
@@ -102,6 +100,7 @@ import { UserViewDetailComponent } from './adminUserManagement/user-view-detail/
 import { AdminOrdersDetailComponent } from './adminOrderManagement/admin-orders-detail/admin-orders-detail.component';
 import { UserDetailListComponent } from './adminUserManagement/user-detail-list/user-detail-list.component';
 import { AuditLogModalComponent } from './auditLog/audit-log-modal/audit-log-modal.component';
+import { PriceHistoryModalComponent } from './product_management/price-history-modal/price-history-modal.component';
 
 @NgModule({
   declarations: [
@@ -109,7 +108,6 @@ import { AuditLogModalComponent } from './auditLog/audit-log-modal/audit-log-mod
     AdminLoginComponent,
     AdminHeaderComponent,
     AdminSidebarComponent,
-    DashboardComponent,
     HeaderComponent,
     FooterComponent,
     SidebarComponent,
@@ -160,7 +158,6 @@ import { AuditLogModalComponent } from './auditLog/audit-log-modal/audit-log-mod
     RefundRequestListComponent,
     RefundRequestDetailComponent,
     PolicyUpdateComponent,
-    ChartTestingComponent,
     AdminLayoutComponent,
     NotificationCreateComponent,
     AdminNotificationBellComponent,
@@ -183,7 +180,8 @@ import { AuditLogModalComponent } from './auditLog/audit-log-modal/audit-log-mod
     UserViewDetailComponent,
     UserDetailListComponent,
     AuditLogModalComponent,
-    UserDetailListComponent
+    UserDetailListComponent,
+    PriceHistoryModalComponent
   ],
   imports: [
     AdminRoutingModule,
