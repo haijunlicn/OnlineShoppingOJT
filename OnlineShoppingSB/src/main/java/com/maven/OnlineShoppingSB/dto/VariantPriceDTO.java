@@ -12,6 +12,7 @@ public class VariantPriceDTO {
     private BigDecimal price;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
+    private Long orderCount;
 
     public static VariantPriceDTO fromEntity(VariantPriceEntity entity) {
         if (entity == null) return null;

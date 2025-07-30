@@ -715,4 +715,18 @@ export class ProductDetailComponent implements OnInit {
 
     this.showAuditModal = true
   }
+
+  selectedVariantForPriceHistory?: ProductVariantDTO
+  showPriceHistoryModal = false
+
+  openPriceHistoryModal(variant: ProductVariantDTO): void {
+    this.selectedVariantForPriceHistory = variant
+    this.showPriceHistoryModal = true
+  }
+
+  closePriceHistoryModal(): void {
+    this.showPriceHistoryModal = false
+    this.selectedVariantForPriceHistory = undefined
+  }
+
 }
