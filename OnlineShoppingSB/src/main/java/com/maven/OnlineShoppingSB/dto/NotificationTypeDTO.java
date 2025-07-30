@@ -8,5 +8,6 @@ public class NotificationTypeDTO {
 	 	private Long id;
 	    private String name;
 	    private String titleTemplate;
+	    private String messageTemplate;
 	    private boolean adminOnly;
 }

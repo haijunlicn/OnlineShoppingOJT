@@ -165,7 +165,8 @@ public class OrderService {
         notificationService.notifyOrderPending(
                 user.getId(),
                 savedOrder.getId(),
-                BigDecimal.valueOf(savedOrder.getTotalAmount())
+                BigDecimal.valueOf(savedOrder.getTotalAmount()),
+                order.getTrackingNumber()
         );
         return savedOrder;
     }
@@ -260,6 +261,20 @@ public class OrderService {
             variantDto.setPrice(BigDecimal.valueOf(item.getPrice().doubleValue()));
             variantDto.setStock(item.getVariant().getStock());
             variantDto.setImgPath(item.getVariant().getImgPath());
+            // Set options from variantOptionValues
+            if (item.getVariant().getVariantOptionValues() != null && !item.getVariant().getVariantOptionValues().isEmpty()) {
+                List<VariantOptionDTO> optionDTOs = item.getVariant().getVariantOptionValues().stream()
+                    .map(vov -> {
+                        VariantOptionDTO vo = new VariantOptionDTO();
+                        vo.setOptionId(vov.getOptionValue().getOption().getId());
+                        vo.setOptionValueId(vov.getOptionValue().getId());
+                        vo.setOptionName(vov.getOptionValue().getOption().getName());
+                        vo.setValueName(vov.getOptionValue().getValue());
+                        return vo;
+                    })
+                    .collect(Collectors.toList());
+                variantDto.setOptions(optionDTOs);
+            }
             itemDto.setVariant(variantDto);
 
             // Convert product
@@ -335,6 +350,7 @@ public class OrderService {
     @Audit(action = "BULK_UPDATE_STATUS", entityType = "Order")
     @Transactional
     public List<OrderEntity> bulkUpdateOrderStatus(BulkOrderStatusUpdateRequest request) {
+        
         List<OrderEntity> updatedOrders = new ArrayList<>();
 
         for (Long orderId : request.getOrderIds()) {
@@ -359,7 +375,6 @@ public class OrderService {
                     }
                 }
             }
-
             // ✅ Create and add order status history
             OrderStatusHistoryEntity history = new OrderStatusHistoryEntity();
             history.setOrder(order);
@@ -378,7 +393,11 @@ public class OrderService {
 
             // *** Add notification call ***
             Long userId = savedOrder.getUser().getId(); // get order's user id
-            notificationService.notifyOrderStatusUpdate(userId, savedOrder.getId(), request.getStatusCode());
+         
+            System.out.println(userId);
+            System.out.println(savedOrder);
+            System.out.println(request.getStatusCode());
+            notificationService.notifyOrderStatusUpdate(userId, savedOrder.getId(), request.getStatusCode(),order.getTrackingNumber());
         }
 
         return updatedOrders;
@@ -416,8 +435,8 @@ public class OrderService {
             if (adminUser == null) throw new IllegalArgumentException("Admin user is required for payment rejection");
 
             Long userId = order.getUser().getId();
-
-            notificationService.notifyOrderStatusUpdate(userId, order.getId(), "ORDER_CANCELLED");
+    System.out.println("May_______________________________________________________________________ordercancelled");
+           //notificationService.notifyOrderStatusUpdate(userId, order.getId(), "ORDER_CANCELLED",order.getTrackingNumber());
 
             if (order.getPaymentStatus() != PaymentStatus.PENDING) {
                 throw new IllegalStateException("Only pending payments can be rejected.");
@@ -501,7 +520,8 @@ public class OrderService {
             Long userId = order.getUser().getId();
             Map<String, Object> metadata = new HashMap<>();
             metadata.put("orderId", order.getId());
-            notificationService.notify("ORDER_CONFIRMED", metadata, List.of(userId));
+           //notificationService.notify("ORDER_CONFIRMED", metadata, List.of(userId));
+            notificationService.notifyOrderStatusUpdate(userId,orderId,"ORDER_CONFIRMED",order.getTrackingNumber());
             //  notificationService.sendNamedNotification("ORDER_CONFIRMED", metadata, List.of(userId));
 
             OrderStatusHistoryEntity history = new OrderStatusHistoryEntity();

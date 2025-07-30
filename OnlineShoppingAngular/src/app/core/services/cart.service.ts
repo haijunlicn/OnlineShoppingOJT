@@ -35,6 +35,23 @@ export class CartService {
 
   // ---------- Full cart with discounts stored in localStorage ----------
 
+  private safeGetCartItemsOnly(): CartItemWithDiscounts[] {
+    try {
+      const fullCart = this.getFullCart();
+      if (!fullCart || !Array.isArray(fullCart.cartItems)) return [];
+      return fullCart.cartItems.map(item => ({
+        ...item,
+        originalPrice: item.originalPrice ?? item.price,
+        discountedPrice: item.discountedPrice ?? item.price,
+        appliedDiscounts: item.appliedDiscounts ?? [],
+        discountBreakdown: item.discountBreakdown ?? [],
+      }));
+    } catch (e) {
+      console.error("Failed to read cart items:", e);
+      return [];
+    }
+  }
+  
   getFullCart(): FullCartData | null {
     if (!this.storageKey) return null
     const raw = localStorage.getItem(this.storageKey)
@@ -45,7 +62,19 @@ export class CartService {
     } catch {
       return null
     }
-  }
+  }  
+
+  // getFullCart(): FullCartData | null {
+  //   if (!this.storageKey) return null;
+  //   const raw = localStorage.getItem(this.storageKey);
+  //   if (!raw) return null;
+
+  //   try {
+  //     return JSON.parse(raw) as FullCartData;
+  //   } catch {
+  //     return null;
+  //   }
+  // }
 
   setFullCart(data: FullCartData): void {
     if (!this.storageKey) return
@@ -74,6 +103,20 @@ export class CartService {
       discountBreakdown: item.discountBreakdown ?? [],
     }));
   }
+  
+
+  // getCartItemsOnly(): CartItemWithDiscounts[] {
+  //   const fullCart = this.getFullCart();
+  //   if (!fullCart) return [];
+
+  //   return fullCart.cartItems.map(item => ({
+  //     ...item,
+  //     originalPrice: item.originalPrice ?? item.price,
+  //     discountedPrice: item.discountedPrice ?? item.price,
+  //     appliedDiscounts: item.appliedDiscounts ?? [],
+  //     discountBreakdown: item.discountBreakdown ?? [],
+  //   }));
+  // }
 
   // getCartItemsOnly(): CartItemWithDiscounts[] {
   //   const fullCart = this.getFullCart()
@@ -283,6 +326,13 @@ export class CartService {
     if (!fullCart || !fullCart.cartItems) return 0;
     return fullCart.cartItems.reduce((sum, i) => sum + (i.quantity ?? 0), 0);
   }
+  
+
+  // private calcCount(): number {
+  //   const fullCart = this.getFullCart();
+  //   if (!fullCart) return 0;
+  //   return fullCart.cartItems.reduce((sum, i) => sum + i.quantity, 0);
+  // }
 
   // private calcCount(): number {
   //   const fullCart = this.getFullCart()
@@ -315,6 +365,7 @@ export class CartService {
   }
 
   getCart(): CartItem[] {
+    console.log("May------------------------getCart",this.getCartItemsOnly());
     return this.getCartItemsOnly().map((item) => ({
       productId: item.productId,
       productName: item.productName,

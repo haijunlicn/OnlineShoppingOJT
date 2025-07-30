@@ -95,10 +95,12 @@ import { NewCreateDiscountComponent } from './discount_management/new-create-dis
 import { NewDiscountRulesComponent } from './discount_management/new-discount-rules/new-discount-rules.component';
 import { NewProductSelectionComponent } from './discount_management/new-product-selection/new-product-selection.component';
 import { QuestionComponent } from './QuestionManagement/question/question.component';
+import { NewEditDiscountComponent } from './discount_management/new-edit-discount/new-edit-discount.component';
 import { AdminAccountListComponent } from './roleAndPermission/admin-account-list/admin-account-list.component';
 import { UserViewDetailComponent } from './adminUserManagement/user-view-detail/user-view-detail.component';
 import { AdminOrdersDetailComponent } from './adminOrderManagement/admin-orders-detail/admin-orders-detail.component';
 import { UserDetailListComponent } from './adminUserManagement/user-detail-list/user-detail-list.component';
+
 import { AuditLogModalComponent } from './auditLog/audit-log-modal/audit-log-modal.component';
 import { PriceHistoryModalComponent } from './product_management/price-history-modal/price-history-modal.component';
 
@@ -176,9 +178,12 @@ import { PriceHistoryModalComponent } from './product_management/price-history-m
     NewDiscountRulesComponent,
     NewProductSelectionComponent,
     QuestionComponent,
+    NewEditDiscountComponent,
     AdminAccountListComponent,
     UserViewDetailComponent,
     UserDetailListComponent,
+   
+
     AuditLogModalComponent,
     UserDetailListComponent,
     PriceHistoryModalComponent

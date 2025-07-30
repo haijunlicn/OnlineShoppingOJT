@@ -63,6 +63,7 @@ import { AdminAccountListComponent } from './roleAndPermission/admin-account-lis
 import { UserDetailListComponent } from './adminUserManagement/user-detail-list/user-detail-list.component';
 import { UserViewDetailComponent } from './adminUserManagement/user-view-detail/user-view-detail.component';
 
+
 const routes: Routes = [
   {
     path: 'login',
@@ -81,10 +82,10 @@ const routes: Routes = [
       { path: 'productCreate', component: ProductCreateComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['PRODUCT_CREATE'], ['SUPERADMIN_PERMISSION']] } },
       // { path: 'group', component: DiscountGroupComponent },
       { path: 'policy/policy-create', component: PolicyCreateComponent },
-      { path: 'policy/policy-list', component: PolicyListComponent },
+      { path: 'policy/policy-list', component: PolicyListComponent,canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
       { path: 'policy/policy-update', component: PolicyUpdateComponent },
       { path: 'policy/faq-create', component: FaqCreateComponent },
-      { path: 'policy/faq-list', component: FaqListComponent },
+      { path: 'policy/faq-list', component: FaqListComponent ,canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
       { path: 'policy/faq-update', component: FaqUpdateComponent },
       { path: 'role-list', component: RoleListComponent },
       { path: 'role-form', component: RoleFormComponent },
@@ -93,12 +94,12 @@ const routes: Routes = [
       { path: 'permission-list', component: PermissionListComponent },
       { path: 'permission-update/:id', component: PermissionUpdateComponent },
       { path: 'payment-create', component: PaymentCreateComponent },
-      { path: 'payment-list', component: PaymentListComponent },
+      { path: 'payment-list', component: PaymentListComponent ,canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
       { path: 'payment-update/:id', component: PaymentUpdateComponent },
       {
   path: 'delivery-method-list',
-  component: DeliveryMethodListComponent
-},
+  component: DeliveryMethodListComponent,canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
+
 {
   path: 'delivery-method-create',
   component: CreateDeliveryMethodComponent
@@ -117,8 +118,8 @@ const routes: Routes = [
       { path: 'product/:id', component: ProductDetailComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['PRODUCT_READ'], ['SUPERADMIN_PERMISSION']] } },
       { path: 'product/edit/:id', component: ProductEditComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['PRODUCT_UPDATE'], ['SUPERADMIN_PERMISSION']] } },
       { path: 'account/create', component: AdminAccountCreateComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['ADMIN_USER_MANAGE'], ['SUPERADMIN_PERMISSION']] } },
+      { path: 'storelocation', component: StoreAddressComponent , canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
       { path: 'account/list', component: AdminAccountListComponent , canActivate:[PermissionGuard], data:{permissionGroups:[['ADMIN_USER_MANAGE'], ['SUPERADMIN_PERMISSION']] } },
-      { path: 'storelocation', component: StoreAddressComponent },
       { path: 'AdminOrder', component: AdminOrdersControlComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
       { path: 'orderDetailAdmin/:id', component: AdminOrdersDetailComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
       { path: 'refundRequestList', component: RefundRequestListComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['SUPERADMIN_PERMISSION']] } },
@@ -152,6 +153,7 @@ const routes: Routes = [
       { path: 'blogcreate', component: VlogCreateComponent },
       {path:'userList',component:UserDetailListComponent},
       {path:'user-view-detail/:id', component:UserViewDetailComponent}
+
 
     ]
   }

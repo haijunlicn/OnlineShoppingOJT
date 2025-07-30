@@ -47,6 +47,21 @@ public class ProductVariantDTO {
                     .ifPresent(activePrice -> dto.setPrice(activePrice.getPrice()));
         }
 
+        // Set options from variantOptionValues
+        if (entity.getVariantOptionValues() != null && !entity.getVariantOptionValues().isEmpty()) {
+            List<VariantOptionDTO> optionDTOs = entity.getVariantOptionValues().stream()
+                .map(vov -> {
+                    VariantOptionDTO vo = new VariantOptionDTO();
+                    vo.setOptionId(vov.getOptionValue().getOption().getId());
+                    vo.setOptionValueId(vov.getOptionValue().getId());
+                    vo.setOptionName(vov.getOptionValue().getOption().getName());
+                    vo.setValueName(vov.getOptionValue().getValue());
+                    return vo;
+                })
+                .collect(Collectors.toList());
+            dto.setOptions(optionDTOs);
+        }
+
         return dto;
     }
 

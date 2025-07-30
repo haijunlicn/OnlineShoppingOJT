@@ -22,6 +22,9 @@ export class VlogService {
     return this.http.get<VlogDTO[]>(`${this.baseUrl}/list`);
   }
 
+  PublicgetAllVlogs(): Observable<VlogDTO[]> {
+    return this.http.get<VlogDTO[]>(`${this.baseUrl}/Public/list`);
+  }
   // Get vlog by id
   getById(id: number): Observable<VlogDTO> {
     return this.http.get<VlogDTO>(`${this.baseUrl}/getbyid/${id}`);

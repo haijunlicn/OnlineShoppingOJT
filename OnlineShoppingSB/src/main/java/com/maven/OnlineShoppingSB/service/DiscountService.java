@@ -212,117 +212,180 @@ public class DiscountService {
         return mapToDto(entity, true);
     }
 
-    // UPDATE
-    public DiscountES_A updateDiscount(Integer id, DiscountES_A dto) {
-        DiscountEntity entity = discountRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Not found"));
 
-        // Update simple fields
-        entity.setName(dto.getName());
-        entity.setType(dto.getType());
-        entity.setCode(dto.getCode());
-        entity.setDescription(dto.getDescription());
-        entity.setDelFg(dto.getDelFg());
-        entity.setCreatedDate(dto.getCreatedDate());
-        entity.setEndDate(dto.getEndDate());
-        entity.setImgUrl(dto.getImgUrl());
-        entity.setIsActive(dto.getIsActive());
-        entity.setCurrentRedemptionCount(dto.getCurrentRedemptionCount());
 
-        // --- Handle children: Mechanisms ---
-        // 1. Remove old mechanisms (and cascade children)
+    public DiscountES_A updateDiscount(DiscountES_A dto) {
+        DiscountEntity entity = discountRepository.findById(dto.getId())
+                .orElseThrow(() -> new RuntimeException("Discount not found"));
+
+        // Update discount main fields
+        updateMainFields(entity, dto);
+
+        // Clear existing mechanisms (orphans will be removed due to orphanRemoval=true)
         if (entity.getDiscountMechanisms() != null) {
             entity.getDiscountMechanisms().clear();
         }
 
-        // 2. Add new mechanisms from DTO (with children)
-        if (dto.getDiscountMechanisms() != null) {
-            List<DiscountMechanismEntity> mechanismEntities = new ArrayList<>();
-            for (DiscountMechanismES_B mechDto : dto.getDiscountMechanisms()) {
-                DiscountMechanismEntity mechEntity = new DiscountMechanismEntity();
-                mechEntity.setMechanismType(mechDto.getMechanismType());
-                mechEntity.setQuantity(mechDto.getQuantity());
-                mechEntity.setServiceDiscount(mechDto.getServiceDiscount());
-                mechEntity.setDiscountType(mechDto.getDiscountType());
-                mechEntity.setValue(mechDto.getValue());
-                mechEntity.setMaxDiscountAmount(mechDto.getMaxDiscountAmount());
-                mechEntity.setCouponcode(mechDto.getCouponcode()); // Add Couponcode field
-                mechEntity.setDelFg(mechDto.getDelFg());
-                mechEntity.setCreatedDate(mechDto.getCreatedDate());
-                mechEntity.setUpdatedDate(mechDto.getUpdatedDate());
-                mechEntity.setDiscount(entity); // set parent
+        // Convert new mechanisms from DTO
+        List<DiscountMechanismEntity> newMechanisms = dto.getDiscountMechanisms().stream()
+                .map(mechDto -> mapToMechanismEntity(mechDto, entity))
+                .collect(Collectors.toList());
 
-                // --- Discount Products ---
-                if (mechDto.getDiscountProducts() != null) {
-                    List<DiscountProductEntity> productEntities = new ArrayList<>();
-                    for (DiscountProductES_E prodDto : mechDto.getDiscountProducts()) {
-                        DiscountProductEntity prodEntity = new DiscountProductEntity();
-                        ProductEntity product = productRepository.findById(prodDto.getProductId())
-                                .orElseThrow(() -> new RuntimeException("Product not found: " + prodDto.getProductId()));
-                        prodEntity.setProduct(product);
-                        prodEntity.setDiscountMechanism(mechEntity);
-                        productEntities.add(prodEntity);
-                    }
-                    mechEntity.setDiscountProducts(productEntities);
-                }
+        // Persist mechanisms first (especially if cascade doesn’t handle persist well)
+        mechanismRepository.saveAll(newMechanisms);
 
-                // --- Free Gifts ---
-                if (mechDto.getFreeGifts() != null) {
-                    List<FreeGiftEntity> giftEntities = new ArrayList<>();
-                    for (FreeGiftES_F giftDto : mechDto.getFreeGifts()) {
-                        FreeGiftEntity giftEntity = new FreeGiftEntity();
-                        ProductEntity product = productRepository.findById(giftDto.getProductId())
-                                .orElseThrow(() -> new RuntimeException("Product not found: " + giftDto.getProductId()));
-                        giftEntity.setProduct(product);
-                        giftEntity.setMechanism(mechEntity);
-                        giftEntities.add(giftEntity);
-                    }
-                    mechEntity.setFreeGifts(giftEntities);
-                }
-
-                // --- Condition Groups ---
-                if (mechDto.getDiscountConditionGroup() != null) {
-                    List<DiscountConditionGroupEntity> groupEntities = new ArrayList<>();
-                    for (DiscountConditionGroupES_C groupDto : mechDto.getDiscountConditionGroup()) {
-                        DiscountConditionGroupEntity groupEntity = new DiscountConditionGroupEntity();
-                        groupEntity.setLogicOperator(groupDto.getLogicOperator());
-                        groupEntity.setDiscountMechanism(mechEntity);
-
-                        // --- Conditions ---
-                        if (groupDto.getDiscountCondition() != null) {
-                            List<DiscountConditionEntity> condEntities = new ArrayList<>();
-                            for (DiscountConditionES_D condDto : groupDto.getDiscountCondition()) {
-                                DiscountConditionEntity condEntity = new DiscountConditionEntity();
-                                condEntity.setConditionType(condDto.getConditionType());
-                                condEntity.setConditionDetail(condDto.getConditionDetail());
-                                condEntity.setDelFg(condDto.getDelFg());
-                                condEntity.setCreatedDate(condDto.getCreatedDate());
-                                condEntity.setUpdatedDate(condDto.getUpdatedDate());
-                                condEntity.setOperator(condDto.getOperator());
-                                try {
-                                    ObjectMapper mapper = new ObjectMapper();
-                                    condEntity.setValue(mapper.writeValueAsString(condDto.getValue())); // String[] → JSON string
-                                } catch (Exception e) {
-                                    condEntity.setValue("[]"); // fallback to empty array
-                                }
-                                condEntity.setDiscountConditionGroup(groupEntity);
-                                condEntities.add(condEntity);
-                            }
-                            groupEntity.setDiscountCondition(condEntities);
-                        }
-                        groupEntities.add(groupEntity);
-                    }
-                    mechEntity.setDiscountConditionGroup(groupEntities);
-                }
-                mechanismEntities.add(mechEntity);
-            }
-            entity.setDiscountMechanisms(mechanismEntities);
-        }
+        // Add mechanisms to discount
+        entity.getDiscountMechanisms().addAll(newMechanisms);
 
         // Save and return DTO
         DiscountEntity saved = discountRepository.save(entity);
         return mapToDto(saved, true);
     }
+
+    private void updateMainFields(DiscountEntity entity, DiscountES_A dto) {
+        entity.setName(dto.getName());
+        entity.setDescription(dto.getDescription());
+        entity.setStartDate(dto.getStartDate());
+        entity.setEndDate(dto.getEndDate());
+        entity.setIsActive(dto.getIsActive());
+        entity.setType(dto.getType());
+        entity.setCode(dto.getCode());
+        entity.setImgUrl(dto.getImgUrl());
+        entity.setDelFg(dto.getDelFg());
+    }
+    private DiscountMechanismEntity mapToMechanismEntity(DiscountMechanismES_B dto, DiscountEntity parent) {
+        DiscountMechanismEntity mech = new DiscountMechanismEntity();
+        mech.setMechanismType(dto.getMechanismType());
+        mech.setQuantity(dto.getQuantity());
+        mech.setServiceDiscount(dto.getServiceDiscount());
+        mech.setDiscountType(dto.getDiscountType());
+        mech.setValue(dto.getValue());
+        mech.setMaxDiscountAmount(dto.getMaxDiscountAmount());
+        mech.setCouponcode(dto.getCouponcode());
+        mech.setDelFg(dto.getDelFg());
+        mech.setCreatedDate(LocalDateTime.now());
+        mech.setUpdatedDate(LocalDateTime.now());
+        mech.setDiscount(parent);
+        mech.setUsageLimitTotal(dto.getUsageLimitTotal());
+        mech.setUsageLimitPerUser(dto.getUsageLimitPerUser());
+
+        // Products
+        if (dto.getDiscountProducts() != null) {
+            List<DiscountProductEntity> products = dto.getDiscountProducts().stream().map(prodDto -> {
+                ProductEntity product = productRepository.findById(prodDto.getProductId())
+                        .orElseThrow(() -> new RuntimeException("Product not found: " + prodDto.getProductId()));
+                DiscountProductEntity prod = new DiscountProductEntity();
+                prod.setProduct(product);
+                prod.setDiscountMechanism(mech);
+                return prod;
+            }).collect(Collectors.toList());
+            mech.setDiscountProducts(products);
+        }
+
+        // Free Gifts
+        if (dto.getFreeGifts() != null) {
+            List<FreeGiftEntity> gifts = dto.getFreeGifts().stream().map(giftDto -> {
+                ProductEntity product = productRepository.findById(giftDto.getProductId())
+                        .orElseThrow(() -> new RuntimeException("Product not found: " + giftDto.getProductId()));
+                FreeGiftEntity gift = new FreeGiftEntity();
+                gift.setProduct(product);
+                gift.setMechanism(mech);
+                return gift;
+            }).collect(Collectors.toList());
+            mech.setFreeGifts(gifts);
+        }
+
+        // Condition Groups
+        if (dto.getDiscountConditionGroup() != null) {
+            List<DiscountConditionGroupEntity> groups = dto.getDiscountConditionGroup().stream().map(groupDto -> {
+                DiscountConditionGroupEntity group = new DiscountConditionGroupEntity();
+                group.setLogicOperator(parseLogicOperator(groupDto.getLogicOperator()));
+                group.setDiscountMechanism(mech);
+
+                if (groupDto.getDiscountCondition() != null) {
+                    List<DiscountConditionEntity> conditions = groupDto.getDiscountCondition().stream().map(condDto -> {
+                        DiscountConditionEntity cond = new DiscountConditionEntity();
+                        cond.setConditionType(condDto.getConditionType());
+                        cond.setConditionDetail(condDto.getConditionDetail());
+                        cond.setDelFg(condDto.getDelFg());
+                        cond.setCreatedDate(condDto.getCreatedDate());
+                        cond.setUpdatedDate(condDto.getUpdatedDate());
+                        cond.setOperator(condDto.getOperator());
+                        cond.setValue(parseConditionValue(condDto.getValue()));
+                        cond.setDiscountConditionGroup(group);
+                        return cond;
+                    }).collect(Collectors.toList());
+                    group.setDiscountCondition(conditions);
+                }
+
+                return group;
+            }).collect(Collectors.toList());
+            mech.setDiscountConditionGroup(groups);
+        }
+
+        return mech;
+    }
+
+    // 🔧 FIX: Add missing parseConditionValue method
+    private String parseConditionValue(Object value) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            List<Object> normalized = new ArrayList<>();
+
+            if (value instanceof String[]) {
+                // Handle String array
+                for (String s : (String[]) value) {
+                    for (String part : s.split(",")) {
+                        String trimmed = part.trim();
+                        if (trimmed.matches("-?\\d+")) {
+                            normalized.add(Integer.parseInt(trimmed));
+                        } else if (trimmed.equalsIgnoreCase("true") || trimmed.equalsIgnoreCase("false")) {
+                            normalized.add(Boolean.parseBoolean(trimmed));
+                        } else {
+                            normalized.add(trimmed);
+                        }
+                    }
+                }
+            } else if (value instanceof List) {
+                // Handle List
+                List<?> list = (List<?>) value;
+                for (Object val : list) {
+                    String s = val.toString().trim();
+                    if (s.matches("-?\\d+")) {
+                        normalized.add(Integer.parseInt(s));
+                    } else if (s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false")) {
+                        normalized.add(Boolean.parseBoolean(s));
+                    } else {
+                        normalized.add(s);
+                    }
+                }
+            } else {
+                // Handle single value
+                normalized.add(value);
+            }
+
+            return mapper.writeValueAsString(normalized);
+        } catch (Exception e) {
+            return "[]"; // fallback to empty array
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public void updateDiscountStatus(Integer id, Boolean isActive) {
         DiscountEntity entity = discountRepository.findById(id)

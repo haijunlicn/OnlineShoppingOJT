@@ -22,6 +22,7 @@ export class CategoryManagementComponent implements OnInit {
   filteredCategoryTree: TreeNode[] = []
   categoryDropdown: any[] = []
   categoryFilter = ""
+  statusFilter: number | null = null
   isAddingSubcategory = false
   selectedParentDropdown: any[] = []
   expandedCategories: Set<number> = new Set()
@@ -61,10 +62,22 @@ export class CategoryManagementComponent implements OnInit {
   }
 
   updateFilters(): void {
+    // First filter by status
+    let statusFilteredCategories = this.categories;
+    if (this.statusFilter !== null) {
+      statusFilteredCategories = this.categories.filter(category => 
+        (category.delFg ?? 1) === this.statusFilter
+      );
+    }
+
+    // Then filter by search text
     if (this.categoryFilter.trim() === "") {
-      this.filteredCategoryTree = [...this.categoryTree]
+      this.filteredCategoryTree = this.buildFilteredTree(statusFilteredCategories);
     } else {
-      this.filteredCategoryTree = this.filterCategoryTree(this.categoryTree, this.categoryFilter.toLowerCase())
+      this.filteredCategoryTree = this.filterCategoryTree(
+        this.buildFilteredTree(statusFilteredCategories), 
+        this.categoryFilter.toLowerCase()
+      );
     }
   }
 
@@ -87,11 +100,11 @@ export class CategoryManagementComponent implements OnInit {
       })
   }
 
-  buildCategoryTree(): void {
+  buildFilteredTree(categories: CategoryDTO[]): TreeNode[] {
     const categoryMap = new Map<number, TreeNode>()
 
     // Create tree nodes
-    this.categories.forEach((category, i) => {
+    categories.forEach((category, i) => {
       if (!category.id) {
         console.log(`Category at index ${i} is missing an ID:`, category)
       }
@@ -104,8 +117,8 @@ export class CategoryManagementComponent implements OnInit {
     })
 
     // Build hierarchy
-    this.categoryTree = []
-    this.categories.forEach((category) => {
+    const tree: TreeNode[] = []
+    categories.forEach((category) => {
       const node = categoryMap.get(category.id!)!
       if (category.parentCategoryId != null) {
         const parent = categoryMap.get(category.parentCategoryId)
@@ -113,21 +126,23 @@ export class CategoryManagementComponent implements OnInit {
           parent.children!.push(node)
         }
       } else {
-        this.categoryTree.push(node)
+        tree.push(node)
       }
     })
 
-    // Initialize filtered tree
-    this.filteredCategoryTree = [...this.categoryTree]
-    this.updateFilters()
+    return tree
+  }
 
+  buildCategoryTree(): void {
+    this.categoryTree = this.buildFilteredTree(this.categories);
+    this.updateFilters();
     console.log("categories : ", this.categories)
   }
 
   loadCategories(): void {
     this.loadingCategories = true;
 
-    this.categoryService.getAllCategoriesWithOptions().subscribe({
+    this.categoryService.getAllCategoriesWithStatus().subscribe({
       next: (categories: CategoryDTO[]) => {
         this.categories = categories;
 
@@ -147,7 +162,7 @@ export class CategoryManagementComponent implements OnInit {
 
       },
       error: (error) => {
-        console.error("Error loading categories with options:", error);
+        console.error("Error loading categories with status:", error);
         this.loadingCategories = false;
       }
     });
@@ -175,7 +190,13 @@ export class CategoryManagementComponent implements OnInit {
 
   // Helper methods for the new compact view
   getRootCategories(): CategoryDTO[] {
-    const filtered = this.categories.filter((cat) => !cat.parentCategoryId)
+    let filtered = this.categories.filter((cat) => !cat.parentCategoryId)
+    
+    // Apply status filter
+    if (this.statusFilter !== null) {
+      filtered = filtered.filter(category => (category.delFg ?? 1) === this.statusFilter);
+    }
+    
     if (this.categoryFilter.trim() === "") {
       return filtered
     }
@@ -183,10 +204,15 @@ export class CategoryManagementComponent implements OnInit {
   }
 
   getDirectSubcategories(parentId: number): CategoryDTO[] {
-    const subcategories = this.categories.filter((cat) => cat.parentCategoryId === parentId)
+    let subcategories = this.categories.filter((cat) => cat.parentCategoryId === parentId)
+    
+    // Apply status filter
+    if (this.statusFilter !== null) {
+      subcategories = subcategories.filter(category => (category.delFg ?? 1) === this.statusFilter);
+    }
+    
     if (this.categoryFilter.trim() === "") {
       console.log("subs for id " + parentId + " are : ", subcategories)
-
       return subcategories
     }
     return subcategories.filter((cat) => this.categoryMatchesFilter(cat))
@@ -295,17 +321,33 @@ export class CategoryManagementComponent implements OnInit {
   }
 
   deleteCategory(category: CategoryDTO): void {
-    if (confirm(`Are you sure you want to delete the category "${category.name}"?`)) {
+    const isCurrentlyActive = (category.delFg ?? 1) === 1;
+    const actionText = isCurrentlyActive ? 'deactivate' : 'restore';
+    const confirmMessage = isCurrentlyActive 
+      ? `Are you sure you want to deactivate the category "${category.name}"?`
+      : `Are you sure you want to restore the category "${category.name}" to active status?`;
+
+    if (confirm(confirmMessage)) {
       this.categoryService.deleteCategory(category.id!).subscribe({
         next: () => {
-          this.categories = this.categories.filter((c) => c.id !== category.id)
-          this.buildCategoryTree()
-          this.updateCategoryDropdowns()
+          const successMessage = isCurrentlyActive 
+            ? `"${category.name}" has been deactivated.`
+            : `"${category.name}" has been restored to active status.`;
+          alert(successMessage);
+          
+          // Update the local category status
+          category.delFg = isCurrentlyActive ? 0 : 1;
+          
+          // Rebuild the tree to reflect the status change
+          this.buildCategoryTree();
+          this.updateCategoryDropdowns();
         },
         error: (error) => {
-          console.error("Error deleting category:", error)
+          console.error("Error updating category status:", error);
           if (error.status === 400) {
-            alert("Cannot delete category. It may have subcategories or products associated with it.")
+            alert("Cannot update category. It may have subcategories or products associated with it.");
+          } else {
+            alert("Failed to update category status.");
           }
         },
       })
@@ -331,6 +373,10 @@ export class CategoryManagementComponent implements OnInit {
   showCategoryMenu(event: MouseEvent, category: CategoryDTO): void {
     this.selectedCategoryForMenu = category
 
+    const isCurrentlyActive = (category.delFg ?? 1) === 1;
+    const statusActionLabel = isCurrentlyActive ? 'Deactivate' : 'Restore';
+    const statusActionIcon = isCurrentlyActive ? 'pi pi-times' : 'pi pi-refresh';
+
     this.categoryMenuItems = [
       {
         label: "Add Subcategory",
@@ -351,8 +397,8 @@ export class CategoryManagementComponent implements OnInit {
         styleClass: "menu-item menu-item-editCategory",
       },
       {
-        label: "Delete",
-        icon: "pi pi-trash",
+        label: statusActionLabel,
+        icon: statusActionIcon,
         command: () => this.deleteCategory(category),
         styleClass: "menu-item menu-item-deleteCategory",
       },

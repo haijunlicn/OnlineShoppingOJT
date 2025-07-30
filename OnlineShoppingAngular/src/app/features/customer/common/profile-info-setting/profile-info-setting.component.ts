@@ -27,6 +27,40 @@ export class ProfileInfoSettingComponent implements OnInit {
   passwordStrength = 0;
   confirmPasswordTouched = false;
 
+  // For profile photo dropdown
+  showPhotoMenu = false;
+
+  togglePhotoMenu(event: MouseEvent) {
+    event.stopPropagation();
+    this.showPhotoMenu = !this.showPhotoMenu;
+    if (this.showPhotoMenu) {
+      setTimeout(() => {
+        window.addEventListener('click', this.closePhotoMenuOnOutsideClick);
+      });
+    }
+  }
+
+  closePhotoMenuOnOutsideClick = () => {
+    this.showPhotoMenu = false;
+    window.removeEventListener('click', this.closePhotoMenuOnOutsideClick);
+  };
+
+  onEditPhoto() {
+    this.showPhotoMenu = false;
+    const fileInput = document.getElementById('photo-input') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
+  }
+
+  onRemovePhoto() {
+    this.showPhotoMenu = false;
+    if (this.currentUser) {
+      this.currentUser.profile = '';
+      this.onProfileSubmit();
+    }
+  }
+
   passwordRequirements = [
     { label: "At least 8 characters", test: (pwd: string) => pwd.length >= 8 },
     { label: "Contains uppercase letter", test: (pwd: string) => /[A-Z]/.test(pwd) },
@@ -76,6 +110,12 @@ export class ProfileInfoSettingComponent implements OnInit {
 
   toggleConfirmPasswordVisibility() {
     this.showConfirmPassword = !this.showConfirmPassword;
+  }
+
+  // Helper to get user initial for default avatar
+  getUserInitial(name?: string): string {
+    if (!name) return '';
+    return name.trim().charAt(0).toUpperCase();
   }
 
   constructor(

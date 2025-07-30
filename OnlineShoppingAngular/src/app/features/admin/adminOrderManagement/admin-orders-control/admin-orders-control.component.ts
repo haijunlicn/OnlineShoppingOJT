@@ -11,6 +11,7 @@ import { PdfExportService } from '@app/core/services/pdf-export.service';
 import { ExcelExportService } from '@app/core/services/excel-export.service';
 import { ORDER_STATUS, ORDER_STATUS_LABELS, OrderDetail, PAYMENT_STATUS } from "@app/core/models/order.dto";
 import { AlertService } from "@app/core/services/alert.service";
+import { UserDetailService } from '@app/core/services/user-detail.service';
 
 interface Order {
   id: number
@@ -147,6 +148,7 @@ export class AdminOrdersControlComponent implements OnInit, OnDestroy {
     private pdfExportService: PdfExportService,
     private excelExportService: ExcelExportService,
     private alertService: AlertService,
+    private userDetailService: UserDetailService,
   ) {
     // Setup search debouncing
     this.searchSubject.pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$)).subscribe(() => {
@@ -737,5 +739,145 @@ export class AdminOrdersControlComponent implements OnInit, OnDestroy {
       "Orders",
       "Order List Report",
     )
+  }
+
+
+
+  // Bulk Order Status Report Methods
+  async exportBulkOrderStatusReport(format: 'pdf' | 'excel' = 'pdf') {
+    try {
+      this.alertService.toast('Preparing bulk order status report...', 'info');
+      
+      // Get the orders to export (filtered or all)
+      const ordersToExport = this.filteredOrders.length !== this.orders.length ? this.filteredOrders : this.orders;
+      
+      if (ordersToExport.length === 0) {
+        this.alertService.toast('No orders to export', 'warning');
+        return;
+      }
+
+      // Prepare bulk order data
+      const bulkOrderData = await this.prepareBulkOrderStatusReportData(ordersToExport);
+      
+      const isFiltered = this.filteredOrders.length !== this.orders.length;
+      const filename = `BulkOrderStatus_${isFiltered ? 'Filtered' : 'All'}_${ordersToExport.length}_${format === 'pdf' ? 'pdf' : 'xlsx'}`;
+
+      if (format === 'pdf') {
+        await this.pdfExportService.exportBulkOrderStatusReport(bulkOrderData, filename, { isFiltered });
+      } else {
+        await this.excelExportService.exportBulkOrderStatusReport(bulkOrderData, filename, { isFiltered });
+      }
+
+      this.alertService.toast(`Bulk order status report exported successfully as ${format.toUpperCase()}`, 'success');
+    } catch (error) {
+      console.error('Error exporting bulk order status report:', error);
+      this.alertService.toast('Failed to export bulk order status report', 'error');
+    }
+  }
+
+
+
+  private async prepareBulkOrderStatusReportData(orders: Order[]): Promise<any[]> {
+    const bulkOrderData = [];
+    
+    for (const order of orders) {
+      try {
+        // Get detailed order information
+        const orderDetail = await this.orderService.getOrderDetails(order.id).toPromise();
+        if (!orderDetail) continue;
+
+        // Format order date
+        const orderDate = new Date(orderDetail.createdDate);
+        const formattedDate = orderDate.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        });
+
+        // Format total amount
+        const formattedAmount = new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'MMK',
+          minimumFractionDigits: 0
+        }).format(orderDetail.totalAmount);
+
+        // Prepare status history
+        const statusHistory = [];
+        if (orderDetail.statusHistory && orderDetail.statusHistory.length > 0) {
+          // Sort by creation date
+          const sortedHistory = [...orderDetail.statusHistory].sort(
+            (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+
+          for (const history of sortedHistory) {
+            try {
+              // Get user information for the person who made the change
+              const userInfo = await this.userDetailService.getUserRoleById(history.updatedBy).toPromise();
+              
+              statusHistory.push({
+                status: this.getOrderStatusLabel(history.statusCode as ORDER_STATUS),
+                changedBy: userInfo?.name || 'System',
+                role: userInfo?.roleName || 'System',
+                date: new Date(history.createdAt).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit'
+                }),
+                notes: history.note || ''
+              });
+            } catch (error) {
+              // If user info not available, use default values
+              statusHistory.push({
+                status: this.getOrderStatusLabel(history.statusCode as ORDER_STATUS),
+                changedBy: 'System',
+                role: 'System',
+                date: new Date(history.createdAt).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit'
+                }),
+                notes: history.note || ''
+              });
+            }
+          }
+        }
+
+        // Get latest note for the report
+        const latestNote = orderDetail.statusHistory && orderDetail.statusHistory.length > 0
+          ? orderDetail.statusHistory[orderDetail.statusHistory.length - 1].note
+          : '';
+
+        // Add order data to bulk report
+        bulkOrderData.push({
+          trackingNumber: orderDetail.trackingNumber,
+          customerName: orderDetail.user.name,
+          orderDate: formattedDate,
+          totalAmount: formattedAmount,
+          currentStatus: this.getOrderStatusLabel(orderDetail.currentOrderStatus),
+          paymentStatus: orderDetail.paymentStatus,
+          city: orderDetail.shippingAddress?.city || 'N/A',
+          itemsCount: orderDetail.items?.length || 0,
+          statusHistory: statusHistory,
+          notes: latestNote
+        });
+      } catch (error) {
+        console.error(`Error processing order ${order.id}:`, error);
+        // Add basic order data if detailed info fails
+        bulkOrderData.push({
+          trackingNumber: order.trackingNumber,
+          customerName: order.customer || 'N/A',
+          orderDate: order.date,
+          totalAmount: order.total ? `${order.total} MMK` : 'N/A',
+          currentStatus: this.getOrderStatusLabel(order.orderStatus),
+          paymentStatus: order.paymentStatus,
+          city: order.city || 'N/A',
+          itemsCount: order.items?.length || 0,
+          statusHistory: [],
+          notes: 'Unable to load detailed information'
+        });
+      }
+    }
+    
+    return bulkOrderData;
   }
 }

@@ -38,7 +38,7 @@ export class VlogComponent implements OnInit {
   ngOnInit(): void {
     this.isLoading = true;
     // Load all vlogs (VlogDTO[])
-    this.vlogService.getAllVlogs().subscribe({
+    this.vlogService.PublicgetAllVlogs().subscribe({
       next: (vlogs) => {
         this.allVlogs = vlogs;
         // After loading vlogs, load files

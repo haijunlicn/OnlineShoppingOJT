@@ -93,7 +93,8 @@ export class BrandDialogComponent implements OnInit, OnChanges {
         id: this.editingBrand?.id || '',
         name,
         baseSku: baseSku,
-        logo: logoUrl ?? this.editingBrand?.logo ?? ''
+        logo: logoUrl ?? this.editingBrand?.logo ?? '',
+        delFg: this.editingBrand?.delFg ?? 1 // Use delFg: 1=active, 0=inactive
       };
 
       console.log("brand dto : ", dto);

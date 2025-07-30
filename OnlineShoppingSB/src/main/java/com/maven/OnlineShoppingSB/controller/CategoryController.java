@@ -43,6 +43,12 @@ public class CategoryController {
         return ResponseEntity.ok(cateService.getAllCategoriesWithOptions());
     }
 
+    @GetMapping("/list-with-status")
+    @PreAuthorize("hasAuthority('CATEGORY_READ') or hasRole('SUPERADMIN')")
+    public ResponseEntity<List<CategoryDTO>> getAllCategoriesWithStatus() {
+        return ResponseEntity.ok(cateService.getAllCategoriesWithStatus());
+    }
+
     @GetMapping("/getbyid/{id}")
     @PreAuthorize("hasAuthority('CATEGORY_READ') or hasRole('SUPERADMIN')")
     public ResponseEntity<CategoryDTO> getById(@PathVariable Long id) {

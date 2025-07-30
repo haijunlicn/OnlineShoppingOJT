@@ -138,8 +138,9 @@
           </select>
           <button class="compact-btn-update" (click)="confirmStatusUpdate()"
             [disabled]="updatingStatus || !selectedStatus || (selectedStatus === ORDER_STATUSES.ORDER_CANCELLED && !statusComment.trim())">
-            <i class="fas fa-arrow-right"></i>
-            <span>Update</span>
+            <i *ngIf="!updatingStatus" class="fas fa-arrow-right"></i>
+            <i *ngIf="updatingStatus" class="fas fa-spinner fa-spin"></i>
+            <span>{{ updatingStatus ? 'Updating...' : 'Update' }}</span>
           </button>
         </div>
         

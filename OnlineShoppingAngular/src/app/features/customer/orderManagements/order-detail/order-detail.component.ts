@@ -64,7 +64,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     this.loading = true
     this.error = ""
 
-    const orderSub = this.orderService.getOrderDetails(this.orderId).subscribe({
+    const orderSub = this.orderService.getPublicOrderDetails(this.orderId).subscribe({
       next: (order: OrderDetail) => {
         this.order = order
         this.loading = false

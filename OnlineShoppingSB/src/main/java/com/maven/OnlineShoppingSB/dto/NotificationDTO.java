@@ -50,6 +50,17 @@ public class NotificationDTO {
         private List<Long> targetUserIds; // optional
     }
 
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class NotificationTypeMethodDTO {
+        private Long notificationTypeId;
+        private String notificationTypeName;
+        private NotiMethod method;
+        private Integer status;
+    }
+
     public List<Long> getTargetUserIdsFromMetadata() {
         if (metadata == null) return Collections.emptyList();
         try {

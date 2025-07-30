@@ -97,5 +97,15 @@ public class NotificationController {
         return ResponseEntity.ok(notifications);
     }
 
+    @PostMapping("/stock-update-for-wishlist/{productId}")
+public ResponseEntity<?> notifyWishlistUsersOnStockUpdate(@PathVariable Long productId) {
+   
+    notificationService.notifyWishlistUsersOnStockUpdate(productId);
+    // ✅ Always return JSON object, not plain string
+    return ResponseEntity.ok(Map.of(
+        "success", true,
+        "message", "Wishlist users notified for productId: " + productId
+    ));
+}
 
 }

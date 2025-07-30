@@ -1,4 +1,5 @@
 import { Component, OnInit } from "@angular/core";
+import { Router } from "@angular/router";
 import { Notification } from "@app/core/models/notification.model";
 import { NotificationService } from "@app/core/services/notification.service";
 
@@ -29,10 +30,17 @@ export class AdminSentNotisComponent implements OnInit {
   selectedMetadata: any = null;
   showModal = false;
 
-  constructor(private notificationService: NotificationService) {}
+  constructor(
+    private notificationService: NotificationService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadNotifications();
+  }
+
+  createNotification(): void {
+    this.router.navigate(['/admin/notificationCreate']);
   }
 
   loadNotifications(): void {

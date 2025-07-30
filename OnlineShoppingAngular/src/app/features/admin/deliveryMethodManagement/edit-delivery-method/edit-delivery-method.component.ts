@@ -94,14 +94,15 @@ export class EditDeliveryMethodComponent implements OnInit {
       return;
     }
 
-    const min = this.method?.minDistance != null ? this.method.minDistance : 0;
+    const min = this.method && this.method.minDistance != null ? this.method.minDistance : 0;
     if (distance < min) {
       Swal.fire(`Sample distance must not be less than the minimum (${min} km).`, '', 'warning');
       return;
     }
 
     if (
-      this.method?.maxDistance != null &&
+      this.method &&
+      this.method.maxDistance != null &&
       distance > this.method.maxDistance
     ) {
       Swal.fire(`Sample distance must not exceed the maximum (${this.method.maxDistance} km).`, '', 'warning');
@@ -111,8 +112,9 @@ export class EditDeliveryMethodComponent implements OnInit {
     // Check if required fields are filled based on fee calculation type
     if (this.feeCalculationType === 'inCity') {
       if (
-        this.method?.baseFee != null &&
-        this.method?.feePerKm != null
+        this.method &&
+        this.method.baseFee != null &&
+        this.method.feePerKm != null
       ) {
         this.calculatedSampleFee =
           this.method.baseFee + this.method.feePerKm * distance;
@@ -126,8 +128,9 @@ export class EditDeliveryMethodComponent implements OnInit {
       }
     } else {
       if (
-        this.method?.baseFee != null &&
-        this.method?.feePerKmOutCity != null
+        this.method &&
+        this.method.baseFee != null &&
+        this.method.feePerKmOutCity != null
       ) {
         this.calculatedSampleFee =
           this.method.baseFee + this.method.feePerKmOutCity * distance;

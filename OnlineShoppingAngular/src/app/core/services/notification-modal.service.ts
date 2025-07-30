@@ -17,6 +17,7 @@ export class NotificationModalService {
   constructor(private zone: NgZone) { }
 
   openNotificationDetail(notification: UserNotificationDTO): void {
+    //Notification detail modal ကိုဖွင့်တယ် (Bootstrap modal
     console.log("noti detail : ", notification);
     this.currentNotificationSubject.next(notification);
     this.zone.runOutsideAngular(() => {
@@ -32,6 +33,7 @@ export class NotificationModalService {
 
   getCurrentNotification(): UserNotificationDTO | null {
     // Get current value synchronously if needed
+    //Notification detail modal ကိုဖွင့်တယ် (Bootstrap modal
     return this.currentNotificationSubject.getValue();
   }
 

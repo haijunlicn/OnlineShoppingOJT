@@ -66,15 +66,41 @@
           </button>
           <ul class="dropdown-menu shadow" aria-labelledby="exportDropdown">
             <li>
+              <h6 class="dropdown-header">Order List Reports</h6>
+            </li>
+            <li>
               <a class="dropdown-item d-flex align-items-center gap-2" href="#"
                 (click)="$event.preventDefault(); exportOrdersToPdf();">
-                <i class="bi bi-file-earmark-pdf text-danger"></i> Export as PDF
+                <i class="bi bi-file-earmark-pdf text-danger"></i> Export List as PDF
               </a>
             </li>
             <li>
               <a class="dropdown-item d-flex align-items-center gap-2" href="#"
                 (click)="$event.preventDefault(); exportOrdersToExcel();">
-                <i class="bi bi-file-earmark-excel text-success"></i> Export as Excel
+                <i class="bi bi-file-earmark-excel text-success"></i> Export List as Excel
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+
+            <li>
+              <h6 class="dropdown-header">Bulk Order Reports</h6>
+            </li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center gap-2" href="#"
+                (click)="$event.preventDefault(); exportBulkOrderStatusReport('pdf');">
+                <i class="bi bi-file-earmark-pdf text-danger"></i> Export All Orders Status (PDF)
+                <small class="text-muted ms-auto">
+                  {{ filteredOrders.length !== orders.length ? filteredOrders.length + ' Filtered' : 'All Orders' }}
+                </small>
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center gap-2" href="#"
+                (click)="$event.preventDefault(); exportBulkOrderStatusReport('excel');">
+                <i class="bi bi-file-earmark-excel text-success"></i> Export All Orders Status (Excel)
+                <small class="text-muted ms-auto">
+                  {{ filteredOrders.length !== orders.length ? filteredOrders.length + ' Filtered' : 'All Orders' }}
+                </small>
               </a>
             </li>
           </ul>
@@ -264,6 +290,7 @@
                   <input type="checkbox" [checked]="isSelected(order)" (change)="toggleSelectOrder(order, $event)"
                     [disabled]="!isOrderSelectable(order)" />
                 </td>
+
 
                 <!-- Order Details -->
                 <td>

@@ -1,7 +1,6 @@
 package com.maven.OnlineShoppingSB.repository;
 
 import com.maven.OnlineShoppingSB.entity.BrandEntity;
-import com.maven.OnlineShoppingSB.entity.CategoryEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

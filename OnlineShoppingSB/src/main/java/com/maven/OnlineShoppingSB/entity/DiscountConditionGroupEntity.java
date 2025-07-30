@@ -24,7 +24,7 @@ public class DiscountConditionGroupEntity {
     @JoinColumn(name = "Group_id")
     private  GroupEntity Group;
 
-    @OneToMany(mappedBy = "discountConditionGroup",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "discountConditionGroup",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<DiscountConditionEntity> discountCondition;
 
 }

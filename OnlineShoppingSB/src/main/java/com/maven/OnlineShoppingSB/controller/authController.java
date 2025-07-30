@@ -356,4 +356,49 @@ public class authController {
         return ResponseEntity.ok(Map.of("valid", isValid));
     }
 
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<userDTO> getUserById(@PathVariable Long userId) {
+        try {
+            Optional<UserEntity> userOpt = userRepo.findById(userId);
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            UserEntity user = userOpt.get();
+            userDTO userDTO = new userDTO();
+            userDTO.setId(user.getId());
+            userDTO.setEmail(user.getEmail());
+            userDTO.setName(user.getName());
+            userDTO.setProfile(user.getProfile());
+            userDTO.setIsVerified(user.getIsVerified());
+            userDTO.setDelFg(user.getDelFg());
+            userDTO.setCreatedDate(user.getCreatedDate());
+            userDTO.setUpdatedDate(user.getUpdatedDate());
+            userDTO.setRoleName(user.getRole() != null ? user.getRole().getName() : null);
+
+            return ResponseEntity.ok(userDTO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/user-role/{userId}")
+    public ResponseEntity<Map<String, String>> getUserRoleById(@PathVariable Long userId) {
+        try {
+            Optional<UserEntity> userOpt = userRepo.findById(userId);
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            UserEntity user = userOpt.get();
+            Map<String, String> response = new HashMap<>();
+            response.put("name", user.getName());
+            response.put("roleName", user.getRole() != null ? user.getRole().getName() : "Unknown");
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 }

@@ -558,21 +558,53 @@ export class NewCreateDiscountComponent implements OnInit {
     return this.customerEligibilitySettings[index]?.groups || []
   }
 
-  // Product Rule Modal Methods
-  openProductRuleModal(mechanismIndex: number): void {
-    this.currentProductRuleMechanismIndex = mechanismIndex
-    const settings = this.productRuleSettings[mechanismIndex] || { type: "", items: [] }
-    this.currentProductRuleType = settings.type as "product" | "brand" | "category"
-    this.selectedProductRuleItems = [...settings.items]
-    this.showProductRuleModal = true
-    this.productRuleSearchText = ""
-    this.loadProductRuleItems()
+  // Remove a single group from selected list
+  removeSingleGroup(mechanismIndex: number, groupId: number): void {
+    const settings = this.customerEligibilitySettings[mechanismIndex];
+    if (settings && settings.groups) {
+      settings.groups = settings.groups.filter(g => g.id !== groupId);
+    }
   }
 
+  // Product Rule Modal Methods
+  openProductRuleModal(mechanismIndex: number): void {
+    this.currentProductRuleMechanismIndex = mechanismIndex;
+    const settings = this.productRuleSettings[mechanismIndex] || { type: '', items: [] };
+    this.currentProductRuleType = settings.type as 'product' | 'brand' | 'category';
+    this.selectedProductRuleItems = [...settings.items];
+    this.productRuleSearchText = '';
+    this.loadProductRuleItems();
+
+    // Always close both popups first
+    this.showProductSelection = false;
+    this.showProductRuleModal = false;
+
+    if (this.currentProductRuleType === 'product') {
+      // Product selection logic (old flow)
+      this.productSelectionContext = 'condition_builder';
+      this.currentMechanismIndex = mechanismIndex;
+      this.productSelectionMode = 'multiple';
+      this.showProductSelection = true;
+    } else {
+      // Brand/Category selection logic (shared modal)
+    
+      this.showProductRuleModal = true;
+     
+    }
+  }
+
+  
   closeProductRuleModal(): void {
     this.showProductRuleModal = false
     this.currentProductRuleMechanismIndex = -1
     this.selectedProductRuleItems = []
+  }
+
+  // Add this method for new-product-selection popup integration
+  onProductRuleProductsSelected(products: ProductDTO[]): void {
+    this.selectedProductRuleItems = products;
+    this.confirmProductRuleSelection();
+    this.showProductSelection = false;  
   }
 
   loadProductRuleItems(): void {
@@ -625,12 +657,13 @@ export class NewCreateDiscountComponent implements OnInit {
   }
 
   updateProductRuleType(index: number, event: any): void {
-    const type = event.target.value
+    const type = event.target.value;
     if (!this.productRuleSettings[index]) {
-      this.productRuleSettings[index] = { type: "", items: [] }
+      this.productRuleSettings[index] = { type: '', items: [] };
     }
-    this.productRuleSettings[index].type = type
-    this.productRuleSettings[index].items = [] // Clear items when type changes
+    this.productRuleSettings[index].type = type;
+    this.productRuleSettings[index].items = []; // Clear items when type changes
+    // Do NOT auto open modal here for brand/category. Modal will open only on button click.
   }
 
   getProductRuleValues(index: number): any[] {
@@ -700,6 +733,24 @@ export class NewCreateDiscountComponent implements OnInit {
     delete this.discountProducts[mechanismIndex]
   }
 
+  // Get selected product objects for displaying names
+  getSelectedProductObjects(mechanismIndex: number): ProductDTO[] {
+    const ids = (this.discountProducts[mechanismIndex] || []).filter((id): id is number => typeof id === 'number');
+    return this.allProducts.filter(p => typeof p.id === 'number' && ids.includes(p.id));
+  }
+
+  // Remove a single product from selected list
+  removeSingleProduct(mechanismIndex: number, productId: number | undefined): void {
+    if (typeof productId !== 'number') return;
+    if (this.discountProducts[mechanismIndex]) {
+      this.discountProducts[mechanismIndex] = this.discountProducts[mechanismIndex].filter(id => id !== productId);
+      // If no products left, remove the key
+      if (this.discountProducts[mechanismIndex].length === 0) {
+        delete this.discountProducts[mechanismIndex];
+      }
+    }
+  }
+
   onProductsSelected(products: ProductDTO[]): void {
     if (this.productSelectionContext === "discount_product" && this.currentMechanismIndex >= 0) {
       this.discountProducts[this.currentMechanismIndex] = products
@@ -725,23 +776,20 @@ export class NewCreateDiscountComponent implements OnInit {
     this.currentMechanismIndex = -1
   }
 
-  // Form Submission with Integrated Conditions
   onSubmit(): void {
-    if (!this.isFormValid) {
-      this.markFormGroupTouched(this.discountForm)
-      return
+    if (!this.discountForm.valid) {
+      this.markFormGroupTouched(this.discountForm);
+      return;
     }
-
     if (this.isUploadingImage) {
-      this.errors["general"] = "Please wait for image upload to complete"
-      return
+      this.errors["general"] = "Please wait for image upload to complete";
+      return;
     }
-
-    this.isSubmitting = true
-    this.errors = {}
-
-    const formValue = this.discountForm.value
-
+    this.isSubmitting = true;
+    this.errors = {};
+  
+    const formValue = this.discountForm.value;
+  
     const mechanisms: DiscountMechanismEA_B[] = (formValue.discountMechanisms || []).map((mech: any, idx: number) => {
       // Add discount products
       if (this.discountProducts[idx]?.length) {
@@ -752,16 +800,16 @@ export class NewCreateDiscountComponent implements OnInit {
               productId,
               discountMechanismId: 0,
             }) as any,
-        )
+        );
       }
-
+  
       // Only create condition groups if conditions are enabled for this mechanism
       if (this.showConditionsForMechanism[idx]) {
-        const conditionGroups: DiscountConditionGroupEA_C[] = []
-        const conditions: DiscountConditionEA_D[] = []
-
+        const conditionGroups: DiscountConditionGroupEA_C[] = [];
+        const conditions: DiscountConditionEA_D[] = [];
+  
         // Customer group conditions
-        const customerSettings = this.customerEligibilitySettings[idx]
+        const customerSettings = this.customerEligibilitySettings[idx];
         if (customerSettings && customerSettings.type === "specific" && customerSettings.groups.length > 0) {
           const customerCondition: DiscountConditionEA_D = {
             id: 0,
@@ -770,12 +818,12 @@ export class NewCreateDiscountComponent implements OnInit {
             operator: Operator.IS_ONE_OF,
             value: customerSettings.groups.map((g) => g.id.toString()),
             delFg: false,
-          }
-          conditions.push(customerCondition)
+          };
+          conditions.push(customerCondition);
         }
-
+  
         // Product rule conditions
-        const productSettings = this.productRuleSettings[idx]
+        const productSettings = this.productRuleSettings[idx];
         if (productSettings && productSettings.type && productSettings.items.length > 0) {
           const productCondition: DiscountConditionEA_D = {
             id: 0,
@@ -784,57 +832,57 @@ export class NewCreateDiscountComponent implements OnInit {
             operator: Operator.IS_ONE_OF,
             value: productSettings.items.map((item) => item.id.toString()),
             delFg: false,
-          }
-          conditions.push(productCondition)
+          };
+          conditions.push(productCondition);
         }
-
+  
         // Order rule conditions
-        const orderSettings = this.orderRuleSettings[idx]
+        const orderSettings = this.orderRuleSettings[idx];
         if (orderSettings && orderSettings.type && orderSettings.value) {
           const orderCondition: DiscountConditionEA_D = {
             id: 0,
             conditionType: ConditionType.ORDER,
             conditionDetail: orderSettings.type,
-            operator: Operator.GREATER_THAN_OR_EQUAL, // Fixed operator for min values
+            operator: Operator.GREATER_THAN_OR_EQUAL,
             value: [orderSettings.value],
             delFg: false,
-          }
-          conditions.push(orderCondition)
+          };
+          conditions.push(orderCondition);
         }
-
+  
         // Create condition group if we have conditions
         if (conditions.length > 0) {
           const conditionGroup: DiscountConditionGroupEA_C = {
             id: 0,
             discountMechanismId: 0,
-            logicOperator: mech.logicOperator ? "true" : "false", // Use the form value
+            logicOperator: mech.logicOperator ? "true" : "false",
             discountCondition: conditions,
-          }
-          conditionGroups.push(conditionGroup)
+          };
+          conditionGroups.push(conditionGroup);
         }
-
-        mech.discountConditionGroup = conditionGroups
+  
+        mech.discountConditionGroup = conditionGroups;
       }
-
+  
       // Ensure value types are correct
       if (typeof mech.value === "number") {
-        mech.value = mech.value.toString()
+        mech.value = mech.value.toString();
       }
       if (
         mech.maxDiscountAmount !== undefined &&
         mech.maxDiscountAmount !== null &&
         typeof mech.maxDiscountAmount === "number"
       ) {
-        mech.maxDiscountAmount = mech.maxDiscountAmount.toString()
+        mech.maxDiscountAmount = mech.maxDiscountAmount.toString();
       }
-
+  
       if (mech.couponcode !== undefined && mech.couponcode !== null) {
-        mech.couponcode = mech.couponcode.toString()
+        mech.couponcode = mech.couponcode.toString();
       }
-
-      return mech
-    })
-
+  
+      return mech;
+    });
+  
     const createRequest: DiscountEA_A = {
       ...formValue,
       delFg: false,
@@ -842,41 +890,41 @@ export class NewCreateDiscountComponent implements OnInit {
       startDate: new Date(formValue.startDate).toISOString(),
       endDate: new Date(formValue.endDate).toISOString(),
       discountMechanisms: mechanisms,
-    }
-
+    };
+  
     mechanisms.forEach((m) => {
       if (m.mechanismType === MechanismType.FREE_GIFT) {
-        m.discountType = undefined
+        m.discountType = undefined;
       } else if (m.mechanismType === MechanismType.DISCOUNT) {
         if (!m.discountType || m.discountType === undefined || m.discountType === "") {
-          m.discountType = DiscountType.PERCENTAGE
+          m.discountType = DiscountType.PERCENTAGE;
         }
       }
-
+  
       if (m.discountConditionGroup) {
         m.discountConditionGroup.forEach((g) => {
           g.discountCondition.forEach((c) => {
-            c.conditionType = c.conditionType.toString().toUpperCase()
-          })
-        })
+            c.conditionType = c.conditionType.toString().toUpperCase();
+          });
+        });
       }
-    })
-
-    console.log("Submitting discount with payload:", createRequest)
-
+    });
+  
+    console.log("Submitting discount with payload:", createRequest);
+  
     this.discountService.createDiscount(createRequest).subscribe({
       next: (response: string) => {
         if (response === "success") {
-          this.router.navigate(["/admin/discountList"])
+          this.router.navigate(["/admin/discountList"]);
         } else {
-          this.errors["general"] = response
+          this.errors["general"] = response;
         }
       },
       error: (error) => {
-        this.errors["general"] = error.error || "An error occurred while creating the discount."
-        this.isSubmitting = false
+        this.errors["general"] = error.error || "An error occurred while creating the discount.";
+        this.isSubmitting = false;
       },
-    })
+    });
   }
 
   resetForm(): void {
@@ -977,5 +1025,13 @@ export class NewCreateDiscountComponent implements OnInit {
       }
     }
     return true
+  }
+
+  // Remove a single item (product, brand, or category) from selected product rule list
+  removeSingleProductRule(mechanismIndex: number, itemId: number): void {
+    const settings = this.productRuleSettings[mechanismIndex];
+    if (settings && settings.items) {
+      settings.items = settings.items.filter((item: any) => item.id !== itemId);
+    }
   }
 }
