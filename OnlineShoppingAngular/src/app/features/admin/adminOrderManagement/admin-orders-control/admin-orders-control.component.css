@@ -1,54 +1,22 @@
 /* Use the same professional color scheme as customer side */
-:root {
-  --color-primary: #2a322e;
-  --color-accent: #d8cbbb;
-  --color-secondary: #212427;
-  --color-brown: #8d806f;
-  --color-background: #fefefe;
-  --color-border: rgba(216, 203, 187, 0.3);
-  --color-shadow: rgba(42, 50, 46, 0.1);
-  --color-highlight: #bfa16a;
-  --color-success: #28a745;
-  --color-danger: #dc3545;
-  --color-warning: #ffc107;
-  --color-info: #17a2b8;
-  --color-discount: #ff5722;
-}
-
-/* Main container */
-.main-content {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 1rem;
-  background: #f8f9fa;
-  min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-}
-
-/* Enhanced styles matching refund list design */
-.container {
-  max-width: 1400px;
-  background: #fff;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-/* Page Header */
-.page-header {
-  background: white;
-  border-bottom: 1px solid #e5e7eb;
+/* Navigation Bar - Orders page (like refund requests) */
+.navigation-bar {
+  background: var(--color-background);
+  border-bottom: 1px solid var(--color-border);
   padding: 1rem 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 6px var(--color-shadow);
+  border-radius: 8px;
 }
 
 .nav-left {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
+  flex-direction: column;
 }
 
 .nav-right {
@@ -62,18 +30,74 @@
 }
 
 .nav-title {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--color-secondary);
   margin: 0;
 }
 
-.nav-subtitle {
-  font-size: 0.8125rem;
-  color: #6b7280;
+/* Breadcrumb styling (same as refund UI) */
+.breadcrumb {
+  background: none;
+  padding: 0;
   margin: 0;
-  line-height: 1.4;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
 }
+
+.breadcrumb-item {
+  color: var(--color-brown);
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumb-item i {
+  margin-right: 0.4rem;
+  color: var(--color-highlight);
+}
+
+.breadcrumb-item.active {
+  color: var(--color-secondary);
+  font-weight: 500;
+}
+
+.breadcrumb-item a {
+  color: var(--color-secondary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.breadcrumb-item a:hover {
+  color: var(--color-accent);
+}
+
+/* Buttons (Refresh / Export) */
+.btn-outline-secondary.btn-sm {
+  border-color: var(--color-border);
+  color: var(--color-secondary);
+  background-color: white;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+}
+
+.btn-outline-secondary.btn-sm:hover {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: white;
+}
+
+.dropdown-menu {
+  font-size: 0.85rem;
+  min-width: 180px;
+  box-shadow: 0 4px 8px var(--color-shadow);
+}
+
+.dropdown-item i {
+  font-size: 1rem;
+}
+
 
 /* Breadcrumb Styling */
 .breadcrumb {
@@ -110,8 +134,10 @@
 /* Clean Card Styling */
 .card {
   background: white;
-  cursor: pointer;
-  color: var(--color-primary);
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
 .btn-clear-filters {

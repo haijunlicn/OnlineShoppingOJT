@@ -32,6 +32,10 @@ export class CategoryService {
     return this.http.get<CategoryDTO[]>(`${this.baseUrl}/list-with-options`);
   }
 
+  getAllCategoriesWithStatus(): Observable<CategoryDTO[]> {
+    return this.http.get<CategoryDTO[]>(`${this.baseUrl}/list-with-status`);
+  }
+
   getCategoryById(id: number): Observable<CategoryDTO> {
     return this.http.get<CategoryDTO>(`${this.baseUrl}/getbyid/${id}`);
   }

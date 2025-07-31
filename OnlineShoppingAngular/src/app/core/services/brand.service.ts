@@ -43,6 +43,11 @@ export class BrandService {
   deleteBrand(id: number): Observable<string> {
     return this.http.delete(`${this.baseUrl}/delete/${id}`, { responseType: 'text' });
   }
+
+  getProductCountsByBrand(): Observable<{ [key: string]: number }> {
+    return this.http.get<{ [key: string]: number }>(`${this.baseUrl}/product-counts`);
+  }
+
   uploadImage(file: File): Observable<string> {
     const formData = new FormData();
     formData.append('file', file);

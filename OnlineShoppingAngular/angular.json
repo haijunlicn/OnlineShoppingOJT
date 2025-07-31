@@ -32,7 +32,10 @@
             ],
             "tsConfig": "tsconfig.app.json",
             "assets": [
-              "src/favicon.ico",
+              {
+                "glob": "**/*",
+                "input": "public"
+              },
               "src/assets"
             ],
             "styles": [
@@ -110,9 +113,7 @@
                 "glob": "**/*",
                 "input": "public"
               },
-              {
-                "input": "src/assets/sounds"
-              }
+              "src/assets"
             ],
             "styles": [
               "node_modules/primeicons/primeicons.css",

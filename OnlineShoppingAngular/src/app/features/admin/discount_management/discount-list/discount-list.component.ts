@@ -17,6 +17,7 @@ export class DiscountListComponent {
   filteredDiscounts: DiscountEA_A[] = []
   searchTerm = ""
   loading = false
+  errorMessage: string = ''
 
   // Stats
   activeDiscounts = 0
@@ -32,6 +33,17 @@ export class DiscountListComponent {
     { key: "inactive", label: "Inactive" },
     { key: "expired", label: "Expired" },
   ]
+
+  // Pagination
+  page: number = 1
+  pageSize: number = 10
+
+  // Sorting
+  sortField = "createdAt"
+  sortDirection: { [key: string]: 'asc' | 'desc' } = {};
+
+  // Expose Math for template use
+  Math = Math
 
   showEditPopup = false;
   editForm: FormGroup;
@@ -60,7 +72,6 @@ export class DiscountListComponent {
   mechanismProductSelectionProducts: ProductDTO[] = [];
   // Store basic info from the form when moving to mechanisms tab
   discountBasicInfo: any = {};
-  sortDirection: { [key: string]: 'asc' | 'desc' } = {};
   showEditDiscount = false;
   editDiscountData: DiscountEA_A | null = null;
 
@@ -92,6 +103,7 @@ export class DiscountListComponent {
 
   loadDiscounts(): void {
     this.loading = true
+    this.errorMessage = ''
     this.discountService.getAllDiscounts().subscribe({
       next: (data) => {
         this.discounts = data
@@ -102,6 +114,7 @@ export class DiscountListComponent {
       },
       error: (error) => {
         console.error("Error loading discounts:", error)
+        this.errorMessage = 'Failed to load discounts. Please try again.'
         this.loading = false
       },
     })
@@ -127,10 +140,12 @@ export class DiscountListComponent {
       this.averageDiscount = 0
     }
   }
+
   createDiscount(): void {
     console.log("HI");
     this.router.navigate(['/admin/createDiscount']);
   }
+
   setFilter(filter: string): void {
     this.currentFilter = filter
     this.applyFilters()
@@ -171,6 +186,152 @@ export class DiscountListComponent {
     this.applyFilters()
   }
 
+  // Filter methods
+  resetFilters(): void {
+    this.searchTerm = '';
+    this.currentFilter = 'all';
+    this.sortField = "createdAt";
+    this.sortDirection = {};
+    this.applyFilters();
+  }
+
+  // Pagination methods
+  goToPage(pageNum: number): void {
+    if (pageNum >= 1 && pageNum <= Math.ceil(this.totalDiscounts / this.pageSize)) {
+      this.page = pageNum;
+      this.loadDiscounts();
+    }
+  }
+
+  goToPreviousPage(): void {
+    if (this.page > 1) {
+      this.page--;
+      this.loadDiscounts();
+    }
+  }
+
+  goToNextPage(): void {
+    if (this.page < Math.ceil(this.totalDiscounts / this.pageSize)) {
+      this.page++;
+      this.loadDiscounts();
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const totalPages = Math.ceil(this.totalDiscounts / this.pageSize);
+    const maxVisiblePages = 5;
+
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      const half = Math.floor(maxVisiblePages / 2);
+      let start = Math.max(1, this.page - half);
+      const end = Math.min(totalPages, start + maxVisiblePages - 1);
+
+      if (end - start < maxVisiblePages - 1) {
+        start = Math.max(1, end - maxVisiblePages + 1);
+      }
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+    }
+
+    return pages;
+  }
+
+  onPageSizeChange(): void {
+    this.page = 1;
+    this.loadDiscounts();
+  }
+
+  // Sorting methods
+  sortBy(column: string): void {
+    // Toggle sort direction
+    if (!this.sortDirection[column] || this.sortDirection[column] === 'desc') {
+      this.sortDirection[column] = 'asc';
+    } else {
+      this.sortDirection[column] = 'desc';
+    }
+    const direction = this.sortDirection[column];
+
+    this.filteredDiscounts.sort((a: any, b: any) => {
+      let aValue = a[column];
+      let bValue = b[column];
+
+      // For nested or custom fields, handle here
+      if (column === 'name') {
+        aValue = a.name?.toLowerCase() || '';
+        bValue = b.name?.toLowerCase() || '';
+      }
+      if (column === 'status') {
+        // Active > Inactive > Expired
+        const getStatusRank = (d: any) => this.isActive(d) ? 2 : this.isExpired(d) ? 0 : 1;
+        aValue = getStatusRank(a);
+        bValue = getStatusRank(b);
+      }
+      if (column === 'startDate') {
+        aValue = new Date(a.startDate).getTime();
+        bValue = new Date(b.startDate).getTime();
+      }
+
+      if (aValue < bValue) return direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  getSortIcon(field: string): string {
+    if (this.sortDirection[field] === 'asc') return "fa-sort-up";
+    if (this.sortDirection[field] === 'desc') return "fa-sort-down";
+    return "fa-sort";
+  }
+
+  // Status methods
+  getStatusBadgeClass(discount: DiscountEA_A): string {
+    if (this.isExpired(discount)) {
+      return "badge status-expired";
+    } else if (this.isActive(discount)) {
+      return "badge status-active";
+    } else {
+      return "badge status-inactive";
+    }
+  }
+
+  getStatusIcon(discount: DiscountEA_A): string {
+    if (this.isExpired(discount)) {
+      return 'bi bi-x-circle';
+    } else if (this.isActive(discount)) {
+      return 'bi bi-check-circle';
+    } else {
+      return 'bi bi-pause-circle';
+    }
+  }
+
+  getStatusText(discount: DiscountEA_A): string {
+    if (this.isExpired(discount)) {
+      return 'EXPIRED';
+    } else if (this.isActive(discount)) {
+      return 'ACTIVE';
+    } else {
+      return 'INACTIVE';
+    }
+  }
+
+  // Export methods
+  exportToPdf(): void {
+    // TODO: Implement PDF export
+    console.log('Export to PDF functionality to be implemented');
+  }
+
+  exportToExcel(): void {
+    // TODO: Implement Excel export
+    console.log('Export to Excel functionality to be implemented');
+  }
+
   toggleDiscountStatus(discount: DiscountEA_A): void {
     const payload = { isActive: !discount.isActive };
     this.discountService.updateDiscountStatus(discount.id, payload).subscribe({
@@ -180,6 +341,7 @@ export class DiscountListComponent {
       },
       error: (error) => {
         console.error("Error updating discount status:", error);
+        this.errorMessage = 'Failed to update discount status. Please try again.';
       },
     });
   }
@@ -603,40 +765,5 @@ export class DiscountListComponent {
     if (!discount.usageLimit || discount.usageLimit === 0) return 0;
     const current = discount.currentRedemptionCount || 0;
     return Math.min((current / discount.usageLimit) * 100, 100);
-  }
-
-  sortBy(column: string): void {
-    // Toggle sort direction
-    if (!this.sortDirection[column] || this.sortDirection[column] === 'desc') {
-      this.sortDirection[column] = 'asc';
-    } else {
-      this.sortDirection[column] = 'desc';
-    }
-    const direction = this.sortDirection[column];
-
-    this.filteredDiscounts.sort((a: any, b: any) => {
-      let aValue = a[column];
-      let bValue = b[column];
-
-      // For nested or custom fields, handle here
-      if (column === 'name') {
-        aValue = a.name?.toLowerCase() || '';
-        bValue = b.name?.toLowerCase() || '';
-      }
-      if (column === 'status') {
-        // Active > Inactive > Expired
-        const getStatusRank = (d: any) => this.isActive(d) ? 2 : this.isExpired(d) ? 0 : 1;
-        aValue = getStatusRank(a);
-        bValue = getStatusRank(b);
-      }
-      if (column === 'startDate') {
-        aValue = new Date(a.startDate).getTime();
-        bValue = new Date(b.startDate).getTime();
-      }
-
-      if (aValue < bValue) return direction === 'asc' ? -1 : 1;
-      if (aValue > bValue) return direction === 'asc' ? 1 : -1;
-      return 0;
-    });
   }
 }

@@ -1,0 +1,107 @@
+<!-- Price History Modal -->
+<div class="modal-backdrop" *ngIf="show" (click)="onBackdropClick($event)">
+    <div class="price-history-modal" (click)="$event.stopPropagation()">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h2 class="modal-title">Price History - {{ variant.sku }}</h2>
+            <button class="close-btn" (click)="closeModal()" type="button">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body">
+            <!-- Current Price and Stock Info -->
+            <div class="current-info">
+                <div class="info-item">
+                    <div class="info-indicator"></div>
+                    <span class="info-label">Current Price:</span>
+                    <span class="current-price-value">{{ formatCurrency(variant.price) }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Stock:</span>
+                    <span class="stock-badge">{{ variant.stock }} units</span>
+                </div>
+            </div>
+
+            <!-- Variant Options -->
+            <div class="variant-config" *ngIf="variant.options && variant.options.length > 0">
+                <span class="config-item" *ngFor="let option of variant.options">
+                    <strong>{{ option.optionName }}:</strong> {{ option.valueName }}
+                </span>
+            </div>
+
+            <!-- Price Timeline -->
+            <div class="price-timeline">
+                <div class="timeline-header">
+                    <i class="fas fa-history"></i>
+                    <h3>Price Timeline</h3>
+                </div>
+
+                <div class="timeline-content" *ngIf="sortedHistory.length > 0">
+                    <div class="timeline-item" *ngFor="let history of sortedHistory; let i = index">
+                        <div class="timeline-marker" [class.current]="isCurrentPrice(history, i)"></div>
+
+                        <div class="timeline-details">
+                            <div class="price-row">
+                                <div class="price-info">
+                                    <i class="timeline-icon"
+                                        [class]="isCurrentPrice(history, i) ? 'fas fa-arrow-up text-red' : 'fas fa-calendar text-gray'">
+                                    </i>
+                                    <span class="price-amount">{{ formatCurrency(history.price) }}</span>
+
+                                    <!-- Price Change Badge -->
+                                    <span class="price-change-badge" *ngIf="i < sortedHistory.length - 1"
+                                        [ngClass]="getPriceChangeClass(getPriceChange(history.price, sortedHistory[i + 1].price))">
+                                        <i
+                                            [class]="getPriceChangeIcon(getPriceChange(history.price, sortedHistory[i + 1].price))"></i>
+                                        {{ formatCurrency(Math.abs(getPriceChange(history.price, sortedHistory[i +
+                                        1].price))) }}
+                                    </span>
+                                </div>
+
+                                <span class="order-count">{{ history.orderCount }} orders</span>
+                            </div>
+
+                            <!-- Date Information -->
+                            <div class="date-info">
+                                <div class="date-row">
+                                    <i class="fas fa-calendar date-icon"></i>
+                                    <span class="date-text">
+                                        Started: {{ formatDate(history.startDate) }}, {{ formatTime(history.startDate)
+                                        }}
+                                    </span>
+                                </div>
+
+                                <div class="date-row" *ngIf="history.endDate">
+                                    <i class="fas fa-calendar date-icon"></i>
+                                    <span class="date-text">
+                                        Ended: {{ formatDate(history.endDate) }}, {{ formatTime(history.endDate) }}
+                                    </span>
+                                </div>
+
+                                <!-- Current Price Badge -->
+                                <div class="current-badge" *ngIf="isCurrentPrice(history, i)">
+                                    Current Price
+                                </div>
+
+                                <!-- Created By Info -->
+                                <div class="date-row" *ngIf="history.createdBy?.name">
+                                    <i class="fas fa-user date-icon"></i>
+                                    <span class="date-text">Set by: {{ history.createdBy?.name }}</span>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div class="empty-timeline" *ngIf="sortedHistory.length === 0">
+                    <i class="fas fa-history empty-icon"></i>
+                    <p class="empty-text">No price history available</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,66 +1,307 @@
-<div class="admin-qanda-table">
-  <h2>Q&A Management</h2>
-  <div class="qanda-filters">
-    <label>
-      Sort by:
-      <select [(ngModel)]="sortOrder" (change)="applyFilters()">
+<!-- Clean Navigation Bar -->
+<div class="navigation-bar mb-3">
+    <div class="nav-left">
+        <div class="nav-info">
+            <nav aria-label="breadcrumb" class="mb-1">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <i class="fas fa-home me-1"></i>
+                        <a href="/admin/dashboard" class="text-decoration-none">Dashboard</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <i class="fas fa-question-circle me-1"></i>
+                        Question Management
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Q&A</li>
+                </ol>
+            </nav>
+            <h1 class="nav-title">Q&A Management</h1>
+        </div>
+    </div>
+    <div class="nav-right">
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary btn-sm" (click)="loadQuestions()" [disabled]="loading">
+                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+            </button>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-download me-1"></i>Export
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" href="javascript:void(0)" (click)="exportToPdf()">
+                            <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Export PDF
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="javascript:void(0)" (click)="exportToExcel()">
+                            <i class="bi bi-file-earmark-excel me-2 text-success"></i>Export Excel
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div>
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>{{ errorMessage }}
+        <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+    </div>
+
+    <!-- Filter Controls Card -->
+    <div class="filter-section mb-3">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-filter me-2"></i>Filters & Search
+                    </h6>
+                    <button type="button" class="btn btn-link btn-sm text-muted p-0" (click)="resetFilters()"
+                        *ngIf="statusFilter !== 'all' || sortOrder !== 'recent'">
+                        <i class="fas fa-times me-1"></i>Clear All
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <!-- Status Filter -->
+                    <div class="col-6 col-lg-3">
+                        <label for="statusFilter" class="form-label">Status</label>
+                        <select id="statusFilter" class="form-select" [(ngModel)]="statusFilter" (change)="applyFilters()">
+                            <option value="all">All Questions</option>
+                            <option value="answered">Answered</option>
+                            <option value="unanswered">Unanswered</option>
+                        </select>
+                    </div>
+
+                    <!-- Sort Order -->
+                    <div class="col-6 col-lg-3">
+                        <label for="sortOrder" class="form-label">Sort By</label>
+                        <select id="sortOrder" class="form-select" [(ngModel)]="sortOrder" (change)="applyFilters()">
         <option value="recent">Most Recent</option>
         <option value="oldest">Oldest</option>
       </select>
-    </label>
-    <label>
-      Status:
-      <select [(ngModel)]="statusFilter" (change)="applyFilters()">
-        <option value="all">All</option>
-        <option value="answered">Answered</option>
-        <option value="unanswered">Unanswered</option>
+                    </div>
+
+                    <!-- Items per page -->
+                    <div class="col-6 col-lg-2">
+                        <label for="pageSize" class="form-label">Show</label>
+                        <select id="pageSize" class="form-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
       </select>
-    </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Table Card -->
+    <div class="data-section">
+        <div class="card">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h6 class="card-title mb-1">
+                            <i class="fas fa-list me-2"></i>Questions & Answers
+                        </h6>
+                        <small class="text-muted">
+                            Showing {{ (page - 1) * pageSize + 1 }} to
+                            {{ Math.min(page * pageSize, total) }} of {{ total }} entries
+                            <span *ngIf="filteredQuestions.length !== questions.length">
+                                (filtered from {{ questions.length }} total)
+                            </span>
+                        </small>
+                    </div>
+                    <div class="col-auto" *ngIf="!loading && total > pageSize">
+                        <small class="text-muted">
+                            Page {{ page }} of {{ Math.ceil(total / pageSize) }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-0">
+                <!-- Loading State -->
+                <div *ngIf="loading" class="loading-state">
+                    <div class="d-flex flex-column align-items-center justify-content-center py-5">
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="text-muted mb-0">Loading questions...</p>
+                    </div>
   </div>
-  <table>
-    <thead>
-      <tr>
-        <th>Product</th>
-        <th>Question</th>
-        <th>Asked By</th>
-        <th>Date</th>
-        <th>Status</th>
+
+                <!-- Data Table -->
+                <div *ngIf="!loading" class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="sortable" (click)="sort('productName')">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <span>Product</span>
+                                        <i class="fas ms-1" [class]="getSortIcon('productName')"></i>
+                                    </div>
+                                </th>
+                                <th class="sortable" (click)="sort('questionText')">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <span>Question</span>
+                                        <i class="fas ms-1" [class]="getSortIcon('questionText')"></i>
+                                    </div>
+                                </th>
+                                <th class="sortable d-none d-md-table-cell" (click)="sort('userName')">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <span>Asked By</span>
+                                        <i class="fas ms-1" [class]="getSortIcon('userName')"></i>
+                                    </div>
+                                </th>
+                                <th class="sortable d-none d-lg-table-cell" (click)="sort('createdAt')">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <span>Date</span>
+                                        <i class="fas ms-1" [class]="getSortIcon('createdAt')"></i>
+                                    </div>
+                                </th>
+                                <th class="sortable" (click)="sort('status')">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <span>Status</span>
+                                        <i class="fas ms-1" [class]="getSortIcon('status')"></i>
+                                    </div>
+                                </th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let q of filteredQuestions">
+                            <tr *ngFor="let q of filteredQuestions; trackBy: trackByQuestionId" class="table-row-hover">
         <td>
+                                    <div>
           <a [routerLink]="['/customer/product', q.productId]" class="product-link">
-            {{ q.productName }}
-          </a>
+                                            <i class="bi bi-box me-1"></i>{{ q.productName }}
+                                        </a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="question-text" [title]="q.questionText">
+                                        {{ q.questionText }}
+                                    </div>
+                                </td>
+                                <td class="d-none d-md-table-cell">
+                                    <span class="text-dark">
+                                        <i class="bi bi-person me-1"></i>{{ q.userName }}
+                                    </span>
+                                </td>
+                                <td class="d-none d-lg-table-cell">
+                                    <div class="date-info">
+                                        <div class="text-dark">
+                                            <i class="bi bi-calendar-event me-1"></i>{{ q.createdAt | date:'MMM d, y' }}
+                                        </div>
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock me-1"></i>{{ q.createdAt | date:'h:mm a' }}
+                                        </small>
+                                    </div>
         </td>
-        <td class="question-col" [title]="q.questionText">{{ q.questionText }}</td>
-        <td>{{ q.userName }}</td>
-        <td>{{ q.createdAt | date:'MMM d' }}</td>
         <td>
-          <span [class.answered]="q.answers.length > 0" [class.unanswered]="q.answers.length === 0">
+                                    <span [class]="getStatusBadgeClass(q.answers.length > 0)">
+                                        <i [ngClass]="getStatusIcon(q.answers.length > 0)" class="me-1"></i>
             {{ q.answers.length > 0 ? 'Answered' : 'Unanswered' }}
           </span>
         </td>
         <td>
-          <button *ngIf="q.answers.length === 0" (click)="openReply(q)">Reply</button>
-          <button *ngIf="q.answers.length > 0" (click)="openEditAnswer(q.answers[0])">Edit Answer</button>
-          <button (click)="deleteQuestion(q)">Delete</button>
+                                    <div class="btn-group" role="group">
+                                        <button *ngIf="q.answers.length === 0" class="btn btn-outline-primary btn-sm"
+                                            (click)="openReply(q)" title="Reply">
+                                            <i class="bi bi-reply"></i>
+                                        </button>
+                                        <button *ngIf="q.answers.length > 0" class="btn btn-outline-warning btn-sm"
+                                            (click)="openEditAnswer(q.answers[0])" title="Edit Answer">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm"
+                                            (click)="deleteQuestion(q)" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
         </td>
       </tr>
     </tbody>
   </table>
 </div>
 
-<!-- NEW MODAL BOX -->
+                <!-- Empty State -->
+                <div *ngIf="!loading && filteredQuestions.length === 0" class="empty-state">
+                    <div class="text-center py-5">
+                        <div class="empty-icon mb-3">
+                            <i class="bi bi-question-circle display-1 text-muted"></i>
+                        </div>
+                        <h5 class="text-muted mb-2">No questions found</h5>
+                        <p class="text-muted mb-3">
+                            <span *ngIf="statusFilter !== 'all'">
+                                <i class="bi bi-funnel"></i> No questions match your current filters. Try adjusting your search criteria.
+                            </span>
+                            <span *ngIf="statusFilter === 'all'">
+                                <i class="bi bi-emoji-frown"></i> No questions have been asked yet.
+                            </span>
+                        </p>
+                        <button class="btn btn-outline-primary" (click)="resetFilters()"
+                            *ngIf="statusFilter !== 'all'">
+                            <i class="bi bi-x-circle me-1"></i>Clear All Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination Footer -->
+            <div class="card-footer" *ngIf="!loading && total > pageSize">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="pagination-info">
+                        <small class="text-muted">
+                            Showing {{ (page - 1) * pageSize + 1 }} to
+                            {{ Math.min(page * pageSize, total) }} of {{ total }} entries
+                        </small>
+                    </div>
+                    <nav aria-label="Questions pagination">
+                        <ul class="pagination pagination-sm mb-0 custom-pagination">
+                            <li class="page-item" [class.disabled]="page === 1">
+                                <button class="page-link" (click)="goToPreviousPage()" [disabled]="page === 1">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                            </li>
+                            <li *ngFor="let pageNum of getPageNumbers()" class="page-item" [class.active]="pageNum === page">
+                                <button class="page-link" (click)="goToPage(pageNum)">{{ pageNum }}</button>
+                            </li>
+                            <li class="page-item" [class.disabled]="page === Math.ceil(total / pageSize)">
+                                <button class="page-link" (click)="goToNextPage()" [disabled]="page === Math.ceil(total / pageSize)">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Reply/Edit -->
 <div *ngIf="showModal" class="custom-modal-backdrop">
   <div class="custom-modal-box">
+        <div class="modal-header">
     <h3>{{ isEdit ? 'Edit Answer' : 'Reply to Question' }}</h3>
-    <textarea [(ngModel)]="modalAnswerText" rows="4" placeholder="Type your answer..."></textarea>
-    <div class="custom-modal-actions">
-      <button (click)="closeModal()">Cancel</button>
-      <button (click)="submitAnswer()">{{ isEdit ? 'Update' : 'Submit' }}</button>
-    </div>
+            <button type="button" class="btn-close" (click)="closeModal()" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <textarea [(ngModel)]="modalAnswerText" rows="4" placeholder="Type your answer..." class="form-control"></textarea>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
+            <button class="btn btn-primary" (click)="submitAnswer()" [disabled]="!modalAnswerText.trim()">
+                {{ isEdit ? 'Update' : 'Submit' }}
+            </button>
+        </div>
   </div>
 </div>

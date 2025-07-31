@@ -106,6 +106,30 @@ public class CategoryService {
                     dto.setParentCategoryId(category.getParentCategory() != null ? category.getParentCategory().getId() : null);
                     dto.setParentCategoryName(category.getParentCategory() != null ? category.getParentCategory().getName() : null);
                     dto.setImgPath(category.getImgPath());
+                    dto.setDelFg(category.getDelFg());
+                    // Set optionTypes
+                    List<CategoryOptionEntity> categoryOptions = cateOptionRepo.findByCategoryIdAndDelFg(category.getId(), 1);
+                    List<OptionDTO> optionDTOs = categoryOptions.stream()
+                            .map(catOpt -> mapper.map(catOpt.getOption(), OptionDTO.class))
+                            .collect(Collectors.toList());
+                    dto.setOptionTypes(optionDTOs);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<CategoryDTO> getAllCategoriesWithStatus() {
+        List<CategoryEntity> categories = repo.findAll(); // Get all categories including inactive
+
+        return categories.stream()
+                .map(category -> {
+                    CategoryDTO dto = new CategoryDTO();
+                    dto.setId(category.getId());
+                    dto.setName(category.getName());
+                    dto.setParentCategoryId(category.getParentCategory() != null ? category.getParentCategory().getId() : null);
+                    dto.setParentCategoryName(category.getParentCategory() != null ? category.getParentCategory().getName() : null);
+                    dto.setImgPath(category.getImgPath());
+                    dto.setDelFg(category.getDelFg());
                     // Set optionTypes
                     List<CategoryOptionEntity> categoryOptions = cateOptionRepo.findByCategoryIdAndDelFg(category.getId(), 1);
                     List<OptionDTO> optionDTOs = categoryOptions.stream()
@@ -168,7 +192,14 @@ public class CategoryService {
         CategoryEntity existing = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
 
-        existing.setDelFg(0);
+        // If category is already inactive (delFg = 0), restore it to active (delFg = 1)
+        // If category is active (delFg = 1), make it inactive (delFg = 0)
+        if (existing.getDelFg() == 0) {
+            existing.setDelFg(1); // Restore to active
+        } else {
+            existing.setDelFg(0); // Make inactive
+        }
+        
         repo.save(existing);
     }
 

@@ -56,6 +56,8 @@ public class ProductService {
     @Autowired
     private ProductVariantRepository variantRepo;
     @Autowired
+    private OrderItemRepository orderItemRepo;
+    @Autowired
     private VariantSerialService variantSerialService;
     @Autowired
     private ModelMapper mapper;
@@ -158,9 +160,16 @@ public class ProductService {
 
         // Handle variants
         Map<Long, ProductVariantEntity> existingVariants = variantRepo
-                .findByProductIdAndDelFg(product.getId(), 1)
+                .findByProductId(product.getId())
                 .stream()
                 .collect(Collectors.toMap(ProductVariantEntity::getId, v -> v));
+
+
+//        Map<Long, ProductVariantEntity> existingVariants = variantRepo
+//                .findByProductIdAndDelFg(product.getId(), 1)
+//                .stream()
+//                .collect(Collectors.toMap(ProductVariantEntity::getId, v -> v));
+
         if (request.getVariants() != null) {
             addProductVariants(product, request.getVariants(), existingVariants, createdBy, httpRequest);
         }
@@ -536,59 +545,6 @@ public class ProductService {
         variant.getPrices().add(newPriceEntity);
     }
 
-//    private ProductListItemDTO mapToProductListItemDTO(ProductEntity product) {
-//        ProductDTO productDTO = mapper.map(product, ProductDTO.class);
-//        CategoryDTO categoryDTO = mapper.map(product.getCategory(), CategoryDTO.class);
-//        BrandDTO brandDTO = product.getBrand() != null ? mapper.map(product.getBrand(), BrandDTO.class) : null;
-//
-//        List<ProductVariantEntity> variantEntities = variantRepo.findByProductIdAndDelFg(product.getId(), 1);
-//        List<ProductVariantDTO> variants = mapToProductVariantDTOList(variantEntities);
-//
-//        List<ProductOptionDTO> options = productOptionRepo.findByProduct(product).stream()
-//                .map(po -> {
-//                    OptionEntity option = po.getOption();
-//
-//                    List<OptionValueEntity> usedOptionValues = product.getVariants().stream()
-//                            .filter(variant -> variant.getDelFg() != null && variant.getDelFg() == 1)
-//                            .flatMap(variant -> variant.getVariantOptionValues().stream())
-//                            .map(VariantOptionValueEntity::getOptionValue)
-//                            .filter(val -> val.getOption().getId().equals(option.getId()))
-//                            .distinct()
-//                            .collect(Collectors.toList());
-//
-//                    ProductOptionDTO optionDTO = new ProductOptionDTO();
-//                    optionDTO.setId(option.getId());
-//                    optionDTO.setName(option.getName());
-//                    optionDTO.setOptionValues(usedOptionValues.stream().map(val -> {
-//                        OptionValueDTO valDTO = new OptionValueDTO();
-//                        valDTO.setId(val.getId());
-//                        valDTO.setOptionId(option.getId());
-//                        valDTO.setValue(val.getValue());
-//                        valDTO.setCreatedDate(val.getCreatedDate());
-//                        valDTO.setUpdatedDate(val.getUpdatedDate());
-//                        valDTO.setDel_fg(val.getDelFg());
-//                        return valDTO;
-//                    }).collect(Collectors.toList()));
-//
-//                    return optionDTO;
-//                }).collect(Collectors.toList());
-//
-//        List<ProductImageDTO> images = product.getProductImages().stream()
-//                .map(img -> mapper.map(img, ProductImageDTO.class))
-//                .collect(Collectors.toList());
-//
-//        ProductListItemDTO item = new ProductListItemDTO();
-//        item.setId(product.getId());
-//        item.setProduct(productDTO);
-//        item.setBrand(brandDTO);
-//        item.setCategory(categoryDTO);
-//        item.setVariants(variants);
-//        item.setOptions(options);
-//        item.setImages(images);
-//
-//        return item;
-//    }
-
     private ProductListItemDTO mapToProductListItemDTO(ProductEntity product, boolean forAdmin) {
         ProductDTO productDTO = mapper.map(product, ProductDTO.class);
         CategoryDTO categoryDTO = mapper.map(product.getCategory(), CategoryDTO.class);
@@ -661,43 +617,67 @@ public class ProductService {
                     dto.setCreatedDate(variant.getCreatedDate());
                     dto.setDelFg(variant.getDelFg());
 
+                    // ✅ CURRENT PRICE
                     VariantPriceEntity currentPrice = variant.getPrices().stream()
-                            .filter(price ->
-                                    (price.getStartDate() == null || !price.getStartDate().isAfter(now)) &&
-                                            (price.getEndDate() == null || !price.getEndDate().isBefore(now))
-                            )
-                            .findFirst()
-                            .orElse(null);
+                            .filter(price -> (price.getStartDate() == null || !price.getStartDate().isAfter(now)) &&
+                                    (price.getEndDate() == null || !price.getEndDate().isBefore(now)))
+                            .findFirst().orElse(null);
 
                     if (currentPrice != null) {
                         dto.setPrice(currentPrice.getPrice());
                     }
 
+                    // ✅ OPTIONS
                     dto.setOptions(variant.getVariantOptionValues().stream()
                             .filter(vov -> forAdmin || (vov.getOptionValue().getDelFg() != null && vov.getOptionValue().getDelFg() == 1))
                             .map(vov -> {
+                                OptionEntity opt = vov.getOptionValue().getOption();
                                 OptionValueEntity val = vov.getOptionValue();
-                                OptionEntity opt = val.getOption();
 
                                 VariantOptionDTO optDTO = new VariantOptionDTO();
                                 optDTO.setOptionId(opt.getId());
                                 optDTO.setOptionName(opt.getName());
                                 optDTO.setOptionValueId(val.getId());
                                 optDTO.setValueName(val.getValue());
-
                                 return optDTO;
                             }).collect(Collectors.toList())
                     );
+
+                    // ✅ PRICE HISTORY WITH ORDER COUNT
+                    if (forAdmin) {
+                        List<VariantPriceDTO> priceHistory = variant.getPrices().stream()
+                                .sorted(Comparator.comparing(VariantPriceEntity::getStartDate))
+                                .map(price -> {
+                                    VariantPriceDTO priceDTO = new VariantPriceDTO();
+                                    priceDTO.setId(price.getId());
+                                    priceDTO.setPrice(price.getPrice());
+                                    priceDTO.setCreatedBy(userDTO.fromEntity(price.getCreatedBy()));
+                                    priceDTO.setStartDate(price.getStartDate());
+                                    priceDTO.setEndDate(price.getEndDate());
+
+                                    // Fetch order count in this price period
+                                    Long orderCount = orderItemRepo.countOrdersForVariantInPeriod(
+                                            variant.getId(),
+                                            price.getStartDate(),
+                                            price.getEndDate() != null ? price.getEndDate() : now
+                                    );
+                                    priceDTO.setOrderCount(orderCount);
+                                    return priceDTO;
+                                }).collect(Collectors.toList());
+
+                        dto.setPriceHistory(priceHistory);
+                    }
 
                     return dto;
                 })
                 .collect(Collectors.toList());
     }
 
-//    private List<ProductVariantDTO> mapToProductVariantDTOList(List<ProductVariantEntity> variants) {
+//    private List<ProductVariantDTO> mapToProductVariantDTOList(List<ProductVariantEntity> variants, boolean forAdmin) {
 //        LocalDateTime now = LocalDateTime.now();
 //
 //        return variants.stream()
+//                .filter(variant -> forAdmin || (variant.getDelFg() != null && variant.getDelFg() == 1))
 //                .map(variant -> {
 //                    ProductVariantDTO dto = new ProductVariantDTO();
 //                    dto.setId(variant.getId());
@@ -721,6 +701,7 @@ public class ProductService {
 //                    }
 //
 //                    dto.setOptions(variant.getVariantOptionValues().stream()
+//                            .filter(vov -> forAdmin || (vov.getOptionValue().getDelFg() != null && vov.getOptionValue().getDelFg() == 1))
 //                            .map(vov -> {
 //                                OptionValueEntity val = vov.getOptionValue();
 //                                OptionEntity opt = val.getOption();
@@ -746,8 +727,7 @@ public class ProductService {
         return new InputStreamResource(is);
     }
 
-// Process uploaded ZIP file (Excel + images)
-
+    // Process uploaded ZIP file (Excel + images)
     @Transactional
     public void processZipFile(MultipartFile zipFile, UserEntity createdBy, HttpServletRequest httpRequest) throws IOException {
         Path tempDir = Files.createTempDirectory("uploadZip");
@@ -1526,12 +1506,14 @@ public class ProductService {
 
         if (variant.getDelFg() != 0) {
             Integer oldDelFg = variant.getDelFg();
-
             variant.setDelFg(0);
             variantRepo.save(variant);
 
+            Long productId = variant.getProduct().getId(); // get parent product ID
+
             Map<String, Object> auditData = new HashMap<>();
-            auditData.put("delFg", Map.of("old", oldDelFg, "new", 0));
+            auditData.put("productId", productId);
+            auditData.put("changes", Map.of("delFg", Map.of("old", oldDelFg, "new", 0)));
 
             auditPublisher.publishEvent(new AuditEventDTO(
                     "SOFT_DELETE",
@@ -1546,6 +1528,7 @@ public class ProductService {
             ));
         }
     }
+
 
     @Transactional
     public void restoreProduct(Long productId, UserEntity currentUser) {
@@ -1586,8 +1569,11 @@ public class ProductService {
             variant.setDelFg(1); // restore variant
             variantRepo.save(variant);
 
+            Long productId = variant.getProduct().getId(); // get parent product ID
+
             Map<String, Object> auditData = new HashMap<>();
-            auditData.put("delFg", Map.of("old", oldDelFg, "new", 1));
+            auditData.put("productId", productId);
+            auditData.put("changes", Map.of("delFg", Map.of("old", oldDelFg, "new", 1)));
 
             auditPublisher.publishEvent(new AuditEventDTO(
                     "RESTORE",
