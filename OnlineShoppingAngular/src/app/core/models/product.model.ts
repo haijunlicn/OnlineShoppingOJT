@@ -4,6 +4,7 @@ import type { OptionTypeDTO, OptionValueDTO } from "./option.model";
 import { User } from "./User";
 import type { VariantOptionDTO } from "./variant.model";
 
+
 // Product Variant
 export interface ProductVariantDTO {
   id?: number;
@@ -77,6 +78,7 @@ export interface ProductListItemDTO {
   category: CategoryDTO;
   variants: ProductVariantDTO[];
   options: ProductOptionDTO[];
+  
 }
 
 // Price history per variant
@@ -86,6 +88,7 @@ export interface VariantPriceDTO {
   startDate: string;
   endDate?: string | null;
   orderCount?: number;
+  createdBy?: User;
 }
 
 // Product Image
@@ -106,6 +109,8 @@ export interface ProductCardItem extends ProductListItemDTO {
   originalPrice?: number;
   discountedPrice?: number;
   discountBreakdown?: { label: string; amount: number }[];
+  reviewAverage?: number;
+  reviewTotal?: number;
 }
 
 // Image Pool Item (for image upload panel)

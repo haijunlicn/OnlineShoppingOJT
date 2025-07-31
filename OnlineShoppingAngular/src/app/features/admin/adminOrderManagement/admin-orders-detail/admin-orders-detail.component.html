@@ -477,6 +477,14 @@
   </div>
 </div>
 
+<!-- Payment Proof Modal -->
+<div *ngIf="showProofModal" class="modal-backdrop" (click)="closeProofModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeProofModal()">&times;</button>
+    <img [src]="proofImageUrl" alt="Payment Proof" class="modal-image" />
+  </div>
+</div>
+
 <!-- Modern Rejection Reason Modal -->
 <div class="modern-modal-overlay" [class.show]="showRejectionReasonModal" *ngIf="showRejectionReasonModal">
   <div class="modern-modal rejection-modal">

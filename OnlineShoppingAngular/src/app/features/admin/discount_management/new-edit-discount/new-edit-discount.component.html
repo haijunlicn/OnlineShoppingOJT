@@ -245,18 +245,18 @@
                     </div>
                   </div>
   
-                  <div class="form-grid">
+                  <div class="form-grid" *ngIf="isCouponMechanism(i)">
                     <div class="form-group">
                       <label for="usageLimit" class="form-label">Total Usage Limit *</label>
                       <input type="number" id="usageLimit" formControlName="usageLimitTotal" class="form-control" min="1"
-                        placeholder="100">
+                        placeholder="100" [disabled]="true">
                       <div class="field-hint">Maximum number of times this offer can be used</div>
                     </div>
   
                     <div class="form-group">
                       <label for="perUserLimit" class="form-label">Per Customer Limit *</label>
                       <input type="number" id="perUserLimit" formControlName="usageLimitPerUser" class="form-control"
-                        min="1" placeholder="1">
+                        min="1" placeholder="1" [disabled]="true">
                       <div class="field-hint">How many times each customer can use this</div>
                     </div>
                   </div>
@@ -404,6 +404,12 @@
         <div *ngIf="errors['general']" class="alert alert-danger">
           <i class="fas fa-exclamation-triangle me-2"></i>
           {{ errors['general'] }}
+        </div>
+
+        <!-- Success Messages -->
+        <div *ngIf="errors['success']" class="alert alert-success">
+          <i class="fas fa-check-circle me-2"></i>
+          {{ errors['success'] }}
         </div>
       </form>
     </div>

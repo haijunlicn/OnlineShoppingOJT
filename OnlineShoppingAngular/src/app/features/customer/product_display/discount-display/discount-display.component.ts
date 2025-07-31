@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { DiscountDisplayDTO } from '@app/core/models/discount';
 import { DiscountTextService } from '@app/core/services/discount-text.service';
-
+import { Router } from '@angular/router';
 
 @Component({
   selector: "app-discount-display",
@@ -26,16 +26,64 @@ export class DiscountDisplayComponent implements OnInit, OnChanges {
   couponCards: DiscountDisplayDTO[] = []
   regularDiscounts: DiscountDisplayDTO[] = []
 
-  constructor(private discountTextService: DiscountTextService) { }
+  // Detect parent component for conditional styling
+  isHomePage = false
+  isProductList = false
+
+  constructor(
+    private discountTextService: DiscountTextService,
+    private router: Router
+  ) { }
 
   ngOnInit(): void {
     this.categorizeDiscounts()
+    this.detectParentComponent()
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes["discountHints"] || changes["displayMode"]) {
       this.categorizeDiscounts()
     }
+  }
+
+  private detectParentComponent(): void {
+    const currentUrl = this.router.url;
+    console.log("🔍 Current URL for discount display:", currentUrl);
+    
+    // Check if we're in home page (multiple possible patterns)
+    if (currentUrl.includes('/customer/home') || 
+        currentUrl === '/customer/home' || 
+        currentUrl === '/customer' ||
+        currentUrl === '/') {
+      this.isHomePage = true;
+      console.log("🏠 Detected: Home page discount display");
+    }
+    // Check if we're in product list (multiple possible patterns)
+    else if (currentUrl.includes('/customer/productList') || 
+             currentUrl === '/customer/productList' ||
+             currentUrl.includes('/customer/products')) {
+      this.isProductList = true;
+      console.log("📋 Detected: Product list discount display");
+    }
+    // Default to product list if not home page
+    else {
+      this.isProductList = true;
+      console.log("📋 Default: Product list discount display");
+    }
+    
+    console.log("📍 Component context:", {
+      isHomePage: this.isHomePage,
+      isProductList: this.isProductList,
+      currentUrl: currentUrl
+    });
+  }
+
+  // Get conditional margin class for discount badges
+  getDiscountBadgesMarginClass(): string {
+    if (this.isHomePage) {
+      return 'home-page-discount-badges';
+    }
+    return 'product-list-discount-badges';
   }
 
   private categorizeDiscounts(): void {

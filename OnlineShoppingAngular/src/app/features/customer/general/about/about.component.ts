@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-about',
@@ -7,6 +8,9 @@ import { Component } from '@angular/core';
   styleUrls: ['./about.component.css']
 })
 export class AboutComponent {
+  
+  constructor(private router: Router) {}
+
   // Timeline for "Our Story"
   timelineData = [
     { year: '2021', description: 'Founded in a small village with a big dream.' },
@@ -17,7 +21,7 @@ export class AboutComponent {
 
   // Team Quotes
   teamQuotes = [
-    { text: 'We treat every order as if it’s for our own family.', name: 'Aung', role: 'Co-Founder' },
+    { text: 'We treat every order as if it\'s for our own family.', name: 'Aung', role: 'Co-Founder' },
     { text: 'Customer messages make my day!', name: 'May', role: 'Customer Support' },
     { text: 'Packing with care is our secret ingredient.', name: 'Ko Ko', role: 'Warehouse Lead' }
   ];
@@ -30,66 +34,101 @@ export class AboutComponent {
     { year: '2024', title: 'Warehouse Team', description: 'Now a team of ten, including delivery and packing staff.' }
   ];
 
-  // Slideshow: A Day in Our Life
-  dayInLifeSlides = [
-    { image: '/placeholder.svg?height=350&width=600', caption: 'Morning team huddle' },
-    { image: '/placeholder.svg?height=350&width=600', caption: 'Packing orders with care' },
-    { image: '/placeholder.svg?height=350&width=600', caption: 'Answering customer messages' },
-    { image: '/placeholder.svg?height=350&width=600', caption: 'Celebrating a big delivery!' }
-  ];
-  currentSlide = 0;
-
-  previousSlide() {
-    this.currentSlide = (this.currentSlide === 0)
-      ? this.dayInLifeSlides.length - 1
-      : this.currentSlide - 1;
-  }
-
-  nextSlide() {
-    this.currentSlide = (this.currentSlide + 1) % this.dayInLifeSlides.length;
-  }
-
-  // Mission & Values
-  valuesData = [
-    { icon: '🤝', title: 'Trust', description: 'We build lasting relationships with honesty and transparency.' },
-    { icon: '🌱', title: 'Growth', description: 'We constantly improve ourselves and our service.' },
-    { icon: '💡', title: 'Innovation', description: 'We seek new ways to delight our customers.' },
-    { icon: '🎯', title: 'Customer First', description: 'Your happiness is our top priority.' }
-  ];
-
   // Team Members
   teamData = [
-    { image: '/placeholder.svg?height=90&width=90', name: 'Aung', role: 'Co-Founder' },
-    { image: '/placeholder.svg?height=90&width=90', name: 'May', role: 'Co-Founder' },
-    { image: '/placeholder.svg?height=90&width=90', name: 'Ko Ko', role: 'Warehouse Lead' },
-    { image: '/placeholder.svg?height=90&width=90', name: 'Su', role: 'Customer Support' }
+    { image: 'assets/img/Nan.jpg', name: 'Nan', role: 'Co-Founder' },
+    { image: 'assets/img/May.jpg', name: 'May', role: 'Co-Founder' },
+    { image: 'assets/img/nyi.jpg', name: 'nyi', role: 'Warehouse Lead' },
+    { image: '/assets/img/Su.jpg', name: 'Su', role: 'Customer Support' }
   ];
 
-  // Product Categories
-  categoriesData = [
-    { icon: '🍚', title: 'Groceries', description: 'Everyday essentials delivered to your door.' },
-    { icon: '🍪', title: 'Snacks', description: 'Local and imported treats for every craving.' },
-    { icon: '🧴', title: 'Personal Care', description: 'Quality products for your daily routine.' }
+  // Profile Data
+  profileData = {
+    name: 'Britium Gallery',
+    role: 'Online Shopping Platform',
+    stats: [
+      { number: '2021', description: 'Founded in a small village' },
+      { number: '5000+', description: 'Happy customers served' },
+      { number: '10', description: 'Team members strong' }
+    ]
+  };
+
+  // Biography Text
+  bioTexts = [
+    'In 2021, we started from a small village with the spirit of delivering high-quality products straight to your home.',
+    'With a customer-first mindset, we strive to understand each individual\'s needs and provide the best service possible. Your trust and support have been the most important parts of our journey so far.',
+    'We\'re not a big corporation. We\'re your neighbors in Yangon who decided to start something special. When you order from us, you\'re supporting a small team that genuinely cares about every package we send.'
   ];
 
-  // Testimonials
-  testimonialsData = [
-    { text: 'Fast delivery and friendly service. Highly recommend!', author: 'Myo' },
-    { text: 'Everything arrived carefully packed. Will order again!', author: 'Ei Mon' },
-    { text: 'Best online store in Yangon!', author: 'Zaw' }
+  // Quotes
+  quotes = [
+    {
+      text: 'In 2021, we started from a small village with the spirit of delivering high-quality products straight to your home.',
+      author: null
+    },
+    {
+      text: 'With a customer-first mindset, we strive to understand each individual\'s needs and provide the best service possible.',
+      author: null
+    },
+    {
+      text: 'The privilege of doing the extra work is the work itself.',
+      author: 'BRITIUM TEAM'
+    }
   ];
 
-  // Delivery Partners
-  deliveryPartners = ['J&T Express', 'Royal Express', 'Yangon Door2Door'];
+  // Collaboration Data
+  collaboration = {
+    text: 'May and I have co-founded this business and implemented our vision together.',
+    link: 'Learn more about May'
+  };
 
-  // CTA Button Actions
+  // Testimonial
+  testimonial = {
+    text: 'Britium Gallery grabbed our ideas and quickly developed a distinct online presence for our shopping needs, which can be more than excellent.',
+    author: 'HAPPY CUSTOMER',
+    categories: ['Customer', 'Local', 'Trusted']
+  };
+
+  // Footer Links
+  footerLinks = [
+    'About Us',
+    'Contact',
+    'Privacy Policy',
+    'Terms of Service',
+    'Customer Support'
+  ];
+
+  // Social Media
+  socialMedia = [
+    { name: 'Facebook', icon: 'fab fa-facebook' },
+    { name: 'Instagram', icon: 'fab fa-instagram' },
+    { name: 'Twitter', icon: 'fab fa-twitter' }
+  ];
+
+  // Navigation
+  navigation = {
+    logo: 'ABOUT US',
+    menuText: 'NAVIGATION'
+  };
+
+  // Hero Section
+  hero = {
+    name: 'BRITIUM GALLERY',
+    image: '/placeholder.svg?height=600&width=800'
+  };
+
+  // Navigation methods
   shopNow() {
-    // Example: Navigate to shop page
-    window.location.href = '/customer/productList';
+    this.router.navigate(['/customer/productList']);
   }
 
   contactUs() {
-    // Example: Navigate to contact page
-    window.location.href = '/customer/contact';
+    this.router.navigate(['/customer/contact']);
+  }
+
+  // Learn more link handler
+  learnMoreAboutMay() {
+    // Could navigate to a detailed team member page
+    console.log('Learn more about May clicked');
   }
 }

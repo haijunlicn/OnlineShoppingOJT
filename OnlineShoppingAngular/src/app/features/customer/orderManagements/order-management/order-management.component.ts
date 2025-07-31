@@ -16,6 +16,7 @@ import { DeliveryMethod } from '../../../../core/models/delivery-method.model';
 import Swal from 'sweetalert2';
 import { DiscountDisplayDTO, DiscountType, MechanismType, OrderDiscountMechanismDTO } from '@app/core/models/discount';
 import { OrderItemDiscountMechanismDTO, OrderItemRequestDTO } from '@app/core/models/order.dto';
+import { AlertService } from '@app/core/services/alert.service';
 
 // Enhanced cart item interface with discount information
 interface CartItemWithDiscounts extends CartItem {
@@ -93,6 +94,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     private storeLocationService: StoreLocationService,
     private variantService: VariantService,
     private deliveryMethodService: DeliveryMethodService,
+    private alertService: AlertService,
     @Inject(PLATFORM_ID) private platformId: Object,
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId)
@@ -384,15 +386,31 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
             }
           })
         } else {
+          // Find failed items and map them to product names and variants
           const failedItems = responses
             .filter((response) => !response.success)
-            .map((response) => response.message)
-            .join("\n")
-          Swal.fire(`Stock update failed for some items:\n${failedItems}`, "", "error")
+            .map((response, index) => {
+              // Find the corresponding order item for this response
+              const orderItem = this.orderItems[index]
+              if (orderItem) {
+                return `${orderItem.productName} (${orderItem.variantSku}) - ${response.message}`
+              }
+              return response.message
+            })
+            .join(", ")
+          
+          // Show toast notification with specific product names and variants
+          this.alertService.toast(`Insufficient stock: ${failedItems}`, "error")
         }
       },
       error: (error) => {
-        Swal.fire(`Stock update failed: ${error?.error || "Server error"}`, "", "error")
+        // Create a list of all products and variants that were attempted to update
+        const attemptedItems = this.orderItems
+          .map((item) => `${item.productName} (${item.variantSku})`)
+          .join(", ")
+        
+        // Show toast notification for server errors with product details
+        this.alertService.toast(`Not enough stock: ${attemptedItems}. ${error?.error || "Server error"}`, "error")
       },
     })
   }
@@ -643,22 +661,35 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
       location.id = this.newAddress.id
       const updateSub = this.locationService.updateLocation(location).subscribe({
         next: () => {
-          Swal.fire("Address updated successfully!", "", "success")
-          this.loadAddresses()
+        this.loadAddresses()
           this.showAddressForm = false
           this.cleanupMap()
-        },
-        error: () => Swal.fire("Failed to update address.", "", "error"),
+        this.alertService.toast(" Add Address Successfully !", "success")
+      },
+        error: () => this.alertService.toast("Failed to update address.", "error"),
       })
       this.subscriptions.push(updateSub)
     } else {
       const saveSub = this.locationService.saveLocation(location).subscribe({
-        next: () => {
-          Swal.fire("Address saved successfully!", "", "success")
-          this.loadAddresses()
+
+
+
+
+        // next: () => {
+        //   Swal.fire("Address saved successfully!", "", "success")
+        //   this.loadAddresses()
+        //   this.showAddressForm = false
+        //   this.cleanupMap()
+        // },
+
+          next: () => {
+        this.loadAddresses()
           this.showAddressForm = false
           this.cleanupMap()
-        },
+        this.alertService.toast(" Add Address Successfully !", "success")
+      },
+
+
         error: () => Swal.fire("Failed to save address.", "", "error"),
       })
       this.subscriptions.push(saveSub)
@@ -666,15 +697,15 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
   }
 
   deleteAddress(id: number): void {
-    if (!id || !confirm("Are you sure you want to delete this address?")) return
+    if (!id || !confirm) return
     this.locationService.deleteLocation(id).subscribe({
       next: () => {
         this.loadAddresses()
-        Swal.fire("Address deleted successfully.", "", "success")
+        this.alertService.toast(" Address Delete Successfully !", "success")
       },
       error: (err: any) => {
         console.error("Error deleting address:", err)
-        Swal.fire("Failed to delete address.", "", "error")
+        this.alertService.toast(" Failed to delete address !", "error")
       },
     })
   }

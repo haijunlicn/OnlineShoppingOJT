@@ -9,7 +9,8 @@ export interface CategoryDTO {
   optionTypes?: OptionTypeDTO[];
   imgPath?: string;
   level?: number;
-  delFg?: number; // Backend soft delete flag: 1=active, 0=inactive
+  delFg?: number;
+  productCount?: number;
 }
 
 export interface CategoryFlatDTO extends CategoryDTO {

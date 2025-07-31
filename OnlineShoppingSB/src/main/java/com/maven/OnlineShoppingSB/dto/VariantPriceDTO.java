@@ -13,6 +13,7 @@ public class VariantPriceDTO {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private Long orderCount;
+    private userDTO createdBy;
 
     public static VariantPriceDTO fromEntity(VariantPriceEntity entity) {
         if (entity == null) return null;

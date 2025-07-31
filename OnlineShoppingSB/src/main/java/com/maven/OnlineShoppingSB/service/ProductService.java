@@ -651,6 +651,7 @@ public class ProductService {
                                     VariantPriceDTO priceDTO = new VariantPriceDTO();
                                     priceDTO.setId(price.getId());
                                     priceDTO.setPrice(price.getPrice());
+                                    priceDTO.setCreatedBy(userDTO.fromEntity(price.getCreatedBy()));
                                     priceDTO.setStartDate(price.getStartDate());
                                     priceDTO.setEndDate(price.getEndDate());
 

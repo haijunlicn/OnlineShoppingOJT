@@ -6,7 +6,6 @@
 
     <!-- Main Layout -->
     <div class="main-layout">
-
       <!-- Horizontal Groups & Filters Card -->
       <div class="horizontal-filters-card">
         <div class="filters-header">
@@ -410,6 +409,10 @@
                       <i class="fas fa-arrow-right"></i>
                       {{ getLogicLabel(group.logicOperator) }}
                     </span>
+                    <button *ngIf="group.id != null" class="delete-condition-btn"
+                      (click)="deleteConditionGroup(group.id)" title="Delete this condition group">
+                      <i class="fas fa-trash"></i>
+                    </button>
                   </div>
 
                   <!-- Conditions List -->
@@ -419,10 +422,6 @@
                       <span class="condition-description">
                         {{ getConditionDisplay(cond) }}
                       </span>
-                      <button *ngIf="group.id != null" class="delete-condition-btn"
-                        (click)="deleteConditionGroup(group.id)" title="Delete this condition group">
-                        <i class="fas fa-trash"></i>
-                      </button>
                     </li>
                   </ul>
                 </div>

@@ -109,7 +109,7 @@ public class DiscountController {
 
     @PutMapping("/updateDiscount/{id}")
     public ResponseEntity<?> updateDiscount(@PathVariable Integer id, @RequestBody DiscountES_A dto) {
-
+        try {
             dto.setId(id);
 
             // sysout for debugging
@@ -120,8 +120,21 @@ public class DiscountController {
             System.out.println("Full DTO: " + dto);
 
             discountService.updateDiscount(dto);
-            return ResponseEntity.ok("success");
-
+            
+            // Return JSON format for success
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Discount updated successfully");
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            // Return JSON format for error
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("error", e.getClass().getSimpleName());
+            return ResponseEntity.status(500).body(errorResponse);
+        }
     }
 
     @PostMapping("/groups/{groupId}/conditions")

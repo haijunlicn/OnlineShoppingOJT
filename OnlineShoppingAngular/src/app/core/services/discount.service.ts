@@ -67,7 +67,7 @@ export class DiscountService {
     return this.http.put(`${this.apiUrl}/updateDiscount/${id}`, discount);
   }
 
-  
+
   // DELETE
   deleteDiscount(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/deleteDisount/${id}`);

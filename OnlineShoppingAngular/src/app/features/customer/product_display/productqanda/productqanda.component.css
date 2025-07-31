@@ -1,0 +1,577 @@
+/* Import global color variables */
+:root {
+  --color-primary: #142925;
+  --color-accent: #e6ba62;
+  --color-accentLight: #fff3ac;
+  --color-secondary: #03110d;
+  --color-brown: #3d3d3d;
+  --color-background: #f5f5f3;
+  --color-border: rgba(191, 161, 106, 0.2);
+  --color-shadow: rgba(15, 61, 46, 0.1);
+  --color-highlight: #d6b56c;
+  --color-success: #198754;
+  --color-danger: #470505;
+}
+
+.qanda-section {
+  background-color: white;
+  color: var(--color-primary);
+  padding: 0;
+  border-radius: 0;
+  font-family: 'Segoe UI', sans-serif;
+  max-width: 100%;
+  margin: 0;
+  box-shadow: none;
+  border: none;
+}
+
+.qanda-header {
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--color-accent);
+  padding-bottom: 0.75rem;
+}
+
+.qanda-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.qanda-title i {
+  color: var(--color-accent);
+  font-size: 1.3rem;
+}
+
+/* Ask Question Section */
+.ask-box {
+  margin-bottom: 2rem;
+  background: var(--color-background);
+  border-radius: 8px;
+  padding: 1.5rem;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 8px var(--color-shadow);
+}
+
+.ask-input-container {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.ask-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  background: white;
+  color: var(--color-primary);
+}
+
+.ask-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(230, 186, 98, 0.1);
+}
+
+.ask-button {
+  padding: 0.75rem 1.5rem;
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.ask-button:hover {
+  background-color: #075631;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(20, 41, 37, 0.2);
+}
+
+.ask-button i {
+  font-size: 0.9rem;
+}
+
+/* Login Alert */
+.login-alert {
+  background: linear-gradient(135deg, var(--color-accentLight) 0%, #fff8e1 100%);
+  padding: 1.25rem;
+  border-left: 4px solid var(--color-accent);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  box-shadow: 0 2px 8px var(--color-shadow);
+}
+
+.login-alert i {
+  color: var(--color-accent);
+  font-size: 1.2rem;
+  margin-top: 0.1rem;
+}
+
+.alert-content h6 {
+  margin: 0 0 0.25rem 0;
+  font-weight: 600;
+  color: var(--color-primary);
+  font-size: 1rem;
+}
+
+.alert-content p {
+  margin: 0;
+  color: var(--color-brown);
+  font-size: 0.9rem;
+}
+
+/* Q&A List */
+.qanda-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.qanda-item {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 8px var(--color-shadow);
+  transition: all 0.3s ease;
+}
+
+.qanda-item:hover {
+  box-shadow: 0 4px 16px var(--color-shadow);
+  border-color: var(--color-accent);
+}
+
+/* Question Row */
+.q-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.q-icon-container {
+  flex-shrink: 0;
+}
+
+.q-icon {
+  font-weight: bold;
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  text-align: center;
+  line-height: 32px;
+  font-size: 1rem;
+  display: block;
+  box-shadow: 0 2px 8px var(--color-shadow);
+}
+
+.q-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.q-text {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+  word-break: break-word;
+}
+
+.q-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-brown);
+  flex-wrap: wrap;
+}
+
+.user-name {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.separator {
+  color: var(--color-brown);
+  opacity: 0.6;
+}
+
+.date {
+  font-style: italic;
+}
+
+.q-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+}
+
+.action-btn.edit-btn {
+  color: var(--color-primary);
+  border-color: var(--color-accent);
+}
+
+.action-btn.edit-btn:hover {
+  background-color: var(--color-accentLight);
+  color: var(--color-accent);
+  transform: translateY(-1px);
+}
+
+.action-btn.delete-btn {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.action-btn.delete-btn:hover {
+  background-color: var(--color-danger);
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Answer Row */
+.a-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-left: 2rem;
+  padding: 1rem;
+  background: var(--color-background);
+  border-radius: 8px;
+  border-left: 3px solid var(--color-accent);
+  margin-top: 0.75rem;
+}
+
+.a-icon-container {
+  flex-shrink: 0;
+}
+
+.a-icon {
+  font-weight: bold;
+  background-color: var(--color-accent);
+  color: var(--color-primary);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  text-align: center;
+  line-height: 28px;
+  font-size: 0.9rem;
+  display: block;
+  box-shadow: 0 2px 6px var(--color-shadow);
+}
+
+.a-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.a-text {
+  font-size: 0.95rem;
+  color: var(--color-primary);
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+  word-break: break-word;
+}
+
+.a-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--color-brown);
+  flex-wrap: wrap;
+}
+
+.admin-name {
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.answer-label {
+  font-weight: 500;
+  color: var(--color-success);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: white;
+  border-radius: 12px;
+  border: 2px dashed var(--color-border);
+  margin-top: 1rem;
+}
+
+.empty-state-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.empty-state-content i {
+  font-size: 3rem;
+  color: var(--color-accent);
+  opacity: 0.7;
+}
+
+.empty-state-content h6 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.empty-state-content p {
+  margin: 0;
+  color: var(--color-brown);
+  font-size: 0.95rem;
+}
+
+/* Edit Modal */
+.edit-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.edit-modal-box {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+.modal-header {
+  background: var(--color-background);
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.modal-title i {
+  color: var(--color-accent);
+}
+
+.custom-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--color-brown);
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+}
+
+.custom-close-btn:hover {
+  color: var(--color-danger);
+  background: rgba(220, 53, 69, 0.1);
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 0;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.edit-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+  transition: all 0.3s ease;
+  background: var(--color-background);
+  color: var(--color-primary);
+}
+
+.edit-textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(230, 186, 98, 0.1);
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  background: var(--color-background);
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-secondary {
+  background-color: var(--color-border);
+  color: var(--color-primary);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-brown);
+  color: white;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #075631;
+  transform: translateY(-1px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .qanda-section {
+    padding: 0;
+  }
+
+  .ask-input-container {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .ask-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .q-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .q-actions {
+    align-self: flex-end;
+  }
+
+  .a-row {
+    margin-left: 1rem;
+    padding: 0.75rem;
+  }
+
+  .edit-modal-box {
+    width: 95%;
+    margin: 1rem;
+  }
+
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .qanda-title {
+    font-size: 1.25rem;
+  }
+
+  .q-text,
+  .a-text {
+    font-size: 0.9rem;
+  }
+
+  .q-meta,
+  .a-meta {
+    font-size: 0.8rem;
+  }
+
+  .empty-state {
+    padding: 2rem 1rem;
+  }
+
+  .empty-state-content i {
+    font-size: 2.5rem;
+  }
+}

@@ -9,6 +9,22 @@
 --color-shadow: rgba(42, 50, 46, 0.1);
 --color-highlight: #bfa16a;
 } */
+.logo-icon .logo-image {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  margin-right: 10px;
+  background-color: #fff;
+  padding: 4px;
+  transition: transform 0.3s ease;
+}
+
+.logo-icon .logo-image:hover {
+  transform: scale(1.05);
+}
+
 
 /* Modern Clean Header */
 .modern-header {

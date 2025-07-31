@@ -365,7 +365,7 @@ export class CartService {
   }
 
   getCart(): CartItem[] {
-    console.log("May------------------------getCart",this.getCartItemsOnly());
+    
     return this.getCartItemsOnly().map((item) => ({
       productId: item.productId,
       productName: item.productName,

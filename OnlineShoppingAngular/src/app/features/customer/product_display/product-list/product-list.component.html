@@ -139,9 +139,7 @@
                     {{ getCombinedDiscountLabel(product) }}
                   </span>
                 </div>
-
               </div>
-
               <!-- Wishlist Button -->
               <button class="btn btn-sm position-absolute top-0 end-0 p-1 m-2 wishlist-btn z-1" title="Add to wishlist"
                 (click)="toggleWish(product.product.id!); $event.stopPropagation()">
@@ -164,8 +162,18 @@
               </div>
 
               <!-- Product Name -->
-              <h6 class="product-name mb-3" [title]="product.product.name">
+              <h6 class="product-name mb-3 d-flex align-items-center" [title]="product.product.name">
                 {{ product.product.name }}
+                <span *ngIf="product.reviewTotal && product.reviewTotal > 0" class="ms-2 product-rating-stars">
+                  <ng-container *ngFor="let s of [1,2,3,4,5]">
+                    <i
+                      class="bi"
+                      [ngClass]="s <= getRounded(product.reviewAverage ?? 0) ? 'bi-star-fill text-warning' : 'bi-star'"
+                      style="font-size: 1rem;"
+                    ></i>
+                  </ng-container>
+                  <span class="rating-number text-muted ms-1" style="font-size: 0.95rem;">({{ product.reviewTotal ?? 0 }})</span>
+                </span>
               </h6>
 
               <!-- Enhanced Price Section -->

@@ -4,7 +4,9 @@
   <div *ngIf="shouldShowPriceComparison(); else noDiscountTemplate" class="discount-grid-display">
     
     <!-- Discount Badges -->
-    <div *ngIf="hasDiscountBadges()" class="discount-badges-container mb-2">
+    <div *ngIf="hasDiscountBadges()" 
+         class="discount-badges-container mb-2"
+         [ngClass]="getDiscountBadgesMarginClass()">
       <span *ngFor="let discount of getDiscountBadges()" 
             class="badge discount-badge me-1"
             [ngClass]="getDiscountBadgeClass(discount.mechanismType!)">

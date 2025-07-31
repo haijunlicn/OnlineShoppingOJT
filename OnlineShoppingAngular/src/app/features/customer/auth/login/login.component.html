@@ -11,55 +11,40 @@
         <div class="form-group mb-3">
           <label class="form-label">Email</label>
           <div class="input-wrapper">
-            <input 
-              type="email"
-              formControlName="email"
-              class="form-control"
-              [ngClass]="{
+            <input type="email" formControlName="email" class="form-control" [ngClass]="{
                 'error': (email.touched || isSubmitted) && email.invalid
-              }"
-              placeholder="Enter your email"
-            />
-            <i class="error-icon fas fa-exclamation-circle"
-               *ngIf="(email.touched || isSubmitted) && email.invalid">
+              }" placeholder="Enter your email" />
+            <i class="error-icon fas fa-exclamation-circle" *ngIf="(email.touched || isSubmitted) && email.invalid">
             </i>
           </div>
-          <div class="error-message"
-               *ngIf="(email.touched || isSubmitted) && email.invalid">
+          <div class="error-message" *ngIf="(email.touched || isSubmitted) && email.invalid">
             <span *ngIf="email.errors?.['required']">This is a required field.</span>
             <span *ngIf="email.errors?.['email']">Enter a valid email address.</span>
           </div>
         </div>
 
         <!-- Password -->
-<div class="form-group mb-4">
-  <label class="form-label">Password</label>
-  <div class="input-wrapper position-relative">
-    <input 
-      [type]="showPassword ? 'text' : 'password'"
-      formControlName="password"
-      class="form-control pe-5"
-      [ngClass]="{
+        <div class="form-group mb-4">
+          <label class="form-label">Password</label>
+          <div class="input-wrapper position-relative">
+            <input [type]="showPassword ? 'text' : 'password'" formControlName="password" class="form-control pe-5"
+              [ngClass]="{
         'error': (password.touched || isSubmitted) && password.invalid
-      }"
-      placeholder="Enter your password"
-    />
-    <i class="error-icon fas fa-exclamation-circle"
-       *ngIf="(password.touched || isSubmitted) && password.invalid">
-    </i>
+      }" placeholder="Enter your password" />
+            <i class="error-icon fas fa-exclamation-circle"
+              *ngIf="(password.touched || isSubmitted) && password.invalid">
+            </i>
 
-    <!-- Eye toggle icon -->
-    <i class="toggle-password far"
-       [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
-       (click)="togglePasswordVisibility()"
-       style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); cursor: pointer;">
-    </i>
-  </div>
-  <div class="error-message"
-       *ngIf="(password.touched || isSubmitted) && password.invalid">
-    This is a required field.
-  </div>
-</div>
+            <!-- Eye toggle icon -->
+            <i class="toggle-password far" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+              (click)="togglePasswordVisibility()"
+              style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); cursor: pointer;">
+            </i>
+          </div>
+          <div class="error-message" *ngIf="(password.touched || isSubmitted) && password.invalid">
+            This is a required field.
+          </div>
+        </div>
 
 
         <!-- Remember Me + Forgot Password -->
@@ -89,6 +74,14 @@
           </a>
         </div>
       </form>
+
+      <!-- Go to Admin Portal Link -->
+      <div class="admin-link text-center mt-3">
+        <a routerLink="/admin/login">
+          <i class="fas fa-user-shield me-2"></i> Go to Admin Portal
+        </a>
+      </div>
+
     </div>
   </div>
 </div>

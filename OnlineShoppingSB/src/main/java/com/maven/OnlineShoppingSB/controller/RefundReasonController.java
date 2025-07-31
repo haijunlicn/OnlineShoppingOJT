@@ -18,7 +18,7 @@ public class RefundReasonController {
     private RefundReasonService service;
 
     @PostMapping("/create")
-    @PreAuthorize("hasAuthority('REFUND_REASON_MANAGE') or hasRole('SUPERADMIN')")
+
     public ResponseEntity<String> create(@RequestBody RefundReasonDTO dto) {
         System.out.println("create reason is running");
         service.insert(dto);

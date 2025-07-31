@@ -110,7 +110,7 @@ export class NewEditDiscountComponent implements OnInit {
   }
 
   loadDiscountForEdit(discount: DiscountEA_A) {
-    console.log('Editing discount:', discount);
+    console.log('Editing discount:___________________________________________________________', discount);
     if (discount.discountMechanisms) {
       console.log('discountMechanisms:HIHIHI', discount.discountMechanisms);
     }
@@ -207,6 +207,12 @@ export class NewEditDiscountComponent implements OnInit {
           typeof logicOperatorRaw === 'string'
             ? logicOperatorRaw === 'true'
             : !!logicOperatorRaw;
+        
+        console.log(`Mechanism[${i}] logicOperator:`, {
+          raw: logicOperatorRaw,
+          processed: logicOperatorValue,
+          type: typeof logicOperatorRaw
+        });
         const mechanismGroup = this.fb.group({
           mechanismType: [m.mechanismType, Validators.required],
           quantity: [m.quantity],
@@ -892,6 +898,14 @@ export class NewEditDiscountComponent implements OnInit {
         .filter((id): id is number => id !== undefined)
       this.showProductSelection = false
       this.currentMechanismIndex = -1
+    } else if (this.productSelectionContext === "condition_builder" && this.currentMechanismIndex >= 0) {
+      // Handle condition builder context - update productRuleSettings
+      if (!this.productRuleSettings[this.currentMechanismIndex]) {
+        this.productRuleSettings[this.currentMechanismIndex] = { type: 'product', items: [] };
+      }
+      this.productRuleSettings[this.currentMechanismIndex].items = products;
+      this.showProductSelection = false;
+      this.currentMechanismIndex = -1;
     }
   }
 
@@ -899,11 +913,13 @@ export class NewEditDiscountComponent implements OnInit {
   getSelectedProductsForCurrentContext(): ProductDTO[] {
     console.log('getSelectedProductsForCurrentContext: START', {
       currentMechanismIndex: this.currentMechanismIndex,
+      productSelectionContext: this.productSelectionContext,
       discountProducts: this.discountProducts,
       discountMechanisms: this.discountMechanisms.value
     });
     const allProducts = this.allProducts || [];
     let selectedIds: number[] = [];
+    
     if (this.productSelectionContext === "discount_product") {
       // Try to get selected product IDs from discountProducts or products field
       if (this.discountProducts[this.currentMechanismIndex]) {
@@ -926,13 +942,19 @@ export class NewEditDiscountComponent implements OnInit {
           }
         }
       }
-      const selected = selectedIds
-        .map((id: number) => allProducts.find((p: ProductDTO) => p.id === id))
-        .filter((p): p is ProductDTO => !!p);
-      console.log('getSelectedProductsForCurrentContext:HIHIHIHIHHHHIIH', selectedIds, selected);
-      return selected;
+    } else if (this.productSelectionContext === "condition_builder") {
+      // For condition builder context, get selected products from productRuleSettings
+      const settings = this.productRuleSettings[this.currentMechanismIndex];
+      if (settings && settings.type === 'product' && settings.items) {
+        selectedIds = settings.items.map((item: any) => item.id);
+      }
     }
-    return [];
+    
+    const selected = selectedIds
+      .map((id: number) => allProducts.find((p: ProductDTO) => p.id === id))
+      .filter((p): p is ProductDTO => !!p);
+    console.log('getSelectedProductsForCurrentContext: selectedIds', selectedIds, 'selected', selected);
+    return selected;
   }
 
   onProductSelectionBack(): void {
@@ -943,22 +965,142 @@ export class NewEditDiscountComponent implements OnInit {
   // On submit, include all settings in the update payload
   onSubmit(): void {
     if (!this.discountForm.valid) return;
+    
+    // Process discountMechanisms to include discountProducts and conditions
+    const processedMechanisms = this.discountMechanisms.value.map((mech: any, idx: number) => {
+      const processedMech = { ...mech };
+      
+      // Add discountProducts to each mechanism if they exist
+      if (this.discountProducts[idx]?.length) {
+        processedMech.discountProducts = this.discountProducts[idx].map(
+          (productId: number) => ({
+            id: 0,
+            productId,
+            discountMechanismId: 0,
+          })
+        );
+      }
+      
+      // Process conditions if they exist for this mechanism
+      if (this.showConditionsForMechanism[idx]) {
+        const conditionGroups: any[] = [];
+        const conditions: any[] = [];
+        
+        // Customer group conditions
+        const customerSettings = this.customerEligibilitySettings[idx];
+        if (customerSettings && customerSettings.type === "specific" && customerSettings.groups.length > 0) {
+          const customerCondition = {
+            id: 0,
+            conditionType: "CUSTOMER_GROUP",
+            conditionDetail: "customer_group",
+            operator: "IS_ONE_OF",
+            value: customerSettings.groups.map((g: any) => g.id.toString()),
+            delFg: false,
+          };
+          conditions.push(customerCondition);
+        }
+        
+        // Product rule conditions
+        const productSettings = this.productRuleSettings[idx];
+        if (productSettings && productSettings.type && productSettings.items.length > 0) {
+          const productCondition = {
+            id: 0,
+            conditionType: "PRODUCT",
+            conditionDetail: productSettings.type,
+            operator: "IS_ONE_OF",
+            value: productSettings.items.map((item: any) => item.id.toString()),
+            delFg: false,
+          };
+          conditions.push(productCondition);
+        }
+        
+        // Order rule conditions
+        const orderSettings = this.orderRuleSettings[idx];
+        if (orderSettings && orderSettings.type && orderSettings.value) {
+          const orderCondition = {
+            id: 0,
+            conditionType: "ORDER",
+            conditionDetail: orderSettings.type,
+            operator: "GREATER_THAN_OR_EQUAL",
+            value: [orderSettings.value],
+            delFg: false,
+          };
+          conditions.push(orderCondition);
+        }
+        
+        // Create condition group if we have conditions
+        if (conditions.length > 0) {
+          const logicOperatorValue = mech.logicOperator === true || mech.logicOperator === "true";
+          console.log(`Mechanism[${idx}] onSubmit logicOperator:`, {
+            original: mech.logicOperator,
+            processed: logicOperatorValue,
+            type: typeof mech.logicOperator
+          });
+          
+          const conditionGroup = {
+            id: 0,
+            discountMechanismId: 0,
+            logicOperator: logicOperatorValue,
+            discountCondition: conditions,
+          };
+          conditionGroups.push(conditionGroup);
+        }
+        
+        processedMech.discountConditionGroup = conditionGroups;
+      }
+      
+      return processedMech;
+    });
+    
     const updatedDiscount = {
       ...this.discount,
       ...this.discountForm.value,
-      discountMechanisms: this.discountMechanisms.value,
-      customerEligibilitySettings: this.customerEligibilitySettings,
-      productRuleSettings: this.productRuleSettings,
-      orderRuleSettings: this.orderRuleSettings,
-      showConditionsForMechanism: this.showConditionsForMechanism,
-      discountProducts: this.discountProducts,
+      discountMechanisms: processedMechanisms,
     };
-    this.discountService.updateDiscount(updatedDiscount.id, updatedDiscount).subscribe({
-      next: () => {
-        this.close.emit(true);
+    
+    console.log('Updated discount payload:', updatedDiscount);
+    
+        this.discountService.updateDiscount(updatedDiscount.id, updatedDiscount).subscribe({
+      next: (response: any) => {
+        // Check if response is JSON object with success property
+        if (response && typeof response === 'object') {
+          if (response.success === true) {
+            // Show success message
+            this.showSuccessMessage(response.message || 'Discount updated successfully!');
+            
+            // Close modal and navigate after a short delay
+            setTimeout(() => {
+              this.close.emit(true);
+              this.router.navigate(['/admin/discountList']);
+            }, 1500);
+          } else {
+            // Handle error response from backend
+            this.errors["general"] = response.message || "Update failed";
+            this.isSubmitting = false;
+          }
+        } else {
+          // Handle unexpected response format
+          this.errors["general"] = "Unexpected response format from server";
+          this.isSubmitting = false;
+        }
       },
       error: (err) => {
-        this.errors["general"] = err.error || "An error occurred while updating the discount.";
+        // Handle different types of errors
+        let errorMessage = "An error occurred while updating the discount.";
+        
+        if (err.error) {
+          if (typeof err.error === 'string') {
+            errorMessage = err.error;
+          } else if (err.error.message) {
+            errorMessage = err.error.message;
+          } else if (err.error.error) {
+            errorMessage = err.error.error;
+          }
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+        
+        this.errors["general"] = errorMessage;
         this.isSubmitting = false;
       }
     });
@@ -1066,5 +1208,21 @@ export class NewEditDiscountComponent implements OnInit {
 
   onCancel(): void {
     this.close.emit(false);
+  }
+
+  // Show success message
+  showSuccessMessage(message: string): void {
+    // Clear any existing errors
+    this.errors = {};
+    
+    // Add success message
+    this.errors["success"] = message;
+    
+    // Auto-clear success message after 3 seconds
+    setTimeout(() => {
+      if (this.errors["success"]) {
+        delete this.errors["success"];
+      }
+    }, 3000);
   }
 }

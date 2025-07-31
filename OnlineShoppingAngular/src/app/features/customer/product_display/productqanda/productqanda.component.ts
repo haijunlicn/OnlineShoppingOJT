@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ProductQuestion } from '@app/core/models/qanda.model';
 import { AuthService } from '@app/core/services/auth.service';
 import { ProductQandaService } from '@app/core/services/ProductQandaService';
-
+import Swal from 'sweetalert2';
 
 
 @Component({
@@ -81,9 +81,28 @@ export class ProductqandaComponent implements OnInit {
 
   submitEdit() {
     if (!this.editQuestionText.trim() || !this.editQuestionId) return;
+  
     this.qandaService.editQuestionByCustomer(this.editQuestionId, this.editQuestionText).subscribe(() => {
       this.closeEditModal();
       this.loadQuestions();
+  
+      // Show success alert
+      Swal.fire({
+        icon: 'success',
+        title: 'Updated!',
+        text: 'Your question has been updated successfully.',
+        confirmButtonColor: '#3085d6',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    }, error => {
+      // Optional: Show error alert
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops!',
+        text: 'Something went wrong while updating the question.',
+        confirmButtonColor: '#d33'
+      });
     });
   }
 

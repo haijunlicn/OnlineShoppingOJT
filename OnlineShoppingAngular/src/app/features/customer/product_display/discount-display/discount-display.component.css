@@ -267,3 +267,17 @@
   margin-bottom: 0.25rem;
   color: var(--color-brown);
 }
+
+/* ===== CONDITIONAL MARGIN STYLES ===== */
+
+/* Home page discount badges - apply margin-left */
+.home-page-discount-badges {
+  margin-left: -140px;
+}
+
+/* Product list discount badges - no margin */
+.product-list-discount-badges {
+  margin-left: 0;
+}
+
+/* ===== DISCOUNT BADGES STYLING ===== */

@@ -295,7 +295,7 @@ export class NewCreateDiscountComponent implements OnInit {
       mechanismType: [MechanismType.DISCOUNT, Validators.required],
       quantity: [1],
       discountType: [DiscountType.PERCENTAGE, Validators.required],
-      value: ["", Validators.required],
+      value: [null, [Validators.required, Validators.min(0)]],
       maxDiscountAmount: [""],
       serviceDiscount: [""],
       discountConditionGroup: [],
@@ -433,6 +433,10 @@ export class NewCreateDiscountComponent implements OnInit {
 
     if (discountType === DiscountType.PERCENTAGE) {
       valueControl?.setValidators([Validators.required, Validators.min(0), Validators.max(100)])
+      // Clear any existing value if it exceeds 100
+      if (valueControl?.value && valueControl.value > 100) {
+        valueControl.setValue(null)
+      }
     } else if (discountType === DiscountType.FIXED) {
       valueControl?.setValidators([Validators.required, Validators.min(0)])
     }
@@ -991,6 +995,13 @@ export class NewCreateDiscountComponent implements OnInit {
     if (control && control.errors && control.touched) {
       if (control.errors["required"]) return `${fieldName} is required`
       if (control.errors["min"]) return `${fieldName} must be greater than ${control.errors["min"].min}`
+      if (control.errors["max"]) {
+        const discountType = this.getMechanismGroup(index).get('discountType')?.value
+        if (discountType === this.getDiscountTypeValue('PERCENTAGE')) {
+          return "Percentage cannot exceed 100%"
+        }
+        return `${fieldName} cannot exceed ${control.errors["max"].max}`
+      }
     }
     return ""
   }
@@ -1032,6 +1043,19 @@ export class NewCreateDiscountComponent implements OnInit {
     const settings = this.productRuleSettings[mechanismIndex];
     if (settings && settings.items) {
       settings.items = settings.items.filter((item: any) => item.id !== itemId);
+    }
+  }
+
+  // Handle discount value input changes
+  onDiscountValueChange(mechanismIndex: number, event: any): void {
+    const valueControl = this.getMechanismGroup(mechanismIndex).get('value');
+    const discountType = this.getMechanismGroup(mechanismIndex).get('discountType')?.value;
+    
+    if (valueControl && discountType === this.getDiscountTypeValue('PERCENTAGE')) {
+      const value = parseFloat(event.target.value);
+      if (value > 100) {
+        valueControl.setValue(100);
+      }
     }
   }
 }

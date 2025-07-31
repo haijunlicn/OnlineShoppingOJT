@@ -191,19 +191,6 @@ export class DiscountHeroCarouselComponent implements OnInit {
     }
   }
 
-
-  // private updateCountdownForCurrentDiscount(): void {
-  //   if (this.currentDiscount?.endDate) {
-  //     this.countdownConfig = {
-  //       leftTime: this.getRemainingSeconds(this.currentDiscount.endDate),
-  //       format: 'd:HH:mm:ss',
-  //       notify: [1],
-  //     };
-  //   } else {
-  //     this.countdownConfig = null;
-  //   }
-  // }
-
   onCountdownEvent(event: CountdownEvent): void {
     if (event.action === 'done') {
       this.countdownText = 'Expired!';

@@ -246,13 +246,40 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    console.log("on destroy called")
+    console.log("on destroy called");
 
-    if (this.timer) clearInterval(this.timer)
-    this.subscriptions.forEach((sub) => sub.unsubscribe())
+    if (this.timer) {
+      clearInterval(this.timer);
+      console.log("Timer cleared");
+    }
+
+    this.subscriptions.forEach((sub) => {
+      sub.unsubscribe();
+      console.log("Subscription unsubscribed");
+    });
+
+    console.log(`paymentInProgress: ${this.paymentInProgress}`);
+    console.log(`paymentSuccess: ${this.paymentSuccess}`);
+    console.log(`paymentFailed: ${this.paymentFailed}`);
+    console.log(`timerExpired: ${this.timerExpired}`);
+
+    if (this.paymentInProgress) {
+      console.log("Condition met: paymentInProgress is true");
+    } else {
+      console.log("Condition failed: paymentInProgress is false");
+    }
+
+    if (!this.paymentSuccess && !this.paymentFailed && !this.timerExpired) {
+      console.log("Condition met: paymentSuccess, paymentFailed, and timerExpired are all false");
+    } else {
+      console.log("Condition failed: at least one of paymentSuccess, paymentFailed, or timerExpired is true");
+    }
 
     if (this.paymentInProgress || (!this.paymentSuccess && !this.paymentFailed && !this.timerExpired)) {
-      this.rollbackReservedStock()
+      console.log("Rolling back reserved stock...");
+      this.rollbackReservedStock();
+    } else {
+      console.log("Not rolling back reserved stock");
     }
   }
 
@@ -750,9 +777,9 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
   }
 
   rollbackReservedStock() {
-    this.variantService.rollbackStock(this.orderItems).subscribe({
+    this.variantService.rollbackStock(this.orderItemsWithDiscounts).subscribe({
       next: (res) => {
-        console.log("roll back stock list : ", this.orderItems)
+        console.log("roll back stock list : ", this.orderItemsWithDiscounts)
         console.log("Stock rolled back successfully:", res)
       },
       error: (err) => {
