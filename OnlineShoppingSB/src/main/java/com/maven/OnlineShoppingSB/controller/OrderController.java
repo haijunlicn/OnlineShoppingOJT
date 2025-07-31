@@ -90,8 +90,9 @@ public class OrderController {
             return ResponseEntity.badRequest().build();
         }
     }
-    @GetMapping("/public/{orderId}/details")
 
+    
+    @GetMapping("/public/{orderId}/details")
     public ResponseEntity<OrderDetailDto> getPublicOrderByIdWithDetails(@PathVariable Long orderId) {
         try {
             OrderEntity order = orderService.getOrderByIdWithDetails(orderId);
