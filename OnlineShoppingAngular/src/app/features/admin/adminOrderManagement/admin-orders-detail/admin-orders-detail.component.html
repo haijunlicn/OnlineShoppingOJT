@@ -71,10 +71,32 @@
             <i class="fas fa-print"></i>
             <span>Print Order</span>
           </button>
-          <button class="btn-action secondary">
-            <i class="fas fa-download"></i>
-            <span>Export</span>
-          </button>
+          <div class="dropdown">
+            <button class="btn-action secondary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fas fa-download"></i>
+              <span>Export</span>
+            </button>
+            <ul class="dropdown-menu shadow" aria-labelledby="exportDropdown">
+              <li>
+                <a class="dropdown-item d-flex align-items-center" href="javascript:void(0)" 
+                   (click)="$event.preventDefault(); exportOrderToPdf();"
+                   [class.disabled]="isExportingPdf">
+                  <i *ngIf="!isExportingPdf" class="bi bi-file-earmark-pdf text-danger me-2"></i>
+                  <i *ngIf="isExportingPdf" class="fas fa-spinner fa-spin text-primary me-2"></i>
+                  {{ isExportingPdf ? 'Exporting PDF...' : 'Export as PDF' }}
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item d-flex align-items-center" href="javascript:void(0)" 
+                   (click)="$event.preventDefault(); exportOrderToExcel();"
+                   [class.disabled]="isExportingExcel">
+                  <i *ngIf="!isExportingExcel" class="bi bi-file-earmark-excel text-success me-2"></i>
+                  <i *ngIf="isExportingExcel" class="fas fa-spinner fa-spin text-primary me-2"></i>
+                  {{ isExportingExcel ? 'Exporting Excel...' : 'Export as Excel' }}
+                </a>
+              </li>
+            </ul>
+          </div>
           <button class="btn-action primary">
             <i class="fas fa-envelope"></i>
             <span>Contact Customer</span>
