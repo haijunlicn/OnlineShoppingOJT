@@ -47,6 +47,9 @@ export class AdminOrdersDetailComponent implements OnInit, OnDestroy {
   readonly PAYMENT_STATUS_CODES = PAYMENT_STATUS
   readonly ORDER_STATUSES = ORDER_STATUS
 
+   showProofModal = false;
+   proofImageUrl: string | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -480,10 +483,21 @@ export class AdminOrdersDetailComponent implements OnInit, OnDestroy {
     this.rejectionForm.reset()
   }
 
-  viewPaymentProof(): void {
-    if (!this.order?.paymentProofPath) return
-    window.open(this.order.paymentProofPath, "_blank")
+
+   viewPaymentProof(): void {
+    if (this.order?.paymentProofPath) {
+      this.proofImageUrl = this.order.paymentProofPath;
+      this.showProofModal = true;
+    }
   }
+
+  closeProofModal(): void {
+    this.showProofModal = false;
+    this.proofImageUrl = null;
+  }
+
+
+
 
   // Get user initials for avatar
   getUserInitials(name: string): string {

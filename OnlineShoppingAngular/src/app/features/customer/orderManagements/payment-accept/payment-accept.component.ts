@@ -777,10 +777,6 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
   }
 
   rollbackReservedStock() {
-
-    console.log("roll back stock listss : ", this.orderItemsWithDiscounts);
-    
-
     this.variantService.rollbackStock(this.orderItemsWithDiscounts).subscribe({
       next: (res) => {
         console.log("roll back stock list : ", this.orderItemsWithDiscounts)

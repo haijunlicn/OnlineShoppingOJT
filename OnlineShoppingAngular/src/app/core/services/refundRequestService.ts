@@ -16,7 +16,7 @@ export class RefundRequestService {
   constructor(private http: HttpClient) { }
 
   getOrderDetails(orderId: number): Observable<OrderDetail> {
-    return this.http.get<OrderDetail>(`http://localhost:8080/orders/${orderId}/details`).pipe(
+    return this.http.get<OrderDetail>(`http://localhost:8080/orders/public/${orderId}/details`).pipe(
       // map((order) => ({
       //   ...order,
       //   items: order.items.map((item : OrderItemDetail) => ({

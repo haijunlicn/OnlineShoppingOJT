@@ -252,24 +252,27 @@
       }
 
       .product-badges {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 
-        .badge {
-          font-size: 0.75rem;
-          padding: 0.25rem 0.5rem;
-          border-radius: 6px;
+  .badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    color: #fff;
 
-          &.bg-secondary {
-            background-color: var(--color-brown) !important;
-          }
+    &.bg-secondary {
+      background: linear-gradient(90deg, var(--color-brown), var(--color-badge1));
+    }
 
-          &.bg-info {
-            background-color: var(--color-badge1) !important;
-          }
-        }
-      }
+    &.bg-info {
+      background: linear-gradient(90deg, var(--color-badge1), var(--color-yellow));
+    }
+  }
+}
+
+      
     }
 
     .price-section {
