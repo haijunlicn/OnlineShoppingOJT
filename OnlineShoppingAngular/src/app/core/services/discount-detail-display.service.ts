@@ -86,9 +86,8 @@ export class DiscountDetailDisplayService {
     })
     return renderedText
   }
-  /**
-   * Attach click listeners to entity links in SweetAlert
-   */
+  
+  
   private attachClickListenersToSwalLinks(linkedEntities: any[]): void {
     const clickableElements = document.querySelectorAll(".clickable-entity-link")
 
