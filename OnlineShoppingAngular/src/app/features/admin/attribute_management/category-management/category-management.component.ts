@@ -56,6 +56,10 @@ export class CategoryManagementComponent implements OnInit {
     this.loadCategories()
   }
 
+  ngOnChanges() {
+    this.buildSubcategoryMap();
+  } 
+
   // Track by function for better performance
   trackByCategory(index: number, category: CategoryDTO): number {
     return category.id || index
@@ -155,6 +159,7 @@ export class CategoryManagementComponent implements OnInit {
         this.buildCategoryTree();
         this.updateCategoryDropdowns();
         this.recomputeSubcategoryCounts();
+        this.buildSubcategoryMap();
 
         this.loadingCategories = false;
 
@@ -203,20 +208,46 @@ export class CategoryManagementComponent implements OnInit {
     return filtered.filter((cat) => this.categoryMatchesFilter(cat))
   }
 
-  getDirectSubcategories(parentId: number): CategoryDTO[] {
-    let subcategories = this.categories.filter((cat) => cat.parentCategoryId === parentId)
-    
-    // Apply status filter
-    if (this.statusFilter !== null) {
-      subcategories = subcategories.filter(category => (category.delFg ?? 1) === this.statusFilter);
+  subcategoryMap: Map<number, CategoryDTO[]> = new Map();
+
+  buildSubcategoryMap(): void {
+    this.subcategoryMap.clear();
+
+    for (const category of this.categories) {
+      if (this.statusFilter !== null && (category.delFg ?? 1) !== this.statusFilter) {
+        continue;
+      }
+
+      const parentId = category.parentCategoryId ?? 0;
+      if (!this.subcategoryMap.has(parentId)) {
+        this.subcategoryMap.set(parentId, []);
+      }
+      this.subcategoryMap.get(parentId)!.push(category);
     }
-    
-    if (this.categoryFilter.trim() === "") {
-      console.log("subs for id " + parentId + " are : ", subcategories)
-      return subcategories
+
+    // Optional: filter based on category name if needed
+    if (this.categoryFilter.trim() !== "") {
+      for (const [key, list] of this.subcategoryMap) {
+        this.subcategoryMap.set(key, list.filter(cat => this.categoryMatchesFilter(cat)));
+      }
     }
-    return subcategories.filter((cat) => this.categoryMatchesFilter(cat))
   }
+
+
+  // getDirectSubcategories(parentId: number): CategoryDTO[] {
+  //   let subcategories = this.categories.filter((cat) => cat.parentCategoryId === parentId)
+    
+  //   // Apply status filter
+  //   if (this.statusFilter !== null) {
+  //     subcategories = subcategories.filter(category => (category.delFg ?? 1) === this.statusFilter);
+  //   }
+    
+  //   if (this.categoryFilter.trim() === "") {
+  //     console.log("subs for id " + parentId + " are : ", subcategories)
+  //     return subcategories
+  //   }
+  //   return subcategories.filter((cat) => this.categoryMatchesFilter(cat))
+  // }
 
   categoryMatchesFilter(category: CategoryDTO): boolean {
     if (!this.categoryFilter.trim()) return true

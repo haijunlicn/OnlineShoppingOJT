@@ -78,9 +78,14 @@
         <!-- Subcategories -->
         <div class="subcategories-container" *ngIf="hasSubcategories(rootCategory.id!) && isExpanded(rootCategory.id!)">
           <ng-container *ngTemplateOutlet="hierarchyTemplate; context: { 
+  categories: subcategoryMap.get(rootCategory.id!) || [], 
+  level: 1 
+}"></ng-container>
+
+          <!-- <ng-container *ngTemplateOutlet="hierarchyTemplate; context: { 
             categories: getDirectSubcategories(rootCategory.id!), 
             level: 1 
-          }"></ng-container>
+          }"></ng-container> -->
         </div>
       </div>
     </div>
@@ -151,9 +156,14 @@
 
       <div class="subcategories-container" *ngIf="hasSubcategories(category.id!) && isExpanded(category.id!)">
         <ng-container *ngTemplateOutlet="hierarchyTemplate; context: { 
+          categories: subcategoryMap.get(category.id!) || [], 
+          level: 1 
+        }"></ng-container>
+
+        <!-- <ng-container *ngTemplateOutlet="hierarchyTemplate; context: { 
           categories: getDirectSubcategories(category.id!), 
           level: level + 1 
-        }"></ng-container>
+        }"></ng-container> -->
       </div>
     </div>
   </div>

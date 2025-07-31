@@ -20,6 +20,7 @@ public class DiscountUsageDTO {
 
     public static enum DiscountUsageStatus {
         AVAILABLE,
+        INVALID,
         EXCEEDED_TOTAL_LIMIT,
         EXCEEDED_PER_USER_LIMIT
     }

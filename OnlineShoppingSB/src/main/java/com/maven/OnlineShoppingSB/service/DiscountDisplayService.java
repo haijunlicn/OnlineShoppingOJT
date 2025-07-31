@@ -443,13 +443,18 @@ public class DiscountDisplayService {
 
     // ✅ Check if a user can use the discount mechanism
     public DiscountUsageDTO.DiscountUsageStatus canUseMechanismWithReason(Long mechanismId, Long userId) {
-        DiscountMechanismEntity mechanism = mechanismRepo.findById(mechanismId)
-                .orElseThrow(() -> new RuntimeException("Mechanism not found"));
+        Optional<DiscountMechanismEntity> mechanismOpt = mechanismRepo.findActiveMechanismById(mechanismId);
 
+        if (mechanismOpt.isEmpty()) {
+            // ✅ If mechanism is not found or inactive, return INVALID instead of throwing
+            return DiscountUsageDTO.DiscountUsageStatus.INVALID;
+        }
+
+        DiscountMechanismEntity mechanism = mechanismOpt.get();
         Integer totalLimit = mechanism.getUsageLimitTotal();
         Integer perUserLimit = mechanism.getUsageLimitPerUser();
 
-        // Check total usage
+        // ✅ Check total usage limit
         if (totalLimit != null) {
             Integer totalUsed = usageRepo.findTotalUsage(mechanismId);
             if (totalUsed != null && totalUsed >= totalLimit) {
@@ -457,7 +462,7 @@ public class DiscountDisplayService {
             }
         }
 
-        // Check per-user usage
+        // ✅ Check per-user usage limit
         if (userId != null && perUserLimit != null) {
             Optional<DiscountUsageEntity> usageOpt = usageRepo.findByDiscountMechanismIdAndUserId(mechanismId, userId);
             if (usageOpt.isPresent() && usageOpt.get().getUsageCount() >= perUserLimit) {
@@ -467,6 +472,36 @@ public class DiscountDisplayService {
 
         return DiscountUsageDTO.DiscountUsageStatus.AVAILABLE;
     }
+
+
+//    public DiscountUsageDTO.DiscountUsageStatus canUseMechanismWithReason(Long mechanismId, Long userId) {
+//    //        DiscountMechanismEntity mechanism = mechanismRepo.findById(mechanismId)
+//    //                .orElseThrow(() -> new RuntimeException("Mechanism not found"));
+//
+//        DiscountMechanismEntity mechanism = mechanismRepo.findActiveMechanismById(mechanismId)
+//                .orElseThrow(() -> new RuntimeException("Mechanism not found"));
+//
+//        Integer totalLimit = mechanism.getUsageLimitTotal();
+//        Integer perUserLimit = mechanism.getUsageLimitPerUser();
+//
+//        // Check total usage
+//        if (totalLimit != null) {
+//            Integer totalUsed = usageRepo.findTotalUsage(mechanismId);
+//            if (totalUsed != null && totalUsed >= totalLimit) {
+//                return DiscountUsageDTO.DiscountUsageStatus.EXCEEDED_TOTAL_LIMIT;
+//            }
+//        }
+//
+//        // Check per-user usage
+//        if (userId != null && perUserLimit != null) {
+//            Optional<DiscountUsageEntity> usageOpt = usageRepo.findByDiscountMechanismIdAndUserId(mechanismId, userId);
+//            if (usageOpt.isPresent() && usageOpt.get().getUsageCount() >= perUserLimit) {
+//                return DiscountUsageDTO.DiscountUsageStatus.EXCEEDED_PER_USER_LIMIT;
+//            }
+//        }
+//
+//        return DiscountUsageDTO.DiscountUsageStatus.AVAILABLE;
+//    }
 
     // ✅ Record a usage after discount is applied
     public void recordUsage(Long mechanismId, Long userId) {

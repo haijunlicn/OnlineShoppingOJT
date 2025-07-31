@@ -114,7 +114,7 @@
 
             <div class="filter-section-content" [class.expanded]="expandedSections.price">
                 <!-- Predefined Price Ranges -->
-                <div class="price-ranges mb-3">
+                <!-- <div class="price-ranges mb-3">
                     <div *ngFor="let range of priceRanges" class="form-check price-range-item">
                         <input class="form-check-input" type="radio" name="priceRange"
                             [id]="'price-' + range.min + '-' + range.max" [checked]="selectedPriceRange === range"
@@ -123,7 +123,7 @@
                             {{ range.label }}
                         </label>
                     </div>
-                </div>
+                </div> -->
 
                 <!-- Custom Price Range -->
                 <div class="custom-price-range">
@@ -158,14 +158,14 @@
                     <span class="availability-label">On Sale</span>
                 </div>
 
-                <div class="availability-item-clickable" [class.selected]="newItemsOnly" (click)="toggleNewItems()">
+                <!-- <div class="availability-item-clickable" [class.selected]="newItemsOnly" (click)="toggleNewItems()">
                     <span class="availability-label">New Arrivals</span>
-                </div>
+                </div> -->
             </div>
         </div>
 
         <!-- Rating Filter -->
-        <div class="filter-section">
+        <!-- <div class="filter-section">
             <div class="filter-section-header" (click)="toggleSection('rating')">
                 <h6 class="mb-0">Customer Rating</h6>
                 <i class="pi" [ngClass]="expandedSections.rating ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
@@ -185,7 +185,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
 
     </div>
 </div>
