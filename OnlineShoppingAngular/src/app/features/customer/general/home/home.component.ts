@@ -88,7 +88,7 @@ export class HomeComponent implements OnInit {
     });
 
     // Load top products
-    this.http.get<any>('http://localhost:8080/api/analytics/top-home').subscribe({
+    this.http.get<any>('http://localhost:8080/api/analytics/public/top-home').subscribe({
       next: (data) => {
         // Convert ProductListItemDTO to ProductCardItem
         this.topProducts = (data.topProducts || []).map((item: any) => ({

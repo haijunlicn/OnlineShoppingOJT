@@ -370,6 +370,12 @@
   justify-content: space-between;
 }
 
+
+.category-dropdown-item {
+  color: black;
+  border: none;
+}
+
 .category-dropdown .dropdown-item span:first-child {
   overflow: hidden;
   text-overflow: ellipsis;

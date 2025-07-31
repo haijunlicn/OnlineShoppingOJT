@@ -84,7 +84,7 @@ public class SalesAnalysisController {
         return salesAnalysisService.getSalesChartDetailDataWithGroupBy(start, end, dateFormat, groupBy, metric);
     }
 
-    @GetMapping("/top-home")
+    @GetMapping("/public/top-home")
     public Map<String, Object> getTopHomeData() {
         // Last month
         LocalDateTime end = LocalDateTime.now();

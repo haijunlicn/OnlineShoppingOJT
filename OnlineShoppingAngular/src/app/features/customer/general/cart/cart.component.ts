@@ -233,7 +233,11 @@ export class CartComponent implements OnInit {
 
     // Check usage limit asynchronously
     this.discountDisplayService.canUserUseMechanism(matchingCoupon.mechanismId!).subscribe(response => {
+      console.log('🔍 Step 1: Mechanism usage check response:', response)
+
       if (!response.canUse) {
+        console.log('❌ Step 1.1: Cannot use mechanism. Reason:', response.status)
+
         if (response.status === 'EXCEEDED_TOTAL_LIMIT') {
           this.couponMessage = 'This coupon has reached its total usage limit.'
         } else if (response.status === 'EXCEEDED_PER_USER_LIMIT') {
@@ -241,32 +245,99 @@ export class CartComponent implements OnInit {
         } else {
           this.couponMessage = 'This coupon is currently unavailable.'
         }
+
         this.couponSuccess = false
         return
       }
 
-      // Usage is allowed, now check conditions
+      console.log('✅ Step 1.2: Mechanism usage allowed.')
+
+      // Check condition groups
       if (
         matchingCoupon.conditionGroups &&
         matchingCoupon.conditionGroups.length > 0
       ) {
+        console.log('🔍 Step 2: Evaluating condition groups:', matchingCoupon.conditionGroups)
+
         const conditionsMet = evaluateCartConditions(
           matchingCoupon.conditionGroups,
           this.cart,
           this.shipping,
         )
+
+        console.log('✅ Step 2.1: Conditions met:', conditionsMet)
+
         if (!conditionsMet) {
           this.couponMessage = "This coupon cannot be applied to your current cart."
           this.couponSuccess = false
           return
         }
+      } else {
+        console.log('ℹ️ Step 2: No condition groups to evaluate.')
       }
 
-      // All checks passed, apply coupon
+      // Optionally check target items
+      if (matchingCoupon.offeredProductIds && matchingCoupon.offeredProductIds.length > 0) {
+        console.log('🔍 Step 3: Checking target items in cart. Required:', matchingCoupon.offeredProductIds)
+
+        const cartHasTargetItem = this.cart.some(item =>
+          matchingCoupon.offeredProductIds!.includes(item.productId)
+        )
+
+        console.log('✅ Step 3.1: Cart has required target item:', cartHasTargetItem)
+
+        if (!cartHasTargetItem) {
+          this.couponMessage = "This coupon can only be applied to specific items in your cart."
+          this.couponSuccess = false
+          return
+        }
+      } else {
+        console.log('ℹ️ Step 3: No target item restriction.')
+      }
+
+      // All checks passed
+      console.log('🎉 Step 4: All checks passed. Applying coupon now.')
       this.applyCouponDiscount(matchingCoupon)
       this.couponMessage = "Coupon applied successfully!"
       this.couponSuccess = true
     })
+
+
+    // this.discountDisplayService.canUserUseMechanism(matchingCoupon.mechanismId!).subscribe(response => {
+    //   if (!response.canUse) {
+    //     if (response.status === 'EXCEEDED_TOTAL_LIMIT') {
+    //       this.couponMessage = 'This coupon has reached its total usage limit.'
+    //     } else if (response.status === 'EXCEEDED_PER_USER_LIMIT') {
+    //       this.couponMessage = 'You have used this coupon too many times.'
+    //     } else {
+    //       this.couponMessage = 'This coupon is currently unavailable.'
+    //     } 
+    //     this.couponSuccess = false
+    //     return
+    //   }
+
+    //   // Usage is allowed, now check conditions
+    //   if (
+    //     matchingCoupon.conditionGroups &&
+    //     matchingCoupon.conditionGroups.length > 0
+    //   ) {
+    //     const conditionsMet = evaluateCartConditions(
+    //       matchingCoupon.conditionGroups,
+    //       this.cart,
+    //       this.shipping,
+    //     )
+    //     if (!conditionsMet) {
+    //       this.couponMessage = "This coupon cannot be applied to your current cart."
+    //       this.couponSuccess = false
+    //       return
+    //     }
+    //   }
+
+    //   // All checks passed, apply coupon
+    //   this.applyCouponDiscount(matchingCoupon)
+    //   this.couponMessage = "Coupon applied successfully!"
+    //   this.couponSuccess = true
+    // })
   }
 
   private applyCouponDiscount(coupon: DiscountDisplayDTO): void {

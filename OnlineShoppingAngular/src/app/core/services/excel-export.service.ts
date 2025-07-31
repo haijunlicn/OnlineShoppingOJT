@@ -581,4 +581,5 @@ export class ExcelExportService {
     if (!obj || !path) return '';
     return path.split('.').reduce((acc, part) => acc && acc[part], obj) ?? '';
   }
+  
 } 
