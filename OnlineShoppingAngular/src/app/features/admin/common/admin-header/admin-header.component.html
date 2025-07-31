@@ -22,19 +22,6 @@
         <!-- Notifications -->
         <app-admin-notification-bell></app-admin-notification-bell>
 
-        <!-- <button class="header-btn notification-btn" (click)="onNotificationClick()" title="Notifications" type="button">
-          <i class="fas fa-bell"></i>
-          <span class="notification-badge" *ngIf="notificationCount > 0">
-            {{ notificationCount > 99 ? '99+' : notificationCount }}
-          </span>
-        </button> -->
-      </div>
-
-      <!-- Settings Gear -->
-      <div class="header-item">
-        <button class="header-btn settings-btn" (click)="onSettingsClick()" title="Settings" type="button">
-          <i class="fas fa-cog"></i>
-        </button>
       </div>
 
       <!-- User Dropdown -->
@@ -61,11 +48,6 @@
             <li>
               <a class="dropdown-item" (click)="onProfileClick()">
                 <i class="fas fa-user-edit me-2"></i>Profile
-              </a>
-            </li>
-            <li>
-              <a class="dropdown-item" (click)="onSettingsClick()">
-                <i class="fas fa-cog me-2"></i>Settings
               </a>
             </li>
             <li>

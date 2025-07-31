@@ -86,6 +86,7 @@ export interface VariantPriceDTO {
   startDate: string;
   endDate?: string | null;
   orderCount?: number;
+  createdBy?: User;
 }
 
 // Product Image

@@ -84,6 +84,13 @@
                                 <div class="current-badge" *ngIf="isCurrentPrice(history, i)">
                                     Current Price
                                 </div>
+
+                                <!-- Created By Info -->
+                                <div class="date-row" *ngIf="history.createdBy?.name">
+                                    <i class="fas fa-user date-icon"></i>
+                                    <span class="date-text">Set by: {{ history.createdBy?.name }}</span>
+                                </div>
+
                             </div>
                         </div>
                     </div>
