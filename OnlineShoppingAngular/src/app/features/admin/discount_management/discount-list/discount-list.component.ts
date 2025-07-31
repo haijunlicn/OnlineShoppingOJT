@@ -4,6 +4,7 @@ import { DiscountService } from '@app/core/services/discount.service';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ProductDTO } from '@app/core/models/product.model';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-discount-list',
@@ -184,18 +185,61 @@ export class DiscountListComponent {
   }
 
   deleteDiscount(discountId: number): void {
-    if (confirm("Are you sure you want to delete this discount?")) {
-      this.discountService.deleteDiscount(discountId).subscribe({
-        next: () => {
-          this.discounts = this.discounts.filter((d) => d.id !== discountId)
-          this.onSearch()
-          this.calculateStats()
-        },
-        error: (error) => {
-          console.error("Error deleting discount:", error)
-        },
-      })
-    }
+    // Find the discount to get its name for the confirmation message
+    const discount = this.discounts.find(d => d.id === discountId);
+    const discountName = discount?.name || 'this discount';
+    
+    Swal.fire({
+      title: 'Are you sure?',
+      text: `Do you want to delete "${discountName}"? This action cannot be undone.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Show loading state
+        Swal.fire({
+          title: 'Deleting...',
+          text: 'Please wait while we delete the discount.',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+        
+        this.discountService.deleteDiscount(discountId).subscribe({
+          next: () => {
+            this.discounts = this.discounts.filter((d) => d.id !== discountId);
+            this.onSearch();
+            this.calculateStats();
+            
+            // Show success message
+            Swal.fire({
+              title: 'Deleted!',
+              text: `"${discountName}" has been deleted successfully.`,
+              icon: 'success',
+              timer: 2000,
+              showConfirmButton: false
+            });
+          },
+          error: (error) => {
+            console.error("Error deleting discount:", error);
+            
+            // Show error message
+            Swal.fire({
+              title: 'Error!',
+              text: 'Failed to delete the discount. Please try again.',
+              icon: 'error',
+              confirmButtonText: 'OK'
+            });
+          },
+        });
+      }
+    });
   }
 
   // Manual code generate logic (like create-discount)

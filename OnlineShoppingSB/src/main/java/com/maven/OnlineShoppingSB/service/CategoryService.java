@@ -3,6 +3,9 @@ package com.maven.OnlineShoppingSB.service;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 import com.maven.OnlineShoppingSB.dto.OptionDTO;
 import com.maven.OnlineShoppingSB.entity.CategoryOptionEntity;
@@ -167,6 +170,133 @@ public class CategoryService {
 
         existing.setDelFg(0);
         repo.save(existing);
+    }
+
+    public List<CategoryDTO> getTopCategoriesByOrderData() {
+        try {
+            // Get all categories with product counts
+            List<Object[]> allCategoriesData = repo.findAllCategoriesWithProductCounts();
+            
+            // Convert to CategoryDTO list
+            List<CategoryDTO> allCategories = allCategoriesData.stream()
+                    .map(data -> {
+                        CategoryDTO dto = new CategoryDTO();
+                        
+                        // Safe casting for ID
+                        Object idObj = data[0];
+                        if (idObj instanceof Integer) {
+                            dto.setId(((Integer) idObj).longValue());
+                        } else if (idObj instanceof Long) {
+                            dto.setId((Long) idObj);
+                        } else {
+                            dto.setId(0L);
+                        }
+                        
+                        dto.setName((String) data[1]);
+                        dto.setImgPath((String) data[2]);
+                        
+                        // Safe casting for parent category ID
+                        Object parentIdObj = data[3];
+                        if (parentIdObj instanceof Integer) {
+                            dto.setParentCategoryId(((Integer) parentIdObj).longValue());
+                        } else if (parentIdObj instanceof Long) {
+                            dto.setParentCategoryId((Long) parentIdObj);
+                        } else {
+                            dto.setParentCategoryId(null);
+                        }
+                        
+                        dto.setParentCategoryName((String) data[4]);
+                        
+                        // Handle Integer from MySQL COUNT function
+                        Object productCountObj = data[5];
+                        if (productCountObj instanceof Integer) {
+                            dto.setProductCount(((Integer) productCountObj).longValue());
+                        } else if (productCountObj instanceof Long) {
+                            dto.setProductCount((Long) productCountObj);
+                        } else {
+                            dto.setProductCount(0L);
+                        }
+                        
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+            
+            // Get order data for each category
+            Map<Long, Long> categoryOrderCounts = getCategoryOrderCounts();
+            
+            // Calculate scores for each category
+            List<CategoryScore> categoryScores = new ArrayList<>();
+            
+            for (CategoryDTO category : allCategories) {
+                Long orderCount = categoryOrderCounts.getOrDefault(category.getId(), 0L);
+                Long score = orderCount;
+                
+                // If this is a child category (has parent), add parent's score
+                if (category.getParentCategoryId() != null) {
+                    Long parentOrderCount = categoryOrderCounts.getOrDefault(category.getParentCategoryId(), 0L);
+                    score += parentOrderCount;
+                }
+                
+                categoryScores.add(new CategoryScore(category, score));
+            }
+            
+            // Sort by score (order count) descending and get top 5
+            return categoryScores.stream()
+                    .sorted((a, b) -> Long.compare(b.score, a.score))
+                    .limit(5)
+                    .map(cs -> cs.category)
+                    .collect(Collectors.toList());
+                    
+        } catch (Exception e) {
+            System.err.println("Error getting top categories: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+    
+    private Map<Long, Long> getCategoryOrderCounts() {
+        // Get order counts for each category
+        List<Object[]> orderCounts = repo.findCategoryOrderCounts();
+        
+        Map<Long, Long> categoryOrderCounts = new HashMap<>();
+        for (Object[] data : orderCounts) {
+            // Safe casting for category ID
+            Object categoryIdObj = data[0];
+            Long categoryId;
+            if (categoryIdObj instanceof Integer) {
+                categoryId = ((Integer) categoryIdObj).longValue();
+            } else if (categoryIdObj instanceof Long) {
+                categoryId = (Long) categoryIdObj;
+            } else {
+                categoryId = 0L;
+            }
+            
+            // Handle Integer from MySQL COUNT function
+            Object orderCountObj = data[1];
+            Long orderCount;
+            if (orderCountObj instanceof Integer) {
+                orderCount = ((Integer) orderCountObj).longValue();
+            } else if (orderCountObj instanceof Long) {
+                orderCount = (Long) orderCountObj;
+            } else {
+                orderCount = 0L;
+            }
+            
+            categoryOrderCounts.put(categoryId, orderCount);
+        }
+        
+        return categoryOrderCounts;
+    }
+    
+    // Helper class to hold category and its score
+    private static class CategoryScore {
+        CategoryDTO category;
+        Long score;
+        
+        CategoryScore(CategoryDTO category, Long score) {
+            this.category = category;
+            this.score = score;
+        }
     }
 
 

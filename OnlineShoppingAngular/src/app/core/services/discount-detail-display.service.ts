@@ -76,9 +76,6 @@ export class DiscountDetailDisplayService {
     return details
   }
 
-  /**
-   * Render text with clickable links for SweetAlert
-   */
   private renderTextWithClickableLinks(textOutput: { text: string; linkedEntities: any[] }): string {
     let renderedText = textOutput.text
 
@@ -87,10 +84,8 @@ export class DiscountDetailDisplayService {
       const clickableElement = `<span class="clickable-entity-link" data-entity-index="${index}" style="color: #3498db; font-weight: 600; cursor: pointer; text-decoration: underline;">${entity.name}</span>`
       renderedText = renderedText.replace(placeholder, clickableElement)
     })
-
     return renderedText
   }
-
   /**
    * Attach click listeners to entity links in SweetAlert
    */

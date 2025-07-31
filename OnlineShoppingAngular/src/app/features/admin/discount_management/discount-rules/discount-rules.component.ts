@@ -294,16 +294,29 @@ export class DiscountRulesComponent implements OnInit {
   }
 
   updateValue(ruleId: string, valueIndex: number, value: string) {
-    const rule = this.rules.find((r) => r.id === ruleId)
+    const rule = this.rules.find((r) => r.id === ruleId);
     if (rule) {
-      const newValues = [...rule.values]
-      newValues[valueIndex] = value
-      this.updateRule(ruleId, { values: newValues })
-      this.validationErrors = this.validationErrors.filter(
-        (error) => !(error.ruleId === ruleId && error.valueIndex === valueIndex),
-      )
+      // Validate numeric input
+      if (this.isNumericField(rule)) {
+        const numValue = parseFloat(value);
+        if (numValue < 0) {
+          this.addValidationError(ruleId, valueIndex, "Value cannot be negative");
+          return;
+        }
+        if (isNaN(numValue) && value.trim() !== '') {
+          this.addValidationError(ruleId, valueIndex, "Please enter a valid number");
+          return;
+        }
+      }
+      
+      // Clear validation error if value is valid
+      this.clearValidationError(ruleId, valueIndex);
+      
+      const newValues = [...rule.values];
+      newValues[valueIndex] = value;
+      this.updateRule(ruleId, { values: newValues });
     }
-    this.focusInput(valueIndex)
+    this.focusInput(valueIndex);
   }
 
   openProductSelectionModal(ruleId: string, valueIndex: number) {
@@ -608,6 +621,55 @@ export class DiscountRulesComponent implements OnInit {
 
   onRuleOperatorChange(rule: Rule, value: string) {
     this.updateRule(rule.id, { operator: value, values: [""] })
+  }
+
+  // Numeric input validation
+  onNumericInput(event: KeyboardEvent) {
+    const input = event.target as HTMLInputElement;
+    const value = input.value;
+    
+    // Prevent negative values
+    if (value.includes('-')) {
+      event.preventDefault();
+      return;
+    }
+    
+    // Allow only numbers and decimal point
+    const allowedChars = /[0-9.]/;
+    if (!allowedChars.test(event.key) && event.key !== 'Backspace' && event.key !== 'Delete' && event.key !== 'Tab') {
+      event.preventDefault();
+    }
+  }
+
+
+
+  // Check if field requires numeric validation
+  isNumericField(rule: Rule): boolean {
+    return (rule.type === 'order' && ['order_total', 'item_count', 'shipping_cost'].includes(rule.field)) || 
+           rule.type === 'status';
+  }
+
+  // Add validation error
+  addValidationError(ruleId: string, valueIndex: number, message: string) {
+    this.validationErrors = this.validationErrors.filter(
+      error => !(error.ruleId === ruleId && error.valueIndex === valueIndex)
+    );
+    this.validationErrors.push({ ruleId, valueIndex, message });
+  }
+
+  // Clear validation error
+  clearValidationError(ruleId: string, valueIndex: number) {
+    this.validationErrors = this.validationErrors.filter(
+      error => !(error.ruleId === ruleId && error.valueIndex === valueIndex)
+    );
+  }
+
+  // Get validation error message
+  getValidationError(ruleId: string, valueIndex: number): string {
+    const error = this.validationErrors.find(
+      error => error.ruleId === ruleId && error.valueIndex === valueIndex
+    );
+    return error ? error.message : '';
   }
 
 }

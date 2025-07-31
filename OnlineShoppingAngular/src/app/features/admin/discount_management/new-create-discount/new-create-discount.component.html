@@ -221,8 +221,18 @@
                   </div>
                   <div class="form-group">
                     <label class="form-label">Discount Value *</label>
-                    <input type="number" class="form-control" formControlName="value"
-                      [placeholder]="getMechanismGroup(i).get('discountType')?.value === getDiscountTypeValue('PERCENTAGE') ? 'Enter %' : 'Enter MMK'">
+                    <input type="number" 
+                           class="form-control" 
+                           formControlName="value"
+                           [class.error]="getMechanismFieldError(i, 'value')"
+                           [placeholder]="getMechanismGroup(i).get('discountType')?.value === getDiscountTypeValue('PERCENTAGE') ? 'Enter %' : 'Enter MMK'"
+                           [min]="0"
+                           [max]="getMechanismGroup(i).get('discountType')?.value === getDiscountTypeValue('PERCENTAGE') ? 100 : null"
+                           step="0.01"
+                           (input)="onDiscountValueChange(i, $event)">
+                    <div class="error-message" *ngIf="getMechanismFieldError(i, 'value')">
+                      {{ getMechanismFieldError(i, 'value') }}
+                    </div>
                   </div>
                   <div class="form-group" *ngIf="showMaxDiscountAmount(i)">
                     <label class="form-label">Max Discount Amount</label>

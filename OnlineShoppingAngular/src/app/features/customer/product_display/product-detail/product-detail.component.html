@@ -56,7 +56,19 @@
         <div class="product-info-container">
           <!-- Product Header -->
           <div class="product-header">
-            <h1 class="product-title">{{ product.product.name }}</h1>
+            <h1 class="product-title d-flex align-items-center" >
+              {{ product.product.name }}
+              <span *ngIf="reviewTotal > 0" class="ms-3 product-rating-stars">
+                <ng-container *ngFor="let s of [1,2,3,4,5]">
+                  <i
+                    class="bi"
+                    [ngClass]="s <= getRounded(reviewAverage) ? 'bi-star-fill text-warning' : 'bi-star'"
+                    style="font-size: 1.2rem;"
+                  ></i>
+                </ng-container>
+                <span class="rating-number text-muted ms-2" style="font-size: 1rem;">({{ reviewTotal }} reviews)</span>
+              </span>
+            </h1>
 
             <div class="product-badges">
               <span class="badge bg-secondary me-2">{{ product.brand?.name || 'No Brand' }}</span>

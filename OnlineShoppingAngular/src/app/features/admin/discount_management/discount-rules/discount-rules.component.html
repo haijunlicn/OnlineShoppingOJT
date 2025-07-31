@@ -305,8 +305,13 @@
                         type="number"
                         class="value-input enhanced numeric"
                         [value]="value"
+                        min="0"
                         (input)="updateValue(rule.id, valueIndex, $any($event.target).value)"
+                        (keypress)="onNumericInput($event)"
                         placeholder="Enter numeric value">
+                      <div *ngIf="getValidationError(rule.id, valueIndex)" class="validation-error">
+                        {{ getValidationError(rule.id, valueIndex) }}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -523,87 +528,7 @@
     </div>
   </div>
 
-  <!-- Myanmar Map Modal -->
-  <div *ngIf="showMyanmarMapModal" class="modal-overlay enhanced">
-    <div class="modal-container enhanced large">
-      <div class="modal-header enhanced">
-        <div class="modal-title-section">
-          <div class="modal-icon city">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M21 10C21 17 12 23 12 23S3 17 3 10C3 5.02944 7.02944 1 12 1C16.9706 1 21 5.02944 21 10Z" stroke="currentColor" stroke-width="2"/>
-              <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
-            </svg>
-          </div>
-          <div class="modal-title-text">
-            <h3>Select City in Myanmar</h3>
-            <p>Choose a city for your shipping condition</p>
-          </div>
-        </div>
-        <button
-          class="modal-close-btn enhanced"
-          (click)="showMyanmarMapModal = false">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-      </div>
-      
-      <div class="modal-body enhanced">
-        <div class="search-wrapper enhanced">
-          <div class="search-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
-              <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2"/>
-            </svg>
-          </div>
-          <input
-            class="search-input enhanced"
-            placeholder="Search cities in Myanmar..."
-            [(ngModel)]="citySearchText"
-            (input)="onCitySearch()">
-        </div>
-        
-        <div class="map-placeholder enhanced">
-          <div class="map-icon">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M21 10C21 17 12 23 12 23S3 17 3 10C3 5.02944 7.02944 1 12 1C16.9706 1 21 5.02944 21 10Z" stroke="currentColor" stroke-width="2"/>
-              <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
-            </svg>
-          </div>
-          <h4>Myanmar Map</h4>
-          <p>Search and select a city from the list below</p>
-        </div>
-        
-        <div class="city-grid enhanced">
-          <div *ngFor="let city of filteredCities"
-               class="city-card enhanced"
-               [class.selected]="selectedCity === city.name"
-               (click)="selectedCity = city.name">
-            <div class="city-info">
-              <span class="city-name">{{ city.name }}</span>
-              <span class="city-region">{{ city.region }}</span>
-            </div>
-            <div class="city-check" *ngIf="selectedCity === city.name">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <polyline points="20,6 9,17 4,12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="modal-footer enhanced">
-        <button class="modal-btn secondary" (click)="showMyanmarMapModal = false">Cancel</button>
-        <button
-          class="modal-btn primary"
-          [disabled]="!selectedCity"
-          (click)="selectCityFromModal()">
-          Select {{ selectedCity }}
-        </button>
-      </div>
-    </div>
-  </div>
+ 
 </div>
 
 <app-product-selection

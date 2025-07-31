@@ -63,4 +63,9 @@ public class CategoryController {
         return ResponseEntity.ok("Category deleted successfully!");
     }
 
+    @GetMapping("/public/top-categories")
+    public ResponseEntity<List<CategoryDTO>> getTopCategories() {
+        List<CategoryDTO> topCategories = cateService.getTopCategoriesByOrderData();
+        return ResponseEntity.ok(topCategories);
+    }
 }

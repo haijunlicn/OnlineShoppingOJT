@@ -24,6 +24,10 @@ export class CategoryService {
     return this.http.get<CategoryDTO[]>(`${this.baseUrl}/public/list`);
   }
 
+  getTopCategories(): Observable<CategoryDTO[]> {
+    return this.http.get<CategoryDTO[]>(`${this.baseUrl}/public/top-categories`);
+  }
+
   getAllCategoriesWithOptions(): Observable<CategoryDTO[]> {
     return this.http.get<CategoryDTO[]>(`${this.baseUrl}/list-with-options`);
   }

@@ -7,6 +7,7 @@ import { Operator } from "@app/core/models/discount";
 import { Console } from "node:console"
 import { AdminAccountService } from "@app/core/services/admin-account.service"
 import { colorSets } from '@swimlane/ngx-charts';
+import Swal from 'sweetalert2';
 
 // Chart data interface
 interface ChartDataItem {
@@ -489,11 +490,48 @@ export class CreateDiscountGroupComponent implements OnInit {
 
   // Delete handler
   deleteConditionGroup(conditionGroupId: number) {
-    if (confirm('Are you sure you want to delete this condition group?')) {
-      this.discountService.deleteConditionGroup(conditionGroupId).subscribe(() => {
-        this.loadViewConditions();
-      });
-    }
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'Are you sure you want to delete this condition group?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Show loading state
+        Swal.fire({
+          title: 'Deleting...',
+          text: 'Please wait while we delete the condition group.',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+
+        this.discountService.deleteConditionGroup(conditionGroupId).subscribe({
+          next: () => {
+            this.loadViewConditions();
+            Swal.fire({
+              title: 'Deleted!',
+              text: 'Condition group has been deleted successfully.',
+              icon: 'success',
+              timer: 2000,
+              showConfirmButton: false
+            });
+          },
+          error: (error) => {
+            Swal.fire({
+              title: 'Error!',
+              text: 'Failed to delete condition group. Please try again.',
+              icon: 'error'
+            });
+          }
+        });
+      }
+    });
   }
   // When switching to View Condition tab
   onTabChange(tab: 'add' | 'view') {

@@ -185,6 +185,11 @@ public class ReviewService {
         return reviewRepo.existsByUserIdAndProductId(userId, productId);
     }
 
+    public List<ProductReviewDto> getAllReviews() {
+        List<ProductReview> reviews = reviewRepo.findAll();
+        return reviews.stream().map(this::toDto).collect(java.util.stream.Collectors.toList());
+    }
+
     // Convert entity to DTO (with verified badge, userName masking)
     private ProductReviewDto toDto(ProductReview review) {
         ProductReviewDto dto = new ProductReviewDto();

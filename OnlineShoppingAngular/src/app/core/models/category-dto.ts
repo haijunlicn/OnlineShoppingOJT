@@ -10,6 +10,7 @@ export interface CategoryDTO {
   imgPath?: string;
   level?: number;
   delFg?: number;
+  productCount?: number;
 }
 
 export interface CategoryFlatDTO extends CategoryDTO {

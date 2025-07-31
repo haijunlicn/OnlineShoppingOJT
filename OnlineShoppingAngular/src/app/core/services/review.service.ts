@@ -39,4 +39,8 @@ export class ReviewService {
   checkPurchaseStatus(productId: number): Observable<{canReview: boolean; hasReviewed: boolean}> {
     return this.http.get<{canReview: boolean; hasReviewed: boolean}>(`${this.baseUrl}/check-purchase/${productId}`);
   }
+
+  getAllReviews(): Observable<ProductReview[]> {
+    return this.http.get<ProductReview[]>(`${this.baseUrl}/public/all`);
+  }
 }

@@ -24,6 +24,7 @@ public class CategoryDTO {
     private Integer delFg;
     private String createdDate;
     private String updatedDate;
+    private Long productCount;
 
     private List<OptionDTO> optionTypes;
 

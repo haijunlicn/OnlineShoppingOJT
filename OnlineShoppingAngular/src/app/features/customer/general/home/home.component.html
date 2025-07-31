@@ -15,7 +15,7 @@
   </app-discount-hero-carousel> -->
 
     <!-- Replace Hero Section only if discounts exist -->
-    <app-discount-hero-carousel *ngIf="!isLoadingDiscounts && discounts.length > 0" [discounts]="discounts" 
+    <app-discount-hero-carousel *ngIf="!isLoadingDiscounts && discounts.length > 0" [discounts]="discounts"
       (viewDetails)="onDiscountViewDetails($event)" (shopNow)="onShopNow()">
     </app-discount-hero-carousel>
 
@@ -51,29 +51,146 @@
     <div *ngIf="!isLoadingTop">
       <div class="top-categories">
         <h3>Top Categories</h3>
-        <div class="top-category-grid">
-          <div class="category-card rect-card" *ngFor="let cat of topCategories">
-            <img [src]="cat.imgPath || 'assets/images/categories/default.jpg'" [alt]="cat.name" class="category-image-rect" />
-            <div class="category-info">
-              <h4>{{ cat.name }}</h4>
-              <a [routerLink]="['/customer/productList']" [queryParams]="{ category: cat.name }" class="category-link">Shop Now</a>
+        
+        <!-- Scrollable Container with Navigation -->
+        <div class="top-categories-container">
+          <!-- Left Scroll Button -->
+          <button class="scroll-btn left" (click)="scrollCategoriesLeft()" *ngIf="topCategories.length > 4">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+
+          <!-- Scrollable Categories Grid -->
+          <div class="top-category-scroll" #categoryScrollContainer>
+            <div class="category-card-container" *ngFor="let cat of topCategories">
+              <div class="category-card">
+                <!-- Category Image -->
+                <div class="category-image-container">
+                  <img [src]="cat.imgPath || 'assets/images/categories/default.jpg'" 
+                       [alt]="cat.name" 
+                       class="category-image" />
+                  
+                  <!-- Category Overlay -->
+                  <div class="category-overlay">
+                    <div class="category-content">
+                      <h4 class="category-name">{{ cat.name }}</h4>
+                      <p class="category-product-count">{{ cat.productCount || 0 }} PRODUCTS</p>
+                      <button class="shop-now-btn" 
+                              [routerLink]="['/customer/productList']" 
+                              [queryParams]="{ category: cat.name }">
+                        Shop Now
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
+
+          <!-- Right Scroll Button -->
+          <button class="scroll-btn right" (click)="scrollCategoriesRight()" *ngIf="topCategories.length > 4">
+            <i class="bi bi-chevron-right"></i>
+          </button>
         </div>
       </div>
       <div class="top-products">
         <h3>Featured Products</h3>
-        <div class="top-product-grid">
-          <div class="product-card rect-card" *ngFor="let prod of topProducts">
-            <img [src]="getMainProductImage(prod.product)" [alt]="prod.product.name" class="product-image-rect" />
-            <div class="product-info">
-              <h4>{{ prod.product.name }}</h4>
-              <div class="product-price">{{ prod.product.basePrice | currency:'MMK':'symbol' }}</div>
-              <div class="product-btns">
-                <a [routerLink]="['/customer/product', prod.id]" class="category-link">View Details</a>
+        
+        <!-- Scrollable Container with Navigation -->
+        <div class="top-products-container">
+          <!-- Left Scroll Button -->
+          <button class="scroll-btn left" (click)="scrollLeft()" *ngIf="topProducts.length > 4">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+
+          <!-- Scrollable Products Grid -->
+          <div class="top-product-scroll" #scrollContainer>
+            <div class="product-card-container" *ngFor="let prod of topProducts">
+              <div class="card h-100 product-card">
+                <!-- Product Image Container -->
+                <div class="position-relative product-img-wrapper">
+                  <!-- Top Left Badge Container -->
+                  <div class="position-absolute top-0 start-0 p-2 z-1 badge-container">
+                    <!-- Primary Status Badges -->
+                    <div class="status-badges mb-1">
+                      <span class="badge badge-sale me-1" *ngIf="isOnSale(prod)">SALE</span>
+                    </div>
+
+                    <!-- Available Discount Badges - Only show when NOT on sale -->
+                    <div class="available-discount-badges" *ngIf="!isOnSale(prod) && hasUnappliedDiscounts(prod)">
+                      <span class="badge badge-available-discount">
+                        <i class="pi pi-tag me-1"></i>
+                        {{ getCombinedDiscountLabel(prod) }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Wishlist Button -->
+                  <!-- <button class="btn btn-sm position-absolute top-0 end-0 p-1 m-2 wishlist-btn z-1" title="Add to wishlist"
+                    (click)="toggleWish(prod.product.id!); $event.stopPropagation()">
+                    <i class="pi" [ngClass]="isWished(prod.product.id!) ? 'pi-heart-fill text-danger' : 'pi-heart'"
+                      style="cursor: pointer; font-size: 1rem;"></i>
+                  </button> -->
+
+                  <!-- Product Image -->
+                  <img [src]="getMainProductImage(prod.product)" class="card-img-top product-image"
+                    (click)="goToDetail(prod)" alt="{{ prod.product.name }}">
+                </div>
+
+                <!-- Product Info -->
+                <div class="card-body product-info" (click)="goToDetail(prod)">
+                  <!-- Brand & Category Row -->
+                  <div class="d-flex justify-content-between align-items-center mb-2 brand-category-row">
+                    <small class="brand-text">{{ prod.brand?.name || 'No Brand' }}</small>
+                    <small class="category-text">{{ prod.category.name }}</small>
+                  </div>
+
+                  <!-- Product Name with Rating -->
+                  <div class="product-name-section mb-2">
+                    <h6 class="product-name d-flex align-items-center" [title]="prod.product.name">
+                      {{ prod.product.name }}
+                      <span *ngIf="prod.reviewTotal && prod.reviewTotal > 0" class="ms-2 product-rating-stars">
+                        <ng-container *ngFor="let s of [1,2,3,4,5]">
+                          <i
+                            class="bi"
+                            [ngClass]="s <= getRounded(prod.reviewAverage ?? 0) ? 'bi-star-fill text-warning' : 'bi-star'"
+                            style="font-size: 1rem;"
+                          ></i>
+                        </ng-container>
+                        <span class="rating-number text-muted ms-1" style="font-size: 0.95rem;">({{ prod.reviewTotal ?? 0 }})</span>
+                      </span>
+                    </h6>
+                  </div>
+
+                  <!-- Enhanced Price Section -->
+                  <div class="price-section mb-3" style="margin-top: -15px;">
+                    <app-discount-display [discountHints]="getUnconditionalDiscountHints(prod)" [displayMode]="'grid'"
+                      [originalPrice]="prod.originalPrice" [discountedPrice]="prod.discountedPrice">
+                    </app-discount-display>
+                  </div>
+
+                  <!-- Bottom Action Row -->
+                  <div class="d-flex justify-content-between align-items-center mt-auto">
+                    <!-- Stock Status -->
+                    <span class="stock-badge" [ngClass]="{'stock-in': hasStock(prod), 'stock-out': !hasStock(prod)}">
+                      {{ hasStock(prod) ? 'IN STOCK' : 'OUT OF STOCK' }}
+                    </span>
+
+                    <!-- Action Button -->
+                    <button class="btn btn-action btn-sm" [disabled]="!hasStock(prod)"
+                      (click)="goToDetail(prod); $event.stopPropagation()">
+                      <i class="pi pi-eye me-1"></i>
+                      View
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+
+          <!-- Right Scroll Button -->
+          <button class="scroll-btn right" (click)="scrollRight()" *ngIf="topProducts.length > 4">
+            <i class="bi bi-chevron-right"></i>
+          </button>
         </div>
       </div>
     </div>

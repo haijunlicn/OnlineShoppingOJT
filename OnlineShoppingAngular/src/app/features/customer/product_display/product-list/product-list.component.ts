@@ -16,6 +16,8 @@ import { FilterSidebarComponent, FilterState } from '../../common/filter-sidebar
 import { DiscountDisplayService } from '@app/core/services/discount-display.service';
 import { DiscountDisplayDTO } from '@app/core/models/discount';
 import { DiscountTextService } from '@app/core/services/discount-text.service';
+import { ReviewService } from '@app/core/services/review.service';
+import { ProductReview } from '@app/core/models/review';
 
 @Component({
   selector: "app-product-list",
@@ -32,6 +34,7 @@ export class ProductListComponent {
   categories: CategoryDTO[] = []
   brands: BrandDTO[] = []
   wishList = new Set<number>()
+  allReviews: ProductReview[] = [];
 
   // Filter state
   currentFilters: FilterState = {
@@ -79,6 +82,7 @@ export class ProductListComponent {
     private authService: AuthService,
     private discountDisplayService: DiscountDisplayService,
     private discountTextService: DiscountTextService, // Add this line
+    private reviewService: ReviewService,
   ) { }
 
   ngOnInit() {
@@ -90,6 +94,11 @@ export class ProductListComponent {
     this.loadBrands()
     this.loadWishlist()
     this.loadProducts()
+    this.reviewService.getAllReviews().subscribe(reviews => {
+      this.allReviews = reviews;
+      this.attachRatingsToProducts();
+      console.log("may__________________________________________________", this.allReviews);
+    });
 
     this.checkScreenSize()
     window.addEventListener("resize", () => this.checkScreenSize())
@@ -190,12 +199,16 @@ export class ProductListComponent {
           next: (hintMap) => {
             console.log("✅ Discount hints received from backend:", hintMap)
             this.precomputeProductPrices(hintMap)
+            // Attach ratings to products after they are loaded
+            this.attachRatingsToProducts();
             this.filteredProducts = [...this.products]
             this.tryRestoreInitialFilters()
           },
           error: (err) => {
             console.error("Failed to load discount hints", err)
             this.precomputeProductPrices({})
+            // Attach ratings to products even if discount hints fail
+            this.attachRatingsToProducts();
             this.filteredProducts = [...this.products]
             this.tryRestoreInitialFilters()
           },
@@ -1073,4 +1086,28 @@ export class ProductListComponent {
   }
 
   Math = Math
+
+  attachRatingsToProducts() {
+    console.log("🔍 Attaching ratings to products...");
+    console.log("📊 Total reviews available:", this.allReviews.length);
+    console.log("📦 Total products:", this.products.length);
+    
+    this.products.forEach(product => {
+      const reviews = this.allReviews.filter(r => r.productId === product.id);
+      console.log(`🔍 Product ${product.id} (${product.product.name}): ${reviews.length} reviews`);
+      
+      product.reviewAverage = reviews.length
+        ? reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length
+        : 0;
+      product.reviewTotal = reviews.length;
+      
+      console.log(`⭐ Product ${product.id}: Average=${product.reviewAverage}, Total=${product.reviewTotal}`);
+    });
+    
+    console.log("✅ Ratings attached to all products");
+  }
+
+  getRounded(value: number): number {
+    return Math.round(value);
+  }
 }
