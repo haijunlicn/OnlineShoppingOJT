@@ -178,8 +178,8 @@
 }
 
 .btn-outline-secondary:hover {
-  background-color: #6b7280;
-  border-color: #6b7280;
+  background-color: #fafbfd;
+  border-color: #555657;
   color: white;
 }
 
@@ -319,7 +319,7 @@
 
 .category-level-0 {
   font-weight: 600;
-  background-color: #f8f9fa;
+  background-color: #fff;
   border-bottom: 1px solid #e9ecef;
   padding-left: 0.75rem !important;
   padding-right: 0.5rem !important;
@@ -330,7 +330,7 @@
   background-color: #ffffff;
   padding-left: 1.25rem !important;
   padding-right: 0.5rem !important;
-  color: #495057;
+  color: #f8fafc;
 }
 
 .category-level-2 {
@@ -338,7 +338,7 @@
   background-color: #ffffff;
   padding-left: 1.75rem !important;
   padding-right: 0.5rem !important;
-  color: #6c757d;
+  color: #f7f8f9;
   font-size: 0.875rem;
 }
 
@@ -347,7 +347,7 @@
   background-color: #ffffff;
   padding-left: 2.25rem !important;
   padding-right: 0.5rem !important;
-  color: #6c757d;
+  color: #fdfefe;
   font-size: 0.8rem;
 }
 
@@ -356,7 +356,7 @@
   background-color: #ffffff;
   padding-left: 2.75rem !important;
   padding-right: 0.5rem !important;
-  color: #6c757d;
+  color: #f9fbfc;
   font-size: 0.75rem;
 }
 
@@ -390,7 +390,7 @@
 .category-level-2:hover,
 .category-level-3:hover,
 .category-level-4:hover {
-  background-color: #f8f9fa;
+  background-color: #fff;
 }
 
 .submenu {
@@ -412,7 +412,7 @@
 }
 
 .dropdown-item-check:hover {
-  background-color: #f8f9fa;
+  background-color: #fff;
 }
 
 .dropdown-text {
