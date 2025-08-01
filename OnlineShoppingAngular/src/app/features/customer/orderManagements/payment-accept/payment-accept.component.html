@@ -9,6 +9,10 @@
         <p>Complete your order and payment</p>
       </div>
       <div class="header-actions">
+        <button class="btn-continue-shopping" (click)="continueShopping()">
+          <i class="fas fa-shopping-cart"></i>
+          Continue Shopping
+        </button>
         <button class="btn-back-to-order" (click)="goBackToOrderManagement()">
           <i class="fas fa-arrow-left"></i>
           Back to Order
@@ -17,60 +21,7 @@
     </div>
   </div>
 
-  <!-- Modern Professional Timer -->
-  <div class="payment-timer-container" *ngIf="!timerExpired || !this.paymentInProgress || !paymentSuccess">
-    <div class="timer-header">
-      <div class="timer-label">
-        <i class="fas fa-clock"></i>
-        <span>Payment Session</span>
-      </div>
-      <div class="timer-status" [ngClass]="getTimerStatus()">
-        {{ getTimerStatusText() }}
-      </div>
-    </div>
 
-    <div class="timer-display-container">
-      <div class="timer-display" [ngClass]="getTimerStatus()">
-        <span>{{ timerDisplay.split(':')[0] }}</span>
-        <span class="timer-separator">:</span>
-        <span>{{ timerDisplay.split(':')[1] }}</span>
-      </div>
-    </div>
-
-    <div class="timer-progress-container">
-      <div class="timer-progress-bar">
-        <div class="timer-progress-fill" [ngClass]="getTimerStatus()" [style.width.%]="timerProgressPercent">
-        </div>
-      </div>
-      <div class="timer-info">
-        <span>Time remaining to complete payment</span>
-        <span>{{ Math.floor(timeLeft / 60) }}m {{ timeLeft % 60 }}s</span>
-      </div>
-    </div>
-
-    <div class="timer-warning-message" *ngIf="timerWarning && !timerExpired">
-      <i class="fas fa-exclamation-triangle"></i>
-      <span>Hurry up! Only {{ Math.floor(timeLeft / 60) }} minutes {{ timeLeft % 60 }} seconds left to complete your
-        payment.</span>
-    </div>
-  </div>
-
-  <div class="payment-timer-container" *ngIf="timerExpired">
-    <div class="timer-header">
-      <div class="timer-label">
-        <i class="fas fa-exclamation-triangle"></i>
-        <span>Payment Session</span>
-      </div>
-      <div class="timer-status expired">
-        Expired
-      </div>
-    </div>
-
-    <div class="timer-expired-message">
-      <i class="fas fa-times-circle"></i>
-      <span>Payment time has expired. Please start a new order to continue.</span>
-    </div>
-  </div>
 
   <!-- Main Content -->
   <div class="checkout-2col-grid">
@@ -124,7 +75,7 @@
           <!-- Credit Card Form -->
           <div *ngIf="showCreditCardForm" class="payment-form">
             <div class="form-header">
-              <button class="btn-back" (click)="backToPaymentMethods()" [disabled]="timerExpired">
+              <button class="btn-back" (click)="backToPaymentMethods()">
                 <i class="fas fa-arrow-left"></i>
                 Back
               </button>
@@ -139,8 +90,7 @@
                 <label>Card Number</label>
                 <div class="input-wrapper">
                   <input type="text" [(ngModel)]="creditCardData.cardNumber" name="cardNumber"
-                    (input)="formatCardNumber($event)" placeholder="1234 5678 9012 3456" maxlength="19" required
-                    [disabled]="timerExpired">
+                    (input)="formatCardNumber($event)" placeholder="1234 5678 9012 3456" maxlength="19" required>
                   <i class="fas fa-credit-card"></i>
                 </div>
               </div>
@@ -148,7 +98,7 @@
                 <label>Cardholder Name</label>
                 <div class="input-wrapper">
                   <input type="text" [(ngModel)]="creditCardData.cardHolderName" name="cardHolderName"
-                    placeholder="John Doe" required [disabled]="timerExpired">
+                    placeholder="John Doe" required>
                   <i class="fas fa-user"></i>
                 </div>
               </div>
@@ -157,8 +107,7 @@
                   <label>Expiry Date</label>
                   <div class="input-wrapper">
                     <input type="text" [(ngModel)]="creditCardData.expiryDate" name="expiryDate"
-                      (input)="formatExpiryDate($event)" placeholder="MM/YY" maxlength="5" required
-                      [disabled]="timerExpired">
+                      (input)="formatExpiryDate($event)" placeholder="MM/YY" maxlength="5" required>
                     <i class="fas fa-calendar"></i>
                   </div>
                 </div>
@@ -166,7 +115,7 @@
                   <label>CVV</label>
                   <div class="input-wrapper">
                     <input type="text" [(ngModel)]="creditCardData.cvv" name="cvv" placeholder="123" maxlength="4"
-                      required [disabled]="timerExpired">
+                      required>
                     <i class="fas fa-lock"></i>
                   </div>
                 </div>
@@ -176,8 +125,8 @@
                 <h5>Upload Payment Proof Image</h5>
                 <div class="upload-area-enhanced" *ngIf="!uploadedImageUrl">
                   <input type="file" id="credit-upload" accept="image/*" (change)="onImageUpload($event)"
-                    style="display: none;" [disabled]="timerExpired">
-                  <label for="credit-upload" class="upload-button-enhanced" [class.disabled]="timerExpired">
+                    style="display: none;">
+                  <label for="credit-upload" class="upload-button-enhanced">
                     <i class="fas fa-cloud-upload-alt"></i>
                     <span>Upload Image</span>
                   </label>
@@ -185,7 +134,7 @@
                 <div class="uploaded-preview-enhanced" *ngIf="uploadedImageUrl">
                   <div class="image-preview-enhanced">
                     <img [src]="uploadedImageUrl" alt="Payment Proof" />
-                    <button class="btn-remove-enhanced" (click)="clearUploadedImage()" [disabled]="timerExpired">
+                    <button class="btn-remove-enhanced" (click)="clearUploadedImage()">
                       <i class="fas fa-times"></i>
                     </button>
                   </div>
@@ -193,7 +142,7 @@
               </div>
               <!-- Place Order Button for Credit Card Payment -->
               <button type="button" class="btn-pay" (click)="processCreditCardPayment()"
-                [disabled]="isProcessing || !isValidCreditCard() || !uploadedImage || timerExpired">
+                [disabled]="isProcessing || !isValidCreditCard() || !uploadedImage">
                 <i class="fas fa-check" *ngIf="!isProcessing"></i>
                 <i class="fas fa-spinner fa-spin" *ngIf="isProcessing"></i>
                 {{ isProcessing ? 'Processing...' : 'Place Order' }}
@@ -236,7 +185,7 @@
             <div class="qr-payment" *ngIf="selectedQRMethod">
               <div class="qr-payment-card">
                 <div class="qr-header">
-                  <button class="btn-back" (click)="selectedQRMethod = ''" [disabled]="timerExpired">
+                  <button class="btn-back" (click)="selectedQRMethod = ''">
                     <i class="fas fa-arrow-left"></i>
                     Back
                   </button>
@@ -283,9 +232,9 @@
                   <div class="upload-section-enhanced">
                     <h5>Upload QR Screenshot for Transaction</h5>
                     <div class="upload-area-enhanced" *ngIf="!uploadedImageUrl">
-                      <input type="file" id="qr-upload" accept="image/*" (change)="onImageUpload($event)"
-                        style="display: none;" [disabled]="timerExpired">
-                      <label for="qr-upload" class="upload-button-enhanced" [class.disabled]="timerExpired">
+                                        <input type="file" id="qr-upload" accept="image/*" (change)="onImageUpload($event)"
+                    style="display: none;">
+                  <label for="qr-upload" class="upload-button-enhanced">
                         <i class="fas fa-cloud-upload-alt"></i>
                         <span>Upload Image</span>
                       </label>
@@ -293,7 +242,7 @@
                     <div class="uploaded-preview-enhanced" *ngIf="uploadedImageUrl">
                       <div class="image-preview-enhanced">
                         <img [src]="uploadedImageUrl" alt="QR Code" />
-                        <button class="btn-remove-enhanced" (click)="clearUploadedImage()" [disabled]="timerExpired">
+                        <button class="btn-remove-enhanced" (click)="clearUploadedImage()">
                           <i class="fas fa-times"></i>
                         </button>
                       </div>
@@ -301,7 +250,7 @@
                   </div>
 
                   <button class="btn-verify" (click)="verifyQRPayment()"
-                    [disabled]="isProcessing || timerExpired || !uploadedImage">
+                    [disabled]="isProcessing || !uploadedImage">
                     <i class="fas fa-check-circle" *ngIf="!isProcessing"></i>
                     <i class="fas fa-spinner fa-spin" *ngIf="isProcessing"></i>
                     {{ isProcessing ? 'Processing Payment & Placing Order...'

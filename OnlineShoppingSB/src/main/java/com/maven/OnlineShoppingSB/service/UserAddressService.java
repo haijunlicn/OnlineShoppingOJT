@@ -1,8 +1,10 @@
 package com.maven.OnlineShoppingSB.service;
 
 import com.maven.OnlineShoppingSB.dto.UserAddressDto;
+import com.maven.OnlineShoppingSB.entity.OrderEntity;
 import com.maven.OnlineShoppingSB.entity.UserAddressEntity;
 import com.maven.OnlineShoppingSB.entity.UserEntity;
+import com.maven.OnlineShoppingSB.repository.OrderRepository;
 import com.maven.OnlineShoppingSB.repository.UserAddressRepository;
 import com.maven.OnlineShoppingSB.repository.UserRepository;
 import org.modelmapper.ModelMapper;
@@ -24,6 +26,9 @@ public class UserAddressService {
 
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private OrderRepository orderRepository;
 
     public UserAddressDto saveUserAddress(UserAddressDto dto) {
         if (dto.getUserId() == null) {
@@ -73,6 +78,22 @@ public class UserAddressService {
     public UserAddressDto updateUserAddress(Integer id, UserAddressDto dto) {
         UserAddressEntity existing = userAddressRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Address not found with ID: " + id));
+        // Check if address is associated with any orders that are not CANCELLED or DELIVERED
+        List<OrderEntity> associatedOrders = orderRepository.findByUserAddressId(id);
+
+        for (OrderEntity order : associatedOrders) {
+            String currentStatus = order.getCurrentStatus() != null ? order.getCurrentStatus().getCode() : null;
+
+            // Only allow editing if order status is CANCELLED or DELIVERED
+            if (currentStatus != null &&
+                    !"ORDER_CANCELLED".equals(currentStatus) &&
+                    !"DELIVERED".equals(currentStatus)) {
+
+                throw new RuntimeException("Cannot edit address. It is associated with order #" +
+                        order.getTrackingNumber() + " which has status: " + currentStatus +
+                        ". Address can only be edited when all associated orders are CANCELLED or DELIVERED.");
+            }
+        }
 
         // Map simple fields from dto to entity except user
         existing.setAddress(dto.getAddress());
