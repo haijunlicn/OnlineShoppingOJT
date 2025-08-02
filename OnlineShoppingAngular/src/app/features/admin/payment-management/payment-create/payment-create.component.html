@@ -54,7 +54,27 @@
                       </div>
                       <div class="form-text">Enter a descriptive name for the payment method</div>
                     </div>
-
+                      <!-- New Payment Type Select -->
+              <div class="mb-3">
+                <label for="paymentType" class="form-label required">Payment Type</label>
+                <select
+                  id="paymentType"
+                  class="form-select"
+                  [(ngModel)]="paymentType"
+                  name="paymentType"
+                  required
+                  #paymentTypeInput="ngModel"
+                  [class.is-invalid]="paymentTypeInput.invalid && paymentTypeInput.touched"
+                >
+                  <option value="" disabled selected>Select payment type</option>
+                  <option value="qr">QR</option>
+                  <option value="credit">Credit</option>
+                </select>
+                <div class="invalid-feedback" *ngIf="paymentTypeInput.invalid && paymentTypeInput.touched">
+                  Payment type is required
+                </div>
+                <div class="form-text">Choose the payment type for this method</div>
+              </div>
                     <!-- Description -->
                     <div class="mb-3">
                       <label for="description" class="form-label">Description</label>

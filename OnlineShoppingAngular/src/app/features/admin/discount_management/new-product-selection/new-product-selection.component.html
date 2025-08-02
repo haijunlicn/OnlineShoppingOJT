@@ -151,12 +151,12 @@
                                         <th>Price</th>
                                         <th class="d-none d-lg-table-cell">Stock</th>
                                         <th class="d-none d-lg-table-cell">Created</th>
+                                        <th *ngIf="context === 'discount_product'">Discount Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr *ngFor="let product of filteredProducts" class="product-row-custom"
-                                        [class.selected-row]="isProductSelected(product)"
-                                        (click)="toggleProductSelection(product)">
+                                        [class.selected-row]="isProductSelected(product)">
                                         <td>
                                             <input type="checkbox" [checked]="isProductSelected(product)"
                                                 (change)="toggleProductSelection(product)"
@@ -191,6 +191,20 @@
                                         </td>
                                         <td class="d-none d-lg-table-cell">
                                             <small class="text-muted">{{getProductCreateDate(product)}}</small>
+                                        </td>
+                                        <td *ngIf="context === 'discount_product'">
+                                            <div *ngIf="hasDiscount(product); else noDiscount">
+                                                <span class="badge bg-warning text-dark me-2">
+                                                    <i class="fas fa-tag me-1"></i>Discounted
+                                                </span>
+                                                <button type="button" class="btn btn-sm btn-outline-info" 
+                                                        (click)="showDiscountDetails(product); $event.stopPropagation()">
+                                                    <i class="fas fa-eye me-1"></i>View Details
+                                                </button>
+                                            </div>
+                                            <ng-template #noDiscount>
+                                                <span class="badge bg-light text-muted">No Discount</span>
+                                            </ng-template>
                                         </td>
                                     </tr>
                                 </tbody>

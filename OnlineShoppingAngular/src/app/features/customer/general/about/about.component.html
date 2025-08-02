@@ -1,20 +1,12 @@
 <app-header></app-header>
 
 <div class="about-page main-content">
-  <!-- Top Header -->
-  <header class="top-header">
-    <div class="header-content">
-      <div class="logo">ABOUT US</div>
-    </div>
-  </header>
+ 
 
   <!-- Hero Section -->
-  <section class="hero-section">
+  <section class="hero-section" style="height: 350px;">
     <div class="hero-image">
-      <img src="assets/img/IMG_3565.jpg" alt="Britium Gallery" class="hero-img" >
-      <div class="hero-overlay">
-        <div class="hero-name">BRITIUM GALLERY</div>
-      </div>
+      <img src="assets/img/about-us.jpg" alt="Britium Gallery" class="hero-img" >
     </div>
   </section>
   
@@ -105,35 +97,6 @@
   </section>
 
  
-
-
-  <!-- Meet the Team Section -->
-  <section class="team-section">
-    <div class="container">
-      <h2 class="section-title">Meet the Team</h2>
-      
-      <!-- Team Photos - Centered -->
-      <div class="team-photos-centered">
-        <div class="team-photo" *ngFor="let member of teamData">
-          <img [src]="member.image" [alt]="member.name" class="team-img">
-          <!-- <div class="team-photo-overlay">
-            <div class="team-member-name">{{ member.name }}</div>
-          </div> -->
-        </div>
-      </div>
-      
-      <div class="quotes-grid">
-        <div class="quote-card" *ngFor="let quote of teamQuotes">
-          <div class="quote-text">"{{ quote.text }}"</div>
-          <div class="quote-author">
-            <strong>{{ quote.name }}</strong>
-            <span class="quote-role">{{ quote.role }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- Bottom Section - Team & Testimonials -->
   <section class="bottom-section">
     <div class="bottom-container">

@@ -1,0 +1,72 @@
+.groups-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.group-card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.group-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.condition-text {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef !important;
+  transition: all 0.2s ease-in-out;
+}
+
+.condition-text:hover {
+  border-color: #343a40 !important;
+  box-shadow: 0 2px 8px rgba(52, 58, 64, 0.1);
+}
+
+.card-header {
+  border-bottom: none;
+}
+
+.text-primary {
+  color: #343a40 !important;
+}
+
+.text-success {
+  color: #28a745 !important;
+}
+
+.text-muted {
+  color: #6c757d !important;
+}
+
+.bg-dark {
+  background-color: #343a40 !important;
+}
+
+.conditions-list {
+  margin-top: 10px;
+}
+
+.condition-item {
+  padding: 5px 0;
+}
+
+/* Loading animation */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Error state */
+.alert-danger {
+  border-left: 4px solid #dc3545;
+}
+
+/* Empty state */
+.fa-3x {
+  font-size: 3rem;
+}
+
+.fa-2x {
+  font-size: 2rem;
+}

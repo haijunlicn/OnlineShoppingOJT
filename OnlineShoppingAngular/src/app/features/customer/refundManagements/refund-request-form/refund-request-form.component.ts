@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { OrderDetail, OrderItemDetail } from '@app/core/models/order.dto';
 import { RefundReasonDTO } from '@app/core/models/refund-reason';
 import { RefundRequestDTO, RequestedRefundAction, ReturnRequestPayload, ReturnRequestResponse } from '@app/core/models/refund.model';
+import { AlertService } from '@app/core/services/alert.service';
 import { AuthService } from '@app/core/services/auth.service';
 import { CloudinaryService } from '@app/core/services/cloudinary.service';
 import { OrderService } from '@app/core/services/order.service';
@@ -40,6 +41,7 @@ export class RefundRequestFormComponent implements OnInit {
     private cloudinaryService: CloudinaryService,
     private cd: ChangeDetectorRef,
     private authService: AuthService,
+    private alertService:AlertService,
   ) { }
 
   ngOnInit(): void {
@@ -341,7 +343,7 @@ export class RefundRequestFormComponent implements OnInit {
 
   private onSubmitSuccess(): void {
     this.isSubmitting = false
-    alert("Return request submitted successfully!")
+    this.alertService.toast("Failed to load orders. Please try again.", "error")
     this.router.navigate(["/customer/orders"])
   }
 

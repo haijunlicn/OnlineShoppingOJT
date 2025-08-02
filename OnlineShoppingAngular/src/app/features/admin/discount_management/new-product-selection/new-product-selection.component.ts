@@ -4,6 +4,18 @@ import { CategoryDTO } from "@app/core/models/category-dto"
 import { BrandDTO, ProductDTO } from "@app/core/models/product.model"
 import { DiscountService } from "@app/core/services/discount.service"
 import { ProductSelectionService, Product as ServiceProduct } from "@app/core/services/product-selection.service"
+import { DiscountDisplayDTO } from '@app/core/models/discount-display.model';
+import Swal from 'sweetalert2';
+
+// Configure SweetAlert globally for this component
+Swal.mixin({
+  customClass: {
+    popup: 'swal2-simple-popup'
+  },
+  confirmButtonColor: '#000000',
+  background: '#ffffff',
+  color: '#000000'
+});
 
 export interface Rule {
   id: string
@@ -94,6 +106,7 @@ export class NewProductSelectionComponent implements OnInit, OnChanges {
   products: ProductDTO[] = [];
   categories: CategoryDTO[] = [];
   brands: BrandDTO[] = [];
+  productDiscountInfo: { [key: number]: DiscountDisplayDTO[] } = {};
 
   constructor(
     private router: Router,
@@ -103,85 +116,209 @@ export class NewProductSelectionComponent implements OnInit, OnChanges {
   ) { }
 
   ngOnInit() {
+    console.log('🚀 Product Selection Component initialized');
+    console.log('📋 Context:', this.context);
+    console.log('📋 Selection Mode:', this.selectionMode);
+    console.log('📋 Initial selected products:', this.selectedProducts?.length || 0);
+    console.log('📋 Initial selected products array:', this.selectedProducts);
+   
     this.disocuntService.getAllProducts().subscribe(products => {
-      // this.products = products;
+      console.log('📦 Loaded products:', products.length);
       this.products = products.map(p => ({
         ...p,
         productVariants: p.productVariants ?? []
       }));
       this.applyFilters();
     });
+    
     this.disocuntService.getAllCategories().subscribe(categories => {
+      console.log('📂 Loaded categories:', categories.length);
       this.categories = categories;
     });
+    
     this.disocuntService.getAllBrands().subscribe(brands => {
+      console.log('🏷️ Loaded brands:', brands.length);
       this.brands = brands.map(b => ({ ...b, id: b.id.toString(), delFg: b.delFg }));
     });
 
+    this.loadProductDiscountInfo();
     this.currentSelectedProducts = this.selectedProducts ? [...this.selectedProducts] : [];
+    console.log('📋 Initial currentSelectedProducts:', this.currentSelectedProducts.length);
+    console.log('📋 Initial currentSelectedProducts array:', this.currentSelectedProducts);
   }
-
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['selectedProducts'] && !changes['selectedProducts'].firstChange) {
-
-    }
-    if (changes['selectionMode']) {
-
+    console.log('🔄 ngOnChanges called with changes:', changes);
+    
+    if (changes['selectedProducts']) {
+      console.log('🔄 selectedProducts changed:', changes['selectedProducts']);
+      console.log('🔄 New selectedProducts:', this.selectedProducts);
+      console.log('🔄 Current currentSelectedProducts before update:', this.currentSelectedProducts);
+      
+      // Only update if the selectedProducts input actually changed and is not empty
+      if (this.selectedProducts && this.selectedProducts.length > 0) {
+        this.currentSelectedProducts = [...this.selectedProducts];
+        console.log('🔄 Updated currentSelectedProducts:', this.currentSelectedProducts);
+      } else {
+        // Don't reset the array if selectedProducts is empty - keep current selections
+        console.log('🔄 Skipping update - selectedProducts is empty, keeping current selections');
+      }
     }
   }
   applyFilters() {
-    this.filteredProducts = this.products.filter((product) => {
+   this.filteredProducts = this.products.filter(product => {
       // Search filter
-      if (this.searchText) {
-        const searchLower = this.searchText.toLowerCase()
-        const matchesSearch =
-          product.name.toLowerCase().includes(searchLower) ||
-          (product.category?.name?.toLowerCase().includes(searchLower) ?? false) ||
-          (product.brand?.name?.toLowerCase().includes(searchLower) ?? false)
-        if (!matchesSearch) return false
-      }
+      const matchesSearch = !this.searchText || 
+        product.name.toLowerCase().includes(this.searchText.toLowerCase()) ||
+        (product.category?.name && product.category.name.toLowerCase().includes(this.searchText.toLowerCase())) ||
+        (product.brand?.name && product.brand.name.toLowerCase().includes(this.searchText.toLowerCase()));
 
       // Category filter
-      if (this.selectedCategory !== null) {
-        const selectedCat = this.categories.find(cat => cat.id === this.selectedCategory);
-        if (selectedCat && selectedCat.id !== undefined) {
-          if (product.category?.id === undefined || product.category.id !== selectedCat.id) return false;
-        }
-      }
+      const matchesCategory = !this.selectedCategory || 
+        product.category?.id === this.selectedCategory;
 
       // Brand filter
-      if (this.selectedBrand) {
-        if (product.brand?.name !== this.selectedBrand) return false;
-      }
+      const matchesBrand = !this.selectedBrand || 
+        product.brand?.name === this.selectedBrand;
 
       // Status filter
-      if (this.statusFilter && this.statusFilter !== "all") {
-        const stock = this.getProductStock(product);
-        const status = stock === 0 ? 'Out of Stock' : 'Active';
-        if (status !== this.statusFilter) return false;
-      }
+      const matchesStatus = !this.statusFilter || 
+        this.getStatusLabel(product) === this.statusFilter;
 
-      // Price range filter
-      if (this.minPrice !== null && (product.basePrice ?? 0) < this.minPrice) return false
-      if (this.maxPrice !== null && (product.basePrice ?? 0) > this.maxPrice) return false
+      // Price filter
+      const price = product.basePrice || 0;
+      const matchesPrice = (!this.minPrice || price >= this.minPrice) && 
+                          (!this.maxPrice || price <= this.maxPrice);
 
-      // Date filtering
-      if (this.createdFromDate || this.createdToDate) {
-        if (!product.createdDate) return false;
-        const productDate = new Date(product.createdDate);
-        if (this.createdFromDate) {
-          const fromDate = new Date(this.createdFromDate)
-          if (productDate < fromDate) return false
-        }
-        if (this.createdToDate) {
-          const toDate = new Date(this.createdToDate)
-          toDate.setHours(23, 59, 59, 999)
-          if (productDate > toDate) return false
-        }
-      }
+      // Date filter
+      const createdDate = new Date(product.createdDate || '');
+      const matchesDate = (!this.createdFromDate || createdDate >= new Date(this.createdFromDate)) && 
+                         (!this.createdToDate || createdDate <= new Date(this.createdToDate));
 
-      return true
+      return matchesSearch && matchesCategory && matchesBrand && matchesStatus && matchesPrice && matchesDate;
     });
+
+  
+  }
+
+  private loadProductDiscountInfo() {
+  
+    
+    this.disocuntService.getProductDiscountInfo().subscribe({
+      next: (info) => {
+       this.productDiscountInfo = info;
+        
+        // Log each product with its discounts
+        Object.keys(info).forEach(productId => {
+          const productIdNum = parseInt(productId);
+          const discounts = info[productIdNum];
+       
+          
+          // Log discount details
+          discounts.forEach((discount, index) => {
+          
+          });
+        });
+        
+      
+      },
+      error: (error) => {
+      
+      }
+    });
+  }
+
+  hasDiscount(product: ProductDTO): boolean {
+   
+    const hasDiscount = !!(product.id && this.productDiscountInfo[product.id] && this.productDiscountInfo[product.id].length > 0);
+    
+   
+    
+    return hasDiscount;
+  }
+
+  getProductDiscounts(product: ProductDTO): DiscountDisplayDTO[] {
+    return product.id ? (this.productDiscountInfo[product.id] || []) : [];
+  }
+
+  showDiscountDetails(product: ProductDTO): void {
+    console.log('🔍 Showing discount details for product:', product.name);
+    
+    const discounts = this.getProductDiscounts(product);
+    console.log('📋 Found discounts:', discounts);
+    
+    if (discounts.length === 0) {
+      Swal.fire({
+        title: 'No Discounts',
+        text: `${product.name} has no active discounts.`,
+        icon: 'info',
+        confirmButtonText: 'Got it!',
+        confirmButtonColor: '#000000',
+        background: '#ffffff',
+        color: '#000000'
+      });
+      return;
+    }
+    
+    // Create comma-separated discount names with links
+    let discountNamesHtml = '';
+    discounts.forEach((discount, index) => {
+      const discountLink = `<a href="javascript:void(0)" onclick="window.openCustomerDiscount(${discount.id})" style="color: #000000; text-decoration: underline; font-weight: 600; cursor: pointer;">${discount.name}</a>`;
+      
+      if (index === 0) {
+        discountNamesHtml += discountLink;
+      } else {
+        discountNamesHtml += `, ${discountLink}`;
+      }
+    });
+    
+    // Add global function for customer discount navigation
+    (window as any).openCustomerDiscount = (discountId: number) => {
+      window.open(`/customer/discount/${discountId}`, '_blank');
+    };
+    
+    // Use setTimeout to ensure modal is fully rendered
+    setTimeout(() => {
+      Swal.fire({
+        title: 'Discount Details',
+        html: `
+          <div style="text-align: left; color: #000000;">
+            <h3 style="color: #000000; margin-bottom: 15px; font-size: 18px;">${product.name}</h3>
+            <p style="color: #000000; margin-bottom: 20px; font-size: 14px;">This product is included in the following active discounts:</p>
+            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #dee2e6;">
+              <p style="color: #000000; margin: 0; font-size: 14px; line-height: 1.5;">
+                ${discountNamesHtml}
+              </p>
+            </div>
+            <p style="color: #666666; font-size: 12px; margin-top: 15px; font-style: italic;">
+              💡 Click on discount names to view full details
+            </p>
+          </div>
+        `,
+        icon: 'info',
+        confirmButtonText: 'Got it!',
+        confirmButtonColor: '#000000',
+        background: '#ffffff',
+        color: '#000000',
+        width: '400px',
+        customClass: {
+          popup: 'swal2-simple-popup'
+        },
+        allowOutsideClick: true,
+        allowEscapeKey: true,
+        backdrop: true,
+        showCloseButton: false,
+        didOpen: () => {
+          // Force SweetAlert to be on top
+          const swalContainer = document.querySelector('.swal2-container') as HTMLElement;
+          const swalPopup = document.querySelector('.swal2-popup') as HTMLElement;
+          const swalBackdrop = document.querySelector('.swal2-backdrop') as HTMLElement;
+          
+          if (swalContainer) swalContainer.style.zIndex = '999999';
+          if (swalPopup) swalPopup.style.zIndex = '999999';
+          if (swalBackdrop) swalBackdrop.style.zIndex = '999999';
+        }
+      });
+    }, 100);
   }
 
   getProductStock(product: ProductDTO): number {
@@ -281,20 +418,43 @@ export class NewProductSelectionComponent implements OnInit, OnChanges {
   }
 
   toggleProductSelection(product: ProductDTO) {
+    console.log('🔍 toggleProductSelection called for product:', product.name);
+    console.log('🔍 Product ID:', product.id);
+    console.log('🔍 Current selected products before:', this.currentSelectedProducts.length);
+    console.log('🔍 Current selected products array:', this.currentSelectedProducts);
+    console.log('🔍 Is product already selected:', this.isProductSelected(product));
+    console.log('🔍 Selection mode:', this.selectionMode);
 
     if (this.selectionMode === "single") {
       this.currentSelectedProducts = this.isProductSelected(product) ? [] : [product]
+      console.log('🔍 Single mode - new array:', this.currentSelectedProducts);
     } else {
       const index = this.currentSelectedProducts.findIndex((p) => p.id === product.id)
+      console.log('🔍 Found product at index:', index);
+      
       if (index > -1) {
-        // Create a new array to trigger change detection
+        // Remove product from selection
+        const beforeRemove = [...this.currentSelectedProducts];
         this.currentSelectedProducts = this.currentSelectedProducts.filter((_, i) => i !== index)
+        console.log('🔍 Removed product from selection');
+        console.log('🔍 Before remove:', beforeRemove);
+        console.log('🔍 After remove:', this.currentSelectedProducts);
       } else {
-        // Create a new array to trigger change detection
+        // Add product to selection
+        const beforeAdd = [...this.currentSelectedProducts];
         this.currentSelectedProducts = [...this.currentSelectedProducts, product]
+        console.log('🔍 Added product to selection');
+        console.log('🔍 Before add:', beforeAdd);
+        console.log('🔍 After add:', this.currentSelectedProducts);
       }
     }
 
+    console.log('🔍 Current selected products after:', this.currentSelectedProducts.length);
+    console.log('🔍 Selected products:', this.currentSelectedProducts.map(p => p.name));
+    
+    // Force change detection
+    this.currentSelectedProducts = [...this.currentSelectedProducts];
+    console.log('🔍 Final array after force update:', this.currentSelectedProducts);
   }
 
   selectAllVisible() {

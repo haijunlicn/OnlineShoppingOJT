@@ -504,3 +504,99 @@
     opacity: 1;
   }
 }
+
+/* Custom SweetAlert Styling */
+.swal2-custom-popup {
+  border-radius: 15px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+}
+
+.swal2-custom-popup .swal2-title {
+  color: #333 !important;
+  font-size: 24px !important;
+  font-weight: 600 !important;
+}
+
+.swal2-custom-popup .swal2-html-container {
+  margin: 20px 0 !important;
+  text-align: left !important;
+}
+
+.swal2-custom-popup .swal2-confirm {
+  background-color: #3085d6 !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  padding: 12px 24px !important;
+}
+
+.swal2-custom-popup .swal2-confirm:hover {
+  background-color: #2779bd !important;
+}
+
+/* Discount link styling */
+.swal2-custom-popup a {
+  color: #007bff !important;
+  text-decoration: none !important;
+  font-weight: 600 !important;
+  transition: color 0.3s ease !important;
+}
+
+.swal2-custom-popup a:hover {
+  color: #0056b3 !important;
+  text-decoration: underline !important;
+}
+
+/* Simple Black/White Design */
+.swal2-simple-popup {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+  z-index: 999999 !important;
+}
+
+/* SweetAlert overlay z-index */
+.swal2-container {
+  z-index: 999999 !important;
+}
+
+/* Force SweetAlert to be on top of everything */
+.swal2-container,
+.swal2-popup,
+.swal2-backdrop {
+  z-index: 999999 !important;
+}
+
+.swal2-simple-popup .swal2-title {
+  color: #000000 !important;
+  font-size: 20px !important;
+  font-weight: 600 !important;
+}
+
+.swal2-simple-popup .swal2-html-container {
+  margin: 15px 0 !important;
+  text-align: left !important;
+}
+
+.swal2-simple-popup .swal2-confirm {
+  background-color: #000000 !important;
+  border-radius: 4px !important;
+  font-weight: 500 !important;
+  padding: 10px 20px !important;
+  color: #ffffff !important;
+}
+
+.swal2-simple-popup .swal2-confirm:hover {
+  background-color: #333333 !important;
+}
+
+/* Simple discount link styling */
+.swal2-simple-popup a {
+  color: #000000 !important;
+  text-decoration: underline !important;
+  font-weight: 600 !important;
+  transition: color 0.3s ease !important;
+}
+
+.swal2-simple-popup a:hover {
+  color: #333333 !important;
+  text-decoration: underline !important;
+}

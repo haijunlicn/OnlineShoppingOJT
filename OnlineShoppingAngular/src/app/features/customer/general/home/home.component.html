@@ -157,10 +157,10 @@
                   </div>
 
                   <!-- Enhanced Price Section -->
-                  <div class="price-section mb-3" style="margin-top: -15px;">
-                    <app-discount-display [discountHints]="getUnconditionalDiscountHints(prod)" [displayMode]="'grid'"
+                  <div class="price-section mb-3" style="margin-top: -15px" >
+                    <app-discount-display-for-home [discountHints]="getUnconditionalDiscountHints(prod)" [displayMode]="'grid'"
                       [originalPrice]="prod.originalPrice" [discountedPrice]="prod.discountedPrice">
-                    </app-discount-display>
+                    </app-discount-display-for-home>
                   </div>
 
                   <!-- Bottom Action Row -->

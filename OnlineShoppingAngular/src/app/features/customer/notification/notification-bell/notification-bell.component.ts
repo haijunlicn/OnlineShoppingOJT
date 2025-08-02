@@ -26,11 +26,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     private notificationModalService: NotificationModalService,
   ) { }
 
-  playNotificationSound() {
-    console.log("??????????????????????????????????????????????????????????");
-    const audio = new Audio('assets/sounds/preview.mp3');
-    audio.play();
-  }
+
   private isFirstLoad = true;
 
   ngOnInit(): void {
@@ -50,11 +46,9 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   
       if (!this.isFirstLoad) {
         const newNotis = this.notifications.filter(n => !this.lastNotificationIds.has(n.id));
-        if (newNotis.length > 0) {
-          this.playNotificationSound();
-        }
+      
       }
-  
+
       this.lastNotificationIds = currentIds;
       this.isFirstLoad = false;
     });

@@ -4,6 +4,7 @@ import { Brand, Category, City, DiscountConditionGroupEA_C, DiscountEA_A, GroupE
 import { User } from "../models/User"
 import { HttpClient } from "@angular/common/http"
 import { ProductDTO } from "../models/product.model"
+import { DiscountDisplayDTO } from "../models/discount-display.model"
 @Injectable({
   providedIn: 'root'
 })
@@ -45,7 +46,9 @@ export class DiscountService {
     return this.http.get<ProductDTO[]>(`${this.apiUrl}/products`);
   }
 
-
+  getProductDiscountInfo(): Observable<{ [key: number]: DiscountDisplayDTO[] }> {
+    return this.http.get<{ [key: number]: DiscountDisplayDTO[] }>(`${this.apiUrl}/products/discount-info`);
+  }
 
 
   createDiscount(discount: DiscountEA_A): Observable<string> {

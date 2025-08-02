@@ -37,6 +37,7 @@ import { ProfileInfoSettingComponent } from './common/profile-info-setting/profi
 import { VlogComponent } from './policy/vlog/vlog.component';
 import { VlogListComponent } from './policy/vlog-list/vlog-list.component';
 import { DiscountDetailComponent } from './product_display/discount-detail/discount-detail.component';
+import { CustomerGroupDetailComponent } from './product_display/customer-group-detail/customer-group-detail.component';
 
 const routes: Routes = [
 
@@ -140,6 +141,10 @@ const routes: Routes = [
   {
     path: 'discount/:id',
     component: DiscountDetailComponent
+  },
+  {
+    path: 'customer-group',
+    component: CustomerGroupDetailComponent
   }
 
 ];

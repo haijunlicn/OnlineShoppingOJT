@@ -19,6 +19,7 @@ public class VlogController {
 
     @PostMapping("/create")
     public ResponseEntity<VlogDTO> createVlog(@RequestBody VlogDTO dto) {
+        System.out.println("hello guys i have good new message");
         VlogDTO created = vlogService.createVlog(dto);
         return ResponseEntity.ok(created);
     }
