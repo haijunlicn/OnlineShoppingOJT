@@ -17,7 +17,14 @@ export class PaymentCreateComponent {
   // Form fields
   methodName = ""
   description = ""
+  paymentType = "qr" // Default to QR
   isActive = true
+
+  // Payment type options
+  paymentTypeOptions = [
+    { value: "qr", label: "QR Code Payment" },
+    { value: "credit", label: "Credit Card Payment" }
+  ]
 
   // File handling
   selectedQRFile?: File
@@ -173,13 +180,27 @@ export class PaymentCreateComponent {
 
   // Form validation
   isFormValid(): boolean {
-    return !!(this.methodName.trim() && this.selectedQRFile && this.selectedLogoFile)
+    const hasRequiredFields = !!(this.methodName.trim() && this.paymentType)
+    const hasRequiredFiles = !!(this.selectedLogoFile) // Logo is always required
+    
+    // QR file is only required for QR payment type
+    if (this.paymentType === "qr") {
+      return hasRequiredFields && hasRequiredFiles && !!this.selectedQRFile
+    }
+    
+    return hasRequiredFields && hasRequiredFiles
   }
 
   // Upload and save
   async uploadAndSave() {
     if (!this.isFormValid()) {
-      this.message = "Please fill in all required fields and select both QR code and logo images."
+      const requiredFields = []
+      if (!this.methodName.trim()) requiredFields.push("Method Name")
+      if (!this.paymentType) requiredFields.push("Payment Type")
+      if (!this.selectedLogoFile) requiredFields.push("Logo")
+      if (this.paymentType === "qr" && !this.selectedQRFile) requiredFields.push("QR Code")
+      
+      this.message = `Please fill in all required fields: ${requiredFields.join(", ")}`
       return
     }
 
@@ -188,15 +209,20 @@ export class PaymentCreateComponent {
     this.clearMessage()
 
     try {
-      // Upload QR code
-      this.uploadStatus = "Uploading QR code..."
-      this.uploadProgress = 25
-      const qrUrl = await this.uploadFile(this.selectedQRFile!)
+      let qrUrl = ""
+      let logoUrl = ""
 
-      // Upload Logo
+      // Upload Logo (always required)
       this.uploadStatus = "Uploading logo..."
-      this.uploadProgress = 50
-      const logoUrl = await this.uploadFile(this.selectedLogoFile!)
+      this.uploadProgress = 25
+      logoUrl = await this.uploadFile(this.selectedLogoFile!)
+
+      // Upload QR code only if payment type is QR
+      if (this.paymentType === "qr" && this.selectedQRFile) {
+        this.uploadStatus = "Uploading QR code..."
+        this.uploadProgress = 50
+        qrUrl = await this.uploadFile(this.selectedQRFile)
+      }
 
       // Create payment method
       this.uploadStatus = "Saving payment method..."
@@ -206,8 +232,9 @@ export class PaymentCreateComponent {
         id: 0,
         methodName: this.methodName.trim(),
         description: this.description.trim() || undefined,
-        qrPath: qrUrl,
+        qrPath: qrUrl || undefined,
         logo: logoUrl,
+        type: this.paymentType,
         status: this.isActive ? 1 : 0,
       }
 
@@ -256,6 +283,7 @@ export class PaymentCreateComponent {
   resetForm() {
     this.methodName = ""
     this.description = ""
+    this.paymentType = "qr"
     this.isActive = true
     this.removeQRFile()
     this.removeLogoFile()

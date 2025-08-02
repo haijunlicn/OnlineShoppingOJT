@@ -382,7 +382,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
         if (allSuccessful) {
           this.router.navigate(["/customer/payment"], { state: payload }).then((navigated) => {
             if (navigated) {
-              this.cartService.clearCart()
+              // this.cartService.clearCart()
             }
           })
         } else {

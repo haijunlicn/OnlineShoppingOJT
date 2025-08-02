@@ -2,12 +2,14 @@ import { Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output, PLAT
 import { Router } from "@angular/router"
 import { isPlatformBrowser } from "@angular/common"
 import { AuthService } from "@app/core/services/auth.service"
+import { AccessControlService } from "@app/core/services/AccessControl.service"
 
 interface MenuItem {
   label: string
   route: string
   icon: string
   badge?: number
+  requiredPermission?: string
 }
 
 interface MenuSection {
@@ -43,7 +45,7 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
     {
       heading: "Product Management",
       items: [
-        { label: "Product List", route: "/admin/productList", icon: "fas fa-box" },
+        { label: "Product List", route: "/admin/productList", icon: "fas fa-box", requiredPermission: "PRODUCT_READ" },
         { label: "Product Attributes", route: "/admin/productAttributes", icon: "fas fa-tags" },
       ],
     },
@@ -69,8 +71,8 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
     {
       heading: "Roles & Permissions",
       items: [
-        { label: "Roles", route: "/admin/role-list", icon: "fas fa-user-shield" },
-        { label: "Permissions", route: "/admin/permission-list", icon: "fas fa-key" },
+        { label: "Roles", route: "/admin/role-list", icon: "fas fa-user-shield", requiredPermission: "SUPERADMIN_PERMISSION" },
+        { label: "Permissions", route: "/admin/permission-list", icon: "fas fa-key", requiredPermission: "SUPERADMIN_PERMISSION" },
       ],
     },
     {
@@ -122,7 +124,8 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     router: Router,
-    authService: AuthService
+    authService: AuthService,
+    private accessControlService: AccessControlService
   ) {
     this.platformId = platformId
     this.router = router
@@ -135,7 +138,15 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
       this.checkScreenSize()
       window.addEventListener("resize", this.onResize.bind(this))
     }
+    // this.filteredMenuSections = this.menuSections
     this.filteredMenuSections = this.menuSections
+      .map(section => {
+        const filteredItems = section.items.filter(item =>
+          !item.requiredPermission || this.accessControlService.hasAll(item.requiredPermission)
+        )
+        return { ...section, items: filteredItems }
+      })
+      .filter(section => section.items.length > 0)
   }
 
   ngOnDestroy() {
@@ -154,10 +165,24 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
 
     if (!query) {
       this.filteredMenuSections = this.menuSections
+        .map(section => {
+          const filteredItems = section.items.filter(item =>
+            !item.requiredPermission || this.accessControlService.hasAll(item.requiredPermission)
+          )
+          return { ...section, items: filteredItems }
+        })
+        .filter(section => section.items.length > 0)
       return
     }
 
     this.filteredMenuSections = this.menuSections
+      .map(section => {
+        const filteredItems = section.items.filter(item =>
+          !item.requiredPermission || this.accessControlService.hasAll(item.requiredPermission)
+        )
+        return { ...section, items: filteredItems }
+      })
+      .filter(section => section.items.length > 0)
       .map(section => {
         const filteredItems = section.items.filter(item =>
           item.label.toLowerCase().includes(query)

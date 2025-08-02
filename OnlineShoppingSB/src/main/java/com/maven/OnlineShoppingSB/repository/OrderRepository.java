@@ -212,5 +212,13 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
                   AND o.paymentStatus = 'PAID'
             """)
     Long countCompletedOrdersByUser(@Param("userId") Long userId);
+    // Add new method to find orders by user address ID
+    @Query("""
+                SELECT o
+                FROM OrderEntity o
+                WHERE o.userAddress.id = :addressId 
+                  AND o.deleted = false
+            """)
+    List<OrderEntity> findByUserAddressId(@Param("addressId") Integer addressId);
 
 }

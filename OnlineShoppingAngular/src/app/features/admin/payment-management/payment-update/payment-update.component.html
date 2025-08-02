@@ -75,6 +75,28 @@
                       <div class="form-text">Enter a descriptive name for the payment method</div>
                     </div>
 
+                    <!-- Payment Type -->
+                    <div class="mb-3">
+                      <label for="paymentType" class="form-label required">Payment Type</label>
+                      <select 
+                        id="paymentType"
+                        class="form-select"
+                        [(ngModel)]="paymentMethod.type" 
+                        name="paymentType"
+                        required
+                        #paymentTypeInput="ngModel"
+                        [class.is-invalid]="paymentTypeInput.invalid && paymentTypeInput.touched">
+                        <option value="">Select payment type</option>
+                        <option *ngFor="let option of paymentTypeOptions" [value]="option.value">
+                          {{ option.label }}
+                        </option>
+                      </select>
+                      <div class="invalid-feedback" *ngIf="paymentTypeInput.invalid && paymentTypeInput.touched">
+                        <div *ngIf="paymentTypeInput.errors?.['required']">Payment type is required</div>
+                      </div>
+                      <div class="form-text">Choose the type of payment method</div>
+                    </div>
+
                     <!-- Description -->
                     <div class="mb-3">
                       <label for="description" class="form-label">Description</label>
@@ -133,7 +155,7 @@
                     <h6 class="form-section-title">Images & Assets</h6>
                     
                     <!-- QR Code Upload -->
-                    <div class="mb-4">
+                    <div class="mb-4" *ngIf="paymentMethod.type === 'qr'">
                       <label class="form-label">QR Code</label>
                       
                       <!-- Current QR Code -->

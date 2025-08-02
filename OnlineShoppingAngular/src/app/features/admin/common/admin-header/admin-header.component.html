@@ -37,11 +37,17 @@
           </button>
 
           <ul class="dropdown-menu dropdown-menu-end user-dropdown-menu" aria-labelledby="userHeaderDropdown">
-            <li>
+            <!-- <li>
               <h6 class="dropdown-header">
                 <i class="fas fa-user me-2"></i>{{ accountInfo.name || 'Admin User' }}
               </h6>
+            </li> -->
+            <li>
+              <div class="dropdown-subtext text-muted ms-4">
+                <i class="fas fa-user-shield me-2"></i>{{ accountInfo.roleName || 'No Role' }}
+              </div>
             </li>
+
             <li>
               <hr class="dropdown-divider">
             </li>

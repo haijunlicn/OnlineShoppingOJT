@@ -91,7 +91,6 @@ public class OrderController {
         }
     }
 
-    
     @GetMapping("/public/{orderId}/details")
     public ResponseEntity<OrderDetailDto> getPublicOrderByIdWithDetails(@PathVariable Long orderId) {
         try {
@@ -108,11 +107,19 @@ public class OrderController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+
+
     @PostMapping("/admin/bulk-status")
     @PreAuthorize("hasAuthority('ORDER_UPDATE_STATUS') or hasRole('SUPERADMIN')")
-    public ResponseEntity<List<OrderDetailDto>> bulkUpdateOrderStatus(@RequestBody BulkOrderStatusUpdateRequest request) {
+    public ResponseEntity<List<OrderDetailDto>> bulkUpdateOrderStatus(
+            @RequestBody BulkOrderStatusUpdateRequest request,
+            @AuthenticationPrincipal CustomUserDetails principal
+            ) {
         try {
-            List<OrderEntity> updatedOrders = orderService.bulkUpdateOrderStatus(request);
+
+            UserEntity adminUser = principal != null ? principal.getUser() : null;
+            List<OrderEntity> updatedOrders = orderService.bulkUpdateOrderStatus(request, adminUser);
             List<OrderDetailDto> updatedOrderDtos = updatedOrders.stream()
                     .map(orderService::convertToOrderDetailDto)
                     .collect(Collectors.toList());

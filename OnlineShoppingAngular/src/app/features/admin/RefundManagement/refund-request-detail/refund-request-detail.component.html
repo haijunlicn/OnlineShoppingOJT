@@ -33,13 +33,19 @@
         </button>
         <ul class="dropdown-menu dropdown-menu-end">
           <li>
-            <a class="dropdown-item" href="#" (click)="$event.preventDefault(); exportDetailToPdf()">
-              <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Export PDF
+            <a class="dropdown-item" href="#" (click)="$event.preventDefault(); exportDetailToPdf()"
+               [class.disabled]="isExportingPdf">
+              <i *ngIf="!isExportingPdf" class="bi bi-file-earmark-pdf me-2 text-danger"></i>
+              <i *ngIf="isExportingPdf" class="fas fa-spinner fa-spin text-primary me-2"></i>
+              {{ isExportingPdf ? 'Exporting PDF...' : 'Export PDF' }}
             </a>
           </li>
           <li>
-            <a class="dropdown-item" href="#" (click)="$event.preventDefault(); exportDetailToExcel()">
-              <i class="bi bi-file-earmark-excel me-2 text-success"></i>Export Excel
+            <a class="dropdown-item" href="#" (click)="$event.preventDefault(); exportDetailToExcel()"
+               [class.disabled]="isExportingExcel">
+              <i *ngIf="!isExportingExcel" class="bi bi-file-earmark-excel me-2 text-success"></i>
+              <i *ngIf="isExportingExcel" class="fas fa-spinner fa-spin text-primary me-2"></i>
+              {{ isExportingExcel ? 'Exporting Excel...' : 'Export Excel' }}
             </a>
           </li>
         </ul>

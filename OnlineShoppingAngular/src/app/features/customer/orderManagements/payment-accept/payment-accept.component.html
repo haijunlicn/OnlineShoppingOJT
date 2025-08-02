@@ -18,7 +18,7 @@
   </div>
 
   <!-- Modern Professional Timer -->
-  <div class="payment-timer-container" *ngIf="!timerExpired || !this.paymentInProgress || !paymentSuccess">
+  <!-- <div class="payment-timer-container" *ngIf="!timerExpired || !this.paymentInProgress || !paymentSuccess">
     <div class="timer-header">
       <div class="timer-label">
         <i class="fas fa-clock"></i>
@@ -53,9 +53,9 @@
       <span>Hurry up! Only {{ Math.floor(timeLeft / 60) }} minutes {{ timeLeft % 60 }} seconds left to complete your
         payment.</span>
     </div>
-  </div>
+  </div> -->
 
-  <div class="payment-timer-container" *ngIf="timerExpired">
+  <!-- <div class="payment-timer-container" *ngIf="timerExpired">
     <div class="timer-header">
       <div class="timer-label">
         <i class="fas fa-exclamation-triangle"></i>
@@ -70,7 +70,7 @@
       <i class="fas fa-times-circle"></i>
       <span>Payment time has expired. Please start a new order to continue.</span>
     </div>
-  </div>
+  </div> -->
 
   <!-- Main Content -->
   <div class="checkout-2col-grid">

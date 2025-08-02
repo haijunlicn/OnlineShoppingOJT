@@ -349,7 +349,7 @@ public class OrderService {
 
     @Audit(action = "BULK_UPDATE_STATUS", entityType = "Order")
     @Transactional
-    public List<OrderEntity> bulkUpdateOrderStatus(BulkOrderStatusUpdateRequest request) {
+    public List<OrderEntity> bulkUpdateOrderStatus(BulkOrderStatusUpdateRequest request, UserEntity adminUser) {
         
         List<OrderEntity> updatedOrders = new ArrayList<>();
 
@@ -382,6 +382,7 @@ public class OrderService {
             history.setNote(request.getNote());
             history.setCreatedAt(LocalDateTime.now());
             history.setUpdatedBy(request.getUpdatedBy());
+            history.setUpdatedBy(adminUser.getId());
 
             if (order.getStatusHistoryList() == null) {
                 order.setStatusHistoryList(new ArrayList<>());

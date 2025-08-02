@@ -273,10 +273,24 @@
                   </div>
                 </td> -->
                 <td>
-                  {{ (user.orderCount ?? 0) > 0 ? user.orderCount : 'N/A' }}
+                  <div class="order-info">
+                    <span *ngIf="(user.orderCount ?? 0) > 0; else noOrders" class="order-count">
+                      {{ user.orderCount }}
+                    </span>
+                    <ng-template #noOrders>
+                      <span class="text-muted">N/A</span>
+                    </ng-template>
+                  </div>
                 </td>
                 <td>
-                  {{ (user.totalSpent ?? 0) > 0 ? (user.totalSpent | number:'1.0-0') + ' Ks' : 'N/A' }}
+                  <div class="amount-info">
+                    <span *ngIf="(user.totalSpent ?? 0) > 0; else noAmount" class="amount-value">
+                      {{ (user.totalSpent | number:'1.0-0') }} MMK
+                    </span>
+                    <ng-template #noAmount>
+                      <span class="text-muted">N/A</span>
+                    </ng-template>
+                  </div>
                 </td>
                 <td>
                   <div class="groups-info">

@@ -22,6 +22,7 @@ export class PaymentUpdateComponent implements OnInit {
     qrPath: "",
     logo: "",
     status: 1,
+    type: "qr",
   }
 
   // Current form data
@@ -32,7 +33,14 @@ export class PaymentUpdateComponent implements OnInit {
     qrPath: "",
     logo: "",
     status: 1,
+    type: "qr",
   }
+
+  // Payment type options
+  paymentTypeOptions = [
+    { value: "qr", label: "QR Code Payment" },
+    { value: "credit", label: "Credit Card Payment" }
+  ]
 
   // Form state
   isActive = true
@@ -72,8 +80,13 @@ export class PaymentUpdateComponent implements OnInit {
       this.isLoading = true
       this.paymentmethodService.getById(id).subscribe({
         next: (data) => {
-          this.paymentMethod = { ...data }
-          this.originalPaymentMethod = { ...data }
+          // Set default type if it's null or undefined
+          const paymentData = { 
+            ...data, 
+            type: data.type || "qr" // Default to "qr" if type is null/undefined
+          }
+          this.paymentMethod = paymentData
+          this.originalPaymentMethod = { ...paymentData }
           this.isActive = this.paymentMethod.status === 1
           this.isLoading = false
         },
@@ -228,7 +241,14 @@ export class PaymentUpdateComponent implements OnInit {
 
   // Form validation
   isFormValid(): boolean {
-    return !!(this.paymentMethod.methodName && this.paymentMethod.methodName.trim())
+    const hasRequiredFields = !!(this.paymentMethod.methodName && this.paymentMethod.methodName.trim() && this.paymentMethod.type)
+    
+    // QR file is only required for QR payment type if no existing QR path
+    if (this.paymentMethod.type === "qr" && !this.paymentMethod.qrPath && !this.selectedQRFile) {
+      return false
+    }
+    
+    return hasRequiredFields
   }
 
   // Change detection
@@ -237,6 +257,7 @@ export class PaymentUpdateComponent implements OnInit {
       this.paymentMethod.methodName !== this.originalPaymentMethod.methodName ||
       this.paymentMethod.description !== this.originalPaymentMethod.description ||
       this.paymentMethod.status !== this.originalPaymentMethod.status ||
+      this.paymentMethod.type !== this.originalPaymentMethod.type ||
       this.paymentMethod.qrPath !== this.originalPaymentMethod.qrPath ||
       this.paymentMethod.logo !== this.originalPaymentMethod.logo
 
@@ -256,6 +277,9 @@ export class PaymentUpdateComponent implements OnInit {
     }
     if (this.paymentMethod.status !== this.originalPaymentMethod.status) {
       changes.push("Status")
+    }
+    if (this.paymentMethod.type !== this.originalPaymentMethod.type) {
+      changes.push("Payment Type")
     }
     if (this.paymentMethod.qrPath !== this.originalPaymentMethod.qrPath) {
       changes.push("QR Code")
@@ -283,7 +307,14 @@ export class PaymentUpdateComponent implements OnInit {
   // Update and save
   async updateAndSave() {
     if (!this.isFormValid()) {
-      this.message = "Please fill in all required fields."
+      const requiredFields = []
+      if (!this.paymentMethod.methodName.trim()) requiredFields.push("Method Name")
+      if (!this.paymentMethod.type) requiredFields.push("Payment Type")
+      if (this.paymentMethod.type === "qr" && !this.paymentMethod.qrPath && !this.selectedQRFile) {
+        requiredFields.push("QR Code")
+      }
+      
+      this.message = `Please fill in all required fields: ${requiredFields.join(", ")}`
       return
     }
 
@@ -320,7 +351,7 @@ export class PaymentUpdateComponent implements OnInit {
 
       const updatedPaymentMethod: PaymentMethodDTO = {
         ...this.paymentMethod,
-        qrPath: qrUrl,
+        qrPath: qrUrl || undefined,
         logo: logoUrl,
         updatedDate: new Date().toISOString(),
       }

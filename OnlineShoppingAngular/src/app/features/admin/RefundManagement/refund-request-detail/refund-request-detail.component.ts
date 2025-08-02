@@ -11,6 +11,7 @@ import { RejectionReasonService } from '@app/core/services/rejection-reason.serv
 import { Subject, takeUntil } from 'rxjs';
 import { PdfExportService } from '@app/core/services/pdf-export.service';
 import { ExcelExportService } from '@app/core/services/excel-export.service';
+import jsPDF from 'jspdf';
 
 // Interface for per-item decisions
 interface ItemDecision {
@@ -103,6 +104,10 @@ export class RefundRequestDetailComponent implements OnInit, OnDestroy {
     { header: 'Admin Comment', field: 'adminComment', width: 50 },
     { header: 'Created At', field: 'createdAt', width: 40 }
   ];
+
+  // Export loading states
+  isExportingPdf = false;
+  isExportingExcel = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -1101,28 +1106,366 @@ export class RefundRequestDetailComponent implements OnInit, OnDestroy {
     return sorted[sorted.length - 2]?.status || null;
   }
 
-  exportDetailToPdf() {
-    if (!this.refundRequest) return;
-    const filename = `RefundRequestDetail_${this.refundRequest.id}.pdf`;
-    this.pdfExportService.exportTableToPdf(
-      this.refundRequest.items,
-      this.exportColumns,
-      filename,
-      `Refund Request Detail #${this.refundRequest.id}`,
-      'refund'
-    );
+  async exportDetailToPdf() {
+    if (!this.refundRequest) {
+      this.errorMessage = 'No refund request data available for export';
+      return;
+    }
+
+    this.isExportingPdf = true;
+    
+    try {
+      const filename = `refund-request-${this.refundRequest.id}-${new Date().toISOString().split('T')[0]}.pdf`;
+      
+      // Create a comprehensive refund request report
+      this.createRefundRequestReportPdf(filename);
+      
+      this.showSuccessMessage('Refund request exported to PDF successfully');
+    } catch (error) {
+      console.error('Error exporting refund request to PDF:', error);
+      this.errorMessage = 'Failed to export refund request to PDF';
+    } finally {
+      this.isExportingPdf = false;
+    }
   }
 
   async exportDetailToExcel() {
-    if (!this.refundRequest) return;
-    const filename = `RefundRequestDetail_${this.refundRequest.id}.xlsx`;
-    await this.excelExportService.exportToExcel(
-      this.refundRequest.items,
-      this.exportColumns,
-      filename,
-      `Refund Request Detail #${this.refundRequest.id}`,
-      `Refund Request Detail #${this.refundRequest.id}`
-    );
+    if (!this.refundRequest) {
+      this.errorMessage = 'No refund request data available for export';
+      return;
+    }
+
+    this.isExportingExcel = true;
+
+    try {
+      const filename = `refund-request-${this.refundRequest.id}-${new Date().toISOString().split('T')[0]}.xlsx`;
+      
+      // Prepare refund request data for Excel export
+      const refundData = this.prepareRefundRequestDataForExport();
+      
+      await this.excelExportService.exportToExcel(
+        refundData,
+        this.getRefundRequestExportColumns(),
+        filename,
+        'Refund Request Details',
+        `Refund Request #${this.refundRequest.id} Report`
+      );
+      
+      this.showSuccessMessage('Refund request exported to Excel successfully');
+    } catch (error) {
+      console.error('Error exporting refund request to Excel:', error);
+      this.errorMessage = 'Failed to export refund request to Excel';
+    } finally {
+      this.isExportingExcel = false;
+    }
+  }
+
+  private createRefundRequestReportPdf(filename: string): void {
+    const pdf = new jsPDF('portrait', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 15;
+    const contentWidth = pageWidth - (margin * 2);
+    
+    // Colors - using dark theme like product catalog
+    const darkBg: [number, number, number] = [20, 20, 20];
+    const blackText: [number, number, number] = [0, 0, 0];
+    const whiteText: [number, number, number] = [255, 255, 255];
+    
+    let y = 20;
+    
+    // Title Section with dark background
+    pdf.setFillColor(darkBg[0], darkBg[1], darkBg[2]);
+    pdf.rect(0, 0, pageWidth, 35, 'F');
+    
+    // Add company name as white text
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.text('BRITIUM GALLERY', margin + 5, 18);
+    
+    // Main title
+    pdf.setTextColor(whiteText[0], whiteText[1], whiteText[2]);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(16);
+    pdf.text('REFUND REQUEST DETAIL REPORT', pageWidth / 2, 28, { align: 'center' });
+    
+    // Separator line
+    y = 40;
+    this.drawSeparatorLine(pdf, y, pageWidth, margin);
+    y += 5;
+    
+    // Report Info Section
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    
+    pdf.setTextColor(blackText[0], blackText[1], blackText[2]);
+    pdf.text(`Generated On:`, margin, y);
+    pdf.text(`${new Date().toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })}`, margin + 35, y);
+    y += 5;
+    
+    pdf.text(`Generated By:`, margin, y);
+    pdf.text(`Admin User`, margin + 35, y);
+    y += 5;
+    
+    pdf.text(`Refund Request ID:`, margin, y);
+    pdf.text(`${this.refundRequest!.id}`, margin + 35, y);
+    y += 5;
+    
+    pdf.text(`Order Tracking:`, margin, y);
+    pdf.text(`${this.refundRequest!.orderDetail?.trackingNumber || 'N/A'}`, margin + 35, y);
+    y += 5;
+    
+    pdf.text(`Customer Name:`, margin, y);
+    pdf.text(`${this.refundRequest!.orderDetail?.user?.name || 'N/A'}`, margin + 35, y);
+    y += 5;
+    
+    pdf.text(`Total Items:`, margin, y);
+    pdf.text(`${this.refundRequest!.items.length}`, margin + 35, y);
+    y += 5;
+    
+    pdf.text(`Request Status:`, margin, y);
+    pdf.text(`${this.getStatusDisplayText(this.refundRequest!.status)}`, margin + 35, y);
+    
+    // Separator line
+    y += 10;
+    this.drawSeparatorLine(pdf, y, pageWidth, margin);
+    y += 5;
+    
+    // Refund Request Details Section
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(12);
+    pdf.text(`REFUND REQUEST: #${this.refundRequest!.id}`, margin, y);
+    y += 8;
+    
+    // Request details
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    
+    pdf.text(`Request ID: ${this.refundRequest!.id}`, margin, y);
+    y += 5;
+    
+    pdf.text(`Order Tracking: ${this.refundRequest!.orderDetail?.trackingNumber || 'N/A'}`, margin, y);
+    y += 5;
+    
+    pdf.text(`Customer Name: ${this.refundRequest!.orderDetail?.user?.name || 'N/A'}`, margin, y);
+    y += 5;
+    
+    pdf.text(`Status: ${this.getStatusDisplayText(this.refundRequest!.status)}`, margin, y);
+    y += 5;
+    
+    pdf.text(`Created Date: ${new Date(this.refundRequest!.createdAt || '').toLocaleDateString()}`, margin, y);
+    y += 5;
+    
+    // Financial Summary
+    pdf.text(`Total Refund Requested: MMK ${this.getTotalRefundRequested().toLocaleString()}`, margin, y);
+    y += 5;
+    
+    pdf.text(`Direct Refundable: MMK ${this.getDirectRefundableAmount().toLocaleString()}`, margin, y);
+    y += 5;
+    
+    pdf.text(`Pending (After Return): MMK ${this.getPendingRefundAmount().toLocaleString()}`, margin, y);
+    y += 5;
+    
+    pdf.text(`Total Refunded: MMK ${this.getTotalRefundAmount().toLocaleString()}`, margin, y);
+    
+    // Separator line
+    y += 10;
+    this.drawSeparatorLine(pdf, y, pageWidth, margin);
+    y += 5;
+    
+    // Items Section
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(12);
+    pdf.text('REFUND ITEMS', pageWidth / 2, y, { align: 'center' });
+    y += 8;
+    
+    // Table headers
+    const tableHeaders = ['Product', 'SKU', 'Qty', 'Action', 'Status', 'Reason'];
+    const colWidths = [50, 30, 15, 35, 25, 30];
+    let currentX = margin;
+    
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(9);
+    tableHeaders.forEach((header, index) => {
+      pdf.text(header, currentX, y);
+      currentX += colWidths[index];
+    });
+    
+    y += 5;
+    
+    // Table data
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(8);
+    
+    this.refundRequest!.items.forEach((item, index) => {
+      if (y > pageHeight - 50) {
+        pdf.addPage();
+        y = 20;
+      }
+      
+      currentX = margin;
+      
+      // Product name (truncate if too long)
+      const productName = (item.productName || 'N/A').length > 20 ? 
+        (item.productName || 'N/A').substring(0, 17) + '...' : (item.productName || 'N/A');
+      pdf.text(productName, currentX, y);
+      currentX += colWidths[0];
+      
+      // SKU
+      pdf.text(item.sku || 'N/A', currentX, y);
+      currentX += colWidths[1];
+      
+      // Quantity
+      pdf.text(item.quantity.toString(), currentX, y);
+      currentX += colWidths[2];
+      
+      // Requested Action
+      pdf.text(this.getActionDisplayText(item), currentX, y);
+      currentX += colWidths[3];
+      
+      // Status
+      pdf.text(this.getItemStatusDisplayText(item.status || ''), currentX, y);
+      currentX += colWidths[4];
+      
+      // Reason
+      const reason = this.getRefundReasonLabel(item.reasonId || 0);
+      const reasonText = reason.length > 15 ? reason.substring(0, 12) + '...' : reason;
+      pdf.text(reasonText, currentX, y);
+      
+      y += 4;
+    });
+    
+    // Separator line
+    y += 5;
+    this.drawSeparatorLine(pdf, y, pageWidth, margin);
+    y += 5;
+    
+    // Summary Section
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(12);
+    pdf.text('REFUND SUMMARY', pageWidth / 2, y, { align: 'center' });
+    y += 8;
+    
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    
+    pdf.text(`Review Required: ${this.getReviewRequiredCount()} items`, margin, y);
+    y += 5;
+    
+    pdf.text(`Return In Progress: ${this.getReturnInProgressCount()} items`, margin, y);
+    y += 5;
+    
+    pdf.text(`Refunded: ${this.getRefundedCount()} items`, margin, y);
+    y += 5;
+    
+    pdf.text(`Replaced: ${this.getReplacedCount()} items`, margin, y);
+    y += 5;
+    
+    pdf.text(`Rejected: ${this.getRejectedCount()} items`, margin, y);
+    y += 5;
+    
+    pdf.text(`Approved: ${this.getApprovedCount()} items`, margin, y);
+    
+    // Save PDF
+    pdf.save(filename);
+  }
+
+  private prepareRefundRequestDataForExport(): any[] {
+    if (!this.refundRequest) return [];
+
+    const refundData = [];
+    
+    // Add refund request header information
+    refundData.push({
+      field: 'Refund Request Information',
+      value: `Refund Request #${this.refundRequest.id}`,
+      details: `Tracking: ${this.refundRequest.orderDetail?.trackingNumber || 'N/A'} | Customer: ${this.refundRequest.orderDetail?.user?.name || 'N/A'} | Status: ${this.getStatusDisplayText(this.refundRequest.status)}`
+    });
+
+    // Add request details
+    refundData.push({
+      field: 'Request Details',
+      value: `Created: ${new Date(this.refundRequest.createdAt || '').toLocaleDateString()}`,
+      details: `Status: ${this.getStatusDisplayText(this.refundRequest.status)} | Total Items: ${this.refundRequest.items.length}`
+    });
+
+    // Add order information
+    refundData.push({
+      field: 'Order Information',
+      value: `Tracking: ${this.refundRequest.orderDetail?.trackingNumber || 'N/A'}`,
+      details: `Order Date: ${this.refundRequest.orderDetail?.createdDate ? new Date(this.refundRequest.orderDetail.createdDate).toLocaleDateString() : 'N/A'}`
+    });
+
+    // Add customer information
+    refundData.push({
+      field: 'Customer Information',
+      value: this.refundRequest.orderDetail?.user?.name || 'N/A',
+      details: `Email: ${this.refundRequest.orderDetail?.user?.email || 'N/A'}`
+    });
+
+    // Add financial summary
+    refundData.push({
+      field: 'Financial Summary',
+      value: `Total Requested: MMK ${this.getTotalRefundRequested().toLocaleString()}`,
+      details: `Direct Refundable: MMK ${this.getDirectRefundableAmount().toLocaleString()} | Pending: MMK ${this.getPendingRefundAmount().toLocaleString()} | Refunded: MMK ${this.getTotalRefundAmount().toLocaleString()}`
+    });
+
+    // Add refund items
+    this.refundRequest.items.forEach((item, index) => {
+      refundData.push({
+        field: `Item ${index + 1}`,
+        value: item.productName || 'N/A',
+        details: `SKU: ${item.sku || 'N/A'} | Qty: ${item.quantity} | Action: ${this.getActionDisplayText(item)} | Status: ${this.getItemStatusDisplayText(item.status || '')}`
+      });
+
+      // Add reason information
+      refundData.push({
+        field: `  - Refund Reason`,
+        value: this.getRefundReasonLabel(item.reasonId || 0),
+        details: item.customReasonText ? `Custom: ${item.customReasonText}` : 'No custom reason provided'
+      });
+
+      // Add admin comment if exists
+      if (item.adminComment) {
+        refundData.push({
+          field: `  - Admin Comment`,
+          value: item.adminComment,
+          details: 'Admin feedback on this item'
+        });
+      }
+    });
+
+    // Add item summary
+    refundData.push({
+      field: 'Item Summary',
+      value: `Review Required: ${this.getReviewRequiredCount()}`,
+      details: `Return In Progress: ${this.getReturnInProgressCount()} | Refunded: ${this.getRefundedCount()} | Replaced: ${this.getReplacedCount()} | Rejected: ${this.getRejectedCount()} | Approved: ${this.getApprovedCount()}`
+    });
+
+    return refundData;
+  }
+
+  private getRefundRequestExportColumns(): { header: string; field: string; width?: number }[] {
+    return [
+      { header: 'Field', field: 'field', width: 30 },
+      { header: 'Value', field: 'value', width: 40 },
+      { header: 'Details', field: 'details', width: 50 }
+    ];
+  }
+
+  private drawSeparatorLine(pdf: any, y: number, pageWidth: number, margin: number): void {
+    pdf.setDrawColor(200, 200, 200);
+    pdf.setLineWidth(0.5);
+    pdf.setLineDashPattern([2, 2], 0);
+    pdf.line(margin, y, pageWidth - margin, y);
+    pdf.setLineDashPattern([], 0);
   }
 
 }

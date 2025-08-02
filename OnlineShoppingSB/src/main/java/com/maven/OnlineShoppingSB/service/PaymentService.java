@@ -42,9 +42,12 @@ public class PaymentService {
             entity.setQrPath(dto.getQrPath());
             entity.setLogo(dto.getLogo());
             entity.setDescription(dto.getDescription());
+            entity.setType(dto.getType());
+            entity.setUpdatedDate(LocalDateTime.now());
         } else {
             entity = mapper.map(dto, PaymentEntity.class);
             entity.setStatus(1);
+            entity.setCreatedDate(LocalDateTime.now());
         }
 
         PaymentEntity saved = repo.save(entity);
@@ -61,7 +64,14 @@ public class PaymentService {
     public PaymentDTO getPaymentMethodById(int id) {
         PaymentEntity entity = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Payment method not found with id: " + id));
-        return mapper.map(entity, PaymentDTO.class);
+        PaymentDTO dto = mapper.map(entity, PaymentDTO.class);
+        
+        // Set default type if it's null or empty
+        if (dto.getType() == null || dto.getType().trim().isEmpty()) {
+            dto.setType("qr");
+        }
+        
+        return dto;
     }
 
     public PaymentDTO updatePaymentMethod(int id, PaymentDTO dto) {
@@ -72,6 +82,8 @@ public class PaymentService {
         existing.setQrPath(dto.getQrPath());
         existing.setLogo(dto.getLogo());
         existing.setDescription(dto.getDescription());
+        existing.setType(dto.getType());
+        existing.setUpdatedDate(LocalDateTime.now());
 
         PaymentEntity updated = repo.save(existing);
         return mapper.map(updated, PaymentDTO.class);
