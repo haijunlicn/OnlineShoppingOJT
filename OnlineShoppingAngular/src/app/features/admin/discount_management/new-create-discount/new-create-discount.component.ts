@@ -709,20 +709,26 @@ export class NewCreateDiscountComponent implements OnInit {
 
   // Product Selection Methods
   onAddDiscountProduct(mechanismIndex: number): void {
-    if (!this.allProducts || this.allProducts.length === 0) {
-      this.discountService.getAllProducts().subscribe((products) => {
-        this.allProducts = products
-        this.productSelectionContext = "discount_product"
-        this.currentMechanismIndex = mechanismIndex
-        this.productSelectionMode = "multiple"
-        this.showProductSelection = true
-      })
-    } else {
-      this.productSelectionContext = "discount_product"
-      this.currentMechanismIndex = mechanismIndex
-      this.productSelectionMode = "multiple"
-      this.showProductSelection = true
+    console.log("may---------------------------------------------------------------------")
+    console.log('🔍 onAddDiscountProduct called with mechanismIndex:', mechanismIndex);
+    console.log('🔍 Current discountProducts before:', this.discountProducts);
+    
+    this.currentMechanismIndex = mechanismIndex;
+    this.productSelectionContext = "discount_product";
+    this.productSelectionMode = "multiple";
+    this.showProductSelection = true;
+    
+    // Initialize discountProducts for this mechanism if it doesn't exist
+    if (!this.discountProducts[mechanismIndex]) {
+      this.discountProducts[mechanismIndex] = [];
     }
+    
+    console.log('🔍 After setting properties:');
+    console.log('🔍 - currentMechanismIndex:', this.currentMechanismIndex);
+    console.log('🔍 - productSelectionContext:', this.productSelectionContext);
+    console.log('🔍 - productSelectionMode:', this.productSelectionMode);
+    console.log('🔍 - showProductSelection:', this.showProductSelection);
+    console.log('🔍 - discountProducts after init:', this.discountProducts);
   }
 
   hasDiscountProducts(mechanismIndex: number): boolean {
@@ -756,22 +762,58 @@ export class NewCreateDiscountComponent implements OnInit {
   }
 
   onProductsSelected(products: ProductDTO[]): void {
+    console.log("may2---------------------------------------------------------------------")
+    console.log('🔍 onProductsSelected called with products:', products);
+    console.log('🔍 - productSelectionContext:', this.productSelectionContext);
+    console.log('🔍 - currentMechanismIndex:', this.currentMechanismIndex);
+    console.log('🔍 - products.length:', products.length);
+    console.log('🔍 - product IDs:', products.map(p => p.id));
+    console.log('🔍 - product names:', products.map(p => p.name));
+    
     if (this.productSelectionContext === "discount_product" && this.currentMechanismIndex >= 0) {
+      console.log('🔍 Condition met - processing discount products');
+      console.log('🔍 Current discountProducts before update:', this.discountProducts);
+      
       this.discountProducts[this.currentMechanismIndex] = products
         .map((p) => p.id)
         .filter((id): id is number => id !== undefined)
+      
+      console.log('🔍 Updated discountProducts:', this.discountProducts);
+      console.log('🔍 - discountProducts for mechanism', this.currentMechanismIndex, ':', this.discountProducts[this.currentMechanismIndex]);
+      
       this.showProductSelection = false
       this.currentMechanismIndex = -1
+      
+      console.log('🔍 After closing modal:');
+      console.log('🔍 - showProductSelection:', this.showProductSelection);
+      console.log('🔍 - currentMechanismIndex:', this.currentMechanismIndex);
+    } else {
+      console.log('🔍 Condition NOT met:');
+      console.log('🔍 - productSelectionContext === "discount_product":', this.productSelectionContext === "discount_product");
+      console.log('🔍 - currentMechanismIndex >= 0:', this.currentMechanismIndex >= 0);
     }
   }
 
   getSelectedProductsForCurrentContext(): ProductDTO[] {
+    console.log('🔍 getSelectedProductsForCurrentContext called');
+    console.log('🔍 - productSelectionContext:', this.productSelectionContext);
+    console.log('🔍 - currentMechanismIndex:', this.currentMechanismIndex);
+    console.log('🔍 - discountProducts:', this.discountProducts);
+    console.log('🔍 - allProducts length:', this.allProducts?.length || 0);
+    
     const allProducts = this.allProducts || []
     if (this.productSelectionContext === "discount_product") {
-      return (this.discountProducts[this.currentMechanismIndex] || [])
+      const productIds = this.discountProducts[this.currentMechanismIndex] || [];
+      console.log('🔍 - productIds for mechanism', this.currentMechanismIndex, ':', productIds);
+      
+      const result = productIds
         .map((id: number) => allProducts.find((p: ProductDTO) => p.id === id))
-        .filter((p): p is ProductDTO => !!p)
+        .filter((p): p is ProductDTO => !!p);
+      
+      console.log('🔍 - result:', result.map(p => p.name));
+      return result;
     }
+    console.log('🔍 - returning empty array (not discount_product context)');
     return []
   }
 

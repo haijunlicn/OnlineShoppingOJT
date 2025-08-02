@@ -1,5 +1,6 @@
 package com.maven.OnlineShoppingSB.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,5 +31,6 @@ public class DiscountConditionEntity {
 
     @ManyToOne
     @JoinColumn(name = "discountConditionGroup_id")
+    @JsonIgnore
     private DiscountConditionGroupEntity discountConditionGroup;
 }

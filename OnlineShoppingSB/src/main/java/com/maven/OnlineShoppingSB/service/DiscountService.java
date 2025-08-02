@@ -14,6 +14,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
+import java.util.HashMap;
+import java.math.BigDecimal;
+import com.maven.OnlineShoppingSB.dto.DiscountDisplayDTO;
 
 @Service
 public class DiscountService {
@@ -120,9 +124,138 @@ public class DiscountService {
     }
 
     public List<ProductDTO> getAllProductsForSelection() {
-        List<ProductEntity> products = productRepository.findAll();
-        List<ProductDTO> productDTOs = new ArrayList<>();
-        for (ProductEntity product : products) {
+        return productRepository.findAll().stream()
+                .map(this::toProductDTO)
+                .collect(Collectors.toList());
+    }
+
+    public Map<Long, List<DiscountDisplayDTO>> getProductDiscountInfo() {
+        Map<Long, List<DiscountDisplayDTO>> productDiscountMap = new HashMap<>();
+        
+        try {
+            System.out.println("🔍 Starting getProductDiscountInfo...");
+            
+            // Method 1: Use repository method
+            try {
+                List<DiscountProductEntity> activeDiscountProducts = discountProductRepository.findAllActiveDiscountProducts();
+                System.out.println("🛍️ Method 1: Found " + activeDiscountProducts.size() + " active discount products");
+                
+                if (!activeDiscountProducts.isEmpty()) {
+                    processDiscountProducts(activeDiscountProducts, productDiscountMap);
+                } else {
+                    System.out.println("⚠️ Method 1 returned empty, trying Method 2...");
+                    // Method 2: Manual filtering
+                    List<DiscountProductEntity> allDiscountProducts = discountProductRepository.findAll();
+                    System.out.println("🛍️ Method 2: Found " + allDiscountProducts.size() + " total discount products");
+                    
+                    List<DiscountProductEntity> filteredProducts = allDiscountProducts.stream()
+                        .filter(dp -> dp.getProduct() != null && dp.getDiscountMechanism() != null)
+                        .filter(dp -> {
+                            DiscountEntity discount = dp.getDiscountMechanism().getDiscount();
+                            return discount != null && discount.getIsActive() != null && discount.getIsActive();
+                        })
+                        .collect(Collectors.toList());
+                    
+                    System.out.println("🛍️ Method 2: Filtered to " + filteredProducts.size() + " active discount products");
+                    processDiscountProducts(filteredProducts, productDiscountMap);
+                }
+                
+            } catch (Exception e) {
+                System.out.println("⚠️ Method 1 failed: " + e.getMessage());
+                System.out.println("🔄 Trying Method 2...");
+                
+                // Method 2: Manual filtering
+                List<DiscountProductEntity> allDiscountProducts = discountProductRepository.findAll();
+                System.out.println("🛍️ Method 2: Found " + allDiscountProducts.size() + " total discount products");
+                
+                List<DiscountProductEntity> filteredProducts = allDiscountProducts.stream()
+                    .filter(dp -> dp.getProduct() != null && dp.getDiscountMechanism() != null)
+                    .filter(dp -> {
+                        DiscountEntity discount = dp.getDiscountMechanism().getDiscount();
+                        return discount != null && discount.getIsActive() != null && discount.getIsActive();
+                    })
+                    .collect(Collectors.toList());
+                
+                System.out.println("🛍️ Method 2: Filtered to " + filteredProducts.size() + " active discount products");
+                processDiscountProducts(filteredProducts, productDiscountMap);
+            }
+            
+            System.out.println("📊 Final product discount map size: " + productDiscountMap.size());
+            productDiscountMap.forEach((productId, discounts) -> {
+                System.out.println("🛍️ Product ID " + productId + " has " + discounts.size() + " discounts");
+            });
+            
+        } catch (Exception e) {
+            System.out.println("❌ Error in getProductDiscountInfo: " + e.getMessage());
+            System.out.println("✅-------------------------------------------------------------------------------------------------");
+            e.printStackTrace();
+        }
+        
+        return productDiscountMap;
+    }
+    
+    private void processDiscountProducts(List<DiscountProductEntity> discountProducts, Map<Long, List<DiscountDisplayDTO>> productDiscountMap) {
+        for (DiscountProductEntity discountProduct : discountProducts) {
+            try {
+                if (discountProduct.getProduct() != null && discountProduct.getDiscountMechanism() != null) {
+                    DiscountMechanismEntity mechanism = discountProduct.getDiscountMechanism();
+                    DiscountEntity discount = mechanism.getDiscount();
+                    
+                    if (discount != null && discount.getIsActive() != null && discount.getIsActive()) {
+                        Long productId = discountProduct.getProduct().getId();
+                        
+                        // Create discount display DTO
+                        DiscountDisplayDTO discountInfo = new DiscountDisplayDTO();
+                        discountInfo.setId(discount.getId());
+                        discountInfo.setName(discount.getName());
+                        discountInfo.setTitle(discount.getName());
+                        discountInfo.setType(discount.getType());
+                        
+                        // Handle mechanism value safely
+                        try {
+                            if (mechanism.getValue() != null && !mechanism.getValue().trim().isEmpty()) {
+                                discountInfo.setValue(new BigDecimal(mechanism.getValue()));
+                            } else {
+                                discountInfo.setValue(new BigDecimal("0"));
+                            }
+                        } catch (Exception e) {
+                            System.out.println("⚠️ Error parsing mechanism value: " + mechanism.getValue());
+                            discountInfo.setValue(new BigDecimal("0"));
+                        }
+                        
+                        discountInfo.setDiscountType(mechanism.getDiscountType());
+                        
+                        // Handle maxDiscountAmount safely
+                        if (mechanism.getMaxDiscountAmount() != null && !mechanism.getMaxDiscountAmount().trim().isEmpty()) {
+                            try {
+                                discountInfo.setMaxDiscountAmount(new BigDecimal(mechanism.getMaxDiscountAmount()));
+                            } catch (Exception e) {
+                                System.out.println("⚠️ Error parsing max discount amount: " + mechanism.getMaxDiscountAmount());
+                                discountInfo.setMaxDiscountAmount(null);
+                            }
+                        } else {
+                            discountInfo.setMaxDiscountAmount(null);
+                        }
+                        
+                        discountInfo.setMechanismType(mechanism.getMechanismType());
+                        discountInfo.setCouponcode(mechanism.getCouponcode());
+                        discountInfo.setStartDate(discount.getStartDate());
+                        discountInfo.setEndDate(discount.getEndDate());
+                        discountInfo.setMechanismId(mechanism.getId().intValue());
+                        
+                        // Add to map
+                        productDiscountMap.computeIfAbsent(productId, k -> new ArrayList<>()).add(discountInfo);
+                        System.out.println("✅ Added discount info for product ID: " + productId + " - " + discountProduct.getProduct().getName());
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("⚠️ Error processing discount product: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private ProductDTO toProductDTO(ProductEntity product) {
             ProductDTO dto = new ProductDTO();
             dto.setId(product.getId());
             dto.setName(product.getName());
@@ -172,9 +305,7 @@ public class DiscountService {
                     }).collect(Collectors.toList());
             dto.setProductImages(imageDTOs);
 
-            productDTOs.add(dto);
-        }
-        return productDTOs;
+        return dto;
     }
 
 
@@ -191,11 +322,28 @@ public class DiscountService {
     private DiscountProductRepository discountProductRepository;
     @Autowired
     private FreeGiftRepository freeGiftRepository;
+    
+    @Autowired
+    private NotificationService notificationService;
 
     // CREATE
     public DiscountES_A createDiscount(DiscountES_A dto) {
         DiscountEntity entity = mapToEntity(dto, true);
         DiscountEntity saved = discountRepository.save(entity);
+        
+        // Send notification to all users about new discount ONLY if status is active
+        if (saved.getIsActive() != null && saved.getIsActive()) {
+            try {
+                notificationService.notifyNewDiscount(saved.getId().longValue(), saved.getName());
+                System.out.println("✅ New discount notification sent successfully for: " + saved.getName() + " (Status: Active)");
+            } catch (Exception e) {
+                System.out.println("⚠️ Failed to send discount notification: " + e.getMessage());
+                // Don't throw exception to avoid breaking discount creation
+            }
+        } else {
+            System.out.println("ℹ️ Discount notification skipped for: " + saved.getName() + " (Status: Inactive)");
+        }
+        
         return mapToDto(saved, true);
     }
 
@@ -218,6 +366,10 @@ public class DiscountService {
         DiscountEntity entity = discountRepository.findById(dto.getId())
                 .orElseThrow(() -> new RuntimeException("Discount not found"));
 
+        // Store old status to check if it changed
+        Boolean oldStatus = entity.getIsActive();
+        Boolean newStatus = dto.getIsActive();
+
         // Update discount main fields
         updateMainFields(entity, dto);
 
@@ -239,6 +391,17 @@ public class DiscountService {
 
         // Save and return DTO
         DiscountEntity saved = discountRepository.save(entity);
+        
+        // Send notification if status changed from inactive to active
+        if (oldStatus != null && !oldStatus && newStatus != null && newStatus) {
+            try {
+                notificationService.notifyNewDiscount(saved.getId().longValue(), saved.getName());
+                System.out.println("✅ Discount status changed to Active - notification sent for: " + saved.getName());
+            } catch (Exception e) {
+                System.out.println("⚠️ Failed to send discount notification on status change: " + e.getMessage());
+            }
+        }
+        
         return mapToDto(saved, true);
     }
 
@@ -390,8 +553,22 @@ public class DiscountService {
     public void updateDiscountStatus(Integer id, Boolean isActive) {
         DiscountEntity entity = discountRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Not found"));
+        
+        // Store old status to check if it changed
+        Boolean oldStatus = entity.getIsActive();
+        
         entity.setIsActive(isActive);
-        discountRepository.save(entity);
+        DiscountEntity saved = discountRepository.save(entity);
+        
+        // Send notification if status changed from inactive to active
+        if (oldStatus != null && !oldStatus && isActive != null && isActive) {
+            try {
+                notificationService.notifyNewDiscount(saved.getId().longValue(), saved.getName());
+                System.out.println("✅ Discount status changed to Active - notification sent for: " + saved.getName());
+            } catch (Exception e) {
+                System.out.println("⚠️ Failed to send discount notification on status change: " + e.getMessage());
+            }
+        }
     }
 
 

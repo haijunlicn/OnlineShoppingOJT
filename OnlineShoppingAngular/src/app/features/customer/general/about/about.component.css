@@ -56,11 +56,14 @@
   height: 500px;
   overflow: hidden;
   background: #f0f0f0; /* Light grey background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .hero-image {
   position: relative;
-  width: 100%;
+  width: 80%; /* Reduced from 100% to 80% */
   height: 100%;
   display: flex;
   align-items: center;
@@ -122,7 +125,7 @@
 }
 
 .profile-card.dark-brown {
-  background: #97cf8a; /* Changed from #8B4513 to green */
+  background: #282828; /* Dark charcoal grey background */
   color: white;
   padding: 30px;
   border-radius: 8px;
@@ -216,7 +219,7 @@
 }
 
 .quote-card.brown {
-  background: #315e26; /* Dark green background */
+  background: #282828; /* Dark charcoal grey background */
   color: white;
   padding: 30px;
   border-radius: 8px;
@@ -386,7 +389,7 @@
 }
 
 .quote-card {
-  background: #315e26; /* Dark green background */
+  background: #282828; /* Dark charcoal grey background */
   color: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(26,26,26,0.09);
@@ -501,7 +504,7 @@
 /* ===== CTA SECTION ===== */
 .cta-section {
  
-  background: #315a39; /* Dark green background */
+  background: #282828; /* Dark charcoal grey background */
   color: #fff;
   padding: 48px 0 32px 0;
   text-align: center;
@@ -554,7 +557,7 @@
 }
 
 .btn-primary:hover {
-  background: linear-gradient(90deg, #17643a 0%, #e67e22 100%);
+  background: linear-gradient(90deg, #404040 0%, #666666 100%);
   box-shadow: 0 4px 16px rgba(25,118,210,0.16);
   transform: translateY(-2px) scale(1.03);
 }
@@ -587,7 +590,7 @@
 }
 
 .collaboration-card.dark-brown {
-  background: #97cf8a; /* Changed from #8B4513 to green */
+  background: #282828; /* Dark charcoal grey background */
   color: white;
   padding: 30px;
   border-radius: 8px;

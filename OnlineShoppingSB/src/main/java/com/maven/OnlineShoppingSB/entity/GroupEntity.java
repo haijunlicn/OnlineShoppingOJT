@@ -1,5 +1,6 @@
 package com.maven.OnlineShoppingSB.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,8 +21,10 @@ public class GroupEntity {
     private String updateDate;
 
     @OneToMany(mappedBy = "group",cascade = CascadeType.ALL,orphanRemoval = true)
+    @JsonIgnore
     private List<CustomerGroupEntity> customerGroup;
 
     @OneToMany(mappedBy = "Group",cascade = CascadeType.ALL,orphanRemoval = true)
+    @JsonIgnore
     private List<DiscountConditionGroupEntity> discountConditionGroups;
 }

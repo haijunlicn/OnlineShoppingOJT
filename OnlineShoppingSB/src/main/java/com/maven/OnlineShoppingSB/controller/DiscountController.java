@@ -62,6 +62,20 @@ public class DiscountController {
         return discountService.getAllProductsForSelection();
     }
 
+    @GetMapping("/products/discount-info")
+    public ResponseEntity<?> getProductDiscountInfo() {
+        try {
+            System.out.println("🔍 API endpoint called: /products/discount-info");
+            Map<Long, List<DiscountDisplayDTO>> result = discountService.getProductDiscountInfo();
+            System.out.println("✅ API response size:-----------------------------------------------------" + result.size());
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            System.out.println("❌ API Error:----------------------------------------------------------------------------- " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
+    }
+
 
     @PostMapping("/createDiscount")
     public ResponseEntity<String> createDiscount(@RequestBody DiscountES_A dto) {

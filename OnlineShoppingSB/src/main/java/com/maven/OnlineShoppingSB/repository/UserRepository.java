@@ -40,5 +40,8 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     @Query("SELECT u FROM UserEntity u LEFT JOIN FETCH u.role r LEFT JOIN FETCH r.permissions WHERE u.email = :email")
     Optional<UserEntity> findByEmailWithRoleAndPermissions(@Param("email") String email);
 
+    // Get all non-admin users (customers)
+    @Query("SELECT u FROM UserEntity u WHERE u.role.type = 0 AND u.role.delFg = 1")
+    List<UserEntity> findAllNonAdminUsers();
 
 }

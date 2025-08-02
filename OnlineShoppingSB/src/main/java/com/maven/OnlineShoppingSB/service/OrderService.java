@@ -520,10 +520,9 @@ public class OrderService {
             Long userId = order.getUser().getId();
             Map<String, Object> metadata = new HashMap<>();
             metadata.put("orderId", order.getId());
-           //notificationService.notify("ORDER_CONFIRMED", metadata, List.of(userId));
-            notificationService.notifyOrderStatusUpdate(userId,orderId,"ORDER_CONFIRMED",order.getTrackingNumber());
-            //  notificationService.sendNamedNotification("ORDER_CONFIRMED", metadata, List.of(userId));
-
+         
+            // notificationService.notifyOrderStatusUpdate(userId,orderId,"ORDER_CONFIRMED",order.getTrackingNumber());
+          
             OrderStatusHistoryEntity history = new OrderStatusHistoryEntity();
             history.setOrder(order);
             history.setStatus(confirmedStatus);

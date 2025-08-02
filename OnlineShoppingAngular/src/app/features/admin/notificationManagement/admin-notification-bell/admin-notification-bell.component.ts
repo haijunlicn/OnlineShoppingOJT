@@ -27,10 +27,7 @@ export class AdminNotificationBellComponent implements OnInit, OnDestroy {
     private notificationModalService: NotificationModalService,
   ) { }
 
-  playNotificationSound() {
-    const audio = new Audio('assets/sounds/preview.mp3');
-    audio.play();
-  }
+
   ngOnInit(): void {
     this.notificationService.loadInAppNotificationsForUser(this.authService.getCurrentUser()?.id!);
     this.notificationService.connectWebSocket();
@@ -41,9 +38,7 @@ export class AdminNotificationBellComponent implements OnInit, OnDestroy {
       // Detect new notification
       const currentIds = new Set(this.notifications.map(n => n.id));
       const newNotis = this.notifications.filter(n => !this.lastNotificationIds.has(n.id));
-      if (newNotis.length > 0) {
-        this.playNotificationSound();
-      }
+     
       this.lastNotificationIds = currentIds;
     });
   }

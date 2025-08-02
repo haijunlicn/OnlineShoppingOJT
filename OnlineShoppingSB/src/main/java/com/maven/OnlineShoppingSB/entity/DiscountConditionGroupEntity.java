@@ -1,5 +1,6 @@
 package com.maven.OnlineShoppingSB.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,11 +19,13 @@ public class DiscountConditionGroupEntity {
 
     @ManyToOne
     @JoinColumn(name = "discountMechanism_id")
+    @JsonIgnore
     private DiscountMechanismEntity discountMechanism;
 
     @ManyToOne
     @JoinColumn(name = "Group_id")
-    private  GroupEntity Group;
+    @JsonIgnore
+    private GroupEntity Group;
 
     @OneToMany(mappedBy = "discountConditionGroup",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<DiscountConditionEntity> discountCondition;

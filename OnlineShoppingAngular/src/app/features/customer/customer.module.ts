@@ -59,6 +59,8 @@ import { VlogCommentComponent } from './policy/vlog-comment/vlog-comment.compone
 
 import { DiscountHeroCarouselComponent } from './product_display/discount-hero-carousel/discount-hero-carousel.component';
 import { DiscountDetailComponent } from './product_display/discount-detail/discount-detail.component';
+import { DiscountDisplayForHomeComponent } from './product_display/discount-display-for-home/discount-display-for-home.component';
+import { CustomerGroupDetailComponent } from './product_display/customer-group-detail/customer-group-detail.component';
 
 @NgModule({
   declarations: [
@@ -104,7 +106,7 @@ import { DiscountDetailComponent } from './product_display/discount-detail/disco
     ProfileInfoSettingComponent,
     NotiSettingComponent,
     ProductqandaComponent,
-  
+
   VlogCommentComponent,
     VlogComponent,
     VlogListComponent,
@@ -113,7 +115,9 @@ import { DiscountDetailComponent } from './product_display/discount-detail/disco
     DiscountConditionDisplayComponent,
     ProductqandaComponent,
     DiscountHeroCarouselComponent,
-    DiscountDetailComponent
+    DiscountDetailComponent,
+    DiscountDisplayForHomeComponent,
+    CustomerGroupDetailComponent
   ],
   imports: [
     CommonModule,

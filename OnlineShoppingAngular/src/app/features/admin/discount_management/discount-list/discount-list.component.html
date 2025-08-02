@@ -105,21 +105,7 @@
             </div>
           </div>
         </div>
-        <div class="col-md-3">
-          <div class="card stat-card">
-            <div class="card-body">
-              <div class="d-flex align-items-center">
-                <div class="stat-icon bg-warning">
-                  <i class="bi bi-graph-up"></i>
-                </div>
-                <div class="stat-content ms-3">
-                  <h6 class="stat-label">Avg. Discount</h6>
-                  <h3 class="stat-value text-warning">{{ averageDiscount }}%</h3>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      
       </div>
     </div>
 
@@ -173,16 +159,6 @@
               </select>
             </div>
 
-            <!-- Items per page -->
-            <div class="col-6 col-lg-2">
-              <label for="pageSize" class="form-label">Show</label>
-              <select id="pageSize" class="form-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
-                <option value="10">10</option>
-                <option value="25">25</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-              </select>
-            </div>
           </div>
         </div>
       </div>
@@ -308,10 +284,7 @@
                   <!-- Actions -->
                   <td class="text-center">
                     <div class="btn-group" role="group">
-                      <button class="btn btn-outline-primary btn-sm" 
-                        (click)="viewDiscountDetails(discount)" title="View Details">
-                        <i class="bi bi-eye"></i>
-                      </button>
+                    
                       <button class="btn btn-outline-warning btn-sm" 
                         (click)="editDiscount(discount)" title="Edit">
                         <i class="bi bi-pencil"></i>
@@ -326,7 +299,6 @@
               </tbody>
             </table>
           </div>
-
           <!-- Empty State -->
           <div *ngIf="!loading && filteredDiscounts.length === 0" class="empty-state">
             <div class="text-center py-5">

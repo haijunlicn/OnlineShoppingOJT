@@ -102,48 +102,51 @@ private EmailService emailService;
                     );
                     case EMAIL -> {
                           String to = user.getEmail();
-                // Title & message template rendering with condition
+                // Simple title template rendering (no conditions needed)
                 String originalTemplate = type.getTitleTemplate();
-                String processedTemplate = originalTemplate;
+                String originalMessageTemplate = type.getMessageTemplate();
                 
-                // 👉 Condition: Handle different template types
-                if (originalTemplate != null) {
-                    // For order notifications: Remove "Track your order {{trackingNum}}"
-                    if (originalTemplate.contains("Track your order {{trackingNum}}")) {
-                        processedTemplate = originalTemplate.replace("Track your order {{trackingNum}}", "");
-                        // Remove extra spaces and punctuation
-                        processedTemplate = processedTemplate.replaceAll("\\s+", " ").trim();
-                        processedTemplate = processedTemplate.replaceAll("\\s*,\\s*$", ""); // Remove trailing comma
+                String subject = originalTemplate != null ? jsonService.renderTemplate(originalTemplate, metadata) : "Notification";
+                
+                // Process message template
+                String processedMessageTemplate = originalMessageTemplate;
+                if (originalMessageTemplate != null) {
+                    // For order notifications: Replace {{trackingNum}} with actual tracking number
+                    if (originalMessageTemplate.contains("{{trackingNum}}") && metadata.containsKey("trackingNum")) {
+                        processedMessageTemplate = originalMessageTemplate.replace("{{trackingNum}}", (String) metadata.get("trackingNum"));
                     }
                     // For product notifications: Replace {{productName}} with actual product name
-                    else if (originalTemplate.contains("{{productName}}") && metadata.containsKey("productName")) {
-                        processedTemplate = originalTemplate.replace("{{productName}}", (String) metadata.get("productName"));
+                    else if (originalMessageTemplate.contains("{{productName}}") && metadata.containsKey("productName")) {
+                        processedMessageTemplate = originalMessageTemplate.replace("{{productName}}", (String) metadata.get("productName"));
                     }
                     // For reason notifications: Replace {{reason}} with actual reason
-                    else if (originalTemplate.contains("{{reason}}") && metadata.containsKey("reason")) {
-                        processedTemplate = originalTemplate.replace("{{reason}}", (String) metadata.get("reason"));
+                    else if (originalMessageTemplate.contains("{{reason}}") && metadata.containsKey("reason")) {
+                        processedMessageTemplate = originalMessageTemplate.replace("{{reason}}", (String) metadata.get("reason"));
                     }
                     // For stock notifications: Replace {{productName}}({{variantName}}) with actual values
-                    else if (originalTemplate.contains("{{productName}}({{variantName}})") && 
+                    else if (originalMessageTemplate.contains("{{productName}}({{variantName}})") && 
                              metadata.containsKey("productName") && metadata.containsKey("variantName")) {
                         String productName = (String) metadata.get("productName");
                         String variantName = (String) metadata.get("variantName");
-                        processedTemplate = originalTemplate.replace("{{productName}}({{variantName}})", 
+                        processedMessageTemplate = originalMessageTemplate.replace("{{productName}}({{variantName}})", 
                             productName + "(" + variantName + ")");
                     }
-                }
-                // Ensure the processed template ends with a full stop
-                if (processedTemplate != null && !processedTemplate.isEmpty() && !processedTemplate.endsWith(".")) {
-                    processedTemplate += ".";
+                    // For discount notifications: Replace {{discountName}} with actual discount name
+                    else if (originalMessageTemplate.contains("{{discountName}}") && metadata.containsKey("discountName")) {
+                        processedMessageTemplate = originalMessageTemplate.replace("{{discountName}}", (String) metadata.get("discountName"));
+                    }
                 }
                 
-                String subject = processedTemplate != null ? jsonService.renderTemplate(processedTemplate, metadata) : "Notification";
+                String message = processedMessageTemplate != null ? jsonService.renderTemplate(processedMessageTemplate, metadata) : "";
                 
                 // 👉 Debug the template processing
                 System.out.println("🔧 TEMPLATE PROCESSING:");
-                System.out.println("Original: " + originalTemplate);
-                System.out.println("Processed: " + processedTemplate);
+                System.out.println("Original Title: " + originalTemplate);
+
                 System.out.println("Final Subject: " + subject);
+                System.out.println("Original Message: " + originalMessageTemplate);
+                System.out.println("Processed Message: " + processedMessageTemplate);
+                System.out.println("Final Message: " + message);
         
                 // Professional HTML email template
                 String htmlContent = """
@@ -175,6 +178,7 @@ private EmailService emailService;
                             </div>
                             <div class="content">
                                 <div class="title">%s</div>
+                                <div class="message">%s</div>
                 
                                 <!-- Conditional Content Section -->
                                 %s
@@ -189,6 +193,7 @@ private EmailService emailService;
                 """.formatted(
                     subject, // title
                     subject, // title in content
+                    message, // message content
                     
                     // Conditional content based on notification type
                     metadata.containsKey("reason") ? 
@@ -197,9 +202,10 @@ private EmailService emailService;
                             "<div class='tracking-info'><strong>📦 Track your order:</strong><br>Tracking Number: <a href='http://localhost:4200/customer/orderDetail/" + metadata.get("orderId") + "' class='tracking-link'>" + metadata.get("trackingNum") + "</a></div>" : 
                         metadata.containsKey("variantName") ? 
                             "<div class='tracking-info'><strong>📦 Restock product:</strong><br>Product: <a href='http://localhost:4200/admin/product/" + metadata.get("productId") + "' class='tracking-link'>" + metadata.get("productName") + "(" + metadata.get("variantName") + ")</a></div>" : 
+                        metadata.containsKey("discountName") ? 
+                            "<div class='tracking-info'><strong>🎉 Check it out:</strong><br><a href='http://localhost:4200/customer/discount/" + metadata.get("discountId") + "' class='tracking-link'>" + metadata.get("discountName") + "</a></div>" : 
                             "<div class='tracking-info'><strong>📦 Your wishlisted product:</strong><br>Product: <a href='http://localhost:4200/customer/product/" + metadata.get("productId") + "' class='tracking-link'>" + metadata.get("productName") + "</a></div>"
                 );
-
                 boolean sent = emailService.sendNotificationEmail(to, subject, htmlContent);
                 System.out.println("📧 EMAIL sent to " + to + ": " + sent);
                     }
@@ -212,7 +218,7 @@ private EmailService emailService;
                 }
             }
         }
-//Notification တစ်ခုကို create လုပ်ပီး target users တွေဆီ ပို့ပေးတယ် / UserNotificationDTO
+
         return notification;
     }
 
@@ -410,6 +416,26 @@ private EmailService emailService;
         sendNamedNotification(statusCode, metadata, List.of(userId));
     }
 
+    public void notifyNewDiscount(Long discountId, String discountName) {
+        // Create metadata with discount information
+        Map<String, Object> metadata = Map.of(
+            "discountId", discountId,
+            "discountName", discountName,
+                "discountNameLink","/customer/discount/"+discountId
+        );
+        
+        // Get all users (customers) to notify about new discount
+        List<UserEntity> allUsers = userRepository.findAllNonAdminUsers();
+        List<Long> targetUserIds = allUsers.stream()
+            .map(UserEntity::getId)
+            .collect(Collectors.toList());
+        
+        // Create and deliver notification to all users
+        createNotificationAndDeliver("New_Discount", metadata, targetUserIds);
+        
+        System.out.println("🎉 New Discount Notification sent to " + targetUserIds.size() + " users");
+        System.out.println("📋 Discount ID: " + discountId + " | Name: " + discountName);
+    }
 
 
 

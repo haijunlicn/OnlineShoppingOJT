@@ -182,7 +182,7 @@ import { PriceHistoryModalComponent } from './product_management/price-history-m
     AdminAccountListComponent,
     UserViewDetailComponent,
     UserDetailListComponent,
-   
+  
 
     AuditLogModalComponent,
     UserDetailListComponent,

@@ -266,7 +266,7 @@
                     <div class="rules-toggle-wrapper">
                       <label class="rules-toggle-label">
                         <input type="checkbox" class="rules-toggle-checkbox" [(ngModel)]="showConditionsForMechanism[i]"
-                          [ngModelOptions]="{standalone: true}">
+                          [ngModelOptions]="{standalone: true}" (change)="onConditionsToggleChange(i, $event)">
                         <span class="rules-toggle-text">
                           <i class="fas fa-filter me-2"></i>Set Rules & Conditions
                         </span>

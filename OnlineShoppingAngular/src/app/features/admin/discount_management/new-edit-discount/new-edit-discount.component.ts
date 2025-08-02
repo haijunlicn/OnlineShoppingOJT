@@ -843,6 +843,21 @@ export class NewEditDiscountComponent implements OnInit {
     return customerGroups || productRules || orderRules
   }
 
+  // Handle when "Set Rules & Conditions" toggle is changed
+  onConditionsToggleChange(mechanismIndex: number, event: any): void {
+    const isEnabled = event.target?.checked || false;
+    this.showConditionsForMechanism[mechanismIndex] = isEnabled;
+    
+    // If conditions are disabled, clear all condition data
+    if (!isEnabled) {
+      this.customerEligibilitySettings[mechanismIndex] = { type: "all", groups: [] };
+      this.productRuleSettings[mechanismIndex] = { type: "", items: [] };
+      this.orderRuleSettings[mechanismIndex] = { type: "", value: "" };
+      
+      console.log(`Conditions cleared for mechanism ${mechanismIndex} - toggle disabled`);
+    }
+  }
+
   // Product Selection Methods
   onAddDiscountProduct(mechanismIndex: number): void {
     if (!this.allProducts || this.allProducts.length === 0) {
@@ -981,7 +996,7 @@ export class NewEditDiscountComponent implements OnInit {
         );
       }
       
-      // Process conditions if they exist for this mechanism
+      // Process conditions if "Set Rules & Conditions" is enabled for this mechanism
       if (this.showConditionsForMechanism[idx]) {
         const conditionGroups: any[] = [];
         const conditions: any[] = [];
@@ -1047,6 +1062,16 @@ export class NewEditDiscountComponent implements OnInit {
         }
         
         processedMech.discountConditionGroup = conditionGroups;
+      } else {
+        // If "Set Rules & Conditions" is unchecked, clear all conditions and set empty array
+        processedMech.discountConditionGroup = [];
+        
+        // Also clear the local settings for this mechanism
+        this.customerEligibilitySettings[idx] = { type: "all", groups: [] };
+        this.productRuleSettings[idx] = { type: "", items: [] };
+        this.orderRuleSettings[idx] = { type: "", value: "" };
+        
+        console.log(`Mechanism[${idx}] conditions cleared - "Set Rules & Conditions" is disabled`);
       }
       
       return processedMech;
