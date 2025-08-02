@@ -1391,3 +1391,33 @@
   line-height: 1.2;
   border-radius: 0.2rem;
 }
+
+/* Export Dropdown Disabled Styles */
+.dropdown-item.disabled,
+.dropdown-item:disabled {
+  color: #6c757d;
+  pointer-events: none;
+  background-color: transparent;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dropdown-item.disabled:hover,
+.dropdown-item:disabled:hover {
+  background-color: transparent;
+  color: #6c757d;
+}
+
+/* Export Loading Spinner */
+.fa-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
