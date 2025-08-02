@@ -1218,12 +1218,12 @@ export class RefundRequestDetailComponent implements OnInit, OnDestroy {
     pdf.text(`${this.refundRequest!.id}`, margin + 35, y);
     y += 5;
     
-    pdf.text(`Order ID:`, margin, y);
-    pdf.text(`${this.refundRequest!.orderId}`, margin + 35, y);
+    pdf.text(`Order Tracking:`, margin, y);
+    pdf.text(`${this.refundRequest!.orderDetail?.trackingNumber || 'N/A'}`, margin + 35, y);
     y += 5;
     
-    pdf.text(`Customer ID:`, margin, y);
-    pdf.text(`${this.refundRequest!.userId}`, margin + 35, y);
+    pdf.text(`Customer Name:`, margin, y);
+    pdf.text(`${this.refundRequest!.orderDetail?.user?.name || 'N/A'}`, margin + 35, y);
     y += 5;
     
     pdf.text(`Total Items:`, margin, y);
@@ -1251,10 +1251,10 @@ export class RefundRequestDetailComponent implements OnInit, OnDestroy {
     pdf.text(`Request ID: ${this.refundRequest!.id}`, margin, y);
     y += 5;
     
-    pdf.text(`Order ID: ${this.refundRequest!.orderId}`, margin, y);
+    pdf.text(`Order Tracking: ${this.refundRequest!.orderDetail?.trackingNumber || 'N/A'}`, margin, y);
     y += 5;
     
-    pdf.text(`Customer ID: ${this.refundRequest!.userId}`, margin, y);
+    pdf.text(`Customer Name: ${this.refundRequest!.orderDetail?.user?.name || 'N/A'}`, margin, y);
     y += 5;
     
     pdf.text(`Status: ${this.getStatusDisplayText(this.refundRequest!.status)}`, margin, y);
@@ -1386,7 +1386,7 @@ export class RefundRequestDetailComponent implements OnInit, OnDestroy {
     refundData.push({
       field: 'Refund Request Information',
       value: `Refund Request #${this.refundRequest.id}`,
-      details: `Order #${this.refundRequest.orderId} | Customer #${this.refundRequest.userId} | Status: ${this.getStatusDisplayText(this.refundRequest.status)}`
+      details: `Tracking: ${this.refundRequest.orderDetail?.trackingNumber || 'N/A'} | Customer: ${this.refundRequest.orderDetail?.user?.name || 'N/A'} | Status: ${this.getStatusDisplayText(this.refundRequest.status)}`
     });
 
     // Add request details
@@ -1394,6 +1394,20 @@ export class RefundRequestDetailComponent implements OnInit, OnDestroy {
       field: 'Request Details',
       value: `Created: ${new Date(this.refundRequest.createdAt || '').toLocaleDateString()}`,
       details: `Status: ${this.getStatusDisplayText(this.refundRequest.status)} | Total Items: ${this.refundRequest.items.length}`
+    });
+
+    // Add order information
+    refundData.push({
+      field: 'Order Information',
+      value: `Tracking: ${this.refundRequest.orderDetail?.trackingNumber || 'N/A'}`,
+      details: `Order Date: ${this.refundRequest.orderDetail?.createdDate ? new Date(this.refundRequest.orderDetail.createdDate).toLocaleDateString() : 'N/A'}`
+    });
+
+    // Add customer information
+    refundData.push({
+      field: 'Customer Information',
+      value: this.refundRequest.orderDetail?.user?.name || 'N/A',
+      details: `Email: ${this.refundRequest.orderDetail?.user?.email || 'N/A'}`
     });
 
     // Add financial summary
