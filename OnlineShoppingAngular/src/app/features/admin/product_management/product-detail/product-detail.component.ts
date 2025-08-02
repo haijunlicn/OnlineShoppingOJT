@@ -672,7 +672,7 @@ export class ProductDetailComponent implements OnInit {
   }
 
   get canEditProduct(): boolean {
-    return this.accessControl.hasAny("PRODUCT_UPDATE", "SUPERADMIN_PERMISSION")
+    return this.accessControl.hasAny("PRODUCT_MANAGE", "SUPERADMIN_PERMISSION")
   }
 
   selectedAuditLogs: any[] = []

@@ -415,35 +415,54 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
   }
 
   processCreditCardPayment(): void {
+    console.log("Starting credit card payment processing...");
+
     if (!this.isValidCreditCard()) {
-      this.paymentMessage = "Please fill in all required fields correctly."
-      return
+      this.paymentMessage = "Please fill in all required fields correctly.";
+      console.warn("Validation failed: Invalid credit card details.");
+      return;
     }
+
     if (!this.selectedCreditMethod) {
-      this.paymentMessage = "Please select a credit card payment method."
-      return
+      this.paymentMessage = "Please select a credit card payment method.";
+      console.warn("Validation failed: No credit method selected.");
+      return;
     }
+
     if (!this.uploadedImage) {
-      this.paymentMessage = "Please upload a payment proof image."
-      return
+      this.paymentMessage = "Please upload a payment proof image.";
+      console.warn("Validation failed: No image uploaded.");
+      return;
     }
-    if (this.isProcessing) return
-    this.isProcessing = true
-    this.creditCardData.amount = this.paymentAmount
+
+    if (this.isProcessing) {
+      console.log("Payment is already processing. Exiting...");
+      return;
+    }
+
+    this.isProcessing = true;
+    console.log("Set isProcessing to true.");
+    this.creditCardData.amount = this.paymentAmount;
+    console.log("Assigned payment amount to creditCardData:", this.creditCardData.amount);
+
+    console.log("Simulating payment processing delay...");
     setTimeout(() => {
       try {
-        this.isProcessing = false
-        this.placeOrder("PENDING")
+        console.log("Timeout completed. Proceeding to place order...");
+        this.isProcessing = false;
+        this.placeOrder("PENDING");
+        console.log("placeOrder called with status PENDING.");
       } catch (error) {
-        console.error("Error processing payment:", error)
-        this.isProcessing = false
-        this.paymentMessage = "An unexpected error occurred during payment processing."
-        this.paymentSuccess = false
-        this.paymentFailed = true
-        this.cdr.detectChanges()
+        console.error("Error processing payment:", error);
+        this.isProcessing = false;
+        this.paymentMessage = "An unexpected error occurred during payment processing.";
+        this.paymentSuccess = false;
+        this.paymentFailed = true;
+        this.cdr.detectChanges();
       }
-    }, 2000)
+    }, 2000);
   }
+
 
   verifyQRPayment(): void {
     if (!this.qrPaymentData || this.isProcessing) return
@@ -495,11 +514,11 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
               return response.message
             })
             .join(", ")
-          
+
           this.isProcessing = false
           this.paymentFailed = true
           this.paymentMessage = `Insufficient stock: ${failedItems}`
-          
+
           Swal.fire({
             icon: "error",
             title: "Stock Unavailable",
@@ -512,11 +531,11 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
         const attemptedItems = this.orderItems
           .map((item) => `${item.productName} (${item.variantSku})`)
           .join(", ")
-        
+
         this.isProcessing = false
         this.paymentFailed = true
         this.paymentMessage = `Stock error: ${attemptedItems}. ${error?.error || "Server error"}`
-        
+
         Swal.fire({
           icon: "error",
           title: "Stock Error",
