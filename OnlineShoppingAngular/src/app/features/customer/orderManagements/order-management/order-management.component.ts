@@ -358,6 +358,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
     const orderItemsWithDiscounts = this.generateOrderItemsWithDiscounts()
 
     const payload = {
+      // orderItems: stockItems, // For stock management
       orderItemsWithDiscounts: orderItemsWithDiscounts, // For order creation
       selectedAddress: this.selectedAddress,
       shippingFee: this.shippingFee,
@@ -372,10 +373,46 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
       discountBreakdown: this.getDiscountBreakdown(),
     }
 
-    console.log("Passing data to payment page without stock reduction:", payload)
+    console.log("Simplified payload with discount mechanisms attached to items:", payload)
 
-    // Navigate to payment page without stock reduction or cart clearing
-    this.router.navigate(["/customer/payment"], { state: payload })
+    // Reduce stock before navigating
+    this.variantService.recudeStock(orderItemsWithDiscounts).subscribe({
+      next: (responses: StockUpdateResponse[]) => {
+        const allSuccessful = responses.every((response) => response.success)
+        if (allSuccessful) {
+          this.router.navigate(["/customer/payment"], { state: payload }).then((navigated) => {
+            if (navigated) {
+              // this.cartService.clearCart()
+            }
+          })
+        } else {
+          // Find failed items and map them to product names and variants
+          const failedItems = responses
+            .filter((response) => !response.success)
+            .map((response, index) => {
+              // Find the corresponding order item for this response
+              const orderItem = this.orderItems[index]
+              if (orderItem) {
+                return `${orderItem.productName} (${orderItem.variantSku}) - ${response.message}`
+              }
+              return response.message
+            })
+            .join(", ")
+          
+          // Show toast notification with specific product names and variants
+          this.alertService.toast(`Insufficient stock: ${failedItems}`, "error")
+        }
+      },
+      error: (error) => {
+        // Create a list of all products and variants that were attempted to update
+        const attemptedItems = this.orderItems
+          .map((item) => `${item.productName} (${item.variantSku})`)
+          .join(", ")
+        
+        // Show toast notification for server errors with product details
+        this.alertService.toast(`Not enough stock: ${attemptedItems}. ${error?.error || "Server error"}`, "error")
+      },
+    })
   }
 
   private getDiscountBreakdown(): any[] {
@@ -629,8 +666,7 @@ export class OrderManagementComponent implements OnInit, OnDestroy {
           this.cleanupMap()
         this.alertService.toast(" Add Address Successfully !", "success")
       },
-        error: () => this.alertService.toast("You are not allowed to edit this Address", "error"),
-        
+        error: () => this.alertService.toast("Failed to update address.", "error"),
       })
       this.subscriptions.push(updateSub)
     } else {

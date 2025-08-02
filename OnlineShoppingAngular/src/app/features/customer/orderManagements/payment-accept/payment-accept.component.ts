@@ -1,18 +1,21 @@
-import { ChangeDetectorRef, Component, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy, Inject, PLATFORM_ID, HostListener } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Router } from '@angular/router';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Subscription, Observable } from 'rxjs';
+import { NavigationEnd, Router } from '@angular/router';
+import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
+import { filter, Subscription } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
 import { CartService } from '../../../../core/services/cart.service';
 import { PaymentMethodService } from '../../../../core/services/paymentmethod.service';
-import { OrderService } from '../../../../core/services/order.service';
-import { VariantService, StockUpdateResponse } from '../../../../core/services/variant.service';
 import { PaymentMethodDTO } from '../../../../core/models/payment';
-import { OrderRequestDTO, OrderItemRequestDTO } from '../../../../core/models/order.dto';
+import { OrderService } from '../../../../core/services/order.service';
+import { OrderItemRequestDTO, OrderRequestDTO } from '../../../../core/models/order.dto';
+import { VariantService } from '../../../../core/services/variant.service';
 import Swal from 'sweetalert2';
-
-import { OrderDiscountMechanismDTO } from '../../../../core/models/discount';
+import { Observable } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { CanDeactivate } from '@angular/router';
+import { NavigationBlockerService } from '@app/core/services/navigation-blocker.service';
+import { OrderDiscountMechanismDTO } from '@app/core/models/discount';
 
 
 export interface CreditCardPayment {
@@ -115,10 +118,20 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
   uploadedImageUrl: string | null = null
   translatedText = ""
 
+  // Enhanced Timer properties
+  timer: any = null
+  timeLeft = 600
+  timerDisplay = "10:00"
+  timerExpired = false
+  timerWarning = false
+  timerProgressPercent = 100
 
+  stockReserved = false
   selectedDeliveryMethod: any = null
   private subscriptions: Subscription[] = []
 
+  // Payment state tracking
+  paymentInProgress = true
   paymentFailed = false
 
   constructor(
@@ -134,7 +147,12 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
     this.isBrowser = window.navigator.userAgent.includes("Chrome") || window.navigator.userAgent.includes("Firefox")
   }
 
-
+  unloadNotification($event: any): void {
+    if (this.shouldBlockNavigation()) {
+      $event.returnValue =
+        "You have an incomplete payment. Leaving this page will cancel your order. Are you sure you want to leave?"
+    }
+  }
 
   ngOnInit(): void {
     this.authService.initializeUserFromToken()
@@ -181,6 +199,7 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
     }
 
     if (state) {
+      // this.orderItems = state.orderItems || []
       this.orderItemsWithDiscounts = state.orderItemsWithDiscounts || [] // NEW: Load items with discounts
       this.selectedAddress = state.selectedAddress || null
       this.shippingFee = state.shippingFee || 0
@@ -222,23 +241,78 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
         }
       }
     })
+
+    // this.startGlobalTimer()
   }
 
   ngOnDestroy(): void {
     console.log("on destroy called");
 
+    if (this.timer) {
+      clearInterval(this.timer);
+      console.log("Timer cleared");
+    }
+
     this.subscriptions.forEach((sub) => {
-      if (sub) {
-        sub.unsubscribe()
-      }
-    })
+      sub.unsubscribe();
+      console.log("Subscription unsubscribed");
+    });
+
+    console.log(`paymentInProgress: ${this.paymentInProgress}`);
+    console.log(`paymentSuccess: ${this.paymentSuccess}`);
+    console.log(`paymentFailed: ${this.paymentFailed}`);
+    console.log(`timerExpired: ${this.timerExpired}`);
+
+    if (this.paymentInProgress) {
+      console.log("Condition met: paymentInProgress is true");
+    } else {
+      console.log("Condition failed: paymentInProgress is false");
+    }
+
+    if (!this.paymentSuccess && !this.paymentFailed && !this.timerExpired) {
+      console.log("Condition met: paymentSuccess, paymentFailed, and timerExpired are all false");
+    } else {
+      console.log("Condition failed: at least one of paymentSuccess, paymentFailed, or timerExpired is true");
+    }
+
+    if (this.paymentInProgress || (!this.paymentSuccess && !this.paymentFailed && !this.timerExpired)) {
+      console.log("Rolling back reserved stock...");
+      this.rollbackReservedStock();
+    } else {
+      console.log("Not rolling back reserved stock");
+    }
   }
 
-
+  private shouldBlockNavigation(): boolean {
+    return this.paymentInProgress && !this.paymentSuccess && !this.paymentFailed && !this.timerExpired
+  }
 
   canDeactivate(): Observable<boolean> | Promise<boolean> | boolean {
-    // Allow navigation without any restrictions since stock is not reserved
-    return true
+    if (!this.shouldBlockNavigation()) {
+      return true
+    }
+
+    return new Promise((resolve) => {
+      Swal.fire({
+        title: "Leave Payment Page?",
+        text: "You have an incomplete payment. Leaving this page will cancel your order and release reserved stock. Are you sure you want to leave?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Yes, leave page",
+        cancelButtonText: "Stay and complete payment",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.paymentInProgress = false
+          resolve(true)
+        } else {
+          resolve(false)
+        }
+      })
+    })
   }
 
   private initPaymentAccept(): void {
@@ -415,56 +489,48 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
   }
 
   processCreditCardPayment(): void {
-    console.log("Starting credit card payment processing...");
-
+    if (this.timerExpired) {
+      this.paymentMessage = "Payment time expired. Please try again."
+      this.paymentFailed = true
+      return
+    }
     if (!this.isValidCreditCard()) {
-      this.paymentMessage = "Please fill in all required fields correctly.";
-      console.warn("Validation failed: Invalid credit card details.");
-      return;
+      this.paymentMessage = "Please fill in all required fields correctly."
+      return
     }
-
     if (!this.selectedCreditMethod) {
-      this.paymentMessage = "Please select a credit card payment method.";
-      console.warn("Validation failed: No credit method selected.");
-      return;
+      this.paymentMessage = "Please select a credit card payment method."
+      return
     }
-
     if (!this.uploadedImage) {
-      this.paymentMessage = "Please upload a payment proof image.";
-      console.warn("Validation failed: No image uploaded.");
-      return;
+      this.paymentMessage = "Please upload a payment proof image."
+      return
     }
-
-    if (this.isProcessing) {
-      console.log("Payment is already processing. Exiting...");
-      return;
-    }
-
-    this.isProcessing = true;
-    console.log("Set isProcessing to true.");
-    this.creditCardData.amount = this.paymentAmount;
-    console.log("Assigned payment amount to creditCardData:", this.creditCardData.amount);
-
-    console.log("Simulating payment processing delay...");
+    if (this.isProcessing) return
+    this.isProcessing = true
+    this.creditCardData.amount = this.paymentAmount
     setTimeout(() => {
       try {
-        console.log("Timeout completed. Proceeding to place order...");
-        this.isProcessing = false;
-        this.placeOrder("PENDING");
-        console.log("placeOrder called with status PENDING.");
+        this.isProcessing = false
+        if (this.timer) clearInterval(this.timer)
+        this.placeOrder("PENDING")
       } catch (error) {
-        console.error("Error processing payment:", error);
-        this.isProcessing = false;
-        this.paymentMessage = "An unexpected error occurred during payment processing.";
-        this.paymentSuccess = false;
-        this.paymentFailed = true;
-        this.cdr.detectChanges();
+        console.error("Error processing payment:", error)
+        this.isProcessing = false
+        this.paymentMessage = "An unexpected error occurred during payment processing."
+        this.paymentSuccess = false
+        this.paymentFailed = true
+        this.cdr.detectChanges()
       }
-    }, 2000);
+    }, 2000)
   }
 
-
   verifyQRPayment(): void {
+    if (this.timerExpired) {
+      this.paymentMessage = "Payment time expired. Please try again."
+      this.paymentFailed = true
+      return
+    }
     if (!this.qrPaymentData || this.isProcessing) return
     if (!this.uploadedImage) {
       this.paymentMessage = "Please upload a payment proof image."
@@ -472,6 +538,7 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
     }
     this.isProcessing = true
     this.cdr.detectChanges()
+    if (this.timer) clearInterval(this.timer)
     this.placeOrder("PENDING")
   }
 
@@ -495,58 +562,6 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
       paymentMethodId = this.selectedCreditMethod ? Number(this.selectedCreditMethod) : null
     }
 
-    // Reduce stock before creating order
-    this.variantService.recudeStock(this.orderItemsWithDiscounts).subscribe({
-      next: (responses: StockUpdateResponse[]) => {
-        const allSuccessful = responses.every((response) => response.success)
-        if (allSuccessful) {
-          // Stock reduction successful, proceed with order creation
-          this.createOrder(paymentStatus, paymentMethodId)
-        } else {
-          // Stock reduction failed
-          const failedItems = responses
-            .filter((response) => !response.success)
-            .map((response, index) => {
-              const orderItem = this.orderItems[index]
-              if (orderItem) {
-                return `${orderItem.productName} (${orderItem.variantSku}) - ${response.message}`
-              }
-              return response.message
-            })
-            .join(", ")
-
-          this.isProcessing = false
-          this.paymentFailed = true
-          this.paymentMessage = `Insufficient stock: ${failedItems}`
-
-          Swal.fire({
-            icon: "error",
-            title: "Stock Unavailable",
-            text: `Some items are out of stock: ${failedItems}`,
-            confirmButtonText: "OK"
-          })
-        }
-      },
-      error: (error) => {
-        const attemptedItems = this.orderItems
-          .map((item) => `${item.productName} (${item.variantSku})`)
-          .join(", ")
-
-        this.isProcessing = false
-        this.paymentFailed = true
-        this.paymentMessage = `Stock error: ${attemptedItems}. ${error?.error || "Server error"}`
-
-        Swal.fire({
-          icon: "error",
-          title: "Stock Error",
-          text: `Failed to check stock: ${attemptedItems}`,
-          confirmButtonText: "OK"
-        })
-      },
-    })
-  }
-
-  private createOrder(paymentStatus: "PAID" | "PENDING" | "Payment Failed", paymentMethodId: number | null): void {
     // SIMPLIFIED: Use order items with attached discount mechanisms
     const orderRequest: OrderRequestDTO = {
       userId: this.currentUserId,
@@ -565,13 +580,15 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
     if (this.uploadedImage) {
       formData.append("paymentImage", this.uploadedImage)
     }
+    this.isProcessing = true
 
-    console.log("Creating order with discount mechanisms attached to items:", orderRequest)
+    console.log("Simplified order request with discount mechanisms attached to items:", orderRequest)
 
     this.orderService.createOrderWithImage(formData).subscribe({
       next: (response) => {
         this.isProcessing = false
         this.paymentSuccess = true
+        this.paymentInProgress = false
         this.paymentFailed = false
         this.paymentMessage = `Order placed successfully`
 
@@ -631,8 +648,11 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
           icon: "error",
           title: "Order Failed",
           text: errorMessage,
-          confirmButtonText: "OK"
+          confirmButtonColor: "#d33",
+          confirmButtonText: "OK",
         })
+
+        this.cdr.detectChanges()
       },
     })
   }
@@ -735,16 +755,38 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
   }
 
   goBackToOrderManagement(): void {
-    // Navigate back to order management page
-    this.router.navigate(["/customer/order"])
+    if (this.shouldBlockNavigation()) {
+      Swal.fire({
+        title: "Leave Payment Page?",
+        text: "You have an incomplete payment. Leaving this page will cancel your order and release reserved stock. Are you sure?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Yes, leave page",
+        cancelButtonText: "Stay and complete payment",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.paymentInProgress = false
+          this.router.navigate(["/customer/cart"])
+        }
+      })
+    } else {
+      this.router.navigate(["/customer/home"])
+    }
   }
 
-  continueShopping(): void {
-    // Navigate back to home page to continue shopping
-    this.router.navigate(["/customer/home"])
+  rollbackReservedStock() {
+    this.variantService.rollbackStock(this.orderItemsWithDiscounts).subscribe({
+      next: (res) => {
+        console.log("roll back stock list : ", this.orderItemsWithDiscounts)
+        console.log("Stock rolled back successfully:", res)
+      },
+      error: (err) => {
+        console.error("Failed to rollback stock:", err)
+      },
+    })
   }
-
-
 
   trackByItemId(index: number, item: any): string {
     return `${item.id}-${item.variantId}`
@@ -767,9 +809,85 @@ export class PaymentAcceptComponent implements OnInit, OnDestroy {
     return this.selectedAddress && this.selectedAddress.phoneNumber ? this.selectedAddress.phoneNumber : ""
   }
 
+  startGlobalTimer() {
+    this.timeLeft = 10 // 10 minutes
+    this.timerExpired = false
+    this.timerWarning = false
+    this.updateTimerDisplay()
+
+    if (this.timer) clearInterval(this.timer)
+
+    this.timer = setInterval(() => {
+      if (this.timeLeft > 0) {
+        this.timeLeft--
+        this.updateTimerDisplay()
+        this.updateTimerProgress()
+
+        if (this.timeLeft <= 120 && !this.timerWarning) {
+          this.timerWarning = true
+          Swal.fire({
+            title: "Payment Time Warning!",
+            text: "Only 2 minutes left to complete your payment!",
+            icon: "warning",
+            timer: 3000,
+            showConfirmButton: false,
+            toast: true,
+            position: "top-end",
+          })
+        }
+
+        this.cdr.detectChanges()
+      } else {
+        this.timerExpired = true
+        this.timerWarning = false
+        this.paymentInProgress = false
+        clearInterval(this.timer)
+        this.handleGlobalTimerExpired()
+        this.cdr.detectChanges()
+      }
+    }, 1000)
+  }
+
+  handleGlobalTimerExpired() {
+    this.timerExpired = true
+    this.paymentInProgress = false
+    Swal.fire({
+      icon: "error",
+      title: "Payment Time Expired",
+      text: "Your payment session has expired and reserved stock has been released. Please start a new order.",
+      confirmButtonColor: "#d33",
+      confirmButtonText: "Return to Shopping",
+    }).then(() => {
+      this.rollbackReservedStock()
+      this.router.navigate(["/customer/home"])
+    })
+  }
+
   selectCreditMethod(id: string | number): void {
     this.selectedCreditMethod = id
     this.paymentMessage = ""
+  }
+
+  updateTimerDisplay() {
+    const min = Math.floor(this.timeLeft / 60)
+    const sec = this.timeLeft % 60
+    this.timerDisplay = `${min.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`
+  }
+
+  updateTimerProgress() {
+    this.timerProgressPercent = (this.timeLeft / 600) * 100
+  }
+
+  getTimerStatus(): string {
+    if (this.timerExpired) return "expired"
+    if (this.timerWarning) return "warning"
+    return "active"
+  }
+
+  getTimerStatusText(): string {
+    if (this.timerExpired) return "Expired"
+    if (this.timerWarning) return "Urgent"
+    return "Active"
   }
 
   getDeliveryMethodIconClass(): string {

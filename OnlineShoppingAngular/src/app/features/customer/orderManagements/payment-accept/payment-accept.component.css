@@ -57,12 +57,6 @@
   color: var(--color-brown);
 }
 
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .btn-back-to-order {
   background: transparent;
   color: var(--color-primary);
@@ -84,30 +78,166 @@
   border-color: var(--color-primary);
 }
 
-.btn-continue-shopping {
-  background: var(--color-success);
-  color: white;
-  border: 1px solid var(--color-success);
-  border-radius: 6px;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
+/* Modern Professional Timer */
+.payment-timer-container {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 12px var(--color-shadow);
+  border: 1px solid var(--color-border);
+  position: relative;
+}
+
+.timer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.timer-label {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  transition: all 0.15s ease;
-  margin-right: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-brown);
 }
 
-.btn-continue-shopping:hover {
-  background: #218838;
-  border-color: #218838;
+.timer-label i {
+  font-size: 1rem;
 }
 
+.timer-status {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
 
+.timer-status.active {
+  background: rgba(40, 167, 69, 0.1);
+  color: var(--color-success);
+}
 
+.timer-status.warning {
+  background: rgba(255, 193, 7, 0.1);
+  color: var(--color-warning);
+}
 
+.timer-status.expired {
+  background: rgba(220, 53, 69, 0.1);
+  color: var(--color-danger);
+}
+
+.timer-display-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.timer-display {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: var(--color-primary);
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.timer-display.warning {
+  color: var(--color-warning);
+}
+
+.timer-display.expired {
+  color: var(--color-danger);
+}
+
+.timer-separator {
+  opacity: 0.7;
+  animation: blink 1s infinite;
+}
+
+.timer-progress-container {
+  margin-top: 1rem;
+  position: relative;
+}
+
+.timer-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: #f1f3f4;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.timer-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-success), var(--color-info));
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.timer-progress-fill.warning {
+  background: linear-gradient(90deg, var(--color-warning), #ff8c00);
+}
+
+.timer-progress-fill.expired {
+  background: var(--color-danger);
+}
+
+.timer-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--color-brown);
+}
+
+.timer-warning-message {
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-warning);
+}
+
+.timer-expired-message {
+  background: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-danger);
+}
+
+/* Timer animations */
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0.3;
+  }
+}
 
 /* Clean layout */
 .checkout-2col-grid {
@@ -945,19 +1075,13 @@
     font-size: 1.5rem;
   }
 
-  .header-actions {
-    flex-direction: column;
-    gap: 0.5rem;
-    width: 100%;
+  .payment-timer-container {
+    padding: 1rem 1.5rem;
   }
 
-  .btn-continue-shopping,
-  .btn-back-to-order {
-    width: 100%;
-    justify-content: center;
+  .timer-display {
+    font-size: 2rem;
   }
-
-
 
   .form-row {
     grid-template-columns: 1fr;
@@ -1016,5 +1140,7 @@
     height: 120px;
   }
 
-
+  .timer-display {
+    font-size: 1.75rem;
+  }
 }
