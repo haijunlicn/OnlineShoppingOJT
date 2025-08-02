@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { User } from '@app/core/models/User';
+import { AuthService } from '@app/core/services/auth.service';
 
 @Component({
   selector: "app-admin-layout",
@@ -10,13 +12,20 @@ import { Component, OnInit } from '@angular/core';
 export class AdminLayoutComponent implements OnInit {
   sidebarExpanded = true
 
-  constructor() { }
+  constructor(private authService: AuthService) { }
 
-  ngOnInit(): void { }
-
-  accountInfo: any = {
-    name: "Admin User" // or load from a service later
+  ngOnInit(): void {
+    this.authService.user$.subscribe(user => {
+      if (user) {
+        this.accountInfo = {
+          name: user.name,
+          roleName: user.roleName
+        };
+      }
+    });
   }
+
+  accountInfo: Partial<User> = {};
 
   onSidebarToggle(isExpanded: boolean) {
     this.sidebarExpanded = isExpanded
