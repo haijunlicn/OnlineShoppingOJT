@@ -62,6 +62,7 @@ import { QuestionComponent } from './QuestionManagement/question/question.compon
 import { AdminAccountListComponent } from './roleAndPermission/admin-account-list/admin-account-list.component';
 import { UserDetailListComponent } from './adminUserManagement/user-detail-list/user-detail-list.component';
 import { UserViewDetailComponent } from './adminUserManagement/user-view-detail/user-view-detail.component';
+import { AccessDeniedComponent } from './error/access-denied/access-denied.component';
 
 
 const routes: Routes = [
@@ -77,7 +78,7 @@ const routes: Routes = [
     component: AdminLayoutComponent,
     canActivate: [AdminAuthGuard], // shared guard
     children: [
-      { path: 'dashboard', component: SaleAnalysisComponent,  },
+      { path: 'dashboard', component: SaleAnalysisComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['PRODUCT_READ'], ['SUPERADMIN_PERMISSION']] } },
       { path: 'productList', component: ProductListComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['PRODUCT_READ'], ['SUPERADMIN_PERMISSION']] } },
       { path: 'productCreate', component: ProductCreateComponent, canActivate: [PermissionGuard], data: { permissionGroups: [['PRODUCT_CREATE'], ['SUPERADMIN_PERMISSION']] } },
       // { path: 'group', component: DiscountGroupComponent },
@@ -153,7 +154,8 @@ const routes: Routes = [
       { path: 'bloglist', component: VlogListComponent },
       { path: 'blogcreate', component: VlogCreateComponent },
       { path: 'userList', component: UserDetailListComponent },
-      { path: 'user-view-detail/:id', component: UserViewDetailComponent }
+      { path: 'user-view-detail/:id', component: UserViewDetailComponent },
+      { path: 'admin/access-denied', component: AccessDeniedComponent },
 
 
     ]

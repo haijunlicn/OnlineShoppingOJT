@@ -50,7 +50,7 @@ public class GroupController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/all-with-conditions")
+    @GetMapping("/public/all-with-conditions")
     public ResponseEntity<List<Map<String, Object>>> getAllGroupsWithConditions() {
         List<GroupEntity> groups = groupRepository.findAll();
         

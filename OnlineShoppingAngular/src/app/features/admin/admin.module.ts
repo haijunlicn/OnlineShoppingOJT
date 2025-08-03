@@ -103,6 +103,7 @@ import { UserDetailListComponent } from './adminUserManagement/user-detail-list/
 
 import { AuditLogModalComponent } from './auditLog/audit-log-modal/audit-log-modal.component';
 import { PriceHistoryModalComponent } from './product_management/price-history-modal/price-history-modal.component';
+import { AccessDeniedComponent } from './error/access-denied/access-denied.component';
 
 @NgModule({
   declarations: [
@@ -186,7 +187,8 @@ import { PriceHistoryModalComponent } from './product_management/price-history-m
 
     AuditLogModalComponent,
     UserDetailListComponent,
-    PriceHistoryModalComponent
+    PriceHistoryModalComponent,
+    AccessDeniedComponent
   ],
   imports: [
     AdminRoutingModule,

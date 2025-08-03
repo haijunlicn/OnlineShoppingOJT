@@ -12,6 +12,7 @@ import { Subscription } from 'rxjs';
   templateUrl: "./notification-bell.component.html",
   styleUrl: "./notification-bell.component.css",
 })
+
 export class NotificationBellComponent implements OnInit, OnDestroy {
   notifications: UserNotificationDTO[] = []
   unreadCount = 0
@@ -26,34 +27,36 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     private notificationModalService: NotificationModalService,
   ) { }
 
-
   private isFirstLoad = true;
 
   ngOnInit(): void {
     const userId = this.authService.getCurrentUser()?.id;
     if (!userId) return;
-  
+
     this.notificationService.loadInAppNotificationsForUser(userId);
     this.notificationService.connectWebSocket();
-  
+
     this.subscription = this.notificationService.notifications$.subscribe((notiList) => {
       this.notifications = notiList.map(noti =>
         this.notificationService.renderNotification(noti)
       );
       this.unreadCount = this.notifications.filter((n) => !n.read).length;
-  
+
       const currentIds = new Set(this.notifications.map(n => n.id));
-  
+
+      const unreadNotis = this.notifications.filter(n => !n.read);
+      console.log("📬 Unread Notifications:", unreadNotis);  // 🔥 this is what you asked for
+
       if (!this.isFirstLoad) {
         const newNotis = this.notifications.filter(n => !this.lastNotificationIds.has(n.id));
-      
+        // You can log new notifications here too if needed
+        // console.log("🆕 New Notifications:", newNotis);
       }
 
       this.lastNotificationIds = currentIds;
       this.isFirstLoad = false;
     });
   }
-  
 
   toggleDropdown(): void {
     this.showDropdown = !this.showDropdown

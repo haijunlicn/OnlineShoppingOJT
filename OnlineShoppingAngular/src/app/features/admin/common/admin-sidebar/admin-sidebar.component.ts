@@ -4,7 +4,7 @@ import { isPlatformBrowser } from "@angular/common"
 import { AuthService } from "@app/core/services/auth.service"
 import { AccessControlService } from "@app/core/services/AccessControl.service"
 
-interface MenuItem {
+export interface MenuItem {
   label: string
   route: string
   icon: string
@@ -12,7 +12,7 @@ interface MenuItem {
   requiredPermission?: string[]
 }
 
-interface MenuSection {
+export interface MenuSection {
   heading: string
   items: MenuItem[]
 }
@@ -38,8 +38,8 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
     {
       heading: "Dashboard",
       items: [
-        { label: "User Overview", route: "/admin/createGroup", icon: "fas fa-chart-line", requiredPermission: ["SUPERADMIN_PERMISSION"] },
         { label: "Dashboard", route: "/admin/sale-analysis", icon: "fas fa-chart-bar", requiredPermission: ["SUPERADMIN_PERMISSION"] },
+        { label: "User Overview", route: "/admin/createGroup", icon: "fas fa-chart-line", requiredPermission: ["SUPERADMIN_PERMISSION"] },
       ],
     },
     {

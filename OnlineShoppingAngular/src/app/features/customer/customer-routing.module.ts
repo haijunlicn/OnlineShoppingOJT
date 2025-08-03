@@ -135,7 +135,6 @@ const routes: Routes = [
       { path: '', redirectTo: 'profile', pathMatch: 'full' },
       { path: 'location', component: LocationCardComponent },
       { path: 'profile', component: ProfileInfoSettingComponent },
-
     ]
   },
   {
@@ -152,7 +151,7 @@ const routes: Routes = [
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
-  
+
 
 })
 export class CustomerRoutingModule { }
