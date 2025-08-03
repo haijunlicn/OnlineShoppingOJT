@@ -53,7 +53,6 @@ public class ReviewService {
         }
 
         List<ProductReviewDto> reviewDtos = reviewPage.getContent().stream().map(this::toDto).collect(Collectors.toList());
-
         // Calculate average and breakdown
         List<ProductReview> allReviews = reviewRepo.findByProductId(productId);
         double average = allReviews.stream().mapToInt(ProductReview::getRating).average().orElse(0.0);
@@ -187,6 +186,12 @@ public class ReviewService {
 
     public List<ProductReviewDto> getAllReviews() {
         List<ProductReview> reviews = reviewRepo.findAll();
+        return reviews.stream().map(this::toDto).collect(java.util.stream.Collectors.toList());
+    }
+
+    // Get all reviews by a specific user
+    public List<ProductReviewDto> getUserReviews(Long userId) {
+        List<ProductReview> reviews = reviewRepo.findByUserId(userId);
         return reviews.stream().map(this::toDto).collect(java.util.stream.Collectors.toList());
     }
 

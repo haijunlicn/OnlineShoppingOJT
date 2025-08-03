@@ -122,6 +122,7 @@
                     <i class="fas fa-shopping-bag"></i>
                     <span>My Orders</span>
                   </button>
+                 
                   <button class="profile-menu-item" (click)="onSettings()">
                     <i class="fas fa-cog"></i>
                     <span>Settings</span>
@@ -210,10 +211,11 @@
                 <i class="fas fa-user"></i>
                 <span>Profile</span>
               </button>
-              <a class="mobile-profile-item" routerLink="/customer/orders" (click)="toggleMenu()">
-                <i class="fas fa-shopping-bag"></i>
-                <span>My Orders</span>
-              </a>
+                             <a class="mobile-profile-item" routerLink="/customer/orders" (click)="toggleMenu()">
+                 <i class="fas fa-shopping-bag"></i>
+                 <span>My Orders</span>
+               </a>
+            
               <button class="mobile-profile-item" (click)="onSettings(); toggleMenu()">
                 <i class="fas fa-cog"></i>
                 <span>Settings</span>
@@ -229,7 +231,6 @@
     </div>
   </div>
 </header>
-
 <!-- Modals -->
 <app-register *ngIf="(registerVisible$ | async)" class="register-modal-overlay"></app-register>
 <app-login *ngIf="(loginVisible$ | async)" class="login-modal-overlay"></app-login>
