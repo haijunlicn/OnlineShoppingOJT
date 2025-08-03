@@ -770,12 +770,12 @@ export class ProductListComponent {
       return false
     }
 
-    const cart = this.cartService.getCart()
-    const eligibleHints = this.discountDisplayService.evaluateEligibleDiscounts(product.discountHints, cart)
+    // const cart = this.cartService.getCart()
+    // const eligibleHints = this.discountDisplayService.evaluateEligibleDiscounts(product.discountHints, cart)
 
     // Has hints but none are currently eligible/applied
     return product.discountHints.length > 0
-    //&& eligibleHints.length === 0
+    // && eligibleHints.length === 0
   }
 
   hasAppliedDiscounts(product: ProductCardItem): boolean {
@@ -842,8 +842,6 @@ export class ProductListComponent {
   }
 
   getCombinedDiscountLabel(product: ProductCardItem): string {
-    // const hints = this.getUnappliedDiscountHints(product);
-    // return this.discountTextService.getCombinedDiscountLabel(hints);
     const hints = product.discountHints ?? [];
     return this.discountTextService.getCombinedDiscountLabel(hints);
   }

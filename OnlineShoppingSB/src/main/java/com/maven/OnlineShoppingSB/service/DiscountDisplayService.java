@@ -157,7 +157,14 @@ public class DiscountDisplayService {
 
                 List<ProductEntity> applicableProducts = linkedProducts.isEmpty() ? allProducts : linkedProducts;
 
-                boolean eligible = discountConditionCheckerService.isEligible(currentUser, mechanism);
+//                boolean eligible = discountConditionCheckerService.isEligible(currentUser, mechanism);
+
+                boolean eligible = true;
+                if (currentUser != null) {
+                    eligible = discountConditionCheckerService.isEligible(currentUser, mechanism);
+                } else {
+                    System.out.println("👤 No user — skipping eligibility check or applying public logic");
+                }
 
                 // Determine offered product IDs — only products that will receive discount
                 List<Long> offeredProductIds = new ArrayList<>();

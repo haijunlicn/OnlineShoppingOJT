@@ -35,12 +35,28 @@ export class DiscountDisplayService {
     return this.http.get<DiscountEventDTO>(`${this.baseUrl}/public/discount/${id}`);
   }
 
+  // getProductDiscountHints(): Observable<Record<number, DiscountDisplayDTO[]>> {
+  //   const userId = this.authService.isLoggedIn()
+  //     ? this.authService.getCurrentUser()?.id
+  //     : null;
+
+  //   const params = new HttpParams().set('userId', userId ?? '');
+
+  //   return this.http.get<Record<number, DiscountDisplayDTO[]>>(
+  //     `${this.baseUrl}/public/product-hints`,
+  //     { params }
+  //   );
+  // }
+
   getProductDiscountHints(): Observable<Record<number, DiscountDisplayDTO[]>> {
     const userId = this.authService.isLoggedIn()
       ? this.authService.getCurrentUser()?.id
       : null;
 
-    const params = new HttpParams().set('userId', userId ?? '');
+    let params = new HttpParams();
+    if (userId !== null && userId !== undefined) {
+      params = params.set('userId', userId.toString());
+    }
 
     return this.http.get<Record<number, DiscountDisplayDTO[]>>(
       `${this.baseUrl}/public/product-hints`,

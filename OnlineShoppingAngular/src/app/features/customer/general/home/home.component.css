@@ -766,7 +766,7 @@
 }
 
 .badge-sale {
-  background: var(--color-accent) !important;
+  background: var(--color-discount) !important;
   color: white !important;
   font-size: 0.7rem;
   font-weight: 700;
@@ -777,7 +777,7 @@
 }
 
 .badge-available-discount {
-  background: #17a2b8 !important;
+  background: var(--color-accent) !important;
   color: white !important;
   font-size: 0.65rem;
   font-weight: 600;
