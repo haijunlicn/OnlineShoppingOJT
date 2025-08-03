@@ -121,6 +121,12 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.authService.isLoggedIn$.subscribe((isLoggedIn) => {
       this.isLoggedIn = isLoggedIn;
+      // Reload wishlist when auth status changes
+      if (isLoggedIn) {
+        this.loadWishlist();
+      } else {
+        this.wishList.clear();
+      }
     });
     // Set userId and userName from AuthService if available
     if (this.authService.user$) {
@@ -142,6 +148,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     this.loadStickyProgressState()
     this.updateVisibleDiscounts()
     this.startDiscountCarouselAutoplay()
+    this.loadWishlist()
   }
 
   ngOnDestroy(): void {
@@ -769,7 +776,11 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
   // Wishlist methods
   toggleWish(productId: number): void {
-    const userId = 4 // Replace with actual user ID
+    const userId = this.authService.getCurrentUser()?.id
+    if (!userId) {
+      console.error("User ID not found")
+      return
+    }
 
     if (this.isWished(productId)) {
       this.wishlistService.removeProductFromWishlist(userId, productId).subscribe({
@@ -797,12 +808,17 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   }
 
   isWished(productId: number | string): boolean {
-    const id = typeof productId === "string" ? +productId : this.productId
+    const id = typeof productId === "string" ? +productId : productId
     return this.wishList.has(id)
   }
 
   loadWishlist(): void {
-    const userId = 4 // Replace with actual user ID
+    const userId = this.authService.getCurrentUser()?.id
+    if (!userId) {
+      console.error("User ID not found")
+      return
+    }
+
     this.wishlistService.getWishedProductIds(userId).subscribe({
       next: (wishedIds) => {
         this.wishList = new Set<number>(wishedIds)
