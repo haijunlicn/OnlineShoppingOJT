@@ -178,6 +178,13 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   fetchProductDetail(id: number): void {
     this.productService.getPublicProductById(id).subscribe({
       next: (data) => {
+        // Check if product is deleted (delFg = 0)
+        if (data.product?.delFg === 0) {
+          this.alertService.toast("This product is no longer available", "warning")
+          this.router.navigate(["/customer/home"])
+          return
+        }
+        
         this.product = data
         this.initializeComponent()
         this.loadRelatedProducts()
@@ -186,7 +193,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error("Error fetching product:", err)
-        this.router.navigate(["/customer/productList"])
+        this.alertService.toast("Product not found or no longer available", "error")
+        this.router.navigate(["/customer/home"])
       },
     })
   }

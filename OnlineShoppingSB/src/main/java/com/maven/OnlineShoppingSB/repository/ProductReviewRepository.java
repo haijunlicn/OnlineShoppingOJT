@@ -21,4 +21,6 @@ public interface ProductReviewRepository  extends JpaRepository<ProductReview, L
     
     @Query("SELECT COUNT(pr) > 0 FROM ProductReview pr WHERE pr.user.id = :userId AND pr.product.id = :productId")
     boolean existsByUserIdAndProductId(@Param("userId") Long userId, @Param("productId") Long productId);
+    
+    List<ProductReview> findByUserId(Long userId);
 }

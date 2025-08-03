@@ -188,4 +188,6 @@ export class HeaderComponent implements OnInit {
   goToOrderList(): void {
     this.router.navigate(["/customer/orders"])
   }
+
+
 }

@@ -1,0 +1,162 @@
+<app-header></app-header>
+
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title mb-0">
+            <i class="bi bi-star-fill text-warning me-2"></i>
+            My Product Reviews
+          </h3>
+          <p class="text-muted mb-0">View all the reviews you've written for products</p>
+        </div>
+        
+        <div class="card-body">
+          <!-- Loading State -->
+          <div *ngIf="isLoading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3 text-muted">Loading your reviews...</p>
+          </div>
+
+          <!-- Error State -->
+          <div *ngIf="error && !isLoading" class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            {{ error }}
+            <button class="btn btn-outline-danger btn-sm ms-3" (click)="loadUserReviews()">
+              <i class="bi bi-arrow-clockwise me-1"></i>Try Again
+            </button>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="!isLoading && !error && userReviews.length === 0" class="text-center py-5">
+            <i class="bi bi-star text-muted" style="font-size: 3rem;"></i>
+            <h4 class="mt-3 text-muted">No Reviews Yet</h4>
+            <p class="text-muted">You haven't written any product reviews yet.</p>
+            <a href="/customer/productList" class="btn btn-primary">
+              <i class="bi bi-bag me-2"></i>Browse Products
+            </a>
+          </div>
+
+          <!-- Reviews Table -->
+          <div *ngIf="!isLoading && !error && userReviews.length > 0">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th scope="col" style="width: 200px;">Product</th>
+                    <th scope="col" style="width: 100px;">Rating</th>
+                    <th scope="col">Review</th>
+                    <th scope="col" style="width: 120px;">Date</th>
+                    <th scope="col" style="width: 100px;"> </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let review of userReviews" class="review-row">
+                    <!-- Product Info -->
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <div class="product-image me-3">
+                          <img 
+                            [src]="getProductImage(review.productId)" 
+                            [alt]="getProductName(review.productId)"
+                            class="rounded"
+                            style="width: 50px; height: 50px; object-fit: cover;"
+                            onerror="this.src='assets/img/placeholder-product.jpg'"
+                          >
+                        </div>
+                        <div class="product-info">
+                          <h6 class="mb-1 text-primary">{{ getProductName(review.productId) }}</h6>
+                          <small class="text-muted">Product ID: {{ review.productId }}</small>
+                        </div>
+                      </div>
+                    </td>
+
+                    <!-- Rating -->
+                    <td>
+                      <div class="rating-display">
+                        <div class="stars">
+                          <i 
+                            *ngFor="let star of getStars(review.rating)" 
+                            class="bi {{ getStarClass(star, review.rating) }}"
+                            style="font-size: 0.9rem;"
+                          ></i>
+                        </div>
+                        <small class="text-muted">{{ review.rating }}/5</small>
+                      </div>
+                    </td>
+
+                    <!-- Review Content -->
+                    <td>
+                      <div class="review-content">
+                        <p class="mb-2">{{ review.comment }}</p>
+                        
+                        <!-- Review Images -->
+                        <div *ngIf="getReviewImages(review).length > 0" class="review-images mt-2">
+                          <div class="d-flex gap-2">
+                            <img 
+                              *ngFor="let imageUrl of getReviewImages(review)" 
+                              [src]="imageUrl" 
+                              alt="Review image"
+                              class="rounded"
+                              style="width: 40px; height: 40px; object-fit: cover; cursor: pointer;"
+                              (click)="openImageModal(imageUrl)"
+                            >
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <!-- Date -->
+                    <td>
+                      <small class="text-muted">{{ formatDate(review.createdDate) }}</small>
+                    </td>
+
+                                         <!-- Status -->
+                     <td>
+                       <a 
+                         *ngIf="review.verifiedPurchase"
+                         [routerLink]="['/customer/product', review.productId]"
+                         class="badge bg-success text-decoration-none"
+                         style="cursor: pointer;"
+                       >
+                        
+                         View
+                       </a>
+                       <span 
+                         *ngIf="!review.verifiedPurchase"
+                         class="badge bg-secondary"
+                       >
+                         <i class="bi bi-question-circle"></i>
+                         Pending
+                       </span>
+                     </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="imageModalLabel">Review Image</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img [src]="selectedImage" alt="Review image" class="img-fluid rounded">
+      </div>
+    </div>
+  </div>
+</div>

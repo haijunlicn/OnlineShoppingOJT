@@ -89,4 +89,13 @@ public class ReviewController {
     public List<ProductReviewDto> getAllReviews() {
         return reviewService.getAllReviews();
     }
+
+    // Get all reviews by the current user
+    @GetMapping("/user/my-reviews")
+    public List<ProductReviewDto> getUserReviews() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Long userId = userDetails.getUser().getId();
+        return reviewService.getUserReviews(userId);
+    }
 }
