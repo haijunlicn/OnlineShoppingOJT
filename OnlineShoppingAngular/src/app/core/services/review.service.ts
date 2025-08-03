@@ -43,4 +43,8 @@ export class ReviewService {
   getAllReviews(): Observable<ProductReview[]> {
     return this.http.get<ProductReview[]>(`${this.baseUrl}/public/all`);
   }
+
+  getUserReviews(): Observable<ProductReview[]> {
+    return this.http.get<ProductReview[]>(`${this.baseUrl}/user/my-reviews`);
+  }
 }

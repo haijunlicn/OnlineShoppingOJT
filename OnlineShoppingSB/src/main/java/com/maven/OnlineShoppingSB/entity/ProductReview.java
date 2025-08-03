@@ -45,6 +45,4 @@ public class ProductReview {
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ProductReviewImage> images = new ArrayList<>();
 
-
-
 }

@@ -178,8 +178,6 @@ export class DiscountRulesComponent implements OnInit {
     { value: "equals", label: "is equal to" },
     { value: "greater_than", label: "is greater than" },
     { value: "less_than", label: "is less than" },
-    { value: "greater_equal", label: "is greater than or equal to" },
-    { value: "less_equal", label: "is less than or equal to" },
     { value: "one_of", label: "is one of" },
   ]
 

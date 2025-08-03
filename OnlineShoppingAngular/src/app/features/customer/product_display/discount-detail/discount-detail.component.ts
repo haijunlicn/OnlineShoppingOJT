@@ -33,12 +33,47 @@ export class DiscountDetailComponent implements OnInit {
         this.discount = data
         this.isLoading = false
         console.log("discount detail : ", this.discount)
+        
+        // Check if discount is active
+        if (!this.isDiscountActive(data)) {
+          this.alertService.toast("This discount is no longer active", "warning")
+          this.router.navigate(['/customer/home'])
+          return
+        }
       },
       error: (err) => {
         console.error("Failed to fetch discount details", err)
         this.isLoading = false
+        this.alertService.toast("Discount not found or no longer available", "error")
+        this.router.navigate(['/customer/home'])
       },
     })
+  }
+
+  // Check if discount is active
+  private isDiscountActive(discount: DiscountEventDTO): boolean {
+    if (!discount) return false
+    
+    const now = new Date()
+    const startDate = discount.startDate ? new Date(discount.startDate) : null
+    const endDate = discount.endDate ? new Date(discount.endDate) : null
+    
+    // Check if discount has started
+    if (startDate && now < startDate) {
+      return false
+    }
+    
+    // Check if discount has ended
+    if (endDate && now > endDate) {
+      return false
+    }
+    
+    // Check if discount has valid mechanisms
+    if (!discount.mechanisms || discount.mechanisms.length === 0) {
+      return false
+    }
+    
+    return true
   }
 
   getMechanismTypeLabel(type: string): string {
