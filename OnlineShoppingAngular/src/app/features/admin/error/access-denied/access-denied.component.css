@@ -1,0 +1,63 @@
+.access-denied-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.content {
+  text-align: center;
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  max-width: 420px;
+  width: 100%;
+}
+
+.icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+h1 {
+  font-size: 28px;
+  color: #d32f2f;
+  margin-bottom: 10px;
+}
+
+p {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 30px;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.btn {
+  text-decoration: none;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: #1976d2;
+  color: white;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  text-align: center;
+}
+
+.btn:hover {
+  background-color: #125aa2;
+}
+
+.btn.alt {
+  background-color: #6c757d;
+}
+
+.btn.alt:hover {
+  background-color: #495057;
+}

@@ -26,7 +26,6 @@ export class AccessControlService {
     return perms.every(p => this.permissions.has(p));
   }
 
-
   clearPermissions(): void {
     this.permissions.clear();
   }

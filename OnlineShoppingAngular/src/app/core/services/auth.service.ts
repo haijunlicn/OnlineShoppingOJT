@@ -25,9 +25,6 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private loginModalService: LoginModalService,
-    private registerModalService: RegisterModalService,
-    private alertService: AlertService,
     private storageService: StorageService,
     private accessControlService: AccessControlService,
     private notificationService: NotificationService,

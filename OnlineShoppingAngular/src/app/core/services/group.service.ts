@@ -49,4 +49,9 @@ export class GroupService {
   getAllGroupsWithConditions(): Observable<GroupWithConditions[]> {
     return this.http.get<GroupWithConditions[]>(`${this.baseUrl}/all-with-conditions`);
   }
+
+  getAllPublicGroupsWithConditions(): Observable<GroupWithConditions[]> {
+    return this.http.get<GroupWithConditions[]>(`${this.baseUrl}/public/all-with-conditions`);
+  }
+  
 } 

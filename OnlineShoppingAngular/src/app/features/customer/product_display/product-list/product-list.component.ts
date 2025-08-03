@@ -620,34 +620,21 @@ export class ProductListComponent {
     return product.variants.some((v) => v.stock > 0) ? "In Stock" : "Out of Stock"
   }
 
-  // getMainProductImage(product: ProductDTO): string {
-  //   if (product.productImages && product.productImages.length > 0) {
-  //     const mainImage = product.productImages.find((img: any) => img.mainImageStatus)
-
-  //     if (mainImage) {
-  //       return mainImage.imgPath!
-  //     } else if (product.productImages[0]) {
-  //       return product.productImages[0].imgPath!
-  //     }
-  //   }
-  //   return "assets/images/placeholder.jpg"
-  // }
-
   getMainProductImage(product: ProductDTO): string | null {
-  if (product.productImages && product.productImages.length > 0) {
-    const mainImage = product.productImages.find((img: any) => img.mainImageStatus && img.imgPath);
-    if (mainImage?.imgPath) {
-      return mainImage.imgPath;
+    if (product.productImages && product.productImages.length > 0) {
+      const mainImage = product.productImages.find((img: any) => img.mainImageStatus && img.imgPath);
+      if (mainImage?.imgPath) {
+        return mainImage.imgPath;
+      }
+
+      const firstImage = product.productImages[0];
+      if (firstImage?.imgPath) {
+        return firstImage.imgPath;
+      }
     }
 
-    const firstImage = product.productImages[0];
-    if (firstImage?.imgPath) {
-      return firstImage.imgPath;
-    }
+    return null; // No image
   }
-
-  return null; // No image
-}
 
 
   getOriginalPrice(product: ProductCardItem): number {
@@ -1091,19 +1078,19 @@ export class ProductListComponent {
     console.log("🔍 Attaching ratings to products...");
     console.log("📊 Total reviews available:", this.allReviews.length);
     console.log("📦 Total products:", this.products.length);
-    
+
     this.products.forEach(product => {
       const reviews = this.allReviews.filter(r => r.productId === product.id);
       console.log(`🔍 Product ${product.id} (${product.product.name}): ${reviews.length} reviews`);
-      
+
       product.reviewAverage = reviews.length
         ? reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length
         : 0;
       product.reviewTotal = reviews.length;
-      
+
       console.log(`⭐ Product ${product.id}: Average=${product.reviewAverage}, Total=${product.reviewTotal}`);
     });
-    
+
     console.log("✅ Ratings attached to all products");
   }
 

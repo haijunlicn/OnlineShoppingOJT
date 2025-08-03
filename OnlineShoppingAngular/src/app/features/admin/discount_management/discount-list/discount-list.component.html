@@ -317,7 +317,7 @@
                 *ngIf="currentFilter !== 'all' || searchTerm.trim()">
                 <i class="bi bi-x-circle me-1"></i>Clear All Filters
               </button>
-              <button class="btn btn-primary" (click)="createDiscount()"
+              <button class="btn btn-primary btn-sm" (click)="createDiscount()"
                 *ngIf="currentFilter === 'all' && !searchTerm.trim()">
                 <i class="bi bi-plus me-1"></i>Create First Discount
               </button>

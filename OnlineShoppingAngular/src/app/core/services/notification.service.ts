@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import SockJS from 'sockjs-client';
 import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
@@ -82,8 +82,8 @@ export class NotificationService {
   loadInAppNotificationsForUser(userId: number): void {
     this.http.get<UserNotificationDTO[]>(`${this.baseUrl}/in-app/${userId}`).subscribe(
       (data) => {
-        console.log("May----------------------------------"+userId)
-        console.log('Loaded in-app notifications:', data); 
+        console.log("May----------------------------------" + userId)
+        console.log('Loaded in-app notifications:', data);
         this.notificationsSubject.next(data);
       },
       (error) => {
@@ -93,9 +93,24 @@ export class NotificationService {
     //User-specific notifications တွေကို backend မှ load လုပ်တယ်
   }
 
+  // markAsRead(id: number): Observable<void> {
+  //   return this.http.put<void>(`${this.baseUrl}/${id}/read`, {});
+  // }
+
   markAsRead(id: number): Observable<void> {
-    return this.http.put<void>(`${this.baseUrl}/${id}/read`, {});
+    return this.http.put<void>(`${this.baseUrl}/${id}/read`, {}).pipe(
+      tap(() => {
+        const updated = this.notificationsSubject.value.map(n => {
+          if (+n.id === id) {
+            return { ...n, read: true };
+          }
+          return n;
+        });
+        this.notificationsSubject.next(updated);
+      })
+    );
   }
+
 
   markAllAsRead(): Observable<void> {
     return this.http.put<void>(`${this.baseUrl}/mark-all-read`, {});

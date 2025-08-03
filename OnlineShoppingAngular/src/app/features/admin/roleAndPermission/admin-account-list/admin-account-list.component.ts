@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AdminAccountService } from '@app/core/services/admin-account.service';
 import { AlertService } from '@app/core/services/alert.service';
+import { User } from '@app/core/models/User';
 
 @Component({
   selector: 'app-admin-account-list',
@@ -11,8 +12,8 @@ import { AlertService } from '@app/core/services/alert.service';
   styleUrl: './admin-account-list.component.css'
 })
 export class AdminAccountListComponent implements OnInit {
-  adminAccounts: any[] = [];
-  filteredAccounts: any[] = [];
+  adminAccounts: User[] = [];
+  filteredAccounts: User[] = [];
   isLoading = false;
   searchTerm = '';
   currentPage = 1;
@@ -34,11 +35,11 @@ export class AdminAccountListComponent implements OnInit {
 
   loadAdminAccounts(): void {
     this.isLoading = true;
-    
+
     this.adminAccountService.getAllUsers().subscribe({
       next: (accounts: any[]) => {
         console.log('Total users received:', accounts.length);
-        
+
         // Log first few accounts to see the data structure
         if (accounts.length > 0) {
           console.log('First account structure:', accounts[0]);
@@ -46,7 +47,7 @@ export class AdminAccountListComponent implements OnInit {
           console.log('Role property:', accounts[0].role);
           console.log('Role type:', accounts[0].role?.type);
         }
-        
+
         // Filter for admin accounts - exclude role type 1 (customers), include other role types (admin/staff)
         this.adminAccounts = accounts.filter(account => {
           console.log('=== CHECKING ACCOUNT ===');
@@ -56,18 +57,18 @@ export class AdminAccountListComponent implements OnInit {
           console.log('Role type:', account.role?.type);
           console.log('Role ID:', account.roleId);
           console.log('User type:', account.userType);
-          
+
           // Try multiple ways to identify admin accounts
-          const isCustomer = 
-            account.role?.type === 1 || 
+          const isCustomer =
+            account.role?.type === 1 ||
             account.roleId === 1 ||
             (account.userType && account.userType.toString().toLowerCase().includes('customer'));
-            
-          const isAdminOrStaff = 
+
+          const isAdminOrStaff =
             (account.role?.type && account.role.type !== 1) ||
             (account.roleId && account.roleId !== 1) ||
             (account.userType && !account.userType.toString().toLowerCase().includes('customer'));
-          
+
           if (isCustomer) {
             console.log('✗ Customer account:', account.name);
             return false;
@@ -79,10 +80,10 @@ export class AdminAccountListComponent implements OnInit {
             return false;
           }
         });
-        
+
         console.log('Final admin accounts found:', this.adminAccounts.length);
         console.log('Admin accounts:', this.adminAccounts);
-        
+
         this.filteredAccounts = [...this.adminAccounts];
         this.totalItems = this.adminAccounts.length;
         this.isLoading = false;
@@ -102,7 +103,7 @@ export class AdminAccountListComponent implements OnInit {
       this.filteredAccounts = this.adminAccounts.filter(account =>
         account.name?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         account.email?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        account.role?.name?.toLowerCase().includes(this.searchTerm.toLowerCase())
+        account.roleName?.toLowerCase().includes(this.searchTerm.toLowerCase())
       );
     }
     this.currentPage = 1;
@@ -164,7 +165,7 @@ export class AdminAccountListComponent implements OnInit {
   toggleAccountStatus(accountId: number, currentStatus: boolean, accountName: string): void {
     const newStatus = !currentStatus;
     const action = newStatus ? 'activate' : 'deactivate';
-    
+
     if (confirm(`Are you sure you want to ${action} admin account "${accountName}"?`)) {
       this.http.patch(`http://localhost:8080/adminAccounts/${accountId}/status`, { isActive: newStatus }).subscribe({
         next: () => {
@@ -174,13 +175,13 @@ export class AdminAccountListComponent implements OnInit {
         error: (error: any) => {
           console.error(`Error ${action}ing admin account:`, error);
           let errorMessage = `Failed to ${action} admin account`;
-          
+
           if (error.error?.message) {
             errorMessage = error.error.message;
           } else if (error.message) {
             errorMessage = error.message;
           }
-          
+
           this.alertService.error(errorMessage);
         }
       });
@@ -236,7 +237,7 @@ export class AdminAccountListComponent implements OnInit {
   getCreatedDate(account: any): string {
     // Check multiple possible date properties
     const dateValue = account.createdAt || account.createdDate || account.created_at || account.dateCreated || account.registrationDate;
-    
+
     if (dateValue) {
       try {
         const date = new Date(dateValue);
@@ -254,7 +255,7 @@ export class AdminAccountListComponent implements OnInit {
         console.error('Error parsing date:', dateValue, error);
       }
     }
-    
+
     return 'N/A';
   }
 }

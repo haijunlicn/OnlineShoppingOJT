@@ -23,7 +23,7 @@ export class CustomerGroupDetailComponent implements OnInit {
     this.loading = true;
     this.error = '';
 
-    this.groupService.getAllGroupsWithConditions().subscribe({
+    this.groupService.getAllPublicGroupsWithConditions().subscribe({
       next: (data) => {
         this.groupsWithConditions = data;
         this.loading = false;

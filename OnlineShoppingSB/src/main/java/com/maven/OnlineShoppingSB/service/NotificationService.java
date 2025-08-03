@@ -43,15 +43,15 @@ public class NotificationService {
     @Autowired
     private NotificationTypeRepository notiTypeRepository;
 
-@Autowired
-private EmailService emailService;
+    @Autowired
+    private EmailService emailService;
 
     public NotificationEntity createNotificationAndDeliver(String typeName, Map<String, Object> metadata, List<Long> targetUserIds) {
-      
+
         NotificationTypeEntity type = notificationTypeRepository.findByName(typeName)
                 .orElseThrow(() -> new IllegalArgumentException("NotificationType not found: " + typeName));
         System.out.println("HI_____________________________________________________________________________________________________");
-  System.out.println("NotificationType: " + type.getId() + " | " + type.getName() + " | " + type.getTitleTemplate());
+        System.out.println("NotificationType: " + type.getId() + " | " + type.getName() + " | " + type.getTitleTemplate());
         NotificationEntity notification = new NotificationEntity();
         notification.setType(type);
         notification.setMetadata(jsonService.toJson(metadata));
@@ -84,7 +84,7 @@ private EmailService emailService;
                 if (exists) continue; // 🔒 skip duplicate
 
                 // ✅ Otherwise, save
-            
+
                 UserNotificationEntity userNotification = new UserNotificationEntity();
                 userNotification.setUser(user);
                 userNotification.setNotification(notification);
@@ -92,7 +92,7 @@ private EmailService emailService;
                 userNotification.setDeliveredAt(LocalDateTime.now());
                 userNotification.setMethod(method);
                 userNotificationRepository.save(userNotification);
-                  System.out.println("✅ UserNotification saved: " + userNotification);
+                System.out.println("✅ UserNotification saved: " + userNotification);
 
                 switch (method) {
                     case IN_APP -> messagingTemplate.convertAndSendToUser(
@@ -101,119 +101,131 @@ private EmailService emailService;
                             toDto(userNotification)
                     );
                     case EMAIL -> {
-                          String to = user.getEmail();
-                // Simple title template rendering (no conditions needed)
-                String originalTemplate = type.getTitleTemplate();
-                String originalMessageTemplate = type.getMessageTemplate();
-                
-                String subject = originalTemplate != null ? jsonService.renderTemplate(originalTemplate, metadata) : "Notification";
-                
-                // Process message template
-                String processedMessageTemplate = originalMessageTemplate;
-                if (originalMessageTemplate != null) {
-                    // For order notifications: Replace {{trackingNum}} with actual tracking number
-                    if (originalMessageTemplate.contains("{{trackingNum}}") && metadata.containsKey("trackingNum")) {
-                        processedMessageTemplate = originalMessageTemplate.replace("{{trackingNum}}", (String) metadata.get("trackingNum"));
-                    }
-                    // For product notifications: Replace {{productName}} with actual product name
-                    else if (originalMessageTemplate.contains("{{productName}}") && metadata.containsKey("productName")) {
-                        processedMessageTemplate = originalMessageTemplate.replace("{{productName}}", (String) metadata.get("productName"));
-                    }
-                    // For reason notifications: Replace {{reason}} with actual reason
-                    else if (originalMessageTemplate.contains("{{reason}}") && metadata.containsKey("reason")) {
-                        processedMessageTemplate = originalMessageTemplate.replace("{{reason}}", (String) metadata.get("reason"));
-                    }
-                    // For stock notifications: Replace {{productName}}({{variantName}}) with actual values
-                    else if (originalMessageTemplate.contains("{{productName}}({{variantName}})") && 
-                             metadata.containsKey("productName") && metadata.containsKey("variantName")) {
-                        String productName = (String) metadata.get("productName");
-                        String variantName = (String) metadata.get("variantName");
-                        processedMessageTemplate = originalMessageTemplate.replace("{{productName}}({{variantName}})", 
-                            productName + "(" + variantName + ")");
-                    }
-                    // For discount notifications: Replace {{discountName}} with actual discount name
-                    else if (originalMessageTemplate.contains("{{discountName}}") && metadata.containsKey("discountName")) {
-                        processedMessageTemplate = originalMessageTemplate.replace("{{discountName}}", (String) metadata.get("discountName"));
-                    }
-                }
-                
-                String message = processedMessageTemplate != null ? jsonService.renderTemplate(processedMessageTemplate, metadata) : "";
-                
-                // 👉 Debug the template processing
-                System.out.println("🔧 TEMPLATE PROCESSING:");
-                System.out.println("Original Title: " + originalTemplate);
+                        String to = user.getEmail();
+                        // Simple title template rendering (no conditions needed)
+                        String originalTemplate = type.getTitleTemplate();
+                        String originalMessageTemplate = type.getMessageTemplate();
 
-                System.out.println("Final Subject: " + subject);
-                System.out.println("Original Message: " + originalMessageTemplate);
-                System.out.println("Processed Message: " + processedMessageTemplate);
-                System.out.println("Final Message: " + message);
-        
-                // Professional HTML email template
-                String htmlContent = """
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>%s</title>
-                        <style>
-                            body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
-                            .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
-                            .header { background-color: #2c3e50; color: white; padding: 20px; text-align: center; }
-                            .content { padding: 30px; }
-                            .title { color: #2c3e50; font-size: 20px; font-weight: bold; margin-bottom: 20px; }
-                            .message { color: #34495e; font-size: 16px; line-height: 1.6; margin-bottom: 25px; }
-                            .button { display: inline-block; background-color: #3498db; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; }
-                            .footer { background-color: #ecf0f1; padding: 20px; text-align: center; color: #7f8c8d; font-size: 14px; }
-                            .tracking-info { background-color: #e8f4fd; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; }
-                            .tracking-number { font-weight: bold; color: #2980b9; }
-                            .tracking-link { color: #3498db; text-decoration: underline; font-weight: bold; }
-                            .message a { color: #3498db; text-decoration: underline; font-weight: bold; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="container">
-                            <div class="header">
-                                <h1>Britium Gallery Online Shop</h1>
-                            </div>
-                            <div class="content">
-                                <div class="title">%s</div>
-                                <div class="message">%s</div>
-                
-                                <!-- Conditional Content Section -->
-                                %s
-    
-                            </div>
-                            <div class="footer">
-                                <p>Thank you for shopping with us! 🎉</p>
-                            </div>
-                        </div>
-                    </body>
-                    </html>
-                """.formatted(
-                    subject, // title
-                    subject, // title in content
-                    message, // message content
-                    
-                    // Conditional content based on notification type
-                    metadata.containsKey("reason") ? 
-                        "" : // No content section for reason notifications
-                        metadata.containsKey("trackingNum") ? 
-                            "<div class='tracking-info'><strong>📦 Track your order:</strong><br>Tracking Number: <a href='http://localhost:4200/customer/orderDetail/" + metadata.get("orderId") + "' class='tracking-link'>" + metadata.get("trackingNum") + "</a></div>" : 
-                        metadata.containsKey("variantName") ? 
-                            "<div class='tracking-info'><strong>📦 Restock product:</strong><br>Product: <a href='http://localhost:4200/admin/product/" + metadata.get("productId") + "' class='tracking-link'>" + metadata.get("productName") + "(" + metadata.get("variantName") + ")</a></div>" : 
-                        metadata.containsKey("discountName") ? 
-                            "<div class='tracking-info'><strong>🎉 Check it out:</strong><br><a href='http://localhost:4200/customer/discount/" + metadata.get("discountId") + "' class='tracking-link'>" + metadata.get("discountName") + "</a></div>" : 
-                            "<div class='tracking-info'><strong>📦 Your wishlisted product:</strong><br>Product: <a href='http://localhost:4200/customer/product/" + metadata.get("productId") + "' class='tracking-link'>" + metadata.get("productName") + "</a></div>"
-                );
-                boolean sent = emailService.sendNotificationEmail(to, subject, htmlContent);
-                System.out.println("📧 EMAIL sent to " + to + ": " + sent);
+                        String subject = originalTemplate != null ? jsonService.renderTemplate(originalTemplate, metadata) : "Notification";
+
+                        // Process message template
+//                String processedMessageTemplate = originalMessageTemplate;
+//                if (originalMessageTemplate != null) {
+//                    // For order notifications: Replace {{trackingNum}} with actual tracking number
+//                    if (originalMessageTemplate.contains("{{trackingNum}}") && metadata.containsKey("trackingNum")) {
+//                        processedMessageTemplate = originalMessageTemplate.replace("{{trackingNum}}", (String) metadata.get("trackingNum"));
+//                    }
+//                    // For product notifications: Replace {{productName}} with actual product name
+//                    else if (originalMessageTemplate.contains("{{productName}}") && metadata.containsKey("productName")) {
+//                        processedMessageTemplate = originalMessageTemplate.replace("{{productName}}", (String) metadata.get("productName"));
+//                    }
+//                    // For reason notifications: Replace {{reason}} with actual reason
+//                    else if (originalMessageTemplate.contains("{{reason}}") && metadata.containsKey("reason")) {
+//                        processedMessageTemplate = originalMessageTemplate.replace("{{reason}}", (String) metadata.get("reason"));
+//                    }
+//                    // For stock notifications: Replace {{productName}}({{variantName}}) with actual values
+//                    else if (originalMessageTemplate.contains("{{productName}}({{variantName}})") &&
+//                             metadata.containsKey("productName") && metadata.containsKey("variantName")) {
+//                        String productName = (String) metadata.get("productName");
+//                        String variantName = (String) metadata.get("variantName");
+//                        processedMessageTemplate = originalMessageTemplate.replace("{{productName}}({{variantName}})",
+//                            productName + "(" + variantName + ")");
+//                    }
+//                    // For discount notifications: Replace {{discountName}} with actual discount name
+//                    else if (originalMessageTemplate.contains("{{discountName}}") && metadata.containsKey("discountName")) {
+//                        processedMessageTemplate = originalMessageTemplate.replace("{{discountName}}", (String) metadata.get("discountName"));
+//                    }
+//                }
+
+                        String processedMessageTemplate = originalMessageTemplate;
+
+                        if (originalMessageTemplate != null && metadata != null) {
+                            for (Map.Entry<String, Object> entry : metadata.entrySet()) {
+                                String key = entry.getKey();
+                                String placeholder = "{{" + key + "}}";
+                                String value = entry.getValue() != null ? entry.getValue().toString() : "";
+                                processedMessageTemplate = processedMessageTemplate.replace(placeholder, value);
+                            }
+                        }
+
+
+                        String message = processedMessageTemplate != null ? jsonService.renderTemplate(processedMessageTemplate, metadata) : "";
+
+                        // 👉 Debug the template processing
+                        System.out.println("🔧 TEMPLATE PROCESSING:");
+                        System.out.println("Original Title: " + originalTemplate);
+
+                        System.out.println("Final Subject: " + subject);
+                        System.out.println("Original Message: " + originalMessageTemplate);
+                        System.out.println("Processed Message: " + processedMessageTemplate);
+                        System.out.println("Final Message: " + message);
+
+                        // Professional HTML email template
+                        String htmlContent = """
+                                    <!DOCTYPE html>
+                                    <html>
+                                    <head>
+                                        <meta charset="UTF-8">
+                                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                        <title>%s</title>
+                                        <style>
+                                            body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+                                            .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+                                            .header { background-color: #2c3e50; color: white; padding: 20px; text-align: center; }
+                                            .content { padding: 30px; }
+                                            .title { color: #2c3e50; font-size: 20px; font-weight: bold; margin-bottom: 20px; }
+                                            .message { color: #34495e; font-size: 16px; line-height: 1.6; margin-bottom: 25px; }
+                                            .button { display: inline-block; background-color: #3498db; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; }
+                                            .footer { background-color: #ecf0f1; padding: 20px; text-align: center; color: #7f8c8d; font-size: 14px; }
+                                            .tracking-info { background-color: #e8f4fd; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; }
+                                            .tracking-number { font-weight: bold; color: #2980b9; }
+                                            .tracking-link { color: #3498db; text-decoration: underline; font-weight: bold; }
+                                            .message a { color: #3498db; text-decoration: underline; font-weight: bold; }
+                                        </style>
+                                    </head>
+                                    <body>
+                                        <div class="container">
+                                            <div class="header">
+                                                <h1>Britium Gallery Online Shop</h1>
+                                            </div>
+                                            <div class="content">
+                                                <div class="title">%s</div>
+                                                <div class="message">%s</div>
+                                
+                                                <!-- Conditional Content Section -->
+                                                %s
+                                
+                                            </div>
+                                            <div class="footer">
+                                                <p>Thank you for shopping with us! 🎉</p>
+                                            </div>
+                                        </div>
+                                    </body>
+                                    </html>
+                                """.formatted(
+                                subject, // title
+                                subject, // title in content
+                                message, // message content
+
+                                // Conditional content based on notification type
+                                metadata.containsKey("reason") ?
+                                        "" : // No content section for reason notifications
+                                        metadata.containsKey("trackingNum") ?
+                                                "<div class='tracking-info'><strong>📦 Track your order:</strong><br>Tracking Number: <a href='http://localhost:4200/customer/orderDetail/" + metadata.get("orderId") + "' class='tracking-link'>" + metadata.get("trackingNum") + "</a></div>" :
+                                                metadata.containsKey("variantName") ?
+                                                        "<div class='tracking-info'><strong>📦 Restock product:</strong><br>Product: <a href='http://localhost:4200/admin/product/" + metadata.get("productId") + "' class='tracking-link'>" + metadata.get("productName") + "(" + metadata.get("variantName") + ")</a></div>" :
+                                                        metadata.containsKey("discountName") ?
+                                                                "<div class='tracking-info'><strong>🎉 Check it out:</strong><br><a href='http://localhost:4200/customer/discount/" + metadata.get("discountId") + "' class='tracking-link'>" + metadata.get("discountName") + "</a></div>" :
+                                                                "<div class='tracking-info'><strong>📦 Your wishlisted product:</strong><br>Product: <a href='http://localhost:4200/customer/product/" + metadata.get("productId") + "' class='tracking-link'>" + metadata.get("productName") + "</a></div>"
+                        );
+                        boolean sent = emailService.sendNotificationEmail(to, subject, htmlContent);
+                        System.out.println("📧 EMAIL sent to " + to + ": " + sent);
                     }
                     case SMS -> {
                         // TODO: send SMS
                     }
                     case PUSH -> {
-                       
+
                     }
                 }
             }
@@ -221,7 +233,6 @@ private EmailService emailService;
 
         return notification;
     }
-
 
 
     public void createCustomNotification(NotificationDTO dto) {
@@ -314,7 +325,7 @@ private EmailService emailService;
                     toDto(userNotification)
             );
         }
-       // Scheduled notifications တွေကို ပို့ပေးတယ်
+        // Scheduled notifications တွေကို ပို့ပေးတယ်
 //1 minute တိုင်း run လုပ်တယ်
 //user_notification - undelivered scheduled notifications တွေကို ရှာတယ်
     }
@@ -392,6 +403,8 @@ private EmailService emailService;
 
     // ✅ Expose general-purpose trigger method
     public void notify(String typeName, Map<String, Object> metadata, List<Long> targetUserIds) {
+
+        System.out.println("metadata : " + metadata);
         sendNamedNotification(typeName, metadata, targetUserIds);
     }
 
@@ -405,7 +418,7 @@ private EmailService emailService;
         sendNamedNotification("ORDER_PENDING", metadata, List.of(userId));
     }
 
-    public void notifyOrderStatusUpdate(Long userId, Long orderId, String statusCode,String trackingNum) {
+    public void notifyOrderStatusUpdate(Long userId, Long orderId, String statusCode, String trackingNum) {
         ;
         System.out.println(trackingNum);
         Map<String, Object> metadata = Map.of(
@@ -419,25 +432,23 @@ private EmailService emailService;
     public void notifyNewDiscount(Long discountId, String discountName) {
         // Create metadata with discount information
         Map<String, Object> metadata = Map.of(
-            "discountId", discountId,
-            "discountName", discountName,
-                "discountNameLink","/customer/discount/"+discountId
+                "discountId", discountId,
+                "discountName", discountName,
+                "discountNameLink", "/customer/discount/" + discountId
         );
-        
+
         // Get all users (customers) to notify about new discount
         List<UserEntity> allUsers = userRepository.findAllNonAdminUsers();
         List<Long> targetUserIds = allUsers.stream()
-            .map(UserEntity::getId)
-            .collect(Collectors.toList());
-        
+                .map(UserEntity::getId)
+                .collect(Collectors.toList());
+
         // Create and deliver notification to all users
         createNotificationAndDeliver("New_Discount", metadata, targetUserIds);
-        
+
         System.out.println("🎉 New Discount Notification sent to " + targetUserIds.size() + " users");
         System.out.println("📋 Discount ID: " + discountId + " | Name: " + discountName);
     }
-
-
 
 
     public void notifyRefundRequested(Long orderId, Long customerId, String customerName) {
@@ -454,7 +465,7 @@ private EmailService emailService;
 
     public void checkAndNotifyLowStock(ProductVariantEntity variant) {
         final int LOW_STOCK_THRESHOLD = 5;
-        
+
         System.out.println("🔍 CHECKING LOW STOCK FOR VARIANT: " + variant.getSku() + " | Stock: " + variant.getStock());
 
         if (variant.getStock() <= LOW_STOCK_THRESHOLD & variant.getStock() != 0) {
@@ -471,12 +482,12 @@ private EmailService emailService;
 
             List<Long> adminIds = getAdminIdsWithPermission("PRODUCT_STOCK_UPDATE");
             System.out.println("👥 Admin IDs with permission: " + adminIds);
-            
+
             if (adminIds.isEmpty()) {
                 System.out.println("❌ No admin users found with PRODUCT_STOCK_UPDATE permission!");
                 return;
             }
-            
+
             sendNamedNotification("LOW_STOCK_ALERT", metadata, adminIds);
             System.out.println("✅ LOW_STOCK_ALERT notification sent!");
         } else {
@@ -487,7 +498,7 @@ private EmailService emailService;
     public void checkAndNotifyOutOfStock(ProductVariantEntity variant) {
         System.out.println("HI_______________________________________________________________________________outofstock");
         System.out.println("🔍 CHECKING OUT OF STOCK FOR VARIANT: " + variant.getSku() + " | Stock: " + variant.getStock());
-        
+
         if (variant.getStock() <= 0) {  // Out of stock condition
             System.out.println("⚠️ OUT OF STOCK DETECTED! Creating notification...");
 
@@ -500,12 +511,12 @@ private EmailService emailService;
 
             List<Long> adminIds = getAdminIdsWithPermission("PRODUCT_STOCK_UPDATE");
             System.out.println("👥 Admin IDs with permission: " + adminIds);
-            
+
             if (adminIds.isEmpty()) {
                 System.out.println("❌ No admin users found with PRODUCT_STOCK_UPDATE permission!");
                 return;
             }
-            
+
             sendNamedNotification("OUT_OF_STOCK_ALERT", metadata, adminIds);
             System.out.println("✅ OUT_OF_STOCK_ALERT notification sent!");
         } else {
@@ -526,7 +537,7 @@ private EmailService emailService;
                 })
                 .map(UserEntity::getId)
                 .toList();
-               // Specific permission ရှိတဲ့ admin user IDs တွေကို ရှာတယ်
+        // Specific permission ရှိတဲ့ admin user IDs တွေကို ရှာတယ်
 //SUPERADMIN_PERMISSION ရှိရင် အားလုံးကို ပို့တယ်
 //Role-based access control လုပ်တယ်
     }
@@ -536,7 +547,7 @@ private EmailService emailService;
         return entities.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
-                //Specific notification type ရဲ့ notifications တွေကို ရှာတယ်
+        //Specific notification type ရဲ့ notifications တွေကို ရှာတယ်
     }
 
     private NotificationDTO convertToDTO(NotificationEntity entity) {
@@ -559,44 +570,44 @@ private EmailService emailService;
                 .collect(Collectors.toList());
 
         // 2. Collect all unique userIds from wishlistTitle
-      List<Long> userIds = wishlists.stream()
-    .map(w -> {
-        WishlistTitleEntity title = w.getWishlistTitle();
-        return (title != null && title.getUser() != null) ? title.getUser().getId() : null;
-    })
-    .filter(Objects::nonNull)
-    .collect(Collectors.toList()); // ← ဒီလိုပြောင်းပါ
+        List<Long> userIds = wishlists.stream()
+                .map(w -> {
+                    WishlistTitleEntity title = w.getWishlistTitle();
+                    return (title != null && title.getUser() != null) ? title.getUser().getId() : null;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList()); // ← ဒီလိုပြောင်းပါ
 
         if (userIds.isEmpty()) return;
 
 // 3. Get product name (assume all wishlists have the same product)
-String productName = "";
-if (!wishlists.isEmpty() && wishlists.get(0).getProduct() != null) {
-    productName = wishlists.get(0).getProduct().getName();
-}
+        String productName = "";
+        if (!wishlists.isEmpty() && wishlists.get(0).getProduct() != null) {
+            productName = wishlists.get(0).getProduct().getName();
+        }
 
         // 4. Prepare notification metadata (add more info if needed)
         Map<String, Object> metadata = Map.of(
                 "productId", productId,
-                    "productName",productName,
-                    "productNameLink","/customer/product/"+productId
-               
+                "productName", productName,
+                "productNameLink", "/customer/product/" + productId
+
         );
         sendNamedNotification(
-                "STOCK_UPDATE_FOR_WISHLISTEDUSER", 
+                "STOCK_UPDATE_FOR_WISHLISTEDUSER",
                 metadata,
                 userIds
         );
     }
-    
+
     // 👉 Test method for renderTemplate
     public void testRenderTemplate() {
         String template = "Thank you for shopping with us. Your order has been confirmed and is now being processed. Track your order {{trackingNum}}";
         Map<String, Object> metadata = Map.of(
-            "trackingNum", "TRK1753722348401434",
-            "orderId", 123
+                "trackingNum", "TRK1753722348401434",
+                "orderId", 123
         );
-        
+
         String result = jsonService.renderTemplate(template, metadata);
         System.out.println("🧪 TEST RESULT:");
         System.out.println("Template: " + template);
@@ -610,7 +621,7 @@ if (!wishlists.isEmpty() && wishlists.get(0).getProduct() != null) {
     public List<NotificationDTO.NotificationTypeMethodDTO> getAllNotificationTypeMethods() {
         List<NotificationTypeEntity> types = notificationTypeRepository.findAll();
         List<NotificationDTO.NotificationTypeMethodDTO> result = new ArrayList<>();
-        
+
         for (NotificationTypeEntity type : types) {
             for (NotificationTypeMethodEntity methodEntity : type.getSupportedMethods()) {
                 NotificationDTO.NotificationTypeMethodDTO dto = new NotificationDTO.NotificationTypeMethodDTO();
@@ -621,7 +632,7 @@ if (!wishlists.isEmpty() && wishlists.get(0).getProduct() != null) {
                 result.add(dto);
             }
         }
-        
+
         return result;
     }
 
@@ -629,12 +640,12 @@ if (!wishlists.isEmpty() && wishlists.get(0).getProduct() != null) {
     public void updateNotificationMethodStatus(Long notificationTypeId, NotiMethod method, Integer status) {
         NotificationTypeEntity type = notificationTypeRepository.findById(notificationTypeId)
                 .orElseThrow(() -> new RuntimeException("Notification type not found"));
-        
+
         NotificationTypeMethodEntity methodEntity = type.getSupportedMethods().stream()
                 .filter(m -> m.getMethod() == method)
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Method not found for this notification type"));
-        
+
         methodEntity.setDisplayOrder(status);
         notificationTypeRepository.save(type);
     }
