@@ -904,6 +904,40 @@
     border-radius: 8px;
     background: #f8f8f8;
   }
+
+  .wishlist-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .wishlist-btn:hover {
+    background: white;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .wishlist-btn i {
+    font-size: 1rem;
+  }
+
+  .wishlist-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .wishlist-btn:disabled:hover {
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
   .brand-category-row {
     display: flex;
     justify-content: space-between;
