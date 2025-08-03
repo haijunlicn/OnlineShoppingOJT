@@ -20,6 +20,44 @@
     <span class="badge bg-primary px-2 py-1" style="font-size:0.95rem;">Orders: {{ orders.length }}</span>
     <span class="badge bg-info px-2 py-1" style="font-size:0.95rem;">Refunds: {{ refunds.length }}</span>
   </div>
+  <!-- Back Button -->
+  <div class="ms-3">
+    <a [routerLink]="['/admin/userList']" class="btn btn-outline-secondary btn-sm">
+      <i class="fas fa-arrow-left me-1"></i> Back to Users
+    </a>
+  </div>
+</div>
+
+<!-- Export Controls -->
+<div class="card mb-3 p-3 export-controls">
+  <div class="row align-items-center">
+    <div class="col-md-6">
+      <h6 class="mb-2"><i class="fas fa-download me-2"></i>Export Reports</h6>
+    </div>
+    <div class="col-md-6 text-end">
+      <div class="dropdown">
+        <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false" [disabled]="isExporting || !user">
+          <i class="fas fa-download me-1"></i> Export
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+          
+          <li><a class="dropdown-item" href="#" (click)="exportUserReportToPdf(); $event.preventDefault()">
+            <i class="fas fa-file-pdf me-2 text-danger"></i> Export Detail PDF
+          </a></li>
+          <li><a class="dropdown-item" href="#" (click)="exportUserReportToExcel(); $event.preventDefault()">
+            <i class="fas fa-file-excel me-2 text-success"></i> Export Detail Excel
+          </a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="row mt-2" *ngIf="isExporting">
+    <div class="col-12">
+      <div class="alert alert-info py-2 mb-0">
+        <i class="fas fa-spinner fa-spin me-2"></i>Generating report...
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Tab Switch -->
@@ -49,7 +87,15 @@
     <label class="me-2 mb-0">Date From:</label>
     <input type="date" class="form-control form-control-sm w-auto" [(ngModel)]="orderFilter.dateFrom" (ngModelChange)="onOrderFilterChange()">
   </div>
-  <div class="ms-auto">
+  <div class="d-flex flex-row gap-2 align-items-center">
+    <label class="me-2 mb-0">Date To:</label>
+    <input type="date" class="form-control form-control-sm w-auto" [(ngModel)]="orderFilter.dateTo" (ngModelChange)="onOrderFilterChange()">
+  </div>
+  <div class="d-flex flex-row gap-2 align-items-center">
+    <label class="me-2 mb-0">Search:</label>
+    <input type="text" class="form-control form-control-sm w-auto" placeholder="Search orders..." [(ngModel)]="orderFilter.search" (ngModelChange)="onOrderFilterChange()">
+  </div>
+  <div class="d-flex flex-row gap-2 align-items-center">
     <button class="btn btn-outline-secondary btn-sm" type="button" (click)="clearOrderFilters()">
       <i class="fas fa-times me-1"></i> Clear Filters
     </button>
@@ -90,8 +136,36 @@
   </div>
 </div>
 
-<!-- Refunds Table (unchanged) -->
+<!-- Refunds Table with Export Controls -->
 <div *ngIf="activeTab === 'refunds'">
+  <!-- Refund Filter Controls -->
+  <div class="card mb-3 p-3 filter-bar d-flex flex-row flex-wrap align-items-center gap-3 justify-content-between">
+    <div class="d-flex flex-row gap-2 align-items-center">
+      <label class="me-2 mb-0">Refund Status:</label>
+      <select class="form-select form-select-sm w-auto" [(ngModel)]="refundFilter.status" (ngModelChange)="onRefundFilterChange()">
+        <option value="">All</option>
+        <option *ngFor="let s of refundStatuses" [value]="s">{{ s }}</option>
+      </select>
+    </div>
+    <div class="d-flex flex-row gap-2 align-items-center">
+      <label class="me-2 mb-0">Date From:</label>
+      <input type="date" class="form-control form-control-sm w-auto" [(ngModel)]="refundFilter.dateFrom" (ngModelChange)="onRefundFilterChange()">
+    </div>
+    <div class="d-flex flex-row gap-2 align-items-center">
+      <label class="me-2 mb-0">Date To:</label>
+      <input type="date" class="form-control form-control-sm w-auto" [(ngModel)]="refundFilter.dateTo" (ngModelChange)="onRefundFilterChange()">
+    </div>
+    <div class="d-flex flex-row gap-2 align-items-center">
+      <label class="me-2 mb-0">Search:</label>
+      <input type="text" class="form-control form-control-sm w-auto" placeholder="Search refunds..." [(ngModel)]="refundFilter.search" (ngModelChange)="onRefundFilterChange()">
+    </div>
+    <div class="d-flex flex-row gap-2 align-items-center">
+      <button class="btn btn-outline-secondary btn-sm" type="button" (click)="clearRefundFilters()">
+        <i class="fas fa-times me-1"></i> Clear Filters
+      </button>
+    </div>
+  </div>
+
   <div *ngIf="isLoading" class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x"></i></div>
   <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
   <div *ngIf="!isLoading && !errorMessage">

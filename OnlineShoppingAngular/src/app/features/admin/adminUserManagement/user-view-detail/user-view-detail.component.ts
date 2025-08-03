@@ -6,6 +6,8 @@ import { User } from '@app/core/models/User';
 import { OrderDetail, ORDER_STATUS, OrderItemDetail } from '@app/core/models/order.dto';
 import { RefundRequestDTO, RefundStatus, RefundItemDTO } from '@app/core/models/refund.model';
 import { AdminAccountService } from '@app/core/services/admin-account.service';
+import { ExcelExportService } from '@app/core/services/excel-export.service';
+import { PdfExportService } from '@app/core/services/pdf-export.service';
 
 @Component({
   selector: 'app-user-view-detail',
@@ -33,12 +35,15 @@ export class UserViewDetailComponent implements OnInit {
 
   // UI State
   activeTab: 'orders' | 'refunds' = 'orders';
+  isExporting = false;
 
   constructor(
     private route: ActivatedRoute,
     private orderService: OrderService,
     private refundRequestService: RefundRequestService,
-    private adminAccountService: AdminAccountService
+    private adminAccountService: AdminAccountService,
+    private excelExportService: ExcelExportService,
+    private pdfExportService: PdfExportService
   ) {}
 
   ngOnInit(): void {
@@ -83,6 +88,222 @@ export class UserViewDetailComponent implements OnInit {
     }
   }
 
+  // --- Export Functions ---
+
+  /**
+   * Export comprehensive user report to Excel
+   */
+  async exportUserReportToExcel(): Promise<void> {
+    if (!this.user) return;
+    
+    this.isExporting = true;
+    try {
+      const filename = `user-report-${this.user.name}-${this.userId}.xlsx`;
+      
+      // Check if filters are applied
+      const hasOrderFilters = this.orderFilter.status || this.orderFilter.dateFrom || this.orderFilter.dateTo || this.orderFilter.search;
+      const hasRefundFilters = this.refundFilter.status || this.refundFilter.dateFrom || this.refundFilter.dateTo || this.refundFilter.search;
+      
+      // Use filtered data if filters are applied, otherwise use all data
+      const ordersData = hasOrderFilters ? this.filteredOrders : this.orders;
+      const refundsData = hasRefundFilters ? this.filteredRefunds : this.refunds;
+      
+      // Prepare sheets data
+      const sheets = [
+        {
+          name: 'User Information',
+          data: [this.prepareUserDataForExport()],
+          columns: [
+            { header: 'User ID', field: 'id', width: 15 },
+            { header: 'Name', field: 'name', width: 30 },
+            { header: 'Email', field: 'email', width: 35 },
+            { header: 'Phone', field: 'phone', width: 20 },
+            { header: 'Address', field: 'address', width: 50 },
+            { header: 'City', field: 'city', width: 20 },
+            { header: 'Country', field: 'country', width: 20 },
+            { header: 'Total Orders', field: 'totalOrders', width: 15 },
+            { header: 'Total Spent', field: 'totalSpent', width: 20 },
+            { header: 'Total Refunds', field: 'totalRefunds', width: 15 },
+            { header: 'Member Since', field: 'memberSince', width: 20 }
+          ]
+        },
+        {
+          name: 'Orders',
+          data: this.prepareOrdersDataForExport(ordersData),
+          columns: [
+            { header: 'Tracking Number', field: 'trackingNumber', width: 20 },
+            { header: 'Order Date', field: 'orderDate', width: 20 },
+            { header: 'Status', field: 'status', width: 25 },
+            { header: 'Total Amount', field: 'totalAmount', width: 25 },
+            { header: 'Payment Status', field: 'paymentStatus', width: 20 },
+            { header: 'Items Count', field: 'itemsCount', width: 15 },
+            { header: 'Products', field: 'products', width: 50 },
+            { header: 'Shipping Address', field: 'shippingAddress', width: 40 }
+          ]
+        },
+        {
+          name: 'Refunds',
+          data: this.prepareRefundsDataForExport(refundsData),
+          columns: [
+            { header: 'Refund ID', field: 'id', width: 15 },
+            { header: 'Order ID', field: 'orderId', width: 15 },
+            { header: 'Created Date', field: 'createdDate', width: 20 },
+            { header: 'Status', field: 'status', width: 20 },
+            { header: 'Total Amount', field: 'totalAmount', width: 20 },
+            { header: 'Reason', field: 'reason', width: 30 },
+            { header: 'Products', field: 'products', width: 50 },
+            { header: 'Notes', field: 'notes', width: 30 }
+          ]
+        }
+      ];
+
+      await this.excelExportService.exportMultipleSheets(sheets, filename);
+    } catch (error) {
+      console.error('Error exporting user report to Excel:', error);
+      this.errorMessage = 'Failed to export Excel report.';
+    } finally {
+      this.isExporting = false;
+    }
+  }
+
+  /**
+   * Export comprehensive user report to PDF
+   */
+  async exportUserReportToPdf(): Promise<void> {
+    if (!this.user) return;
+    
+    this.isExporting = true;
+    try {
+      const filename = `user-report-${this.user.name}-${this.userId}.pdf`;
+      
+      // Check if filters are applied
+      const hasOrderFilters = this.orderFilter.status || this.orderFilter.dateFrom || this.orderFilter.dateTo || this.orderFilter.search;
+      const hasRefundFilters = this.refundFilter.status || this.refundFilter.dateFrom || this.refundFilter.dateTo || this.refundFilter.search;
+      
+      // Use filtered data if filters are applied, otherwise use all data
+      const ordersData = hasOrderFilters ? this.filteredOrders : this.orders;
+      const refundsData = hasRefundFilters ? this.filteredRefunds : this.refunds;
+      
+      // Create comprehensive user report data
+      const reportData = {
+        user: this.prepareUserDataForExport(),
+        orders: this.prepareOrdersDataForExport(ordersData),
+        refunds: this.prepareRefundsDataForExport(refundsData),
+        summary: this.calculateUserSummary()
+      };
+
+      await this.pdfExportService.exportUserDetailReport(reportData, filename);
+    } catch (error) {
+      console.error('Error exporting user report to PDF:', error);
+      this.errorMessage = 'Failed to export PDF report.';
+    } finally {
+      this.isExporting = false;
+    }
+  }
+
+  // Remove the individual export functions as they are no longer needed
+
+  // --- Data Preparation Methods ---
+
+  private prepareUserDataForExport(): any {
+    if (!this.user) return {};
+    
+    const firstOrder = this.orders[0];
+    const totalSpent = this.orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+    const memberSince = firstOrder ? new Date(firstOrder.createdDate).toLocaleDateString() : 'N/A';
+    
+    return {
+      id: this.user.id,
+      name: this.user.name,
+      email: this.user.email,
+      phone: firstOrder?.shippingAddress?.phoneNumber || 'N/A',
+      address: firstOrder?.shippingAddress?.address || 'N/A',
+      city: firstOrder?.shippingAddress?.city || 'N/A',
+      country: firstOrder?.shippingAddress?.country || 'N/A',
+      totalOrders: this.orders.length,
+      totalSpent: totalSpent.toLocaleString() + ' MMK',
+      totalRefunds: this.refunds.length,
+      memberSince: memberSince
+    };
+  }
+
+  private prepareOrdersDataForExport(orders: OrderDetail[]): any[] {
+    return orders.map(order => {
+      const products = order.items?.map(item => 
+        `${item.product.name} (x${item.quantity})`
+      ).join(', ') || 'N/A';
+      
+      const shippingAddress = order.shippingAddress ? 
+        `${order.shippingAddress.address}, ${order.shippingAddress.township || ''}, ${order.shippingAddress.city}, ${order.shippingAddress.country}`.replace(/,\s*,/g, ',').replace(/^,\s*/, '').replace(/,\s*$/, '') :
+        'N/A';
+
+      return {
+        id: order.id,
+        trackingNumber: order.trackingNumber,
+        orderDate: this.formatDate(order.createdDate),
+        status: order.currentOrderStatus,
+        totalAmount: (order.totalAmount || 0).toLocaleString() + ' MMK',
+        paymentStatus: order.paymentStatus || 'N/A',
+        itemsCount: order.items?.length || 0,
+        products: products,
+        shippingAddress: shippingAddress
+      };
+    });
+  }
+
+  private prepareRefundsDataForExport(refunds: RefundRequestDTO[]): any[] {
+    return refunds.map(refund => {
+      const products = refund.items?.map(item => 
+        `${item.productName || 'Product'} (x${item.quantity})`
+      ).join(', ') || 'N/A';
+
+      // Get reason from first item if available
+      const reason = refund.items && refund.items.length > 0 && refund.items[0].customReasonText 
+        ? refund.items[0].customReasonText 
+        : 'N/A';
+
+      return {
+        id: refund.id,
+        orderId: refund.orderId,
+        createdDate: this.formatDate(refund.createdAt),
+        status: refund.status,
+        totalAmount: this.getRefundTotal(refund).toLocaleString() + ' MMK',
+        reason: reason,
+        products: products,
+        notes: refund.adminComment || 'N/A'
+      };
+    });
+  }
+
+  private calculateUserSummary(): any {
+    const totalSpent = this.orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+    const totalRefunded = this.refunds.reduce((sum, refund) => sum + this.getRefundTotal(refund), 0);
+    const netSpent = totalSpent - totalRefunded;
+    
+    const statusCounts = this.orders.reduce((acc, order) => {
+      const status = order.currentOrderStatus || 'Unknown';
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    const refundStatusCounts = this.refunds.reduce((acc, refund) => {
+      const status = refund.status || 'Unknown';
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    return {
+      totalOrders: this.orders.length,
+      totalSpent: totalSpent,
+      totalRefunded: totalRefunded,
+      netSpent: netSpent,
+      totalRefunds: this.refunds.length,
+      orderStatusDistribution: statusCounts,
+      refundStatusDistribution: refundStatusCounts,
+      averageOrderValue: this.orders.length > 0 ? totalSpent / this.orders.length : 0
+    };
+  }
+
   // --- Orders Filtering ---
   onOrderFilterChange() {
     let filtered = [...this.orders];
@@ -112,6 +333,11 @@ export class UserViewDetailComponent implements OnInit {
   clearOrderFilters() {
     this.orderFilter = { status: '', dateFrom: '', dateTo: '', search: '' };
     this.onOrderFilterChange();
+  }
+
+  clearRefundFilters() {
+    this.refundFilter = { status: '', dateFrom: '', dateTo: '', search: '' };
+    this.onRefundFilterChange();
   }
 
   // --- Refunds Filtering ---

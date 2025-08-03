@@ -999,6 +999,262 @@ export class PdfExportService {
   }
 
   /**
+   * Export comprehensive user detail report to PDF
+   * @param reportData - User report data including user info, orders, refunds, and summary
+   * @param filename - Name of the PDF file
+   */
+  async exportUserDetailReport(
+    reportData: {
+      user: any;
+      orders: any[];
+      refunds: any[];
+      summary: any;
+    },
+    filename: string = 'user-detail-report.pdf'
+  ): Promise<void> {
+    const pdf = new jsPDF('portrait', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 15;
+    const contentWidth = pageWidth - (margin * 2);
+    
+    // Colors
+    const primaryColor: [number, number, number] = [52, 73, 94]; // Dark blue-gray
+    const accentColor: [number, number, number] = [231, 76, 60]; // Red accent
+    const headerBgColor: [number, number, number] = [245, 246, 250]; // Very light gray
+    const borderColor: [number, number, number] = [220, 221, 225]; // Light border
+    const textColor: [number, number, number] = [44, 62, 80]; // Dark text
+    const lightTextColor: [number, number, number] = [127, 140, 141]; // Light text
+    
+    let y = 20;
+    
+    // --- Header Section ---
+    pdf.setFillColor(...primaryColor);
+    pdf.rect(0, 0, pageWidth, 35, 'F');
+    
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(18);
+    pdf.text('BRITIUM GALLERY', margin, 18);
+    
+    pdf.setFontSize(14);
+    pdf.text('USER DETAIL REPORT', pageWidth - margin, 18, { align: 'right' });
+    
+    pdf.setFontSize(10);
+    pdf.setTextColor(201, 184, 124);
+    pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, pageWidth - margin, 25, { align: 'right' });
+    
+    y = 45;
+    
+    // --- User Information Section ---
+    const userInfoY = y;
+    const userInfoHeight = 40;
+    
+    // User info background
+    pdf.setFillColor(...headerBgColor);
+    pdf.rect(margin, userInfoY, contentWidth, userInfoHeight, 'F');
+    pdf.setDrawColor(...borderColor);
+    pdf.rect(margin, userInfoY, contentWidth, userInfoHeight, 'S');
+    
+    // User info title
+    pdf.setFillColor(...primaryColor);
+    pdf.rect(margin, userInfoY, contentWidth, 8, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(10);
+    pdf.text('USER INFORMATION', margin + 5, userInfoY + 5);
+    
+    // User details
+    pdf.setTextColor(...textColor);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9);
+    
+    const user = reportData.user;
+    pdf.text(`Name: ${user.name}`, margin + 5, userInfoY + 15);
+    pdf.text(`Email: ${user.email}`, margin + 5, userInfoY + 20);
+    pdf.text(`Phone: ${user.phone}`, margin + 5, userInfoY + 25);
+    pdf.text(`Address: ${user.address}`, margin + 5, userInfoY + 30);
+    pdf.text(`City: ${user.city}`, margin + 5, userInfoY + 35);
+    
+    // User stats on the right
+    pdf.text(`Total Orders: ${user.totalOrders}`, margin + contentWidth / 2, userInfoY + 15);
+    pdf.text(`Total Spent: ${user.totalSpent}`, margin + contentWidth / 2, userInfoY + 20);
+    pdf.text(`Total Refunds: ${user.totalRefunds}`, margin + contentWidth / 2, userInfoY + 25);
+    pdf.text(`Member Since: ${user.memberSince}`, margin + contentWidth / 2, userInfoY + 30);
+    
+    y = userInfoY + userInfoHeight + 15;
+    
+    // --- Summary Statistics Section ---
+    const summaryY = y;
+    const summaryHeight = 30;
+    
+    // Summary background
+    pdf.setFillColor(...headerBgColor);
+    pdf.rect(margin, summaryY, contentWidth, summaryHeight, 'F');
+    pdf.setDrawColor(...borderColor);
+    pdf.rect(margin, summaryY, contentWidth, summaryHeight, 'S');
+    
+    // Summary title
+    pdf.setFillColor(...primaryColor);
+    pdf.rect(margin, summaryY, contentWidth, 8, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(10);
+    pdf.text('SUMMARY STATISTICS', margin + 5, summaryY + 5);
+    
+    // Summary content
+    pdf.setTextColor(...textColor);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9);
+    
+    const summary = reportData.summary;
+    pdf.text(`Net Spent: ${summary.netSpent.toLocaleString()} MMK`, margin + 5, summaryY + 15);
+    pdf.text(`Average Order Value: ${summary.averageOrderValue.toLocaleString()} MMK`, margin + 5, summaryY + 20);
+    pdf.text(`Total Refunded: ${summary.totalRefunded.toLocaleString()} MMK`, margin + 5, summaryY + 25);
+    
+    y = summaryY + summaryHeight + 15;
+    
+    // --- Orders Section ---
+    if (reportData.orders.length > 0) {
+      const ordersY = y;
+      
+      // Orders title
+      pdf.setFillColor(...primaryColor);
+      pdf.rect(margin, ordersY, contentWidth, 8, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(10);
+      pdf.text(`ORDERS (${reportData.orders.length})`, margin + 5, ordersY + 5);
+      
+      y = ordersY + 15;
+      
+      // Orders table
+      const orderHeaders = ['Tracking Number', 'Date', 'Status', 'Amount', 'Items', 'Products'];
+      const orderColWidths = [30, 25, 30, 30, 15, 50];
+      let x = margin;
+      
+      // Header
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(8);
+      pdf.setTextColor(...textColor);
+      orderHeaders.forEach((header, i) => {
+        pdf.text(header, x + 2, y);
+        x += orderColWidths[i];
+      });
+      y += 5;
+      
+      // Data
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(7);
+      
+      reportData.orders.forEach((order, index) => {
+        // Check if we need a new page
+        if (y > pageHeight - 40) {
+          pdf.addPage();
+          y = 20;
+        }
+        
+        x = margin;
+        const orderData = [
+          order.trackingNumber || order.id.toString(),
+          order.orderDate,
+          order.status,
+          order.totalAmount,
+          order.itemsCount.toString(),
+          order.products.length > 30 ? order.products.substring(0, 27) + '...' : order.products
+        ];
+        
+        orderData.forEach((cell, cellIndex) => {
+          pdf.text(cell, x + 2, y);
+          x += orderColWidths[cellIndex];
+        });
+        y += 4;
+      });
+      
+      y += 10;
+    }
+    
+    // --- Refunds Section ---
+    if (reportData.refunds.length > 0) {
+      // Check if we need a new page
+      if (y > pageHeight - 60) {
+        pdf.addPage();
+        y = 20;
+      }
+      
+      const refundsY = y;
+      
+      // Refunds title
+      pdf.setFillColor(...primaryColor);
+      pdf.rect(margin, refundsY, contentWidth, 8, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(10);
+      pdf.text(`REFUNDS (${reportData.refunds.length})`, margin + 5, refundsY + 5);
+      
+      y = refundsY + 15;
+      
+      // Refunds table
+      const refundHeaders = ['Refund ID', 'Order ID', 'Date', 'Status', 'Amount', 'Reason'];
+      const refundColWidths = [25, 25, 25, 25, 25, 50];
+      let x = margin;
+      
+      // Header
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(8);
+      pdf.setTextColor(...textColor);
+      refundHeaders.forEach((header, i) => {
+        pdf.text(header, x + 2, y);
+        x += refundColWidths[i];
+      });
+      y += 5;
+      
+      // Data
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(7);
+      
+      reportData.refunds.forEach((refund, index) => {
+        // Check if we need a new page
+        if (y > pageHeight - 40) {
+          pdf.addPage();
+          y = 20;
+        }
+        
+        x = margin;
+        const refundData = [
+          refund.id.toString(),
+          refund.orderId.toString(),
+          refund.createdDate,
+          refund.status,
+          refund.totalAmount,
+          (refund.reason || 'N/A').length > 20 ? (refund.reason || 'N/A').substring(0, 17) + '...' : (refund.reason || 'N/A')
+        ];
+        
+        refundData.forEach((cell, cellIndex) => {
+          pdf.text(cell, x + 2, y);
+          x += refundColWidths[cellIndex];
+        });
+        y += 4;
+      });
+    }
+    
+    // --- Footer ---
+    const footerY = pageHeight - 20;
+    pdf.setFillColor(...primaryColor);
+    pdf.rect(0, footerY, pageWidth, 20, 'F');
+    
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(8);
+    pdf.text(`Total Orders: ${reportData.summary.totalOrders} | Total Refunds: ${reportData.summary.totalRefunds}`, margin, footerY + 12);
+    pdf.text(`Page ${pdf.getCurrentPageInfo().pageNumber}`, pageWidth / 2, footerY + 12, { align: 'center' });
+    pdf.text(`Net Revenue: ${reportData.summary.netSpent.toLocaleString()} MMK`, pageWidth - margin, footerY + 12, { align: 'right' });
+    
+    // Save PDF
+    pdf.save(filename);
+  }
+
+  /**
    * Calculate optimal column widths based on content
    */
   private calculateColumnWidths(columns: { header: string; field: string; width?: number }[], totalWidth: number): number[] {
